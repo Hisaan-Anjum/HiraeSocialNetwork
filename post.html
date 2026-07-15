@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="hirae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hirae Memories — Post</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <div class="brand">💜 Hirae Memories</div>
+      <div class="brand-sub">One moment</div>
+    </div>
+    <nav class="nav-links">
+      <a href="memories.html" class="nav-link">Feed</a>
+      <a href="contacts.html" class="nav-link">Contacts</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="who" id="whoAmI"></span>
+      <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <div class="page-wrap" style="max-width:640px">
+    <a class="btn btn-ghost" href="memories.html" style="margin-bottom:18px;display:inline-flex">← Back to feed</a>
+    <div id="content">
+      <div class="spinner-text">Loading…</div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="postcard.js"></script>
+  <script src="post.js"></script>
+</body>
+</html>

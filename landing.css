@@ -1,0 +1,53 @@
+/* landing.css — index.html only, the marketing/landing page. Kept separate
+   from style.css so the app's own pages don't carry this page's specific
+   layout rules around for no reason. */
+
+.hero-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 32px;
+  max-width: 1100px; margin: 0 auto;
+}
+
+.hero {
+  max-width: 720px; margin: 0 auto; padding: 60px 24px 40px; text-align: center;
+}
+.hero-icon { font-size: 40px; margin-bottom: 18px; letter-spacing: 8px; }
+.hero-title {
+  font-size: 40px; line-height: 1.25; margin-bottom: 20px;
+  background: linear-gradient(140deg, #f5b942 0%, #8b5cf6 60%, #6d28d9 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-sub { font-size: 16px; line-height: 1.7; color: var(--ink-dim); margin-bottom: 32px; }
+.hero-actions { margin-bottom: 18px; }
+.hero-cta { font-size: 16px; padding: 14px 34px; }
+.hero-note { font-size: 12px; color: var(--ink-faint); }
+
+.features {
+  max-width: 1000px; margin: 40px auto 0; padding: 0 24px 60px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px;
+}
+.feature-card {
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 18px;
+  padding: 26px 22px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(139,92,246,0.4);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+}
+.feature-icon { font-size: 30px; margin-bottom: 12px; }
+.feature-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.feature-desc { font-size: 13.5px; line-height: 1.65; color: var(--ink-dim); }
+
+.cta-section {
+  text-align: center; padding: 70px 24px 90px;
+  background: radial-gradient(ellipse 700px 400px at 50% 30%, rgba(139,92,246,0.14), transparent 65%);
+}
+.cta-section h2 { font-size: 26px; margin-bottom: 24px; }
+
+.landing-footer {
+  text-align: center; padding: 28px 24px 50px;
+  color: var(--ink-faint); font-size: 12px;
+}

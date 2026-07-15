@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="hirae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log In — Hirae Memories</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <a href="index.html" style="display:block;text-align:center;margin-bottom:18px;color:var(--ink-faint);font-size:13px">← Back</a>
+      <div class="login-icon">💜</div>
+      <div class="login-title">Hirae Memories</div>
+      <div class="login-sub">The little moments you've saved together</div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="serverUrl">Server address</label>
+          <input type="text" id="serverUrl" placeholder="http://localhost:8080" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="your Hirae username" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%">Log In</button>
+        <div class="error-text" id="errorText"></div>
+      </form>
+
+      <div class="login-hint">
+        Same account you use in the Hirae extension — nothing to sign up for here.
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>
