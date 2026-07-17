@@ -92,7 +92,7 @@ async function init() {
     sentinelEl.classList.add('hidden');
     return;
   }
-  document.title = `“${q}” — Hirae Memories`;
+  document.title = `“${q}” — Herae Memories`;
 
   loadUsers();
   loadMovies();

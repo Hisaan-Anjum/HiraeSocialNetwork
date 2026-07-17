@@ -138,7 +138,7 @@ async function runContactAction(action, btn) {
 async function loadProfile() {
   const profile = await getUserProfile(target);
   state.profile = profile;
-  document.title = `${profile.username} — Hirae Memories`;
+  document.title = `${profile.username} — Herae Memories`;
   document.getElementById('brandSub').textContent = `${profile.username}'s profile`;
   renderHeader(profile);
 }
@@ -209,7 +209,7 @@ async function loadMore(isFirstPage = false) {
     if (isFirstPage && !grouped.length) {
       const isMe = state.profile?.isMe;
       contentEl.innerHTML = renderEmptyState('🎞️', isMe
-        ? "You haven't captured anything yet — start a watch session from the Hirae extension."
+        ? "You haven't captured anything yet — start a watch session from the Herae extension."
         : `Nothing from ${escapeHtml(target)} is visible to you yet.`);
       sentinelEl.classList.add('hidden');
       return;

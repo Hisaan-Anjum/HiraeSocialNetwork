@@ -79,7 +79,7 @@ async function load() {
       ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
       : null,
   };
-  document.title = `${sessionDisplayTitle(session)} — Hirae Memories`;
+  document.title = `${sessionDisplayTitle(session)} — Herae Memories`;
   registerSessionForPanel(session);
   contentEl.innerHTML = renderSessionCard(session);
 }

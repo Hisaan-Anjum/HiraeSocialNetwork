@@ -1,7 +1,7 @@
 {
-  "name": "hirae-moments-site",
+  "name": "herae-moments-site",
   "version": "1.0.0",
-  "description": "Hirae social front-end (feed, sessions, reviews, recommendations)",
+  "description": "Herae social front-end (feed, sessions, reviews, recommendations)",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",

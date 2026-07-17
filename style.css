@@ -1215,7 +1215,7 @@ html { scroll-behavior: smooth; }
 .feed-card-head .feed-card-people .user-link { position: relative; z-index: 2; }
 .feed-card-head:hover .feed-card-title-inline { text-decoration: underline; text-decoration-color: rgba(196,181,253,0.6); }
 
-/* ── Hirae video player (mediaViewer) ── */
+/* ── Herae video player (mediaViewer) ── */
 .mv-video-wrap {
   position: relative; max-width: 100%; max-height: 100%;
   display: flex; align-items: center; justify-content: center;

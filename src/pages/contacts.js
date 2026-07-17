@@ -169,7 +169,7 @@ function renderList() {
   if (!allContacts.length) {
     contentEl.innerHTML = currentQuery.trim()
       ? renderEmptyState('🔍', `No contacts match “${escapeHtml(currentQuery.trim())}”.`)
-      : renderEmptyState('👥', 'No contacts yet — add someone by username above, or from the Hirae extension.');
+      : renderEmptyState('👥', 'No contacts yet — add someone by username above, or from the Herae extension.');
     return;
   }
 

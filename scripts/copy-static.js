@@ -40,7 +40,7 @@ const FILES = [
   // <link href="style.css"> keeps resolving — the Vite-processed pages
   // additionally get their own hashed copy automatically as a build asset.
   'style.css',
-  // The Hirae mark — the extension's own icon, so the site and the
+  // The Herae mark — the extension's own icon, so the site and the
   // extension are visibly one product. Referenced by a plain, unhashed
   // <img src="logo.png"> from every page's brand lockup (including the
   // ones Vite doesn't process, like index.html), so it's copied through

@@ -29,9 +29,19 @@
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .hero-sub { font-size: 16.5px; line-height: 1.75; color: var(--ink-dim); margin-bottom: 34px; }
-.hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+.hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
 .hero-cta { font-size: 15.5px; padding: 14px 30px; }
 .hero-note { font-size: 12.5px; color: var(--ink-faint); }
+
+/* Honest trust signals under the hero CTA (no fake numbers/testimonials) */
+.hero-trust {
+  list-style: none; display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px 26px; font-size: 13px; color: var(--ink-dim);
+}
+.hero-trust li { display: flex; align-items: center; gap: 8px; }
+.hero-trust li::before {
+  content: "✓"; color: var(--gold); font-weight: 800; font-size: 12px;
+}
 
 /* ── Section heading shared look ────────────────────────────────────── */
 .section-heading {
@@ -87,8 +97,25 @@
 .visual-card-b { transform: translateX(20px) rotate(1.2deg); }
 .visual-card-c { transform: translateX(-6px) rotate(-0.6deg); }
 
-/* ── Memories feature grid (reused pattern, now a mid-page section) ──── */
-.memories { max-width: 1100px; margin: 60px auto 0; padding: 20px 24px 40px; }
+/* ── Herae Moments (emotional climax) ───────────────────────────────── */
+.memories {
+  max-width: 1100px; margin: 76px auto 0; padding: 48px 24px 56px;
+  background: radial-gradient(ellipse 760px 460px at 50% 20%, rgba(139,92,246,0.13), transparent 62%);
+}
+.moments-eyebrow {
+  text-align: center; font-size: 12px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 14px;
+}
+.moments-tagline {
+  text-align: center; font-family: Georgia, 'Times New Roman', serif;
+  font-size: 19px; font-style: italic; margin: -18px auto 36px; max-width: 560px;
+  background: linear-gradient(140deg, #f5b942 0%, #8b5cf6 70%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.moments-outro {
+  text-align: center; font-size: 14.5px; line-height: 1.75; color: var(--ink-dim);
+  max-width: 640px; margin: 34px auto 0;
+}
 .features {
   max-width: 1000px; margin: 0 auto; padding: 0;
   display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px;
@@ -121,8 +148,16 @@
   text-align: center; padding: 30px 24px 54px;
   color: var(--ink-faint); font-size: 12.5px;
 }
-.footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 12px; }
+.footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 12px; }
 .footer-links a { color: var(--ink-dim); font-size: 13px; }
+.footer-social { margin-top: 10px; }
+.footer-social a {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--ink-dim); font-size: 13px; font-weight: 600;
+  transition: color 0.15s ease;
+}
+.footer-social a:hover { color: var(--ink); text-decoration: none; }
+.footer-ig-icon { font-size: 14px; }
 
 /* ── Scroll-reveal (tasteful, respects reduced-motion) ─────────────────
    .reveal elements are fully visible by default — only body.reveal-ready
@@ -154,7 +189,7 @@ body.reveal-ready .reveal.reveal-visible { opacity: 1; transform: translateY(0);
   .cta-section h2 { font-size: 22px; }
 }
 
-/* ── Logo-led branding (the mark replaces the old "💜 Hirae" text) ────
+/* ── Logo-led branding (the mark replaces the old "💜 Herae" text) ────
    .brand-link / .brand-logo / .brand-wordmark themselves live in style.css,
    which this page already loads — shared with every app page so the lockup
    is identical everywhere. Only this page's own larger hero treatment is
@@ -183,4 +218,98 @@ body.reveal-ready .reveal.reveal-visible { opacity: 1; transform: translateY(0);
 @media (max-width: 640px) {
   .hero-logo { width: 84px; height: 84px; border-radius: 24px; }
   .hero-logo-wrap { margin-bottom: 18px; }
+}
+
+/* ── Problem (emotional hook) ───────────────────────────────────────── */
+.problem { max-width: 760px; margin: 70px auto 0; padding: 0 24px; text-align: center; }
+.problem-turn {
+  font-size: 20px; font-weight: 700; margin-top: 20px;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: linear-gradient(140deg, #f5b942 0%, #8b5cf6 70%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ── Why Herae vs screen sharing ────────────────────────────────────── */
+.compare { max-width: 940px; margin: 72px auto 0; padding: 0 24px; }
+.compare-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 34px;
+}
+.compare-col {
+  border: 1px solid var(--border); border-radius: 18px; padding: 26px 26px 28px;
+}
+.compare-old { background: rgba(255,255,255,0.02); opacity: 0.9; }
+.compare-new {
+  background: linear-gradient(175deg, rgba(139,92,246,0.12), rgba(245,185,66,0.06));
+  border-color: rgba(139,92,246,0.4);
+  box-shadow: 0 16px 44px rgba(0,0,0,0.35);
+}
+.compare-tag {
+  display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 5px 14px; border-radius: 20px;
+  background: rgba(255,255,255,0.06); color: var(--ink-dim); margin-bottom: 18px;
+}
+.compare-tag-gold {
+  background: linear-gradient(140deg, var(--gold), var(--gold-deep)); color: #241505;
+}
+.compare-col ul { list-style: none; display: flex; flex-direction: column; gap: 13px; }
+.compare-col li { font-size: 14.5px; line-height: 1.55; display: flex; gap: 11px; align-items: flex-start; }
+.compare-old li { color: var(--ink-dim); }
+.compare-old li::before { content: "✕"; color: #b4526a; font-weight: 800; flex-shrink: 0; }
+.compare-new li { color: var(--ink); }
+.compare-new li::before { content: "✓"; color: var(--gold); font-weight: 800; flex-shrink: 0; }
+
+/* ── Who it's for ───────────────────────────────────────────────────── */
+.usecases { max-width: 1100px; margin: 76px auto 0; padding: 0 24px; }
+.usecase-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px;
+  margin-top: 34px;
+}
+.usecase-card {
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.usecase-card:hover { transform: translateY(-4px); border-color: rgba(139,92,246,0.4); box-shadow: 0 16px 40px rgba(0,0,0,0.35); }
+.usecase-hero {
+  border-color: rgba(139,92,246,0.45);
+  background: linear-gradient(175deg, rgba(139,92,246,0.14), var(--bg-1));
+}
+.usecase-emoji { font-size: 30px; margin-bottom: 14px; }
+.usecase-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+.usecase-desc { font-size: 13.5px; line-height: 1.65; color: var(--ink-dim); }
+
+/* ── Feature highlights section wrapper ─────────────────────────────── */
+.features-section { max-width: 1100px; margin: 76px auto 0; padding: 0 24px; }
+.features-section .section-heading { margin-bottom: 34px; }
+
+/* ── FAQ ────────────────────────────────────────────────────────────── */
+.faq { max-width: 760px; margin: 80px auto 0; padding: 0 24px; }
+.faq-list { margin-top: 30px; display: flex; flex-direction: column; gap: 12px; }
+.faq-item {
+  border: 1px solid var(--border); border-radius: 14px;
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  padding: 4px 22px;
+}
+.faq-item summary {
+  cursor: pointer; list-style: none; font-size: 15.5px; font-weight: 700;
+  padding: 18px 0; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+"; font-size: 22px; font-weight: 400; color: var(--gold);
+  transition: transform 0.2s ease; flex-shrink: 0;
+}
+.faq-item[open] summary::after { transform: rotate(45deg); }
+.faq-item p {
+  font-size: 14px; line-height: 1.7; color: var(--ink-dim);
+  padding: 0 0 20px; margin: 0;
+}
+
+/* ── Final CTA extra copy ───────────────────────────────────────────── */
+.cta-sub { font-size: 15px; color: var(--ink-dim); margin: -12px auto 26px; max-width: 460px; }
+
+/* ── Responsive for new sections ────────────────────────────────────── */
+@media (max-width: 720px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .problem-turn { font-size: 18px; }
 }

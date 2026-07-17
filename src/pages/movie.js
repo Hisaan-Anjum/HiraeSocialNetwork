@@ -57,7 +57,7 @@ async function load() {
   }
   try {
     const { recommendation: rec, similar } = await getRecommendationById(id);
-    document.title = `${rec.title} — Hirae Memories`;
+    document.title = `${rec.title} — Herae Memories`;
     const bg = rec.backdropUrl || rec.posterUrl;
     const galleryItems = rec.gallery.map((url) => `
       <div class="carousel-item"><img src="${url}" alt="${escapeHtml(rec.title)} gallery image" class="movie-gallery-img" loading="lazy"></div>

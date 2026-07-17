@@ -1,5 +1,5 @@
 // api.js — shared auth/session + fetch helpers for every page on this site.
-// Logs into the SAME server (and the same account) as the Hirae extension —
+// Logs into the SAME server (and the same account) as the Herae extension —
 // there's no separate signup/auth system here at all.
 'use strict';
 
@@ -65,7 +65,7 @@ function logout() {
 // classic script, before anything else), so the breadcrumb is dropped no
 // matter which page you're leaving. Read via cameFromThisSite() below —
 // see src/lib/util.js's initBackLinks.
-const NAV_PREV_KEY = 'hirae_prev_page';
+const NAV_PREV_KEY = 'herae_prev_page';
 let navCameFrom = null;
 try {
   const prev = sessionStorage.getItem(NAV_PREV_KEY);

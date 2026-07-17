@@ -289,7 +289,7 @@ function fmtTime(s) {
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 }
 
-// The Hirae player: a custom control bar over the plain HTML5 <video> —
+// The Herae player: a custom control bar over the plain HTML5 <video> —
 // playback itself is untouched, this only replaces the browser chrome.
 // `durationMsHint`: MediaRecorder's webm files often report duration as
 // Infinity until the whole file has been scanned, so the moment's own
