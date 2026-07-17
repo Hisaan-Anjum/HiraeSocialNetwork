@@ -1,5 +1,10 @@
-// login.js — login.html only.
+// login.js — login.html only. style.css stays a plain root-level stylesheet
+// (see vite.config.js's comment) referenced via a normal <link> tag in
+// login.html, not imported here — every page, old and new, shares that one
+// file rather than each Vite entry bundling its own CSS copy.
 'use strict';
+
+const { getAuth, getSavedServerUrl, login } = window;
 
 const serverUrlEl = document.getElementById('serverUrl');
 const usernameEl = document.getElementById('username');
@@ -8,7 +13,7 @@ const loginForm = document.getElementById('loginForm');
 const loginBtn = document.getElementById('loginBtn');
 const errorText = document.getElementById('errorText');
 
-// Already logged in? Skip straight to the gallery.
+// Already logged in? Skip straight to the feed.
 if (getAuth()) {
   window.location.href = 'memories.html';
 }

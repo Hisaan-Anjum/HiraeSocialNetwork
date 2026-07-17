@@ -5,14 +5,15 @@
 <meta name="hirae-memories-site" content="1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hirae Memories — Post</title>
+<link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="topbar">
-    <div>
-      <div class="brand">💜 Hirae Memories</div>
-      <div class="brand-sub">One moment</div>
-    </div>
+    <a class="brand-link" href="memories.html" aria-label="Hirae Memories — home">
+      <img src="logo.png" alt="Hirae" class="brand-logo">
+      <span class="brand-sub">One moment</span>
+    </a>
     <nav class="nav-links">
       <a href="memories.html" class="nav-link">Feed</a>
       <a href="contacts.html" class="nav-link">Contacts</a>
@@ -24,7 +25,7 @@
   </div>
 
   <div class="page-wrap" style="max-width:640px">
-    <a class="btn btn-ghost" href="memories.html" style="margin-bottom:18px;display:inline-flex">← Back to feed</a>
+    <a class="btn btn-ghost" data-back href="memories.html" style="margin-bottom:18px;display:inline-flex">← Back</a>
     <div id="content">
       <div class="spinner-text">Loading…</div>
     </div>
@@ -32,7 +33,6 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
-  <script src="postcard.js"></script>
-  <script src="post.js"></script>
+  <script type="module" src="/src/pages/post.js"></script>
 </body>
 </html>

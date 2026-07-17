@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="hirae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hirae Memories — Search</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="topbar">
+    <a class="brand-link" href="memories.html" aria-label="Hirae Memories — home">
+      <img src="logo.png" alt="Hirae" class="brand-logo">
+      <span class="brand-sub">Search</span>
+    </a>
+    <nav class="nav-links">
+      <a href="memories.html" class="nav-link">Feed</a>
+      <a href="contacts.html" class="nav-link">Contacts</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="who" id="whoAmI"></span>
+      <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <div class="page-wrap" style="max-width:760px">
+    <form id="searchForm" class="search-page-bar">
+      <input type="search" id="searchInput" placeholder="Search people, sessions, reviews, moments, movies…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div id="results">
+      <section class="search-group" id="group-users" hidden>
+        <h2 class="search-group-title">People <span class="pill-count" data-count></span></h2>
+        <div class="contacts-list" data-items></div>
+        <button class="btn btn-ghost btn-sm search-more-users" hidden>Show more people</button>
+      </section>
+      <section class="search-group" id="group-sessions" hidden>
+        <h2 class="search-group-title">Sessions <span class="pill-count" data-count></span></h2>
+        <div class="feed-list" data-items></div>
+      </section>
+      <section class="search-group" id="group-reviews" hidden>
+        <h2 class="search-group-title">Reviews <span class="pill-count" data-count></span></h2>
+        <div data-items></div>
+      </section>
+      <section class="search-group" id="group-moments" hidden>
+        <h2 class="search-group-title">Moments <span class="pill-count" data-count></span></h2>
+        <div class="search-moments-grid" data-items></div>
+      </section>
+      <section class="search-group" id="group-movies" hidden>
+        <h2 class="search-group-title">Movies <span class="pill-count" data-count></span></h2>
+        <div class="feed-list" data-items></div>
+      </section>
+      <div id="searchEmpty" hidden></div>
+    </div>
+    <div id="scrollSentinel" class="scroll-sentinel"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script type="module" src="/src/pages/searchResults.js"></script>
+</body>
+</html>

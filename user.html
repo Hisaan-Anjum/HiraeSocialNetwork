@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="hirae-memories-site" content="1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hirae Memories — Review</title>
+<title>Hirae Memories — Profile</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -12,26 +12,31 @@
   <div class="topbar">
     <a class="brand-link" href="memories.html" aria-label="Hirae Memories — home">
       <img src="logo.png" alt="Hirae" class="brand-logo">
-      <span class="brand-sub">How was it?</span>
+      <span class="brand-sub" id="brandSub">Profile</span>
     </a>
     <nav class="nav-links">
       <a href="memories.html" class="nav-link">Feed</a>
       <a href="contacts.html" class="nav-link">Contacts</a>
     </nav>
     <div class="topbar-right">
+      <button class="btn btn-ghost" id="searchTrigger" aria-label="Search">🔍 Search</button>
       <span class="who" id="whoAmI"></span>
-      <a class="btn btn-ghost" href="memories.html">← All memories</a>
+      <button class="btn btn-ghost" id="logoutBtn">Log out</button>
     </div>
   </div>
 
-  <div class="page-wrap" style="max-width:640px">
-    <div id="content">
-      <div class="spinner-text">Loading this session…</div>
+  <div id="profileHeader"></div>
+
+  <div class="page-wrap">
+    <a class="btn btn-ghost" data-back href="contacts.html" style="margin-bottom:18px;display:inline-flex">← Back</a>
+    <div id="content" class="feed-list">
+      <div class="spinner-text">Loading…</div>
     </div>
+    <div id="scrollSentinel" class="scroll-sentinel"></div>
   </div>
 
   <script src="config.js"></script>
   <script src="api.js"></script>
-  <script type="module" src="/src/pages/review.js"></script>
+  <script type="module" src="/src/pages/user.js"></script>
 </body>
 </html>

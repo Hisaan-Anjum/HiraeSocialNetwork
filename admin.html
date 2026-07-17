@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="hirae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recommendations Admin — Hirae</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <div class="brand">💜 Hirae Admin</div>
+      <div class="brand-sub">Manage "watch together" recommendations</div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">Site</a>
+      <a href="memories.html" class="nav-link">Memories</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="who" id="whoAmI"></span>
+      <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <div class="page-wrap admin-wrap" id="gate">
+    <div class="spinner-text">Checking admin access…</div>
+  </div>
+
+  <!-- Everything below stays hidden until the /admin/recommendations check succeeds. -->
+  <div class="page-wrap admin-wrap hidden" id="adminApp">
+    <div class="admin-header">
+      <div>
+        <div class="page-title">Recommendations</div>
+        <div class="page-sub">Drag rows to reorder how they appear in the app. Changes save immediately.</div>
+      </div>
+      <button class="btn btn-gold" id="btnNew">+ New recommendation</button>
+    </div>
+
+    <div id="tableWrap">
+      <div class="spinner-text">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ── Create / edit modal ─────────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="formModalBackdrop">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div class="modal-title" id="formModalTitle">New recommendation</div>
+        <button class="modal-close" id="formModalClose" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="recForm">
+          <div class="form-grid">
+            <div class="field field-span2">
+              <label for="fTitle">Title *</label>
+              <input type="text" id="fTitle" maxlength="200" required placeholder="e.g. Spirited Away">
+            </div>
+            <div class="field field-span2">
+              <label for="fDescription">Description</label>
+              <textarea id="fDescription" maxlength="2000" placeholder="A short pitch for why to watch this together…"></textarea>
+            </div>
+            <div class="field field-span2">
+              <label for="fGenres">Genres</label>
+              <input type="text" id="fGenres" placeholder="comma-separated — e.g. Animation, Fantasy, Family">
+            </div>
+            <div class="field">
+              <label for="fYear">Release year</label>
+              <input type="number" id="fYear" min="1870" max="2100" placeholder="2001">
+            </div>
+            <div class="field">
+              <label for="fRuntime">Runtime (minutes)</label>
+              <input type="number" id="fRuntime" min="1" max="1200" placeholder="125">
+            </div>
+            <div class="field">
+              <label for="fRating">Rating (0–10)</label>
+              <input type="number" id="fRating" min="0" max="10" step="0.1" placeholder="8.5">
+            </div>
+            <div class="field field-toggle">
+              <label for="fFeatured">Featured hero slot</label>
+              <label class="switch">
+                <input type="checkbox" id="fFeatured">
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="artwork-section">
+            <div class="section-title">Artwork</div>
+            <div class="artwork-grid">
+              <div class="artwork-picker" data-kind="poster">
+                <label class="artwork-label">Poster</label>
+                <div class="artwork-preview artwork-preview-poster" id="previewPoster">
+                  <span class="artwork-placeholder">No poster</span>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="filePoster">
+              </div>
+              <div class="artwork-picker" data-kind="backdrop">
+                <label class="artwork-label">Backdrop</label>
+                <div class="artwork-preview artwork-preview-backdrop" id="previewBackdrop">
+                  <span class="artwork-placeholder">No backdrop</span>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="fileBackdrop">
+              </div>
+              <div class="artwork-picker artwork-picker-gallery" data-kind="gallery">
+                <label class="artwork-label">Gallery (max 8)</label>
+                <div class="artwork-gallery-preview" id="previewGallery"></div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="fileGallery" multiple>
+              </div>
+            </div>
+            <div class="artwork-hint" id="artworkHint"></div>
+          </div>
+
+          <div class="error-text" id="formError"></div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="formCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="formSubmit">Save recommendation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete confirmation ──────────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="deleteModalBackdrop">
+    <div class="modal modal-narrow">
+      <div class="modal-header">
+        <div class="modal-title">Delete recommendation?</div>
+        <button class="modal-close" id="deleteModalClose" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-warning">
+          This permanently deletes <strong id="deleteTitle"></strong> and its artwork.
+          This can't be undone.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="deleteCancel">Cancel</button>
+          <button type="button" class="btn btn-danger" id="deleteConfirm">Delete permanently</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

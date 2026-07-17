@@ -1,0 +1,16 @@
+{
+  "name": "hirae-moments-site",
+  "version": "1.0.0",
+  "description": "Hirae social front-end (feed, sessions, reviews, recommendations)",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build && node scripts/copy-static.js",
+    "preview": "vite preview"
+  },
+  "type": "module",
+  "private": "true",
+  "devDependencies": {
+    "vite": "^5.4.21"
+  }
+}

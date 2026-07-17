@@ -4,59 +4,139 @@
 <meta charset="UTF-8">
 <meta name="hirae-memories-site" content="1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hirae Memories — Keep every moment you shared</title>
+<meta name="description" content="Hirae syncs video, chat, and calls across any site so you can watch absolutely anything together — perfect for long-distance couples and friend groups.">
+<title>Hirae — Watch absolutely anything, together</title>
+<link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="landing.css">
 </head>
 <body>
   <div class="hero-topbar">
-    <div class="brand">💜 Hirae Memories</div>
-    <a href="login.html" class="btn btn-ghost">Log In</a>
+    <a class="brand-link" href="index.html" aria-label="Hirae — home">
+      <img src="logo.png" alt="" class="brand-logo">
+      <span class="brand-wordmark">Hirae</span>
+    </a>
+    <nav class="topnav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#together">Why Hirae</a>
+      <a href="#memories">Memories</a>
+    </nav>
+    <div class="topbar-ctas">
+      <a href="login.html" class="btn btn-ghost">Log In</a>
+      <a href="https://github.com/Hisaan-Anjum/HiraeBrowserExtension" class="btn btn-gold" target="_blank" rel="noopener">Get Hirae</a>
+    </div>
   </div>
 
   <section class="hero">
-    <div class="hero-icon">🎬💜🎞️</div>
-    <h1 class="hero-title">Every watch-together night,<br>kept somewhere pretty.</h1>
+    <div class="hero-logo-wrap">
+      <img src="logo.png" alt="Hirae" class="hero-logo" width="112" height="112">
+    </div>
+    <div class="hero-badge">For couples and friends who don't live in the same room</div>
+    <h1 class="hero-title">Watch absolutely anything, together —<br>no matter the distance.</h1>
     <p class="hero-sub">
-      Hirae syncs your video, calls, and chat across any site — this is where the moments
-      from those nights actually stick around. Snap a cute collage mid-session, write a review
-      when the credits roll, and build a little shared archive with the people you watch with.
+      Hirae syncs video playback, scrolling, and browsing across <strong>any site</strong> — including
+      cross-origin embeds most sync tools can't touch — then puts chat, push-to-talk, and audio/video
+      calls right alongside it. Same show, same moment, same feeling of being in the same room.
     </p>
     <div class="hero-actions">
-      <a href="login.html" class="btn btn-gold hero-cta">Log In →</a>
+      <a href="https://github.com/Hisaan-Anjum/HiraeBrowserExtension" class="btn btn-gold hero-cta" target="_blank" rel="noopener">Get Hirae — free →</a>
+      <a href="login.html" class="btn btn-ghost hero-cta">Already have it? Log in</a>
     </div>
-    <div class="hero-note">Uses the same account as the Hirae browser extension — nothing new to sign up for.</div>
+    <div class="hero-note">Chrome extension. Peer-to-peer once connected — your video and chat never pass through a server.</div>
   </section>
 
-  <section class="features">
-    <div class="feature-card">
-      <div class="feature-icon">📸</div>
-      <div class="feature-title">Capture the moment</div>
-      <div class="feature-desc">One click during a session composites everyone's camera and the screen you're watching into a themed collage — polaroid, cozy grid, filmstrip, couple, or family.</div>
+  <section class="how-it-works" id="how-it-works">
+    <h2 class="section-heading">No complicated setup. Three steps.</h2>
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-number">1</div>
+        <div class="step-title">Install Hirae</div>
+        <div class="step-desc">Load the extension in Chrome, then sign up or log in right from the popup — nothing else to configure.</div>
+      </div>
+      <div class="step-card reveal">
+        <div class="step-number">2</div>
+        <div class="step-title">Open anything, together</div>
+        <div class="step-desc">Pull up the same page — a streaming site, a video embed, anything with a &lt;video&gt; tag — and play/pause/seek/scroll stay in sync automatically on both sides.</div>
+      </div>
+      <div class="step-card reveal">
+        <div class="step-number">3</div>
+        <div class="step-title">Talk while you watch</div>
+        <div class="step-desc">Text chat, push-to-talk, or a full audio/video call, layered right over whatever you're watching. Connect automatically once you're both online, or the zero-setup manual way — your call.</div>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">✍️</div>
-      <div class="feature-title">Write a review together</div>
-      <div class="feature-desc">When the session wraps, leave your take on what you just watched — both sides' reviews sit side by side on the same memory.</div>
+  </section>
+
+  <section class="together" id="together">
+    <div class="together-copy reveal">
+      <h2 class="section-heading">Built for the distance, not around it.</h2>
+      <p class="section-sub">
+        Long-distance takes the small, ordinary things and makes them a whole coordination
+        problem — even just watching something at the same time. Hirae exists so "come watch this
+        with me" doesn't need a screen-share workaround or a third-party watch-party site that only
+        works on one streaming service. It works wherever the video already is.
+      </p>
+      <ul class="together-list">
+        <li><span class="together-icon">🎬</span> Any site, any streaming service, any embed — sync doesn't care where the video lives.</li>
+        <li><span class="together-icon">💬</span> Chat and calls layered directly over the page, so you're never tabbing away from each other.</li>
+        <li><span class="together-icon">🔒</span> Peer-to-peer by design — once connected, your video and audio never touch a server.</li>
+      </ul>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">💜</div>
-      <div class="feature-title">Like, comment, relive</div>
-      <div class="feature-desc">Every moment and every review can be liked and commented on — a running, low-key feed of your shared history, not just a folder of photos.</div>
+    <div class="together-visual reveal" aria-hidden="true">
+      <div class="visual-card visual-card-a">▶️ In sync</div>
+      <div class="visual-card visual-card-b">💬 Chatting</div>
+      <div class="visual-card visual-card-c">📹 On a call</div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔒</div>
-      <div class="feature-title">Your rules on who sees it</div>
-      <div class="feature-desc">Set each moment to just the two of you, your contacts, or public — like a status update, decided at the moment you save it, changeable any time after.</div>
+  </section>
+
+  <section class="memories" id="memories">
+    <h2 class="section-heading">And the moments stick around.</h2>
+    <p class="section-sub section-sub-center">
+      Hirae Memories is the shared archive for everything you watch together — no extra
+      sign-up, same account as the extension.
+    </p>
+    <div class="features">
+      <div class="feature-card reveal">
+        <div class="feature-icon">📸</div>
+        <div class="feature-title">Capture the moment</div>
+        <div class="feature-desc">One click during a session composites both cameras and the screen you're watching into a themed collage — polaroid, cozy grid, filmstrip, couple, or family.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">✍️</div>
+        <div class="feature-title">Write a review together</div>
+        <div class="feature-desc">When the credits roll, leave your take on what you just watched — both sides' reviews sit side by side on the same memory.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">💜</div>
+        <div class="feature-title">Like, comment, relive</div>
+        <div class="feature-desc">Every moment and review can be liked and commented on — a running, low-key feed of your shared history, not just a folder of photos.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Your rules on who sees it</div>
+        <div class="feature-desc">Set each moment to just the two of you, your contacts, or public — decided the moment you save it, changeable any time after.</div>
+      </div>
     </div>
   </section>
 
   <section class="cta-section">
-    <h2>Your memories are waiting.</h2>
-    <a href="login.html" class="btn btn-primary hero-cta">Log In to see them</a>
+    <h2>Ready to close the distance?</h2>
+    <div class="cta-actions">
+      <a href="https://github.com/Hisaan-Anjum/HiraeBrowserExtension" class="btn btn-primary hero-cta" target="_blank" rel="noopener">Get Hirae — free</a>
+      <a href="login.html" class="btn btn-ghost hero-cta">Log In</a>
+    </div>
   </section>
 
-  <footer class="landing-footer">Hirae Memories — a companion to the Hirae watch-together extension.</footer>
+  <footer class="landing-footer">
+    <a class="footer-brand" href="index.html" aria-label="Hirae — home">
+      <img src="logo.png" alt="" class="footer-logo" width="34" height="34">
+    </a>
+    <div class="footer-links">
+      <a href="https://github.com/Hisaan-Anjum/HiraeBrowserExtension" target="_blank" rel="noopener">GitHub</a>
+      <a href="memories.html">Memories</a>
+      <a href="login.html">Log In</a>
+    </div>
+    <div>Hirae — watch, chat, and call in sync, on any site.</div>
+  </footer>
 
   <script src="config.js"></script>
   <script src="api.js"></script>

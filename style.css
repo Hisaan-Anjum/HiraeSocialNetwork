@@ -335,3 +335,940 @@ a:hover { text-decoration: underline; }
   text-align: center; color: var(--ink-faint); font-size: 13px;
   font-style: italic; padding: 18px 0 26px;
 }
+
+.login-back {
+  display: block; text-align: center; margin-bottom: 18px;
+  color: var(--ink-faint); font-size: 13px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Premium feed redesign — session cards, review posts, recommendations,
+   the featured hero, media tiles (photo + inline video), carousels,
+   skeletons, search overlay, and the movie detail page. Same palette as
+   everything above: purple + gold on the dark base, Georgia headings.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.feed-header-row {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.feed-header-row .page-title, .feed-header-row .page-sub { margin-bottom: 0; }
+.feed-header-row .page-sub { margin-top: 6px; }
+.feed-list { display: flex; flex-direction: column; gap: 24px; max-width: 640px; margin: 0 auto; }
+.scroll-sentinel {
+  text-align: center; color: var(--ink-faint); font-size: 13px;
+  padding: 28px 0 8px;
+}
+.scroll-sentinel.hidden { display: none; }
+
+.feed-scope-tab, .feed-tab {
+  padding: 9px 18px; border-radius: 24px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04); color: var(--ink-dim);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s ease;
+}
+.feed-scope-tab:hover, .feed-tab:hover { background: rgba(255,255,255,0.08); }
+.feed-scope-tab-active, .feed-tab-active {
+  background: linear-gradient(140deg, var(--purple), var(--purple-deep));
+  color: #fff; border-color: transparent;
+}
+
+/* ── Generic feed card shell (session/review posts + recommendations) ── */
+.feed-card {
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 20px;
+  overflow: hidden; padding: 18px 20px 20px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+  animation: feed-card-in 0.35s ease-out;
+}
+@keyframes feed-card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.feed-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.feed-card-avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(140deg, var(--gold), var(--purple));
+  color: #1c1408; font-weight: 800; font-size: 15px;
+}
+.feed-card-headtext { flex: 1; min-width: 0; }
+.feed-card-people { font-weight: 700; font-size: 14px; }
+.feed-card-sub { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+.feed-card-title-inline { color: var(--gold); font-weight: 600; }
+.session-avg-rating { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.session-avg-num { font-size: 12px; color: var(--ink-faint); }
+
+/* ── Session / review cards ── */
+.session-carousel-wrap { margin-bottom: 12px; }
+.session-reviews { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+.session-review {
+  background: rgba(139,92,246,0.07); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 14px;
+}
+.session-review-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.session-review-author { font-weight: 700; color: var(--purple); font-size: 13.5px; }
+.session-review-date { font-size: 11px; color: var(--ink-faint); margin-left: auto; }
+.session-review-text { font-size: 13.5px; line-height: 1.55; color: var(--ink-dim); margin-bottom: 4px; }
+.session-no-review {
+  font-size: 12.5px; color: var(--ink-faint); font-style: italic;
+  padding: 8px 2px 2px;
+}
+
+/* ── Star ratings ── */
+.star-rating { color: var(--gold); letter-spacing: 1px; }
+.star-rating-sm { font-size: 12px; }
+.star-rating-md { font-size: 15px; }
+.star-picker { display: flex; gap: 4px; }
+.star-picker-btn {
+  background: none; border: none; font-size: 26px; line-height: 1; cursor: pointer;
+  color: rgba(255,255,255,0.16); transition: color 0.12s ease, transform 0.1s ease;
+  padding: 2px;
+}
+.star-picker-btn:hover { transform: scale(1.12); }
+.star-picker-btn-active { color: var(--gold); }
+
+/* ── Media tiles (photo + video moments) ──
+   A tile is now a wrapper element with the media inside it (it used to be a
+   bare <img> for photos), so photos and videos size and round identically
+   and both can carry an overlay. Every tile opens the fullscreen media
+   viewer on click — nothing plays inside a tile any more. */
+.media-tile {
+  position: relative; display: block; width: 100%;
+  border-radius: inherit; overflow: hidden; cursor: zoom-in;
+  background: #000; border: none; padding: 0;
+}
+.media-tile-video { cursor: pointer; }
+.media-tile:focus-visible { outline: 2px solid var(--purple); outline-offset: 3px; }
+.media-tile-img, .media-tile-poster {
+  width: 100%; height: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.media-tile:hover .media-tile-img, .media-tile:hover .media-tile-poster { transform: scale(1.03); }
+.media-tile-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 58px; height: 58px; border-radius: 50%; border: none;
+  background: rgba(13,11,18,0.55); color: #fff; font-size: 20px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  backdrop-filter: blur(4px); box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  transition: transform 0.18s ease, background 0.18s ease;
+  pointer-events: none; /* the whole tile is the hit target */
+}
+.media-tile:hover .media-tile-play { transform: translate(-50%, -50%) scale(1.1); background: rgba(139,92,246,0.8); }
+.media-tile-duration {
+  position: absolute; bottom: 8px; right: 8px; font-size: 11px; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px; background: rgba(13,11,18,0.7); color: #fff;
+}
+.moment-card-media { width: 100%; }
+.moment-card .media-tile { border-radius: 0; }
+.post-detail-media { border-radius: 18px; overflow: hidden; box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+.review-strip-media { width: 160px; border-radius: 12px; flex-shrink: 0; }
+.review-strip-media .media-tile-img,
+.review-strip-media .media-tile-poster { aspect-ratio: 3/4; height: 160px; width: 160px; }
+
+/* ── Carousel: strip mode (movie gallery) — unchanged ── */
+.carousel { position: relative; }
+.carousel:not(.carousel-3d) .carousel-track {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+}
+.carousel:not(.carousel-3d) .carousel-item { scroll-snap-align: start; }
+.carousel-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+  background: rgba(13,11,18,0.75); color: #fff; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s ease;
+}
+.carousel:hover .carousel-arrow { opacity: 1; }
+.carousel-arrow-prev { left: -4px; }
+.carousel-arrow-next { right: -4px; }
+
+/* ── Carousel: 3D coverflow (a session's moments) ──
+   Items are absolutely stacked in one perspective scene and placed purely
+   by transform (see carousel.js's layout()) — no scroll container, so the
+   focused moment can be shown large and centred with its neighbours angled
+   away behind it. */
+.carousel-3d { padding: 4px 0 0; }
+.carousel-3d:focus { outline: none; }
+.carousel-3d:focus-visible { outline: 2px solid var(--purple); outline-offset: 6px; border-radius: 18px; }
+.carousel-3d .carousel-stage {
+  position: relative;
+  height: 420px;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+}
+.carousel-3d .carousel-track {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  /* The track's own box sits at Z=0 and spans the whole stage, while every
+     neighbour is pushed BACK (translateZ) — so in this 3D scene the track
+     is literally in front of them and swallowed their clicks, leaving only
+     the focused slide reachable. It's a transparent container with nothing
+     to click, so it opts out of hit-testing entirely; the items opt back in
+     (carousel.js sets pointer-events per item). */
+  pointer-events: none;
+}
+.carousel-3d .carousel-item {
+  position: absolute; top: 0; left: 50%; width: 300px; height: 100%;
+  margin-left: -150px;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.45s ease;
+  cursor: pointer;
+}
+.carousel-3d .carousel-item.is-active { cursor: default; }
+@media (prefers-reduced-motion: reduce) {
+  .carousel-3d .carousel-item { transition: none; }
+}
+.session-carousel-media {
+  border-radius: 18px;
+  box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.carousel-3d .carousel-item .session-carousel-media { height: 380px; }
+.session-carousel-media .media-tile-img,
+.session-carousel-media .media-tile-poster { aspect-ratio: auto; height: 380px; }
+/* Neighbours are scenery: dimmed and un-clickable through to their media,
+   so a click on one means "bring it forward" (carousel.js), never "open". */
+.carousel-3d .carousel-item:not(.is-active) .session-carousel-media { cursor: pointer; }
+.carousel-3d .carousel-item:not(.is-active) .media-tile-play { opacity: 0; }
+.carousel-3d .carousel-item:not(.is-active) .carousel-item-bar { opacity: 0; pointer-events: none; }
+
+.carousel-item-bar {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  display: flex; align-items: center; gap: 4px;
+  transition: opacity 0.3s ease;
+}
+.carousel-item-bar .post-menu-btn,
+.carousel-item-open {
+  background: rgba(13,11,18,0.66); backdrop-filter: blur(6px);
+  border-radius: 9px; color: var(--ink); text-decoration: none;
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; line-height: 1; padding: 0;
+}
+.carousel-item-open:hover { text-decoration: none; background: rgba(139,92,246,0.7); color: #fff; }
+.carousel-item-caption {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  padding: 26px 14px 12px;
+  background: linear-gradient(to top, rgba(13,11,18,0.92), transparent);
+  border-radius: 0 0 18px 18px;
+  pointer-events: none;
+}
+/* The slot itself must always exist — the inline caption editor mounts into
+   it — but an uncaptioned moment shouldn't show an empty gradient strip.
+   :empty can't do this (the slot always holds whitespace), so key off what's
+   actually inside: a caption, or the editor while you're writing one. */
+.carousel-item-caption:not(:has(.moment-description)):not(:has(.inline-editor)) { display: none; }
+.carousel-item-caption .moment-description { font-size: 13px; margin: 0; }
+/* The inline caption editor inside a slide has to be interactive again. */
+.carousel-item-caption .inline-editor { pointer-events: auto; }
+
+.carousel-3d .carousel-arrow {
+  width: 40px; height: 40px; font-size: 20px; opacity: 0.85; z-index: 200;
+  top: 50%; background: rgba(13,11,18,0.8);
+  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+.carousel-3d:hover .carousel-arrow { opacity: 1; }
+.carousel-3d .carousel-arrow:hover:not(:disabled) { background: rgba(139,92,246,0.8); transform: translateY(-50%) scale(1.08); }
+.carousel-3d .carousel-arrow:disabled { opacity: 0; pointer-events: none; }
+.carousel-3d .carousel-arrow-prev { left: 6px; }
+.carousel-3d .carousel-arrow-next { right: 6px; }
+
+.carousel-dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
+.carousel-dot {
+  width: 7px; height: 7px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+  background: rgba(255,255,255,0.22);
+  transition: background 0.2s ease, width 0.25s ease;
+}
+.carousel-dot.is-active { background: var(--purple); width: 20px; border-radius: 4px; }
+
+@media (max-width: 640px) {
+  .carousel-3d .carousel-stage { height: 340px; }
+  .carousel-3d .carousel-item { width: 220px; margin-left: -110px; }
+  .carousel-3d .carousel-item .session-carousel-media { height: 306px; }
+  .session-carousel-media .media-tile-img,
+  .session-carousel-media .media-tile-poster { height: 306px; }
+}
+
+/* ── Fullscreen media viewer ── */
+.mv-overlay {
+  position: fixed; inset: 0; z-index: 3000;
+  display: flex; flex-direction: column;
+  background: rgba(6, 5, 10, 0.94);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  animation: mv-fade-in 0.2s ease;
+}
+@keyframes mv-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .mv-overlay { animation: none; } }
+.mv-overlay:fullscreen { background: #05040a; }
+.mv-topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 18px; flex-shrink: 0;
+}
+.mv-caption {
+  font-size: 13px; color: var(--ink-dim); min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mv-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.mv-btn {
+  width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.06);
+  color: var(--ink); font-size: 15px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.mv-btn:hover { background: rgba(139,92,246,0.35); transform: translateY(-1px); }
+.mv-btn-close:hover { background: rgba(248,113,113,0.35); }
+.mv-zoom-level {
+  font-size: 12px; color: var(--ink-dim); min-width: 46px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mv-stage {
+  flex: 1; min-height: 0; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding: 0 18px 8px;
+}
+.mv-image {
+  max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+  border-radius: 8px; box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+  transform-origin: center center;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: zoom-in; touch-action: none; user-select: none; -webkit-user-drag: none;
+}
+.mv-image.mv-zoomed { cursor: grab; transition: none; }
+.mv-image.mv-zoomed:active { cursor: grabbing; }
+.mv-video {
+  max-width: 100%; max-height: 100%; display: block;
+  border-radius: 10px; background: #000;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+}
+.mv-hint {
+  text-align: center; font-size: 11.5px; color: var(--ink-faint);
+  padding: 8px 18px 14px; flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .mv-hint { display: none; }
+  .mv-stage { padding: 0 8px 8px; }
+  .mv-topbar { padding: 10px 12px; }
+}
+
+
+/* ── Recommendation cards + featured hero ── */
+.recommendation-card { padding: 0; }
+.recommendation-card-link { color: inherit; text-decoration: none; display: block; }
+.recommendation-card-link:hover { text-decoration: none; }
+.recommendation-card-art {
+  aspect-ratio: 16/8; background-size: cover; background-position: center top;
+  background-color: rgba(139,92,246,0.12); position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.recommendation-card-placeholder { font-size: 34px; opacity: 0.5; }
+.recommendation-card-flag {
+  position: absolute; top: 12px; left: 12px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 20px;
+  background: rgba(13,11,18,0.6); color: var(--gold); border: 1px solid rgba(245,185,66,0.35);
+}
+.recommendation-card-body { padding: 16px 20px 20px; }
+.recommendation-card-title { font-size: 17px; margin-bottom: 4px; }
+.recommendation-card-meta { font-size: 12px; color: var(--ink-faint); margin-bottom: 8px; }
+.recommendation-card-desc { font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; margin-bottom: 8px; }
+.recommendation-card-rating { color: var(--gold); font-weight: 700; font-size: 13px; }
+
+.hero-card {
+  display: block; position: relative; border-radius: 22px; overflow: hidden;
+  min-height: 320px; background-size: cover; background-position: center;
+  background-color: var(--card); padding: 28px 30px; margin-bottom: 30px;
+  color: var(--ink); text-decoration: none;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.hero-card:hover { text-decoration: none; }
+.hero-card-badge {
+  align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; padding: 5px 12px; border-radius: 20px; margin-bottom: 12px;
+  background: rgba(245,185,66,0.16); color: var(--gold); border: 1px solid rgba(245,185,66,0.35);
+}
+.hero-card-title { font-size: 32px; margin-bottom: 8px; max-width: 560px; }
+.hero-card-meta { font-size: 13px; color: var(--ink-dim); margin-bottom: 10px; }
+.hero-card-desc {
+  font-size: 14px; line-height: 1.6; color: var(--ink-dim); max-width: 520px;
+  margin-bottom: 18px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.hero-card-cta { align-self: flex-start; }
+
+/* ── Skeletons ── */
+.skeleton-card {
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 20px; padding: 18px 20px 20px;
+}
+.skeleton-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.skeleton-avatar, .skeleton-line, .skeleton-media {
+  background: linear-gradient(100deg, rgba(255,255,255,0.05) 20%, rgba(255,255,255,0.12) 40%, rgba(255,255,255,0.05) 60%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+.skeleton-line { height: 11px; width: 100%; }
+.skeleton-line-short { width: 60%; }
+.skeleton-line-shorter { width: 38%; }
+.skeleton-media { height: 200px; border-radius: 14px; margin-bottom: 12px; }
+@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Search overlay ── */
+.search-overlay {
+  position: fixed; inset: 0; background: rgba(5,4,8,0.72);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 10vh 20px 20px; z-index: 900;
+}
+.search-overlay.hidden { display: none; }
+.search-panel {
+  width: 560px; max-width: 100%;
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 20px; padding: 18px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+  max-height: 70vh; display: flex; flex-direction: column;
+}
+.search-input-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.search-input {
+  flex: 1; padding: 12px 16px; border-radius: 12px;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.05);
+  color: var(--ink); font-size: 15px; outline: none;
+}
+.search-input:focus { border-color: var(--purple); }
+.search-results { overflow-y: auto; }
+.search-section { margin-bottom: 16px; }
+.search-section:last-child { margin-bottom: 0; }
+.search-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-faint); margin-bottom: 8px;
+}
+.search-result {
+  display: block; padding: 10px 12px; border-radius: 12px;
+  color: var(--ink); text-decoration: none; transition: background 0.15s ease;
+}
+.search-result:hover { background: rgba(255,255,255,0.06); text-decoration: none; }
+a.search-result.contact-row { display: flex; padding: 8px 10px; border: none; background: none; }
+.search-result-title { font-weight: 700; font-size: 13.5px; }
+.search-result-sub { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+.search-hint { color: var(--ink-faint); font-size: 13px; padding: 20px 6px; text-align: center; }
+
+/* ── Movie detail page ── */
+.movie-hero {
+  background-size: cover; background-position: center;
+  background-color: var(--card); padding: 60px 24px 32px;
+}
+.movie-hero-inner {
+  max-width: 1080px; margin: 0 auto; display: flex; align-items: flex-end; gap: 26px;
+}
+.movie-poster {
+  width: 180px; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+  flex-shrink: 0; background: #000;
+}
+.movie-hero-info { padding-bottom: 6px; }
+.movie-title { font-size: 34px; margin-bottom: 8px; }
+.movie-meta { font-size: 14px; color: var(--ink-dim); margin-bottom: 8px; }
+.movie-rating { color: var(--gold); font-weight: 700; }
+.movie-body { padding-top: 30px; max-width: 1080px; }
+.movie-description { font-size: 15px; line-height: 1.7; color: var(--ink-dim); margin-bottom: 30px; max-width: 720px; }
+.movie-gallery-title, .movie-similar-title { font-size: 18px; margin-bottom: 14px; }
+.movie-gallery-carousel { margin-bottom: 34px; }
+.movie-gallery-img { height: 220px; border-radius: 14px; display: block; }
+.movie-similar-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px;
+}
+.movie-similar-card { color: inherit; text-decoration: none; }
+.movie-similar-card:hover { text-decoration: none; }
+.movie-similar-art {
+  aspect-ratio: 2/3; border-radius: 12px; background-size: cover; background-position: center;
+  background-color: rgba(139,92,246,0.12); margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s ease; box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+}
+.movie-similar-card:hover .movie-similar-art { transform: translateY(-4px); }
+.movie-similar-name { font-size: 13px; font-weight: 600; }
+
+.review-content-banner {
+  max-width: 640px; margin: 0 auto 18px; font-size: 14px; font-weight: 700;
+  color: var(--ink-dim); text-align: center;
+}
+.review-moment-strip-item { flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Brand lockup, profile pictures, profile pages, contact management, and
+   the inline edit/delete controls. Same palette and Georgia headings as
+   everything above — these are additions to the existing design, not a
+   restyle of it.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Brand lockup (the logo, everywhere it appears) ── */
+.brand-link {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: inherit;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.brand-link:hover { text-decoration: none; transform: translateY(-1px); filter: brightness(1.08); }
+.brand-link:active { transform: scale(0.98); }
+.brand-logo {
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.32);
+}
+.brand-link .brand-sub { margin-top: 0; }
+.brand-wordmark {
+  font-family: Georgia, 'Times New Roman', serif; font-weight: 700;
+  font-size: 21px; letter-spacing: 0.01em;
+  background: linear-gradient(140deg, #f5b942, #8b5cf6);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+.login-logo {
+  width: 72px; height: 72px; border-radius: 20px; display: block; margin: 0 auto 16px;
+  box-shadow: 0 12px 34px rgba(139, 92, 246, 0.4);
+}
+
+/* ── Avatars ──
+   One circle, four sizes. The initial sits underneath the <img> so a
+   loading/failed picture shows the same letter a no-picture account gets,
+   never an empty hole. */
+.avatar {
+  position: relative; flex-shrink: 0; overflow: hidden;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(140deg, var(--gold), var(--purple));
+  color: #1c1408; font-weight: 800;
+  line-height: 1; user-select: none;
+}
+.avatar-initial { position: relative; z-index: 0; }
+.avatar-img {
+  position: absolute; inset: 0; z-index: 1;
+  width: 100%; height: 100%; object-fit: cover;
+  background: var(--bg-2);
+}
+.avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+.avatar-md { width: 44px; height: 44px; font-size: 16px; }
+.avatar-lg { width: 72px; height: 72px; font-size: 26px; }
+.avatar-xl { width: 128px; height: 128px; font-size: 46px; }
+.avatar-link { display: inline-flex; text-decoration: none; }
+.avatar-link:hover { text-decoration: none; }
+.avatar-link:hover .avatar { filter: brightness(1.08); }
+
+/* Overlapping faces for a multi-person session card. */
+.avatar-stack { display: flex; flex-shrink: 0; }
+.avatar-stack .avatar-link + .avatar-link { margin-left: -14px; }
+.avatar-stack .avatar { border: 2px solid var(--card); }
+.avatar-stack .avatar-link:hover { z-index: 2; }
+
+/* ── Clickable usernames ── */
+.user-link {
+  color: inherit; text-decoration: none; font-weight: inherit;
+  border-bottom: 1px solid transparent;
+  transition: color 0.14s ease, border-color 0.14s ease;
+}
+.user-link:hover {
+  text-decoration: none; color: #c4b5fd;
+  border-bottom-color: rgba(196, 181, 253, 0.5);
+}
+
+/* ── Profile page header ── */
+.profile-header {
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse 700px 260px at 20% 0%, rgba(139, 92, 246, 0.18), transparent 70%),
+    radial-gradient(ellipse 500px 240px at 90% 10%, rgba(245, 185, 66, 0.09), transparent 65%);
+}
+.profile-header-inner {
+  max-width: 1080px; margin: 0 auto; padding: 40px 24px 34px;
+  display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+}
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar {
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+  border: 3px solid rgba(255, 255, 255, 0.1);
+}
+.profile-headtext { flex: 1; min-width: 220px; }
+.profile-name { font-size: 34px; margin-bottom: 8px; word-break: break-word; }
+.profile-meta {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  font-size: 13px; color: var(--ink-faint); margin-bottom: 16px;
+}
+.profile-presence { font-weight: 700; }
+.profile-presence.is-online { color: #6ee7b7; }
+.profile-stats { display: flex; gap: 26px; flex-wrap: wrap; }
+.profile-stat { font-size: 13px; color: var(--ink-faint); }
+.profile-stat-num {
+  display: block; font-size: 20px; font-weight: 800; color: var(--ink);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.profile-contact-note { margin-top: 14px; font-size: 13px; color: var(--ink-dim); }
+.profile-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.profile-you-badge {
+  font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 20px;
+  background: rgba(139, 92, 246, 0.14); color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* ── Avatar upload control (your own profile) ── */
+/* z-index must clear .avatar-img's own z-index: 1 — both are positioned
+   children of the same (non-stacking) .profile-avatar-wrap, so without this
+   the picture paints on top of the edit button and eats its clicks. Which
+   means it broke for exactly the people who HAVE a picture, i.e. everyone
+   trying to replace or remove one. */
+.avatar-controls { position: absolute; right: 0; bottom: 0; z-index: 3; }
+.avatar-edit-btn {
+  width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--bg-0);
+  background: linear-gradient(150deg, var(--purple), var(--purple-deep));
+  color: #fff; font-size: 15px; line-height: 1;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+.avatar-edit-btn:hover { transform: scale(1.08); filter: brightness(1.1); }
+.avatar-edit-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+.avatar-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 20;
+  min-width: 186px; padding: 6px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+.avatar-menu-item, .post-menu-item {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 9px 12px; border-radius: 8px; border: none;
+  background: none; color: var(--ink); font-size: 13px; font-weight: 600;
+  white-space: nowrap;
+}
+.avatar-menu-item:hover, .post-menu-item:hover { background: rgba(255, 255, 255, 0.07); }
+.avatar-menu-item-danger, .post-menu-item-danger { color: #fca5a5; }
+/* Any class that sets `display` silently beats the [hidden] attribute's UA
+   `display: none` — which left the upload spinner below permanently
+   overlaying (and swallowing every click on) the avatar edit button. The
+   toggled-by-`hidden` elements here (this overlay, the avatar menu, the ⋯
+   post menu) all rely on the attribute, so make it win outright. */
+[hidden] { display: none !important; }
+
+.avatar-uploading {
+  position: absolute; inset: auto 0 0 auto; width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: rgba(13, 11, 18, 0.8);
+}
+.avatar-spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25); border-top-color: var(--purple);
+  animation: avatar-spin 0.7s linear infinite;
+}
+@keyframes avatar-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .avatar-spinner { animation-duration: 2s; } }
+
+/* ── Contacts page ── */
+.page-wrap-narrow { max-width: 640px; }
+.section-title {
+  font-size: 14px; font-weight: 700; color: var(--ink-dim);
+  display: flex; align-items: center; gap: 8px;
+}
+.pill-count {
+  font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px;
+  background: rgba(139, 92, 246, 0.18); color: #c4b5fd;
+}
+.add-contact-card {
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 18px; margin-bottom: 26px;
+}
+.add-contact-row { display: flex; gap: 10px; margin-top: 12px; }
+.add-contact-row input {
+  flex: 1; min-width: 0;
+  padding: 11px 14px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+  color: var(--ink); font-size: 14px; font-family: inherit;
+}
+.add-contact-row input:focus {
+  outline: none; border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+}
+.add-contact-msg { font-size: 12.5px; margin-top: 10px; min-height: 16px; color: var(--ink-faint); }
+.add-contact-msg.is-ok { color: #6ee7b7; }
+.add-contact-msg.is-error { color: #fca5a5; }
+
+.requests-section { margin-bottom: 26px; }
+.requests-section .section-title { margin-bottom: 12px; }
+.contacts-list-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.contacts-search {
+  width: 220px; padding: 9px 13px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+  color: var(--ink); font-size: 13px; font-family: inherit;
+}
+.contacts-search:focus {
+  outline: none; border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+}
+.contact-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.btn-sm { padding: 7px 13px; font-size: 12.5px; border-radius: 10px; }
+.search-result-contact { padding: 0; border: none; background: none; }
+.search-result-contact .contact-row { padding: 8px 10px; }
+
+/* ── The ⋯ post menu (edit / delete) ── */
+.post-menu { position: relative; margin-left: auto; flex-shrink: 0; }
+.post-menu-btn {
+  border: none; background: none; cursor: pointer;
+  color: var(--ink-faint); font-size: 18px; line-height: 1;
+  padding: 2px 8px; border-radius: 8px;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.post-menu-btn:hover { background: rgba(255, 255, 255, 0.07); color: var(--ink); }
+.post-menu-list {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  min-width: 150px; padding: 6px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Inline editors (caption, review, comment) ── */
+.inline-editor { display: flex; flex-direction: column; gap: 8px; margin: 6px 0; }
+.inline-edit-text {
+  width: 100%; min-height: 68px; resize: vertical;
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+  color: var(--ink); font-size: 13.5px; font-family: inherit; line-height: 1.6;
+}
+.inline-edit-text:focus {
+  outline: none; border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+}
+.inline-editor-actions { display: flex; gap: 8px; }
+.btn-inline {
+  padding: 6px 12px; border-radius: 9px; border: none; cursor: pointer;
+  font-size: 12px; font-weight: 700; font-family: inherit;
+  background: linear-gradient(150deg, var(--purple), var(--purple-deep)); color: #fff;
+  transition: filter 0.14s ease;
+}
+.btn-inline:hover { filter: brightness(1.1); }
+.btn-inline:disabled { opacity: 0.55; cursor: default; }
+.btn-inline-ghost {
+  background: rgba(255, 255, 255, 0.06); color: var(--ink-dim);
+  border: 1px solid var(--border);
+}
+.btn-inline-danger {
+  background: rgba(248, 113, 113, 0.14); color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+.review-own-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.review-head-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.review-body { margin-bottom: 8px; }
+.review-rating-slot:empty { display: none; }
+.review-text-slot { font-size: 14px; line-height: 1.65; color: var(--ink); }
+.review-edit-stars { margin-bottom: 8px; }
+
+/* ── Comment lines (avatar + author + actions) ── */
+.comment-line {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 6px 0;
+}
+.comment-body { flex: 1; min-width: 0; font-size: 13px; line-height: 1.6; word-break: break-word; }
+.comment-actions { display: flex; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.14s ease; }
+.comment-line:hover .comment-actions, .comment-line:focus-within .comment-actions { opacity: 1; }
+.icon-btn {
+  border: none; background: none; cursor: pointer;
+  font-size: 11px; line-height: 1; padding: 4px 5px; border-radius: 7px;
+  transition: background 0.14s ease;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.icon-btn:disabled { opacity: 0.5; cursor: default; }
+.comment-edit-input {
+  width: 100%; padding: 7px 10px; border-radius: 9px; margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+  color: var(--ink); font-size: 13px; font-family: inherit;
+}
+.comment-edit-input:focus {
+  outline: none; border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+}
+
+/* ── Smooth scrolling, matched across the site's paginated lists ── */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+@media (max-width: 640px) {
+  .profile-header-inner { padding: 28px 18px 24px; gap: 18px; }
+  .profile-name { font-size: 26px; }
+  .avatar-xl { width: 96px; height: 96px; font-size: 34px; }
+  .contacts-search { width: 100%; }
+  .add-contact-row { flex-direction: column; }
+}
+
+/* A contacts row that carries action buttons is a <div>, not an <a> (see
+   contactRow.js) — but it still navigates to the profile on click, so it
+   must still look and feel like it does. */
+.contact-row[data-username] { cursor: pointer; }
+.contact-row[data-username] button { cursor: pointer; }
+
+/* The topbar is a three-column row (brand · nav · account controls) with no
+   wrap, so on a phone it pushed past the viewport and scrolled the whole
+   page sideways — verified at 390px on the feed. The new profile page's
+   topbar inherits the same layout, so this fixes it everywhere at once:
+   let the row wrap and drop the nav onto its own full-width line. */
+@media (max-width: 720px) {
+  .topbar { flex-wrap: wrap; gap: 10px 12px; padding: 14px 16px; }
+  .nav-links { order: 3; width: 100%; justify-content: center; }
+  .nav-links .nav-link { flex: 1; text-align: center; }
+  .topbar-right { margin-left: auto; gap: 8px; }
+  /* "logged in as <name>" is the first thing worth dropping for room — the
+     account is a tap away on the profile page, and Log out stays put. */
+  .topbar-right .who { display: none; }
+}
+
+/* The name participants gave a session, shown above what was watched. */
+.review-session-title-banner {
+  text-align: center; font-family: Georgia, 'Times New Roman', serif;
+  font-size: 24px; font-weight: 700; margin-bottom: 6px;
+  background: linear-gradient(140deg, #f5b942, #8b5cf6);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.feed-card-watched { font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; }
+
+/* ── Media viewer: side panel layout (session page) ──
+   .mv-main wraps the topbar/stage/hint column; a .mv-panel sibling (moved
+   in by the caller — see mediaViewer.js) sits to its right with the
+   moment's comments, likes, caption and the session's reviews. */
+.mv-overlay { flex-direction: row; }
+.mv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.mv-panel {
+  width: 400px; flex-shrink: 0; overflow-y: auto;
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border-left: 1px solid var(--border);
+  padding: 18px;
+}
+.mvp-head {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; margin-bottom: 10px;
+}
+.mvp-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.mvp-duration { font-size: 11px; color: var(--ink-faint); font-weight: 700; }
+.mv-panel .moment-description-slot { margin-bottom: 6px; }
+.mvp-section-title {
+  font-size: 12px; font-weight: 700; color: var(--ink-dim);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin: 18px 0 10px;
+}
+.mvp-review {
+  background: rgba(139,92,246,0.07); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+}
+@media (max-width: 860px) {
+  .mv-overlay.has-panel { flex-direction: column; }
+  .mv-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); max-height: 46vh; }
+}
+
+/* ── Search results page ── */
+.search-page-bar { display: flex; gap: 10px; margin-bottom: 30px; }
+.search-page-bar input {
+  flex: 1; min-width: 0; padding: 13px 16px; border-radius: 12px;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+  color: var(--ink); font-size: 15px; font-family: inherit; outline: none;
+}
+.search-page-bar input:focus {
+  border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+}
+.search-group { margin-bottom: 36px; }
+.search-group-title {
+  font-size: 18px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.search-more-users { margin-top: 10px; }
+.search-review-row {
+  display: block; color: inherit; text-decoration: none;
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 14px 16px; margin-bottom: 10px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.search-review-row:hover { text-decoration: none; transform: translateY(-2px); border-color: rgba(139,92,246,0.45); }
+.search-review-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.search-review-text { font-size: 13.5px; line-height: 1.6; color: var(--ink-dim); }
+.search-review-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 8px; }
+.search-moments-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px;
+}
+.search-moment .search-moment-media { border-radius: 12px; }
+.search-moment-link {
+  display: block; font-size: 12px; margin-top: 6px; color: var(--ink-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Clicking a card opens its session ──
+   A stretched link fills the card head (z:1); the people/avatar links sit
+   above it (z:2), so a click on a name still goes to the profile while a
+   click anywhere else on the head opens the session. */
+.feed-card-head { position: relative; }
+.feed-card-open { position: absolute; inset: 0; z-index: 1; border-radius: 12px; }
+.feed-card-head .avatar-stack,
+.feed-card-head .session-avg-rating,
+.feed-card-head .feed-card-people .user-link { position: relative; z-index: 2; }
+.feed-card-head:hover .feed-card-title-inline { text-decoration: underline; text-decoration-color: rgba(196,181,253,0.6); }
+
+/* ── Hirae video player (mediaViewer) ── */
+.mv-video-wrap {
+  position: relative; max-width: 100%; max-height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+}
+.mv-video { border-radius: 0; box-shadow: none; cursor: pointer; }
+.mv-vc {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 14px 10px;
+  background: linear-gradient(to top, rgba(5,4,10,0.88), transparent);
+  opacity: 0; transition: opacity 0.2s ease;
+}
+.mv-video-wrap:hover .mv-vc,
+.mv-video-wrap.is-paused .mv-vc,
+.mv-vc:focus-within { opacity: 1; }
+.mv-vc-btn {
+  border: none; background: none; color: #fff; cursor: pointer;
+  font-size: 16px; line-height: 1; padding: 6px 7px; border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.mv-vc-btn:hover { background: rgba(139,92,246,0.4); }
+.mv-vc-time {
+  font-size: 11.5px; color: rgba(255,255,255,0.85);
+  font-variant-numeric: tabular-nums; flex-shrink: 0;
+}
+.mv-vc-seek { flex: 1; min-width: 0; accent-color: var(--purple); cursor: pointer; height: 4px; }
+.mv-vc-vol { width: 72px; flex-shrink: 0; accent-color: var(--purple); cursor: pointer; height: 4px; }
+
+/* ── Media-only fullscreen ── */
+.mv-image:fullscreen { object-fit: contain; background: #05040a; border-radius: 0; }
+.mv-video-wrap:fullscreen {
+  background: #000; border-radius: 0; max-width: none; max-height: none;
+}
+.mv-video-wrap:fullscreen .mv-video {
+  width: 100%; height: 100%; max-width: 100vw; max-height: 100vh; object-fit: contain;
+}
+
+/* Session link atop the viewer's side panel */
+.mvp-session-line { margin-bottom: 12px; font-size: 13px; font-weight: 700; }
+
+@media (max-width: 640px) {
+  .mv-vc { gap: 6px; padding: 14px 8px 8px; }
+  .mv-vc-vol { display: none; }
+}
+
+/* The signed-in user's profile panel atop the feed — the profile page's
+   header, framed as a card instead of a full-bleed banner. */
+.profile-header-feed {
+  border: 1px solid var(--border); border-radius: 20px;
+  margin-bottom: 28px; overflow: hidden;
+}
+.profile-header-feed .profile-header-inner { padding: 22px 24px; gap: 20px; }
+.profile-name-feed { font-size: 24px; margin-bottom: 4px; }
+.profile-name-feed .user-link { border-bottom: none; }
