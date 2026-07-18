@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set a new password — Herae</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <a href="login.html" class="login-back">← Back to login</a>
+      <img src="logo.png" alt="Herae" class="login-logo">
+      <div class="login-title">Set a new password</div>
+      <div class="login-sub">Choose something at least 8 characters long.</div>
+
+      <form id="resetForm">
+        <div class="field">
+          <label for="password">New password</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm new password</label>
+          <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="width:100%">Change password</button>
+        <div class="error-text" id="errorText"></div>
+      </form>
+
+      <div class="login-hint" id="successHint" style="display:none">
+        Your password has been changed and you've been signed out everywhere.
+        <a href="login.html">Log in with your new password →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // The token arrives in the URL (?token=…) from the reset email link. It's
+    // single-use and short-lived; the server re-validates it, so a tampered or
+    // expired token just yields a clean error here.
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+
+    const form = document.getElementById('resetForm');
+    const btn = document.getElementById('submitBtn');
+    const errorText = document.getElementById('errorText');
+    const successHint = document.getElementById('successHint');
+
+    if (!token) {
+      form.style.display = 'none';
+      errorText.textContent = 'This link is missing its reset token. Request a new one from the login page.';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorText.textContent = '';
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+      if (password !== confirm) { errorText.textContent = 'The two passwords don\'t match.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/password/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, password }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+        form.style.display = 'none';
+        successHint.style.display = 'block';
+      } catch (err) {
+        errorText.textContent = err.message;
+        btn.disabled = false;
+        btn.textContent = 'Change password';
+      }
+    });
+  </script>
+</body>
+</html>

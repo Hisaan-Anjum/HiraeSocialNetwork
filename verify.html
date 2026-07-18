@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirm your email — Herae</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <img src="logo.png" alt="Herae" class="login-logo">
+      <div class="login-title" id="title">Confirming your email…</div>
+      <div class="login-sub" id="message">One moment.</div>
+      <div class="login-hint" id="cta" style="display:none">
+        <a href="login.html">Continue to Herae →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Verifies as soon as the page loads, using the token from the email link.
+    // Verification is soft — nothing is gated on it — so even a failure here
+    // (expired/used link) is not a dead end: the user can just keep using
+    // Herae and re-send from their account if they want.
+    const token = new URLSearchParams(location.search).get('token') || '';
+    const title = document.getElementById('title');
+    const message = document.getElementById('message');
+    const cta = document.getElementById('cta');
+
+    (async () => {
+      if (!token) {
+        title.textContent = 'Link incomplete';
+        message.textContent = 'This confirmation link is missing its token.';
+        cta.style.display = 'block';
+        return;
+      }
+      try {
+        const res = await fetch('/api/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Could not confirm your email.');
+        title.textContent = 'Email confirmed 💜';
+        message.textContent = 'Thanks — your email is verified.';
+      } catch (err) {
+        title.textContent = 'Couldn\'t confirm your email';
+        message.textContent = err.message + ' You can still use Herae and try again from your account.';
+      } finally {
+        cta.style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>

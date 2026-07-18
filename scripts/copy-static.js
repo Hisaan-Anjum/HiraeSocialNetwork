@@ -36,6 +36,14 @@ const FILES = [
   'admin.css',
   'config.js',
   'api.js',
+  // Auth flows that live outside login: password reset (request + set) and
+  // email confirmation. Plain self-contained pages (their own inline scripts,
+  // no bundled module) so they work whether the site is served by the Node
+  // server in production or Vite's dev server locally — copied through verbatim
+  // like the other passthrough pages above.
+  'forgot.html',
+  'reset.html',
+  'verify.html',
   // Also copied unhashed to dist root so index.html/admin.html's plain
   // <link href="style.css"> keeps resolving — the Vite-processed pages
   // additionally get their own hashed copy automatically as a build asset.

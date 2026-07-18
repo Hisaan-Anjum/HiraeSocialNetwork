@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reset your password — Herae</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <a href="login.html" class="login-back">← Back to login</a>
+      <img src="logo.png" alt="Herae" class="login-logo">
+      <div class="login-title">Forgot your password?</div>
+      <div class="login-sub">Enter your email and we'll send you a reset link.</div>
+
+      <form id="forgotForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="width:100%">Send reset link</button>
+        <div class="error-text" id="errorText"></div>
+      </form>
+
+      <div class="login-hint" id="successHint" style="display:none">
+        If an account exists for that email, a reset link is on its way. Check your inbox
+        (and spam) — the link expires in an hour.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Plain page, no bundler: served same-origin as the API in production, and
+    // proxied through Vite's dev server locally — so a relative /api path works
+    // in both. Deliberately shows the SAME success message whether or not the
+    // email is registered (the server does too), so this page can't be used to
+    // discover which emails have accounts.
+    const form = document.getElementById('forgotForm');
+    const btn = document.getElementById('submitBtn');
+    const errorText = document.getElementById('errorText');
+    const successHint = document.getElementById('successHint');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorText.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        const res = await fetch('/api/password/forgot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: document.getElementById('email').value.trim() }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+        form.style.display = 'none';
+        successHint.style.display = 'block';
+      } catch (err) {
+        errorText.textContent = err.message;
+        btn.disabled = false;
+        btn.textContent = 'Send reset link';
+      }
+    });
+  </script>
+</body>
+</html>
