@@ -224,6 +224,21 @@
       charts.push(['active', d.series.active, cSky]);
       charts.push(['moments', d.series.moments, cPink]);
 
+      // ── Watch time (time couples spend together) ──
+      const wt = d.watch || {};
+      const cAmber = getColor('--c-amber');
+      out.push(`<div class="an-section-title">Watch time · time together</div>
+        <div class="an-grid cols-4">
+          ${kpi('Total watch time', `${fmt(wt.total_hours)}<span style="font-size:15px"> h</span>`, `${fmt(wt.sessions_ended)} sessions ended`, true)}
+          ${kpi('Avg session', `${fmt(wt.avg_session_min)}<span style="font-size:15px"> min</span>`, 'mean length')}
+          ${kpi('Median session', `${fmt(wt.median_session_min)}<span style="font-size:15px"> min</span>`, 'typical length')}
+          ${kpi('Sessions ended', fmt(wt.sessions_ended), 'measured to completion')}
+        </div>
+        <div class="an-grid" style="grid-template-columns:1fr;margin-top:14px">
+          <div class="card chart-card"><h3>Watch minutes per day</h3><div class="chart-total">last 30 days</div>${areaChart('watch', d.series.watch_minutes, cAmber)}</div>
+        </div>`);
+      charts.push(['watch', d.series.watch_minutes, cAmber]);
+
       // ── Activation funnel ──
       const fSteps = [
         ['Signed up', a.accounts], ['Invited a partner', a.invited_a_partner],
@@ -256,6 +271,29 @@
             <div class="stat-line"><span class="sl-label">💬 Comments</span><span class="sl-value">${fmt(h.comments)}</span></div>
             <div class="stat-line"><span class="sl-label">📤 Shares</span><span class="sl-value">${fmt(h.shares)}</span></div>
             <div class="stat-line"><span class="sl-label">✨ Recaps generated</span><span class="sl-value">${fmt(h.recaps_generated)}</span></div>
+          </div>
+        </div>`);
+
+      // ── Are they coming back? (returning users + engagement depth) ──
+      const rr = d.returning || {};
+      const ad = rr.active_days || {};
+      const adMax = Math.max(1, ...Object.values(ad));
+      out.push(`<div class="an-section-title">Are they coming back?</div>
+        <div class="an-grid cols-4">
+          ${kpi('Returning this week', fmt(rr.returning_active_7d), `${fmt(rr.new_active_7d)} new this week`, true)}
+          ${kpi('Week-over-week', pct(rr.wow_retention_pct), `${fmt(rr.prior_week_active)} came back of last week's`)}
+          ${kpi('Survived week 1', pct(rr.survived_week1_pct), `of ${fmt(rr.week1_cohort)} past their 1st week`)}
+          ${kpi('Watch / active user', `${fmt((d.watch || {}).per_active_user_min)}<span style="font-size:15px"> min</span>`, 'per monthly-active user')}
+        </div>
+        <div class="an-grid cols-2" style="margin-top:14px">
+          <div class="card"><h3 style="font-size:14px;margin-bottom:12px">Engagement depth · distinct active days per user</h3>
+            ${['1 day', '2–3 days', '4–7 days', '8+ days'].map((b, i) =>
+              barRow(b, ad[b] || 0, adMax, ['var(--c-pink)', 'var(--c-amber)', 'var(--c-sky)', 'var(--c-purple)'][i])).join('')}
+          </div>
+          <div class="card"><h3 style="font-size:14px;margin-bottom:12px">This week's active users</h3>
+            ${barRow('🔁 Returning', rr.returning_active_7d, Math.max(1, rr.returning_active_7d + rr.new_active_7d), 'var(--c-purple)')}
+            ${barRow('✨ New', rr.new_active_7d, Math.max(1, rr.returning_active_7d + rr.new_active_7d), 'var(--c-sky)')}
+            <div class="stat-line" style="margin-top:8px"><span class="sl-label">Returning share</span><span class="sl-value">${pct(rr.returning_active_7d + rr.new_active_7d > 0 ? Math.round((rr.returning_active_7d / (rr.returning_active_7d + rr.new_active_7d)) * 1000) / 10 : 0)}</span></div>
           </div>
         </div>`);
 
