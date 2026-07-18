@@ -34,6 +34,9 @@ const FILES = [
   'admin.html',
   'admin.js',
   'admin.css',
+  // The admin analytics dashboard — a self-contained page (inline styles + a
+  // classic script hitting GET /api/admin/analytics), admin-gated server-side.
+  'analytics.html',
   'config.js',
   'api.js',
   // Auth flows that live outside login: password reset (request + set) and

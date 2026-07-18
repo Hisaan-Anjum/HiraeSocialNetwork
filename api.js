@@ -354,6 +354,24 @@ function getRecommendationById(id) {
   return apiRequest(`/api/recommendations/${id}`);
 }
 
+// The full analytics rollup for the admin dashboard (analytics.html). 403s for
+// a non-admin token (server/src/account.js gates it on is_admin).
+function getAnalytics() {
+  return apiRequest('/api/admin/analytics');
+}
+
+// Reports a client-only event (a share hand-off, a recap render) to the
+// first-party analytics log. Fire-and-forget: analytics must never affect the
+// action it measures, so this swallows every error and returns nothing.
+function trackEvent(name, props = {}) {
+  try {
+    apiRequest('/api/analytics/event', {
+      method: 'POST',
+      body: JSON.stringify({ name, props }),
+    }).catch(() => {});
+  } catch (e) { /* never throws into the caller */ }
+}
+
 function getAdminRecommendations() {
   return apiRequest('/api/admin/recommendations');
 }

@@ -14,7 +14,7 @@
 
 import { escapeHtml } from '../lib/util.js';
 
-const { mediaUrl, momentPublicUrl } = window;
+const { mediaUrl, momentPublicUrl, trackEvent } = window;
 
 let openSheet = null;
 
@@ -218,24 +218,28 @@ export function openShareSheet(moment) {
   // image (Instagram's does not).
   async function shareToPlatform(name, home, { linkComposer = null, pasteable = false } = {}) {
     setStatus('Opening your share options…');
+    const track = (method) => trackEvent && trackEvent('moment_shared', { platform: name.toLowerCase(), method });
 
     const r = await shareFileToApp(caption);
-    if (r === 'shared') { setStatus(`Shared — open ${name}, then edit and post your draft ✓`, 'ok'); return; }
+    if (r === 'shared') { track('web-share'); setStatus(`Shared — open ${name}, then edit and post your draft ✓`, 'ok'); return; }
     if (r === 'aborted') { setStatus(''); return; }
 
     if (pasteable && !isVideo && await copyImageToClipboard()) {
+      track('clipboard');
       window.open(home, '_blank', 'noopener');
       setStatus(`Image copied ✓ — in the ${name} tab, start a new post and paste it with Ctrl/⌘+V, then post.`, 'ok');
       return;
     }
 
     if (isPublic && linkComposer) {
+      track('link');
       linkComposer();
       setStatus(`Opening ${name} with a new post draft — edit it and post.`, 'ok');
       return;
     }
 
     const reason = shareUnavailableReason();
+    track('download');
     await downloadMedia();
     window.open(home, '_blank', 'noopener');
     setStatus(

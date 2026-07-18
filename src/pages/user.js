@@ -30,7 +30,7 @@ import { openMediaViewer } from '../components/mediaViewer.js';
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
   requestContact, acceptContactRequest, removeContact,
-  deleteAccount, clearAuth,
+  deleteAccount, clearAuth, trackEvent,
 } = window;
 
 const auth = requireAuth();
@@ -295,6 +295,7 @@ async function maybeBuildRecap() {
   if (!recap || !contentEl.firstChild) return;
 
   contentEl.insertAdjacentHTML('afterbegin', renderRecapCard(recap));
+  if (trackEvent) trackEvent('recap_generated');
   const card = contentEl.querySelector('.recap-card');
   if (!card) return;
   const open = () => openMediaViewer(recap, { caption: 'Your Herae Recap', shareItem: recap });
