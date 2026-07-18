@@ -122,6 +122,133 @@ a:hover { text-decoration: underline; }
 .login-sub { text-align: center; font-size: 13px; color: var(--ink-faint); margin-bottom: 28px; }
 .login-hint { font-size: 12px; color: var(--ink-faint); margin-top: 18px; text-align: center; line-height: 1.6; }
 
+/* ── Danger zone + confirm modal (delete account) ── */
+.danger-zone {
+  max-width: 1080px; margin: 8px auto 0; padding: 0 24px;
+}
+.danger-zone-inner {
+  border: 1px solid rgba(248,113,113,0.35); border-radius: 16px;
+  background: rgba(248,113,113,0.06);
+  padding: 20px 22px; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.danger-zone-inner h3 { font-size: 16px; color: #fca5a5; margin-bottom: 4px; }
+.danger-zone-inner p { font-size: 13px; color: var(--ink-dim); max-width: 560px; line-height: 1.6; }
+.btn-danger {
+  background: linear-gradient(150deg, #ef4444, #b91c1c); color: #fff;
+  box-shadow: 0 6px 20px rgba(239,68,68,0.28), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(6,4,12,0.7); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  animation: modalFade 0.15s ease;
+}
+@keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+.modal-card {
+  width: 440px; max-width: 100%;
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid rgba(248,113,113,0.3); border-radius: 20px;
+  padding: 28px 26px; box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+}
+.modal-card h2 { font-size: 21px; margin-bottom: 10px; }
+.modal-card p { color: var(--ink-dim); font-size: 14px; line-height: 1.65; margin-bottom: 12px; }
+.modal-warn {
+  background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+  border-left: 3px solid #ef4444; border-radius: 10px; padding: 12px 14px;
+  color: #fca5a5; font-size: 13px; line-height: 1.6; margin-bottom: 16px;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+.modal-card .error-text { text-align: left; }
+
+/* ── Moments Recap card (own profile, auto-generated) ── */
+.recap-card {
+  display: flex; gap: 20px; align-items: stretch;
+  background: linear-gradient(135deg, rgba(139,92,246,0.14), rgba(245,185,66,0.08)), var(--card);
+  border: 1px solid rgba(167,139,250,0.35); border-radius: 20px;
+  padding: 16px; margin-bottom: 22px; cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.recap-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 44px rgba(139,92,246,0.22);
+  border-color: var(--purple);
+}
+.recap-card-media { position: relative; flex: 0 0 auto; width: 180px; }
+.recap-card-img {
+  width: 180px; height: 180px; object-fit: cover; border-radius: 14px;
+  display: block; border: 1px solid var(--border);
+}
+.recap-card-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 44px; text-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none;
+}
+.recap-card-body { display: flex; flex-direction: column; justify-content: center; gap: 6px; min-width: 0; }
+.recap-card-kicker {
+  text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; font-weight: 700; color: var(--gold);
+}
+.recap-card-title { font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 700; }
+.recap-card-sub { color: var(--ink-dim); font-size: 14px; line-height: 1.55; }
+.recap-card-open { align-self: flex-start; margin-top: 8px; }
+@media (max-width: 560px) {
+  .recap-card { flex-direction: column; }
+  .recap-card-media, .recap-card-img { width: 100%; }
+  .recap-card-img { height: 220px; }
+}
+
+/* ── Share sheet (❤️ Share your Moment) ── */
+/* The share sheet opens ON TOP of the fullscreen media viewer (.mv-overlay,
+   z-index 3000), so it must sit above it — the base .modal-overlay z-index
+   (1000) would otherwise render it behind the moment. */
+.share-overlay { z-index: 4000; }
+.share-card {
+  width: 460px; border: 1px solid var(--border);
+}
+.share-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.share-head h2 { font-size: 22px; margin: 0; }
+.share-close {
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--ink-dim);
+  width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 15px;
+}
+.share-close:hover { background: rgba(255,255,255,0.12); color: var(--ink); }
+.share-note {
+  background: rgba(245,185,66,0.09); border: 1px solid rgba(245,185,66,0.28);
+  border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--ink-dim);
+  line-height: 1.55; margin-bottom: 16px;
+}
+.share-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.share-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 8px; border-radius: 14px; cursor: pointer;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--ink); font-size: 13px; font-weight: 600; font-family: inherit;
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.share-opt:hover { transform: translateY(-2px); background: rgba(139,92,246,0.14); border-color: var(--purple); }
+.share-opt:active { transform: scale(0.97); }
+.share-opt:disabled { opacity: 0.5; cursor: default; transform: none; filter: none; }
+.share-opt:disabled:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
+.share-ico { font-size: 26px; line-height: 1; }
+.share-status { min-height: 20px; margin-top: 16px; font-size: 13px; color: var(--ink-dim); text-align: center; }
+.share-status.ok { color: #4ade80; }
+.mv-btn-share { font-size: 13px !important; font-weight: 700; white-space: nowrap; }
+@media (max-width: 480px) { .share-grid { grid-template-columns: repeat(2, 1fr); } .share-card { width: 100%; } }
+
+/* ── Site legal footer (shared by the app pages: feed, profile, etc.) ── */
+.site-legal-footer {
+  border-top: 1px solid var(--border);
+  padding: 30px 24px 40px; margin-top: 20px; text-align: center;
+}
+.site-legal-footer .slf-links {
+  display: flex; flex-wrap: wrap; gap: 6px 18px; justify-content: center; margin-bottom: 12px;
+}
+.site-legal-footer .slf-links a { color: var(--ink-dim); font-size: 12.5px; }
+.site-legal-footer .slf-links a:hover { color: var(--ink); }
+.site-legal-footer .slf-note { color: var(--ink-faint); font-size: 12px; }
+
 /* ── Memories grid ── */
 .page-wrap { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
 .page-title { font-size: 26px; margin-bottom: 6px; }

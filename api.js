@@ -224,6 +224,14 @@ function removeAvatar() {
   return apiRequest('/api/me/avatar', { method: 'DELETE' });
 }
 
+// Permanently deletes the logged-in account (see server/src/account.js's
+// DELETE /api/me and the Account Deletion Policy). `payload` re-authenticates:
+// { password } for a local account, or { confirmUsername } for a Google
+// account. On success the caller clears auth and redirects.
+function deleteAccount(payload) {
+  return apiRequest('/api/me', { method: 'DELETE', body: JSON.stringify(payload || {}) });
+}
+
 // ── Contact management ───────────────────────────────────────────────
 // The same three endpoints the extension popup has always used — the site
 // now just drives them too, so there's one contacts system, not two.
@@ -317,6 +325,18 @@ function mediaUrl(relativeUrl) {
 // need the identical join and there's no reason for two copies of it.
 function momentImageUrl(relativeUrl) {
   return mediaUrl(relativeUrl);
+}
+
+// The shareable Herae URL for a single post — post.html opens any moment by
+// id. Absolute (origin-based) so it survives being pasted into WhatsApp,
+// Telegram, a Facebook share, etc. A moment set to 'public' is viewable by
+// anyone with the link; a private/contacts one still opens here but the
+// server enforces who may actually see it (used by the Share flow).
+function momentPublicUrl(id) {
+  const origin = location.protocol.startsWith('http')
+    ? location.origin
+    : ((getAuth()?.serverUrl || getSavedServerUrl()).replace(/\/+$/, ''));
+  return `${origin}/post.html?id=${encodeURIComponent(id)}`;
 }
 
 // ── Recommendations (admin.html + any future public "recommended" surface) ─

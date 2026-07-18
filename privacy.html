@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Herae</title>
+<meta name="description" content="How Herae collects, uses, and protects your data — written specifically for how Herae actually works.">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
+</head>
+<body>
+  <header class="legal-topbar">
+    <a class="legal-brand" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae">
+      <span class="legal-brand-text">
+        <span class="legal-brand-name">Herae</span>
+        <span class="legal-brand-sub">Legal &amp; Policies</span>
+      </span>
+    </a>
+    <a class="btn btn-ghost" href="index.html">← Back to Herae</a>
+  </header>
+
+  <main class="legal-wrap">
+    <article class="legal-doc">
+      <div class="legal-eyebrow">Privacy</div>
+      <h1>Privacy Policy</h1>
+      <div class="legal-updated">Last updated: 18 July 2026</div>
+
+      <p class="legal-lede">Herae is an intimate product — it's where you keep movie nights, voice and video calls, and the little memories you make with the people closest to you. This policy explains, in plain language, exactly what we collect, what we deliberately <em>don't</em>, and why. It is written for how Herae actually works, not from a template.</p>
+
+      <div class="legal-callout">
+        <p><strong>The short version.</strong> Your voice and video calls are peer-to-peer and are never recorded or stored by us. Your saved Moments are private by default. We use our own first-party analytics rather than shipping your behavior to third-party ad or tracking companies. We never sell your data.</p>
+      </div>
+
+      <h2>1. Who we are</h2>
+      <p>Herae ("Herae", "we", "us") provides a browser extension that lets people watch video together in sync with built-in voice, video, and chat, and a companion website (Herae Moments) where the memories from those sessions live. This policy covers both. If you have questions, contact <a href="mailto:privacy@herae.app">privacy@herae.app</a> <span class="legal-placeholder">placeholder address</span>.</p>
+
+      <h2>2. What we collect</h2>
+
+      <h3>Account information</h3>
+      <ul>
+        <li><strong>Username</strong> — chosen by you, lowercase letters, numbers and underscores.</li>
+        <li><strong>Email address</strong> — used for sign-in, account recovery, and transactional email (verification and password reset).</li>
+        <li><strong>Password</strong> — if you sign up with a password, we store only a salted <strong>bcrypt hash</strong>, never the password itself. If you sign in with Google, we never receive or store a password.</li>
+        <li><strong>Google sign-in</strong> — if you choose "Continue with Google", we receive your verified email address from Google to create or locate your account. We do not receive your Google password.</li>
+      </ul>
+
+      <h3>Content you create</h3>
+      <ul>
+        <li><strong>Moments</strong> — the photo collages and short video clips (up to 45 seconds) you choose to save from a session, together with a poster image, an optional caption, the theme you picked, and your chosen privacy level (private, contacts-only, or public).</li>
+        <li><strong>Reviews, ratings, session titles, likes and comments</strong> you write.</li>
+        <li><strong>Profile picture</strong> and <strong>contacts</strong> (the people you connect with by username).</li>
+        <li><strong>Session context</strong> — for a session you save something from, we store the title, page URL, and thumbnail of what was watched so the memory has context. Only sessions you deliberately save from generate this.</li>
+      </ul>
+
+      <h3>Technical information</h3>
+      <ul>
+        <li><strong>Authentication tokens</strong> (a signed JWT) kept in your browser's local storage so you stay logged in.</li>
+        <li><strong>Presence</strong> — whether you're currently online, so contacts can see availability. This is transient and not logged historically.</li>
+        <li><strong>Limited request metadata</strong> — IP address and standard request data are processed transiently for security and rate-limiting. We do not build advertising profiles from it.</li>
+        <li><strong>Error diagnostics</strong> — if something crashes, technical error details may be sent to our error-monitoring provider (Sentry) to help us fix it.</li>
+      </ul>
+
+      <h2>3. What we deliberately do NOT collect</h2>
+      <ul>
+        <li><strong>Your calls.</strong> Voice, video, and chat during a session are peer-to-peer (WebRTC), encrypted in transit, and travel directly between participants. We do <strong>not</strong> record, store, or have access to their contents. When a direct connection can't be established, media may be relayed through a TURN server to keep the call working — but it is still end-to-end encrypted and is never stored.</li>
+        <li><strong>Your general browsing.</strong> The extension only acts on the tab where you're actively watching together, to keep playback in sync. It is not a history tracker and does not report the pages you visit on your own.</li>
+        <li><strong>Third-party ad/tracking cookies.</strong> We don't run them. See our <a href="cookies.html">Cookie Policy</a>.</li>
+        <li><strong>Payment card details.</strong> Herae is free to start; we don't process card data on our own servers.</li>
+      </ul>
+
+      <h2>4. How we use your information</h2>
+      <ul>
+        <li>To provide the core service: authenticating you, syncing playback, connecting calls, and storing the Moments you choose to save.</li>
+        <li>To send transactional email you'd expect (email verification, password reset).</li>
+        <li>To keep the service secure and reliable (rate-limiting, abuse prevention, crash diagnostics).</li>
+        <li>To understand product health with <strong>first-party analytics</strong>: we record a small set of events in our own database — such as account creation, login, sending/accepting a contact invite, capturing a Moment, and posting a review — to measure activation and retention for a beta. This data stays in our database and is not sent to a third-party behavioral analytics vendor.</li>
+      </ul>
+
+      <h2>5. Visibility &amp; sharing between users</h2>
+      <p>You control how each Moment is shared with other Herae users through its privacy level:</p>
+      <ul>
+        <li><strong>Private</strong> (default) — only the people who were in that Moment.</li>
+        <li><strong>Contacts</strong> — also visible to your accepted contacts.</li>
+        <li><strong>Public</strong> — visible to any signed-in Herae user and reachable by its link.</li>
+      </ul>
+      <p>Public profiles show your username, picture, and counts of content that is actually visible to the viewer under these rules. If you use the Share feature to post to another platform (Instagram, WhatsApp, etc.), that content leaves Herae and becomes subject to that platform's own terms and privacy policy.</p>
+
+      <h2>6. Service providers we rely on</h2>
+      <p>We use a small number of infrastructure providers strictly to run Herae:</p>
+      <ul>
+        <li><strong>Amazon Web Services (AWS)</strong> — hosting, database, and media storage (S3) delivered through a content-delivery network (CloudFront).</li>
+        <li><strong>An email provider</strong> — to deliver verification and password-reset messages.</li>
+        <li><strong>TURN/STUN relays</strong> — to help peer-to-peer calls connect.</li>
+        <li><strong>Sentry</strong> — error monitoring.</li>
+      </ul>
+      <p>These providers process data on our behalf under their own security commitments. We do not sell your personal data to anyone.</p>
+
+      <h2>7. Data retention</h2>
+      <p>We keep your account and content until you delete them or delete your account. When you delete a Moment, its database record and stored media files are removed. When you delete your account, we permanently delete or irreversibly anonymize your data as described in our <a href="account-deletion.html">Account Deletion Policy</a>. One-time email tokens expire automatically (24 hours for verification, 1 hour for password reset) and are single-use.</p>
+
+      <h2>8. Security</h2>
+      <ul>
+        <li>Passwords are stored as bcrypt hashes; email tokens are stored only as SHA-256 hashes.</li>
+        <li>Traffic is served over HTTPS; database connections are encrypted in transit.</li>
+        <li>We apply security headers, a strict cross-origin allowlist, and rate limits on sensitive endpoints.</li>
+        <li>You can invalidate every existing login for your account at any time by resetting your password.</li>
+      </ul>
+      <p>No system is perfectly secure, but we design Herae to minimize what could ever be exposed.</p>
+
+      <h2>9. Your rights &amp; choices</h2>
+      <ul>
+        <li><strong>Access &amp; correction</strong> — you can view and edit your profile, Moments, reviews, and comments in the app.</li>
+        <li><strong>Deletion</strong> — you can permanently delete your account (see the <a href="account-deletion.html">Account Deletion Policy</a>) or request help at <a href="mailto:privacy@herae.app">privacy@herae.app</a> <span class="legal-placeholder">placeholder</span>.</li>
+        <li><strong>Content takedown</strong> — see our <a href="takedown.html">Content Removal Policy</a> and <a href="dmca.html">DMCA Policy</a>.</li>
+        <li>Depending on where you live (e.g. the EEA/UK or California), you may have additional rights to access, port, or restrict processing of your data. Email us and we'll help.</li>
+      </ul>
+
+      <h2>10. Children</h2>
+      <p>Herae is not directed to children under 13 (or the minimum age required in your country), and we do not knowingly collect their data. If you believe a child has created an account, contact <a href="mailto:privacy@herae.app">privacy@herae.app</a> and we'll remove it.</p>
+
+      <h2>11. International users</h2>
+      <p>Herae is operated using infrastructure that may process and store data in different countries. By using Herae you understand your information may be handled in locations outside your own, always under the protections described here.</p>
+
+      <h2>12. Changes to this policy</h2>
+      <p>We may update this policy as Herae evolves. When we make material changes, we'll update the "Last updated" date above and, where appropriate, notify you in the app or by email.</p>
+
+      <h2>13. Contact</h2>
+      <p>Privacy questions: <a href="mailto:privacy@herae.app">privacy@herae.app</a> · General: <a href="mailto:support@herae.app">support@herae.app</a> · Legal: <a href="mailto:legal@herae.app">legal@herae.app</a>. See the <a href="contact.html">Contact page</a>. All addresses are <span class="legal-placeholder">placeholders</span> to be replaced with your real endpoints before launch.</p>
+    </article>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="legal-footer-links">
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="cookies.html">Cookie Policy</a>
+      <a href="community.html">Community Guidelines</a>
+      <a href="dmca.html">DMCA / Copyright</a>
+      <a href="takedown.html">Content Removal</a>
+      <a href="account-deletion.html">Account Deletion</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="legal-footer-note">© 2026 Herae · Watch anything together, from anywhere. · herae.app</div>
+  </footer>
+</body>
+</html>

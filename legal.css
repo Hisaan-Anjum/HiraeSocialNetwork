@@ -1,0 +1,92 @@
+/* legal.css — shared styling for Herae's legal & policy pages
+   (privacy, terms, cookies, community, dmca, takedown, account deletion,
+   contact). Self-contained, loaded after style.css so it inherits the same
+   palette/typography and reads as one product with the rest of the site. */
+
+.legal-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(13, 11, 18, 0.7);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 10;
+}
+.legal-brand { display: flex; align-items: center; gap: 12px; }
+.legal-brand img { width: 34px; height: 34px; border-radius: 9px; }
+.legal-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.legal-brand-name {
+  font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 18px;
+  background: linear-gradient(140deg, #f5b942, #8b5cf6);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.legal-brand-sub { font-size: 11px; color: var(--ink-faint); }
+
+.legal-wrap { max-width: 820px; margin: 0 auto; padding: 44px 24px 96px; }
+.legal-doc {
+  background: linear-gradient(175deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border); border-radius: 22px;
+  padding: 48px 44px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+}
+.legal-eyebrow {
+  text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
+  font-weight: 700; color: var(--purple); margin-bottom: 12px;
+}
+.legal-doc h1 { font-size: 34px; margin-bottom: 10px; line-height: 1.15; }
+.legal-updated { color: var(--ink-faint); font-size: 13px; margin-bottom: 8px; }
+.legal-lede { color: var(--ink-dim); font-size: 15.5px; line-height: 1.7; margin: 20px 0 8px; }
+
+.legal-doc h2 {
+  font-size: 21px; margin: 38px 0 12px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.legal-doc h2:first-of-type { border-top: none; padding-top: 0; }
+.legal-doc h3 { font-size: 16px; margin: 22px 0 8px; color: var(--ink); }
+.legal-doc p { color: var(--ink-dim); font-size: 15px; line-height: 1.75; margin: 12px 0; }
+.legal-doc ul, .legal-doc ol { color: var(--ink-dim); font-size: 15px; line-height: 1.75; margin: 12px 0 12px 22px; }
+.legal-doc li { margin: 7px 0; }
+.legal-doc strong { color: var(--ink); font-weight: 700; }
+.legal-doc a { color: var(--purple); }
+
+.legal-callout {
+  background: rgba(139,92,246,0.09); border: 1px solid var(--border);
+  border-left: 3px solid var(--purple); border-radius: 12px;
+  padding: 16px 18px; margin: 20px 0;
+}
+.legal-callout p { margin: 6px 0; color: var(--ink-dim); font-size: 14.5px; }
+.legal-placeholder {
+  display: inline-block; padding: 1px 7px; border-radius: 6px;
+  background: rgba(245,185,66,0.14); color: var(--gold);
+  font-size: 0.92em; font-weight: 600;
+}
+
+.legal-contact-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px; margin: 22px 0;
+}
+.legal-contact-card {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+}
+.legal-contact-card .lc-role { font-size: 13px; color: var(--ink-faint); margin-bottom: 6px; }
+.legal-contact-card .lc-email { font-size: 16px; font-weight: 700; color: var(--ink); word-break: break-all; }
+
+/* ── Footer with every legal link, reused across the site ── */
+.legal-footer {
+  border-top: 1px solid var(--border);
+  padding: 34px 24px; margin-top: 40px;
+  text-align: center;
+}
+.legal-footer-links {
+  display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center;
+  margin-bottom: 16px;
+}
+.legal-footer-links a { color: var(--ink-dim); font-size: 13px; }
+.legal-footer-links a:hover { color: var(--ink); }
+.legal-footer-note { color: var(--ink-faint); font-size: 12.5px; line-height: 1.6; }
+
+@media (max-width: 600px) {
+  .legal-doc { padding: 32px 22px; border-radius: 16px; }
+  .legal-doc h1 { font-size: 27px; }
+  .legal-wrap { padding: 24px 14px 72px; }
+}

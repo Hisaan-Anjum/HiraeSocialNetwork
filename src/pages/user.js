@@ -24,10 +24,13 @@ import { renderAvatar } from '../components/avatar.js';
 import { initSearch } from '../components/search.js';
 import { mountAvatarControls } from '../components/avatarUpload.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
+import { buildRecap, renderRecapCard } from '../components/recap.js';
+import { openMediaViewer } from '../components/mediaViewer.js';
 
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
   requestContact, acceptContactRequest, removeContact,
+  deleteAccount, clearAuth,
 } = window;
 
 const auth = requireAuth();
@@ -38,7 +41,7 @@ const headerEl = document.getElementById('profileHeader');
 
 const target = (new URLSearchParams(window.location.search).get('u') || '').toLowerCase().trim();
 
-const state = { cursor: undefined, done: false, loading: false, profile: null, sessionsSeen: [] };
+const state = { cursor: undefined, done: false, loading: false, profile: null, sessionsSeen: [], recapDone: false };
 
 if (auth) {
   document.getElementById('whoAmI').textContent = `logged in as ${auth.username}`;
@@ -107,6 +110,90 @@ function renderHeader(profile) {
   // the remove-contact handler too.
   document.getElementById('profileActions').querySelectorAll('[data-action]').forEach((btn) => {
     btn.addEventListener('click', () => runContactAction(btn.dataset.action, btn));
+  });
+
+  // Your own profile also carries the account danger zone (delete account).
+  if (profile.isMe) renderDangerZone(profile);
+}
+
+// ── Delete account ─────────────────────────────────────────────────────
+// Rendered only on your own profile, below the header. Opens a confirmation
+// modal that re-authenticates (password for a local account, username for a
+// Google one — see profile.authProvider) before calling DELETE /api/me.
+function renderDangerZone(profile) {
+  const zone = document.createElement('div');
+  zone.className = 'danger-zone';
+  zone.innerHTML = `
+    <div class="danger-zone-inner">
+      <div>
+        <h3>Delete account</h3>
+        <p>Permanently delete your Herae account, your Moments and their photos and videos, your
+           reviews and comments, and your contacts. This can't be undone.
+           <a href="account-deletion.html">Learn what's removed</a>.</p>
+      </div>
+      <button class="btn btn-danger" id="deleteAccountBtn">Delete account</button>
+    </div>`;
+  headerEl.appendChild(zone);
+  zone.querySelector('#deleteAccountBtn').addEventListener('click', () => openDeleteModal(profile));
+}
+
+function openDeleteModal(profile) {
+  const isGoogle = profile.authProvider && profile.authProvider !== 'local';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Delete account">
+      <h2>Delete your account?</h2>
+      <div class="modal-warn">
+        This is permanent. Your Moments (and their photos and videos), reviews, comments, and
+        contacts will be deleted for good. There is no undo and no recovery period.
+      </div>
+      <p>${isGoogle
+        ? `To confirm, type your username <strong>${escapeHtml(profile.username)}</strong> below.`
+        : 'Enter your password to confirm.'}</p>
+      <div class="field" style="margin-bottom:6px">
+        <input type="${isGoogle ? 'text' : 'password'}" id="deleteConfirmInput"
+               placeholder="${isGoogle ? 'your username' : 'your password'}"
+               autocomplete="${isGoogle ? 'off' : 'current-password'}"
+               autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="error-text" id="deleteError"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="deleteCancel">Cancel</button>
+        <button class="btn btn-danger" id="deleteConfirm">Delete forever</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  const input = overlay.querySelector('#deleteConfirmInput');
+  const errEl = overlay.querySelector('#deleteError');
+  const confirmBtn = overlay.querySelector('#deleteConfirm');
+  input.focus();
+
+  const close = () => { document.body.style.overflow = prevOverflow; overlay.remove(); };
+  overlay.querySelector('#deleteCancel').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  confirmBtn.addEventListener('click', async () => {
+    errEl.textContent = '';
+    const val = input.value;
+    if (!val) { errEl.textContent = isGoogle ? 'Type your username to confirm.' : 'Enter your password.'; return; }
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Deleting…';
+    try {
+      await deleteAccount(isGoogle ? { confirmUsername: val } : { password: val });
+      // Clear the local session and leave for the marketing home. replace()
+      // so the now-dead profile page isn't left in history.
+      clearAuth();
+      window.location.replace('index.html');
+    } catch (err) {
+      errEl.textContent = err.message || 'Could not delete your account.';
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Delete forever';
+    }
   });
 }
 
@@ -185,9 +272,40 @@ function resetFeed() {
   state.done = false;
   state.loading = false;
   state.sessionsSeen = [];
+  state.recapDone = false;
   contentEl.innerHTML = renderFeedSkeletons(2);
   sentinelEl.classList.remove('hidden');
   loadMore(true);
+}
+
+// ── Moments Recap ──────────────────────────────────────────────────────
+// Built once, from the moments already loaded into the feed, and only on your
+// own profile. Opens through the same media viewer as any post and carries the
+// Share flow. If there aren't enough moments (or the canvas can't be exported),
+// buildRecap returns null and nothing is shown — exactly the spec's behavior.
+async function maybeBuildRecap() {
+  if (state.recapDone || !state.profile?.isMe) return;
+  state.recapDone = true;
+  const moments = state.sessionsSeen.flatMap((s) => s.moments || []);
+  const profileUrl = `${location.origin}/user.html?u=${encodeURIComponent(state.profile.username)}`;
+  let recap;
+  try {
+    recap = await buildRecap({ username: state.profile.username, moments, profileUrl });
+  } catch (e) { return; }
+  if (!recap || !contentEl.firstChild) return;
+
+  contentEl.insertAdjacentHTML('afterbegin', renderRecapCard(recap));
+  const card = contentEl.querySelector('.recap-card');
+  if (!card) return;
+  const open = () => openMediaViewer(recap, { caption: 'Your Herae Recap', shareItem: recap });
+  card.addEventListener('click', (e) => {
+    // The "Open recap" button and the card both open it.
+    e.preventDefault();
+    open();
+  });
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+  });
 }
 
 async function loadMore(isFirstPage = false) {
@@ -219,6 +337,11 @@ async function loadMore(isFirstPage = false) {
     const html = grouped.map(renderSessionCard).join('');
     if (isFirstPage) contentEl.innerHTML = html;
     else contentEl.insertAdjacentHTML('beforeend', html);
+
+    // On your OWN profile, once there's a first page of content, try to
+    // generate a featured Moments Recap from what's loaded — entirely
+    // client-side (see recap.js). Silently does nothing if there isn't enough.
+    if (isFirstPage) maybeBuildRecap();
 
     if (state.done) {
       sentinelEl.textContent = "That's everything 💜";

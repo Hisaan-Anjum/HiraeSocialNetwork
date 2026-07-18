@@ -10,6 +10,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { openShareSheet } from './shareSheet.js';
 
 const { mediaUrl } = window;
 
@@ -42,6 +43,7 @@ export function openMediaViewer(item, opts = {}) {
             <button class="mv-btn" data-mv="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
             <button class="mv-btn" data-mv="zoom-reset" aria-label="Reset zoom" title="Reset zoom">⟲</button>
           `}
+          ${opts.shareItem ? '<button class="mv-btn mv-btn-share" data-mv="share" aria-label="Share this moment" title="Share">❤ Share</button>' : ''}
           <button class="mv-btn" data-mv="fullscreen" aria-label="Fullscreen" title="Fullscreen">⛶</button>
           <button class="mv-btn mv-btn-close" data-mv="close" aria-label="Close" title="Close (Esc)">✕</button>
         </div>
@@ -143,6 +145,7 @@ export function openMediaViewer(item, opts = {}) {
     if (btn) {
       const action = btn.dataset.mv;
       if (action === 'close') close();
+      else if (action === 'share') openShareSheet(opts.shareItem);
       else if (action === 'fullscreen') toggleFullscreen();
       else if (action === 'zoom-in') zoomBy(1.4);
       else if (action === 'zoom-out') zoomBy(1 / 1.4);

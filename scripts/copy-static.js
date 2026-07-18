@@ -44,6 +44,22 @@ const FILES = [
   'forgot.html',
   'reset.html',
   'verify.html',
+  // Standalone signup page for Herae Moments — a plain self-contained page
+  // (its own inline module-less script hitting /api/signup), copied verbatim
+  // like the other auth pages so it works under both the Node server and Vite.
+  'signup.html',
+  // Legal & policy pages — self-contained static pages sharing legal.css.
+  // They reference each other and the rest of the site by plain relative
+  // links, so they're copied through verbatim rather than Vite-processed.
+  'privacy.html',
+  'terms.html',
+  'cookies.html',
+  'community.html',
+  'dmca.html',
+  'takedown.html',
+  'account-deletion.html',
+  'contact.html',
+  'legal.css',
   // Also copied unhashed to dist root so index.html/admin.html's plain
   // <link href="style.css"> keeps resolving — the Vite-processed pages
   // additionally get their own hashed copy automatically as a build asset.

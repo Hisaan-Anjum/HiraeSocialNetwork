@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create your account — Herae</title>
+<meta name="description" content="Create a free Herae account and start keeping every movie night together.">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Signup-only touches layered on top of the shared login-card styling so
+     this page reads as a sibling of login.html, not a different product. */
+  .signup-card { width: 420px; }
+  .field-hint { font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; line-height: 1.5; }
+  .field-status { font-size: 12px; margin-top: 6px; min-height: 16px; font-weight: 600; }
+  .field-status.ok { color: #4ade80; }
+  .field-status.bad { color: #f87171; }
+  .field-status.checking { color: var(--ink-faint); font-weight: 500; }
+  .pw-meter { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); margin-top: 8px; overflow: hidden; }
+  .pw-meter-fill { height: 100%; width: 0; border-radius: 3px; transition: width 0.2s ease, background 0.2s ease; }
+  .signup-legal {
+    font-size: 12px; color: var(--ink-faint); margin-top: 18px; text-align: center; line-height: 1.7;
+  }
+  .signup-legal a { color: var(--purple); }
+  .signup-alt { font-size: 12.5px; color: var(--ink-faint); margin-top: 16px; text-align: center; }
+  .login-legal { opacity: 0.9; }
+</style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card signup-card">
+      <a href="index.html" class="login-back">← Back</a>
+      <img src="logo.png" alt="Herae" class="login-logo">
+      <div class="login-title">Create your Herae account</div>
+      <div class="login-sub">Free — and it takes less than a minute.</div>
+
+      <form id="signupForm" autocomplete="on" novalidate>
+        <!-- Hidden in production (site served by the API server) — same rule
+             as login.html. Shown only for file:// or a localhost dev server. -->
+        <div class="field" id="serverUrlField">
+          <label for="serverUrl">Server address</label>
+          <input type="text" id="serverUrl" placeholder="http://localhost:8080" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="pick a username" autocomplete="username"
+                 maxlength="32" autocapitalize="none" spellcheck="false">
+          <div class="field-status" id="usernameStatus" aria-live="polite"></div>
+          <div class="field-hint">3–32 characters — lowercase letters, numbers and underscores.</div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email"
+                 autocapitalize="none" spellcheck="false">
+          <div class="field-status" id="emailStatus" aria-live="polite"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="at least 8 characters" autocomplete="new-password">
+          <div class="pw-meter"><div class="pw-meter-fill" id="pwFill"></div></div>
+          <div class="field-hint" id="pwHint">Use 8+ characters. Avoid common passwords and your own name.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="signupBtn" style="width:100%">Create account</button>
+        <div class="error-text" id="errorText"></div>
+      </form>
+
+      <div class="signup-alt">
+        Already have an account? <a href="login.html">Log in</a>
+      </div>
+
+      <div class="signup-legal">
+        By creating an account you agree to Herae's
+        <a href="terms.html">Terms &amp; Conditions</a>,
+        <a href="privacy.html">Privacy Policy</a>,
+        <a href="community.html">Community Guidelines</a>
+        and <a href="cookies.html">Cookie Policy</a>.
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+  'use strict';
+  (function () {
+    var serverUrlEl = document.getElementById('serverUrl');
+    var serverUrlField = document.getElementById('serverUrlField');
+    var usernameEl = document.getElementById('username');
+    var emailEl = document.getElementById('email');
+    var passwordEl = document.getElementById('password');
+    var form = document.getElementById('signupForm');
+    var btn = document.getElementById('signupBtn');
+    var errorText = document.getElementById('errorText');
+    var usernameStatus = document.getElementById('usernameStatus');
+    var emailStatus = document.getElementById('emailStatus');
+    var pwFill = document.getElementById('pwFill');
+    var pwHint = document.getElementById('pwHint');
+
+    // Already signed in? Straight to the feed.
+    if (typeof getAuth === 'function' && getAuth()) { window.location.href = 'memories.html'; return; }
+
+    serverUrlEl.value = getSavedServerUrl();
+    var isLocalHost = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
+    var derivesFromOrigin = location.protocol.startsWith('http') && !isLocalHost;
+    if (serverUrlField && derivesFromOrigin) serverUrlField.style.display = 'none';
+
+    var USERNAME_RE = /^[a-z0-9_]{3,32}$/;
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    var COMMON = ['12345678','123456789','password','password1','password123','qwerty123','iloveyou','11111111'];
+
+    function base() { return (getSavedServerUrl() || serverUrlEl.value.trim()).replace(/\/+$/, ''); }
+
+    // ── Live availability (debounced) — mirrors the extension's own signup ──
+    function debounce(fn, ms) { var t; return function () { var a = arguments; clearTimeout(t); t = setTimeout(function () { fn.apply(null, a); }, ms); }; }
+
+    var checkUsername = debounce(function () {
+      var v = usernameEl.value.toLowerCase().trim();
+      if (!v) { usernameStatus.textContent = ''; usernameStatus.className = 'field-status'; return; }
+      if (!USERNAME_RE.test(v)) { usernameStatus.textContent = '3–32 chars: a–z, 0–9, _'; usernameStatus.className = 'field-status bad'; return; }
+      usernameStatus.textContent = 'Checking…'; usernameStatus.className = 'field-status checking';
+      fetch(base() + '/api/signup/availability?username=' + encodeURIComponent(v))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (usernameEl.value.toLowerCase().trim() !== v) return;
+          if (d.username === true) { usernameStatus.textContent = '✓ available'; usernameStatus.className = 'field-status ok'; }
+          else if (d.username === false) { usernameStatus.textContent = '✕ that username is taken'; usernameStatus.className = 'field-status bad'; }
+          else { usernameStatus.textContent = ''; usernameStatus.className = 'field-status'; }
+        })
+        .catch(function () { usernameStatus.textContent = ''; usernameStatus.className = 'field-status'; });
+    }, 400);
+
+    var checkEmail = debounce(function () {
+      var v = emailEl.value.toLowerCase().trim();
+      if (!v) { emailStatus.textContent = ''; emailStatus.className = 'field-status'; return; }
+      if (!EMAIL_RE.test(v)) { emailStatus.textContent = 'Enter a valid email'; emailStatus.className = 'field-status bad'; return; }
+      emailStatus.textContent = 'Checking…'; emailStatus.className = 'field-status checking';
+      fetch(base() + '/api/signup/availability?email=' + encodeURIComponent(v))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (emailEl.value.toLowerCase().trim() !== v) return;
+          if (d.email === true) { emailStatus.textContent = '✓ looks good'; emailStatus.className = 'field-status ok'; }
+          else if (d.email === false) { emailStatus.textContent = '✕ an account with that email already exists'; emailStatus.className = 'field-status bad'; }
+          else { emailStatus.textContent = ''; emailStatus.className = 'field-status'; }
+        })
+        .catch(function () { emailStatus.textContent = ''; emailStatus.className = 'field-status'; });
+    }, 400);
+
+    usernameEl.addEventListener('input', checkUsername);
+    emailEl.addEventListener('input', checkEmail);
+
+    passwordEl.addEventListener('input', function () {
+      var p = passwordEl.value;
+      var score = 0;
+      if (p.length >= 8) score += 1;
+      if (p.length >= 12) score += 1;
+      if (/[a-z]/.test(p) && /[A-Z]/.test(p)) score += 1;
+      if (/\d/.test(p)) score += 1;
+      if (/[^A-Za-z0-9]/.test(p)) score += 1;
+      if (COMMON.indexOf(p.toLowerCase()) !== -1) score = 0;
+      var pct = Math.min(100, score * 20);
+      var color = score <= 1 ? '#f87171' : score <= 3 ? '#f5b942' : '#4ade80';
+      pwFill.style.width = pct + '%';
+      pwFill.style.background = color;
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errorText.textContent = '';
+      var serverUrl = serverUrlEl.value.trim();
+      var username = usernameEl.value.toLowerCase().trim();
+      var email = emailEl.value.toLowerCase().trim();
+      var password = passwordEl.value;
+
+      if (!serverUrl) { errorText.textContent = 'Enter the server address.'; return; }
+      if (!USERNAME_RE.test(username)) { errorText.textContent = 'Username must be 3–32 characters: lowercase letters, numbers, underscore.'; return; }
+      if (!EMAIL_RE.test(email)) { errorText.textContent = 'Enter a valid email address.'; return; }
+      if (password.length < 8) { errorText.textContent = 'Password must be at least 8 characters.'; return; }
+      if (COMMON.indexOf(password.toLowerCase()) !== -1) { errorText.textContent = 'That password is too common — pick something less guessable.'; return; }
+      if (password.toLowerCase().indexOf(username) !== -1) { errorText.textContent = "Password can't contain your username."; return; }
+
+      var b = serverUrl.replace(/\/+$/, '');
+      btn.disabled = true; btn.textContent = 'Creating your account…';
+      fetch(b + '/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, email: email, password: password }),
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.d.error || 'Could not create your account.');
+          // Same session shape login() writes, so every other page picks it up.
+          setAuth({ token: res.d.token, username: res.d.username, serverUrl: b });
+          window.location.href = 'memories.html';
+        })
+        .catch(function (err) {
+          errorText.textContent = err.message || 'Could not reach the server. Check the address and that it is running.';
+          btn.disabled = false; btn.textContent = 'Create account';
+        });
+    });
+  })();
+  </script>
+</body>
+</html>

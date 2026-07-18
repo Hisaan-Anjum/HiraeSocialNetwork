@@ -44,7 +44,10 @@ export function momentViewerOpts(tile) {
   const hit = registry.get(String(tile.dataset.momentId));
   if (!hit) return {};
   buildPanel(hit.moment, hit.session);
-  return { panelEl: host() };
+  // The fully-hydrated moment (id, mediaType, url, videoUrl, description,
+  // privacy) so the viewer's Share button can offer link-vs-download
+  // correctly — see shareSheet.js.
+  return { panelEl: host(), shareItem: hit.moment };
 }
 
 function buildPanel(m, session) {
