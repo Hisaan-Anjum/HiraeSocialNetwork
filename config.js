@@ -12,5 +12,5 @@
 //
 // TO DEPLOY: replace with your CloudFront domain, e.g. 'https://app.herae.com'.
 window.MOMENTS_CONFIG = {
-  defaultServerUrl: 'https://REPLACE_ME.example.com',
+  defaultServerUrl: 'https://app.herae.app',
 };

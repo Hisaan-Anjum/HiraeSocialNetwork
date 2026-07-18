@@ -393,6 +393,23 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+  <!-- Signed-in visitors shouldn't sit on the marketing landing. localStorage is
+       per-origin, so herae.app can't read app.herae.app's session directly — it
+       relies on the cross-subdomain herae_auth_hint cookie (see api.js). On the
+       apex we send them to the app on app.herae.app; on app.herae.app itself we
+       use the authoritative localStorage session. Dev/localhost is left alone. -->
+  <script>
+    (function () {
+      var host = location.hostname;
+      var localAuth = (typeof getAuth === 'function') ? getAuth() : null;
+      var hasHint = document.cookie.split('; ').some(function (c) { return c.indexOf('herae_auth_hint=') === 0; });
+      if (host === 'app.herae.app') {
+        if (localAuth) location.replace('memories.html');
+      } else if (host === 'herae.app') {
+        if (localAuth || hasHint) location.replace('https://app.herae.app/memories.html');
+      }
+    })();
+  </script>
   <script src="index.js"></script>
 </body>
 </html>

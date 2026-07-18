@@ -22,13 +22,29 @@ function getAuth() {
   try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; }
 }
 
+// A cross-subdomain "someone is signed in" hint. localStorage is per-origin, so
+// the apex (herae.app) can't see the auth stored on app.herae.app — but a cookie
+// scoped to .herae.app is shared across both. This is NOT the auth token, just a
+// flag that lets the landing page (index.html) redirect a signed-in visitor from
+// herae.app to the app on app.herae.app; app.herae.app still validates the real
+// JWT. Only set on herae.app hosts, so local development is unaffected.
+function setAuthHintCookie(on) {
+  const host = location.hostname;
+  if (host !== 'herae.app' && host !== 'app.herae.app') return;
+  document.cookie = on
+    ? 'herae_auth_hint=1; domain=.herae.app; path=/; max-age=31536000; secure; samesite=lax'
+    : 'herae_auth_hint=; domain=.herae.app; path=/; max-age=0; secure; samesite=lax';
+}
+
 function setAuth(auth) {
   localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
   localStorage.setItem(SERVER_URL_KEY, auth.serverUrl);
+  setAuthHintCookie(true);
 }
 
 function clearAuth() {
   localStorage.removeItem(AUTH_KEY);
+  setAuthHintCookie(false);
 }
 
 // Every page except index.html (landing) and login.html needs this —

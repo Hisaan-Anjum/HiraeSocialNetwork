@@ -17,7 +17,11 @@
       <div class="login-sub">The little moments you've saved together</div>
 
       <form id="loginForm">
-        <div class="field">
+        <!-- Hidden in production: the site is served by the API server, so the
+             address is just this page's origin (see api.js getSavedServerUrl and
+             the hide logic in src/pages/login.js). Shown only for file:// or a
+             localhost dev server, where the origin can't be used. -->
+        <div class="field" id="serverUrlField">
           <label for="serverUrl">Server address</label>
           <input type="text" id="serverUrl" placeholder="http://localhost:8080" autocomplete="off">
         </div>

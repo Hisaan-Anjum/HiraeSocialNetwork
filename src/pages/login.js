@@ -20,6 +20,15 @@ if (getAuth()) {
 
 serverUrlEl.value = getSavedServerUrl();
 
+// In production the site is served by the API server, so the address is simply
+// this page's own origin (getSavedServerUrl resolves it) and users enter only
+// username + password — hide the field. It stays visible when there's no usable
+// origin (file://) or the site is served from a localhost dev server.
+const serverUrlField = document.getElementById('serverUrlField');
+const isLocalHost = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
+const derivesFromOrigin = location.protocol.startsWith('http') && !isLocalHost;
+if (serverUrlField && derivesFromOrigin) serverUrlField.style.display = 'none';
+
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorText.textContent = '';
