@@ -39,6 +39,9 @@ const FILES = [
   'analytics.html',
   'config.js',
   'api.js',
+  // Show/hide password eye toggle — a classic global <script> loaded by every
+  // auth page (login/signup/reset), same passthrough treatment as config.js.
+  'pw-toggle.js',
   // Auth flows that live outside login: password reset (request + set) and
   // email confirmation. Plain self-contained pages (their own inline scripts,
   // no bundled module) so they work whether the site is served by the Node
