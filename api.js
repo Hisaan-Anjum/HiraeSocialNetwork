@@ -40,12 +40,83 @@ function setAuth(auth) {
   localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
   localStorage.setItem(SERVER_URL_KEY, auth.serverUrl);
   setAuthHintCookie(true);
+  broadcastAuthChange(auth);
 }
 
 function clearAuth() {
   localStorage.removeItem(AUTH_KEY);
   setAuthHintCookie(false);
+  broadcastAuthChange(null);
 }
+
+// Let the Herae browser extension mirror this login/logout so the extension and
+// the site stay in one shared session. The extension's content script listens
+// for this window message on trusted memories-site pages (see content.js); a
+// plain browser with no extension simply ignores it.
+function broadcastAuthChange(auth) {
+  try { window.postMessage({ __heraeAuth: true, auth: auth || null }, window.location.origin); } catch (e) { /* non-browser env */ }
+}
+
+// ── Subscription nav tabs + current-plan pill ────────────────────────
+// Adds "Upgrade" and "Billing" links to the top nav, plus a small pill showing
+// the current plan, on every page that has the nav — so plans, billing and
+// status are reachable from anywhere (not only the extension popup). Idempotent
+// and signed-in-only. Injected here because api.js is the one script every page
+// already loads, so no per-page edits are needed.
+function ensureSubStyles() {
+  if (document.getElementById('herae-sub-styles')) return;
+  const st = document.createElement('style');
+  st.id = 'herae-sub-styles';
+  st.textContent =
+    '.plan-pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;' +
+    'padding:5px 12px;border-radius:999px;text-decoration:none;white-space:nowrap;' +
+    'color:var(--ink-dim);background:rgba(255,255,255,.05);border:1px solid var(--border);' +
+    'transition:border-color .15s ease,color .15s ease,filter .15s ease;}' +
+    '.plan-pill:hover{color:var(--ink);border-color:var(--purple);}' +
+    '.plan-pill-paid{color:#fff;border:none;background:linear-gradient(135deg,var(--purple),var(--purple-deep));' +
+    'box-shadow:0 2px 10px rgba(139,92,246,.35);}' +
+    '.plan-pill-paid:hover{color:#fff;filter:brightness(1.08);}';
+  document.head.appendChild(st);
+}
+
+async function injectSubscriptionNav() {
+  if (typeof getAuth === 'function' && !getAuth()) return; // signed-in only
+  ensureSubStyles();
+  const page = location.pathname.replace(/^.*\//, '');
+  let s = null;
+  try { s = await apiRequest('/api/subscription/status'); } catch (e) { /* leave null */ }
+
+  const nav = document.querySelector('.nav-links');
+  if (nav && !nav.querySelector('[data-herae-sub-nav]')) {
+    const link = (href, label) => {
+      const a = document.createElement('a');
+      a.href = href; a.textContent = label;
+      a.className = 'nav-link' + (page === href ? ' nav-link-active' : '');
+      a.setAttribute('data-herae-sub-nav', '1');
+      return a;
+    };
+    // "Upgrade" only when there IS something to upgrade to: free users, or an
+    // OWN Plus plan (→ Together). Hidden for Together owners, and for anyone
+    // already covered by someone else's Together.
+    const canUpgrade = !s || !s.unlimited || (s.plan === 'plus' && s.source === 'own');
+    if (canUpgrade) nav.appendChild(link('upgrade.html', 'Upgrade'));
+    nav.appendChild(link('billing.html', 'Billing'));
+  }
+
+  // Current-plan pill, top-right of the nav, linking to billing.
+  const right = document.querySelector('.topbar-right');
+  if (s && right && !right.querySelector('[data-herae-plan]')) {
+    const a = document.createElement('a');
+    a.href = 'billing.html';
+    a.setAttribute('data-herae-plan', '1');
+    a.className = 'plan-pill' + (s.unlimited ? ' plan-pill-paid' : '');
+    a.title = 'Your Herae plan';
+    a.textContent = s.unlimited ? (s.plan === 'together' ? '✨ Together' : '✨ Plus') : 'Free plan';
+    right.insertBefore(a, right.firstChild);
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectSubscriptionNav);
+else injectSubscriptionNav();
 
 // Every page except index.html (landing) and login.html needs this —
 // redirects to the login form if there's no stored session, and hands back

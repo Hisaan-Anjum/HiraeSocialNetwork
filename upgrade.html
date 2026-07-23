@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herae Together — Herae</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .up-wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  .up-head { text-align: center; margin-bottom: 8px; }
+  .up-title { font-size: 26px; font-weight: 800; margin: 8px 0 6px; }
+  .up-sub { color: var(--ink-dim); font-size: 14px; }
+  .cycle-toggle { display: inline-flex; gap: 4px; margin: 18px auto 0; padding: 4px;
+    background: rgba(255,255,255,0.06); border-radius: 999px; }
+  .cycle-toggle button { border: 0; background: transparent; color: var(--ink-dim);
+    padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .cycle-toggle button.active { background: linear-gradient(90deg,#ff77c8,#a06bff); color: #fff; }
+  .cycle-save { font-size: 11px; color: #a06bff; margin-left: 6px; }
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+  @media (max-width: 560px) { .plan-grid { grid-template-columns: 1fr; } }
+  .plan-card { border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 22px;
+    background: rgba(255,255,255,0.03); display: flex; flex-direction: column; position: relative; }
+  .plan-card.featured { border-color: #a06bff; box-shadow: 0 0 0 1px #a06bff33, 0 8px 30px #a06bff22; }
+  .plan-card.current { border-color: #4ade80; box-shadow: 0 0 0 1px #4ade8044; }
+  .plan-badge { align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; color: #fff; background: linear-gradient(90deg,#ff77c8,#a06bff);
+    padding: 3px 8px; border-radius: 999px; margin-bottom: 10px; }
+  .plan-name { font-size: 18px; font-weight: 800; }
+  .plan-for { color: var(--ink-dim); font-size: 12.5px; margin: 2px 0 14px; }
+  .plan-price { font-size: 26px; font-weight: 800; }
+  .plan-cycle { color: var(--ink-dim); font-size: 12px; font-weight: 500; }
+  .plan-feats { list-style: none; padding: 0; margin: 14px 0 18px; font-size: 13px; color: var(--ink); }
+  .plan-feats li { padding: 5px 0 5px 22px; position: relative; }
+  .plan-feats li::before { content: "💛"; position: absolute; left: 0; font-size: 12px; }
+  .plan-card .btn {
+    margin-top: auto; width: 100%; padding: 13px 14px; border-radius: 12px;
+    font-size: 14px; font-weight: 700; letter-spacing: -.01em;
+    transition: background .15s ease, border-color .15s ease, box-shadow .2s ease, transform .12s ease, filter .15s ease;
+  }
+  #btnPlus {
+    background: rgba(139,92,246,.10); border: 1px solid rgba(139,92,246,.38);
+    color: #cbb8ff; box-shadow: none;
+  }
+  #btnPlus:hover:not(:disabled) {
+    background: rgba(139,92,246,.20); border-color: var(--purple); color: #fff; transform: translateY(-1px);
+  }
+  #btnTogether {
+    background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: #fff;
+    box-shadow: 0 6px 20px rgba(139,92,246,.40), inset 0 1px 0 rgba(255,255,255,.15);
+  }
+  #btnTogether:hover:not(:disabled) {
+    transform: translateY(-1px); box-shadow: 0 9px 28px rgba(139,92,246,.55), inset 0 1px 0 rgba(255,255,255,.2); filter: brightness(1.06);
+  }
+  .plan-card .btn:disabled { opacity: .5; cursor: default; transform: none; box-shadow: none; filter: none; }
+  .up-note { text-align: center; color: var(--ink-dim); font-size: 12.5px; margin-top: 22px; }
+  .up-current { text-align: center; background: rgba(160,107,255,0.12); border: 1px solid #a06bff44;
+    border-radius: 12px; padding: 12px; margin-bottom: 6px; font-size: 13.5px; display: none; }
+  .up-error { text-align: center; color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
+</style>
+</head>
+<body>
+  <div class="up-wrap">
+    <div class="up-head">
+      <a href="memories.html" class="login-back">← Back to Herae</a>
+      <img src="logo.png" alt="Herae" class="login-logo" style="margin:14px auto 0">
+      <div class="up-title">Unlimited movie nights, together 💛</div>
+      <div class="up-sub">Free includes 15 hours of synced watching every month — plus voice, video &amp; chat. Upgrade for unlimited time and more.</div>
+      <div class="cycle-toggle" id="cycleToggle">
+        <button data-cycle="month" class="active">Monthly</button>
+        <button data-cycle="year">Yearly <span class="cycle-save">save ~2 months</span></button>
+      </div>
+    </div>
+
+    <div class="up-current" id="currentBox"></div>
+
+    <div class="plan-grid">
+      <div class="plan-card">
+        <div class="plan-name">Herae Plus</div>
+        <div class="plan-for">For friends, family &amp; individuals</div>
+        <div><span class="plan-price" id="pricePlus">—</span> <span class="plan-cycle" id="cyclePlus">/month</span></div>
+        <ul class="plan-feats">
+          <li>Unlimited synced watching &amp; calls</li>
+          <li>No monthly time limit</li>
+          <li>Covers your account only</li>
+        </ul>
+        <button class="btn btn-ghost" id="btnPlus">Choose Plus</button>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-badge">Most loved</div>
+        <div class="plan-name">Herae Together</div>
+        <div class="plan-for">One subscription for you + one person you choose</div>
+        <div><span class="plan-price" id="priceTogether">—</span> <span class="plan-cycle" id="cycleTogether">/month</span></div>
+        <ul class="plan-feats">
+          <li>Everything in Plus, for both of you</li>
+          <li>Unlimited time together, forever</li>
+          <li>Choose (or invite) your person anytime</li>
+        </ul>
+        <button class="btn btn-primary" id="btnTogether">Choose Together</button>
+      </div>
+    </div>
+
+    <div class="up-note">Secure checkout by Paddle. Cancel anytime — you keep what you paid for until the period ends.</div>
+    <div class="up-error" id="errorBox"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <script>
+  'use strict';
+  const auth = requireAuth();
+  const el = (id) => document.getElementById(id);
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function cap(s){ return s[0].toUpperCase() + s.slice(1); }
+
+  let cfg = null, cycle = 'month', userEmail = null, status = null;
+  const formatted = {};
+  const errorBox = el('errorBox');
+  function showError(m){ errorBox.textContent = m; errorBox.style.display = 'block'; }
+
+  function priceIdFor(plan){ return cfg && cfg.prices[plan] ? cfg.prices[plan][cycle] : ''; }
+  function onPaddleEvent(ev){
+    // Webhooks are the source of truth — a client "completed" event never grants
+    // access. Send them to billing, which waits for the webhook then shows the
+    // new plan (and, for Together, the "choose who's covered" step).
+    if (ev && ev.name === 'checkout.completed') location.href = 'billing.html?upgraded=1';
+  }
+  function checkout(plan){
+    const priceId = priceIdFor(plan);
+    if (!priceId) { showError('That plan is not available right now.'); return; }
+    Paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customData: { username: auth.username },
+      customer: userEmail ? { email: userEmail } : undefined,
+      settings: { displayMode: 'overlay', theme: 'light' },
+    });
+  }
+
+  function renderPrices(){
+    for (const plan of ['plus','together']){
+      const id = priceIdFor(plan);
+      el('price' + cap(plan)).textContent = (id && formatted[id]) || '—';
+      el('cycle' + cap(plan)).textContent = cycle === 'year' ? '/year' : '/month';
+    }
+  }
+  async function loadPreview(){
+    const items = [];
+    for (const plan of ['plus','together']) for (const c of ['month','year']){
+      const id = cfg.prices[plan] && cfg.prices[plan][c];
+      if (id) items.push({ priceId: id, quantity: 1 });
+    }
+    if (!items.length) return;
+    try {
+      const preview = await Paddle.PricePreview({ items });
+      for (const li of preview.data.details.lineItems) formatted[li.price.id] = li.formattedTotals.total;
+    } catch (e) { /* checkout still shows the real price */ }
+    renderPrices();
+  }
+
+  function renderPlans(){
+    const bPlus = el('btnPlus'), bTog = el('btnTogether');
+    const cPlus = bPlus.closest('.plan-card'), cTog = bTog.closest('.plan-card');
+    const box = el('currentBox'); box.style.display = 'none'; box.innerHTML = '';
+    const own = (status && status.source === 'own') ? status.plan : null;
+    if (own === 'together') {
+      cTog.classList.add('current');
+      bTog.disabled = true; bTog.textContent = '✓ Your plan';
+      bPlus.disabled = true; bPlus.textContent = 'Included in Together';
+      box.style.display = 'block';
+      box.innerHTML = "✓ You're already enjoying <strong>Herae Together</strong>. <a href='billing.html'>Manage plan &amp; who's covered →</a>";
+    } else if (own === 'plus') {
+      cPlus.classList.add('current');
+      bPlus.disabled = true; bPlus.textContent = '✓ Current Plan';
+      bTog.textContent = 'Upgrade to Herae Together';
+      box.style.display = 'block';
+      box.innerHTML = "✓ You're on <strong>Herae Plus</strong>. <a href='billing.html'>Manage billing →</a>";
+    } else if (status && status.source === 'partner') {
+      bPlus.disabled = true; bTog.disabled = true;
+      bPlus.textContent = 'Covered by your partner'; bTog.textContent = 'Covered by your partner';
+      box.style.display = 'block';
+      box.innerHTML = "💛 You're covered by <strong>" + esc(status.coveredBy || 'someone') + "</strong>'s Herae Together — you already have unlimited access, nothing to buy.";
+    } else if (status && status.source === 'special') {
+      bPlus.disabled = true; bTog.disabled = true;
+      bPlus.textContent = 'Complimentary access'; bTog.textContent = 'Complimentary access';
+      box.style.display = 'block';
+      box.innerHTML = "💛 You have complimentary <strong>Herae Plus</strong> — unlimited, on us. Nothing to buy.";
+    }
+  }
+
+  el('cycleToggle').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-cycle]'); if (!b) return;
+    cycle = b.dataset.cycle;
+    document.querySelectorAll('#cycleToggle button').forEach(x => x.classList.toggle('active', x === b));
+    renderPrices();
+  });
+  el('btnPlus').addEventListener('click', () => checkout('plus'));
+  el('btnTogether').addEventListener('click', () => checkout('together'));
+
+  (async () => {
+    try { cfg = await apiRequest('/api/subscription/config'); }
+    catch (e) { showError('Could not load plans. Please try again.'); return; }
+    if (!cfg.configured) { showError('Upgrades are not available yet — check back soon.'); return; }
+    Paddle.Environment.set(cfg.environment);
+    Paddle.Initialize({ token: cfg.clientToken, eventCallback: onPaddleEvent });
+    try { status = await apiRequest('/api/subscription/status'); userEmail = status.email || null; } catch (e) {}
+    renderPlans();
+    await loadPreview();
+  })();
+  </script>
+</body>
+</html>

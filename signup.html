@@ -73,12 +73,12 @@
         Already have an account? <a href="login.html">Log in</a>
       </div>
 
-      <div class="signup-legal">
+      <div class="legal">
         By creating an account you agree to Herae's
-        <a href="terms.html">Terms &amp; Conditions</a>,
-        <a href="privacy.html">Privacy Policy</a>,
-        <a href="community.html">Community Guidelines</a>
-        and <a href="cookies.html">Cookie Policy</a>.
+        <a href="https://herae.app/terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a>,
+        <a href="https://herae.app/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>,
+        <a href="https://herae.app/community.html" target="_blank" rel="noopener">Community Guidelines</a>
+        and <a href="https://herae.app/cookies.html" target="_blank" rel="noopener">Cookie Policy</a>.
       </div>
     </div>
   </div>
@@ -196,7 +196,12 @@
           if (!res.ok) throw new Error(res.d.error || 'Could not create your account.');
           // Same session shape login() writes, so every other page picks it up.
           setAuth({ token: res.d.token, username: res.d.username, serverUrl: b });
-          window.location.href = 'memories.html';
+          // Honour a stashed return target the same way login.js does — this is
+          // what lets a Herae Together invite (claim.html?token=…) auto-activate
+          // the reserved seat right after a brand-new account is created.
+          var returnTo = sessionStorage.getItem('moments_return_to');
+          sessionStorage.removeItem('moments_return_to');
+          window.location.href = returnTo || 'memories.html';
         })
         .catch(function (err) {
           errorText.textContent = err.message || 'Could not reach the server. Check the address and that it is running.';

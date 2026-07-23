@@ -65,6 +65,13 @@ const FILES = [
   'takedown.html',
   'account-deletion.html',
   'contact.html',
+  // Subscription pages — self-contained, load Paddle.js from its CDN and the
+  // shared config.js/api.js helpers, copied verbatim like the other app pages.
+  'upgrade.html',
+  'billing.html',
+  'claim.html',
+  'pricing.html',
+  'refund_policy.html',
   'legal.css',
   // Also copied unhashed to dist root so index.html/admin.html's plain
   // <link href="style.css"> keeps resolving — the Vite-processed pages

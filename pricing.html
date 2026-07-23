@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing — Herae</title>
+<meta name="description" content="Herae pricing: start free with 15 hours of synced watching a month, or go unlimited with Herae Plus or Herae Together — one subscription for you and the person you watch with.">
+<link rel="canonical" href="https://herae.app/pricing.html">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="landing.css">
+<style>
+  .pricing-wrap { max-width: 940px; margin: 0 auto; padding: 40px 20px 70px; }
+  .pricing-head { text-align: center; margin-bottom: 12px; }
+  .pricing-head h1 { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
+  .pricing-head p { color: var(--ink-dim); font-size: 15px; max-width: 560px; margin: 0 auto; }
+  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+  @media (max-width: 780px) { .price-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; } }
+  .price-card { position: relative; display: flex; flex-direction: column; border: 1px solid var(--border);
+    border-radius: 18px; padding: 26px 22px; background: rgba(255,255,255,0.025); }
+  .price-card.featured { border-color: var(--purple); box-shadow: 0 0 0 1px rgba(139,92,246,.3), 0 12px 40px rgba(139,92,246,.16); }
+  .price-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #fff;
+    background: linear-gradient(135deg, #a855f7, #7c3aed); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+  .price-name { font-size: 19px; font-weight: 800; }
+  .price-for { color: var(--ink-dim); font-size: 12.5px; margin: 2px 0 16px; }
+  .price-amount { font-size: 34px; font-weight: 800; letter-spacing: -.02em; }
+  .price-cycle { color: var(--ink-dim); font-size: 13px; font-weight: 500; }
+  .price-annual { color: var(--ink-faint); font-size: 12px; margin-top: 4px; min-height: 15px; }
+  .price-feats { list-style: none; padding: 0; margin: 18px 0 22px; font-size: 13.5px; color: var(--ink); }
+  .price-feats li { padding: 6px 0 6px 24px; position: relative; line-height: 1.4; }
+  .price-feats li::before { content: "💛"; position: absolute; left: 0; font-size: 12px; top: 6px; }
+  .price-card .btn { width: 100%; margin-top: auto; padding: 13px; border-radius: 12px; font-weight: 700; }
+  .price-fine { text-align: center; color: var(--ink-faint); font-size: 12.5px; margin-top: 28px; }
+</style>
+</head>
+<body>
+  <div class="hero-topbar">
+    <a class="brand-link" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae" width="30" height="30"><span>Herae</span>
+    </a>
+    <nav class="topnav-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="index.html#why">Why Herae</a>
+      <a href="pricing.html" aria-current="page">Pricing</a>
+    </nav>
+    <div class="topbar-ctas">
+      <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="https://github.com/Hisaan-Anjum/HeraeBrowserExtension" class="btn btn-gold" target="_blank" rel="noopener">Add to Chrome — free</a>
+    </div>
+  </div>
+
+  <div class="pricing-wrap">
+    <div class="pricing-head">
+      <h1>Simple pricing, made for two 💛</h1>
+      <p>Start free with 15 hours of synced movie nights every month — voice, video and chat included. Go unlimited whenever you're ready.</p>
+    </div>
+
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-for">For trying Herae out</div>
+        <div><span class="price-amount">$0</span></div>
+        <div class="price-annual">forever</div>
+        <ul class="price-feats">
+          <li>15 hours of synced watching / month</li>
+          <li>Voice, video &amp; chat while you watch</li>
+          <li>Save moments &amp; memories</li>
+          <li>Works on almost any site</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://github.com/Hisaan-Anjum/HeraeBrowserExtension" target="_blank" rel="noopener">Add to Chrome — free</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-name">Herae Plus</div>
+        <div class="price-for">For friends, family &amp; individuals</div>
+        <div><span class="price-amount" id="pricePlus">$8.99</span> <span class="price-cycle">/month</span></div>
+        <div class="price-annual">annual billing available</div>
+        <ul class="price-feats">
+          <li>Unlimited synced watching &amp; calls</li>
+          <li>No monthly time limit</li>
+          <li>Covers your account</li>
+        </ul>
+        <a class="btn btn-secondary" data-cta-paid href="signup.html">Get Plus</a>
+      </div>
+
+      <div class="price-card featured">
+        <div class="price-badge">Most loved</div>
+        <div class="price-name">Herae Together</div>
+        <div class="price-for">One subscription for both of you</div>
+        <div><span class="price-amount" id="priceTogether">$12.99</span> <span class="price-cycle">/month</span></div>
+        <div class="price-annual">annual billing available</div>
+        <ul class="price-feats">
+          <li>Everything in Plus, for two people</li>
+          <li>Unlimited time together, forever</li>
+          <li>Covers you + one person you choose</li>
+        </ul>
+        <a class="btn btn-primary" data-cta-paid href="signup.html">Get Together</a>
+      </div>
+    </div>
+
+    <div class="price-fine">Secure checkout by Paddle · cancel anytime · you keep what you paid for until the period ends.</div>
+  </div>
+
+  <footer class="landing-footer">
+    <a class="footer-brand" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae" width="26" height="26"><span>Herae</span>
+    </a>
+    <nav class="footer-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="login.html">Log in</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="refund_policy.html">Refunds</a>
+      <a href="terms.html">Terms</a>
+    </nav>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <script>
+  'use strict';
+  (async () => {
+    // Logged-in visitors go straight to checkout; everyone else signs up first
+    // (they can subscribe right after). No login is required to VIEW this page.
+    const loggedIn = typeof getAuth === 'function' && !!getAuth();
+    document.querySelectorAll('[data-cta-paid]').forEach((a) => { a.href = loggedIn ? 'upgrade.html' : 'signup.html'; });
+
+    // Real, localized prices from Paddle (falls back to the amounts in the HTML
+    // if anything's unavailable — the checkout always shows the exact price).
+    try {
+      const cfg = await apiRequest('/api/subscription/config');
+      if (cfg && cfg.configured && window.Paddle) {
+        Paddle.Environment.set(cfg.environment);
+        Paddle.Initialize({ token: cfg.clientToken });
+        const plusId = cfg.prices.plus.month, togId = cfg.prices.together.month;
+        const items = [plusId, togId].filter(Boolean).map((priceId) => ({ priceId, quantity: 1 }));
+        if (items.length) {
+          const preview = await Paddle.PricePreview({ items });
+          const by = {};
+          for (const li of preview.data.details.lineItems) by[li.price.id] = li.formattedTotals.total;
+          if (by[plusId]) document.getElementById('pricePlus').textContent = by[plusId];
+          if (by[togId]) document.getElementById('priceTogether').textContent = by[togId];
+        }
+      }
+    } catch (e) { /* keep the fallback prices */ }
+  })();
+  </script>
+</body>
+</html>

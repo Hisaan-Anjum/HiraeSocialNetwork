@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billing — Herae</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .bill-wrap { max-width: 560px; margin: 0 auto; padding: 32px 16px 64px; }
+  .bill-card { border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px;
+    background: rgba(255,255,255,0.03); }
+  .bill-plan { font-size: 22px; font-weight: 800; }
+  .bill-status { color: var(--ink-dim); font-size: 13.5px; margin-top: 4px; }
+  .bill-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .bill-row .btn { flex: 1; min-width: 160px; }
+  .bill-note { color: var(--ink-dim); font-size: 12.5px; margin-top: 16px; text-align: center; }
+  .bill-msg { text-align: center; font-size: 13.5px; margin-top: 14px; }
+  .bill-msg.err { color: #f87171; }
+  .bill-msg.ok { color: #4ade80; }
+
+  /* Covered-person manager */
+  .cov { margin-top: 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+    padding: 24px; background: rgba(255,255,255,0.03); }
+  .cov-head { font-size: 13px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+    color: var(--ink-dim); margin-bottom: 14px; }
+  .cov-empty-title { font-size: 18px; font-weight: 800; }
+  .cov-empty-sub { color: var(--ink); font-size: 13.5px; margin: 6px 0 4px; }
+  .cov-empty-desc { color: var(--ink-dim); font-size: 13px; margin-bottom: 16px; }
+  .cov-person { display: flex; align-items: center; gap: 14px; }
+  .cov-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    background: linear-gradient(135deg,#ff77c8,#a06bff); display: flex; align-items: center;
+    justify-content: center; color: #fff; font-weight: 800; font-size: 22px; }
+  .cov-name { font-size: 17px; font-weight: 800; }
+  .cov-user { color: var(--ink-dim); font-size: 13px; }
+  .cov-badge { color: #4ade80; font-size: 12.5px; margin-top: 3px; }
+  .cov-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .cov-actions .btn { flex: 1; min-width: 140px; }
+  .cov-search { display: flex; gap: 8px; margin: 6px 0 14px; }
+  .cov-search input, .cov-invite input {
+    flex: 1; padding: 11px 13px; border-radius: 10px; font-family: inherit;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+    color: var(--ink); font-size: 14px; outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .cov-search input:focus, .cov-invite input:focus {
+    border-color: var(--purple); background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+  }
+  .cov-search input::placeholder { color: var(--ink-faint); }
+  .cov-or { text-align: center; color: var(--ink-dim); font-size: 12px; margin: 12px 0; }
+  .cov-contacts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cov-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; padding: 5px 12px 5px 6px; cursor: pointer; font-size: 13px; background: transparent; color: var(--ink); }
+  .cov-chip:hover { border-color: #a06bff; }
+  .cov-chip .mini { width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
+    background: linear-gradient(135deg,#ff77c8,#a06bff); display: inline-flex; align-items: center;
+    justify-content: center; color: #fff; font-weight: 700; font-size: 11px; }
+  .cov-invite { display: flex; gap: 8px; margin-top: 10px; }
+  .cov-invite input { font-size: 12px; color: var(--ink-dim); }
+  .cov-msg { font-size: 12.5px; margin-top: 10px; }
+  .cov-msg.err { color: #f87171; } .cov-msg.ok { color: #4ade80; }
+  .cov-hint { color: var(--ink-dim); font-size: 12.5px; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="bill-wrap">
+    <a href="memories.html" class="login-back">← Back to Herae</a>
+    <img src="logo.png" alt="Herae" class="login-logo" style="margin:14px auto 22px">
+    <div class="bill-card" id="planCard">
+      <div class="bill-plan" id="planName">Loading…</div>
+      <div class="bill-status" id="planStatus"></div>
+      <div class="bill-row" id="actions"></div>
+      <div class="bill-msg" id="msg"></div>
+    </div>
+    <div class="cov" id="coveredSection" hidden></div>
+    <div class="bill-note">Payments are processed securely by Paddle, our authorized reseller. · <a href="refund_policy.html">Refund policy</a></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+  'use strict';
+  requireAuth();
+  const el = (id) => document.getElementById(id);
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function initials(u){ return String(u || '?').trim().slice(0,2).toUpperCase(); }
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  const planName = el('planName'), planStatus = el('planStatus'), actions = el('actions'), msgEl = el('msg');
+  let covered = null;
+
+  function say(text, kind) { msgEl.textContent = text; msgEl.className = 'bill-msg ' + (kind || ''); }
+  function fmtDate(s) { if (!s) return ''; const d = new Date(s); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); }
+  function planLabel(p) { return p === 'together' ? 'Herae Together' : p === 'plus' ? 'Herae Plus' : 'Free'; }
+  function linkButton(label, href, primary) {
+    const a = document.createElement('a');
+    a.className = 'btn ' + (primary ? 'btn-primary' : 'btn-ghost');
+    a.textContent = label; a.href = href; if (/^https?:/.test(href)) a.target = '_blank';
+    return a;
+  }
+
+  // ── Plan card ──
+  function renderPlan(s) {
+    planName.textContent = s.unlimited ? planLabel(s.plan) : 'Free plan';
+    actions.innerHTML = '';
+    if (!s.unlimited) {
+      planStatus.textContent = `${s.hoursUsed || 0} of 15 free hours used this month.`;
+      actions.appendChild(linkButton('See plans', 'upgrade.html', true));
+      return;
+    }
+    if (s.source === 'partner') {
+      planStatus.textContent = `You're covered by ${s.coveredBy || 'a partner'}'s Herae Together. 💛`;
+      return;
+    }
+    if (s.source === 'special') {
+      planStatus.textContent = 'Complimentary — unlimited access, on us. 💛';
+      return;
+    }
+    const bits = [];
+    if (s.scheduledCancel) bits.push('Cancels at the end of the current period');
+    else if (s.currentPeriodEnd) bits.push('Renews ' + fmtDate(s.currentPeriodEnd));
+    if (s.status === 'past_due') bits.push('Payment past due — please update your card');
+    planStatus.textContent = bits.join(' · ') || 'Active';
+
+    // Plus owners can move up to Together (the upgrade page runs the checkout;
+    // the webhook then supersedes this Plus subscription automatically).
+    if (s.plan === 'plus') actions.appendChild(linkButton('✨ Upgrade to Herae Together', 'upgrade.html', true));
+
+    apiRequest('/api/subscription/manage')
+      .then(({ urls }) => { if (urls && urls.update_payment_method) actions.appendChild(linkButton('Update payment method', urls.update_payment_method, false)); })
+      .catch(() => {});
+    if (!s.scheduledCancel) {
+      const cancel = document.createElement('button');
+      cancel.className = 'btn btn-ghost'; cancel.textContent = 'Cancel subscription';
+      cancel.addEventListener('click', cancelSub);
+      actions.appendChild(cancel);
+    }
+  }
+  async function cancelSub() {
+    if (!confirm('Cancel your Herae plan? You keep unlimited access until the end of the period you have already paid for.')) return;
+    say('Cancelling…');
+    try { await apiRequest('/api/subscription/cancel', { method: 'POST' }); say('Your plan will end when the current period is over. You keep unlimited access until then. 💛', 'ok'); }
+    catch (e) { say(e.message || 'Could not cancel — please try again.', 'err'); }
+  }
+
+  // ── Covered-person manager (Together owners) ──
+  const cmsg = (t, k) => { const m = el('covMsg'); if (m) { m.textContent = t; m.className = 'cov-msg ' + (k || ''); } };
+  function avatarBig(p){ return p && p.avatarUrl ? '<img class="cov-avatar" src="' + esc(p.avatarUrl) + '" alt="">' : '<div class="cov-avatar">' + esc(initials(p && p.username)) + '</div>'; }
+
+  function renderCovered(s) {
+    const sec = el('coveredSection');
+    if (!s || s.plan !== 'together' || s.source !== 'own') { sec.hidden = true; return; }
+    sec.hidden = false;
+    const c = covered || {};
+    if (c.covered && c.coveredProfile) { sec.innerHTML = '<div class="cov-head">Who\'s covered</div>' + activeHtml(c); wireActive(c); }
+    else if (c.inviteToken) { sec.innerHTML = '<div class="cov-head">Who\'s covered</div>' + inviteHtml(c); wireInvite(); }
+    else { sec.innerHTML = '<div class="cov-head">Who\'s covered</div>' + emptyHtml(); wireEmpty(); }
+  }
+  function activeHtml(c){
+    const p = c.coveredProfile;
+    const dis = c.canChange ? '' : 'disabled';
+    const hint = c.canChange ? '' : '<div class="cov-hint">You can change who\'s covered again on ' + esc((c.changeAllowedAt||'').slice(0,10)) + '.</div>';
+    return '<div class="cov-person">' + avatarBig(p) +
+      '<div><div class="cov-name">' + esc(p.username) + '</div><div class="cov-user">@' + esc(p.username) + '</div>' +
+      '<div class="cov-badge">Covered by your Herae Together plan 💛</div></div></div>' +
+      '<div class="cov-hint">Unlimited access is active for both of you.</div>' +
+      '<div class="cov-actions">' +
+        '<a class="btn btn-ghost" href="user.html?u=' + encodeURIComponent(p.username) + '">View profile</a>' +
+        '<button class="btn btn-ghost" id="covChange" ' + dis + '>Change person</button>' +
+        '<button class="btn btn-ghost" id="covRemove">Remove</button>' +
+      '</div>' + hint + '<div class="cov-msg" id="covMsg"></div>';
+  }
+  function wireActive(c){
+    el('covRemove').addEventListener('click', async () => {
+      if (!confirm('Remove this person from your Herae Together plan? They\'ll go back to the free plan.')) return;
+      await act(() => apiRequest('/api/subscription/covered', { method: 'DELETE' }));
+    });
+    const chg = el('covChange');
+    if (chg && !chg.disabled) chg.addEventListener('click', () => { covered = Object.assign({}, covered, { covered: null, coveredProfile: null }); renderCovered(window.__status); });
+  }
+  function emptyHtml(){
+    return '<div class="cov-empty-title">💛 Share Herae Together</div>' +
+      '<div class="cov-empty-sub">One subscription gives unlimited movie nights, calls and memories for you and one person you choose.</div>' +
+      '<div class="cov-empty-desc">Choose someone now, or invite them whenever you\'re ready.</div>' +
+      '<div class="cov-search"><input type="text" id="covUser" placeholder="Enter a Herae username" autocapitalize="none" autocomplete="off"><button class="btn btn-primary" id="covAdd" style="width:auto">Add</button></div>' +
+      '<div id="covContactsWrap"></div>' +
+      '<div class="cov-or">— or —</div>' +
+      '<button class="btn btn-ghost" id="covInviteBtn">Generate an invite link</button>' +
+      '<div class="cov-hint">Perfect if they don\'t have Herae yet — they\'re covered automatically when they sign up.</div>' +
+      '<div class="cov-msg" id="covMsg"></div>';
+  }
+  async function wireEmpty(){
+    el('covAdd').addEventListener('click', () => addByUsername(el('covUser').value));
+    el('covUser').addEventListener('keydown', (e) => { if (e.key === 'Enter') addByUsername(el('covUser').value); });
+    el('covInviteBtn').addEventListener('click', () => act(() => apiRequest('/api/subscription/covered/invite', { method: 'POST' })));
+    try {
+      const data = await apiRequest('/api/contacts');
+      const list = (data && data.contacts) || [];
+      if (list.length) {
+        el('covContactsWrap').innerHTML = '<div class="cov-hint" style="margin:14px 0 8px">Or choose a contact</div><div class="cov-contacts">' +
+          list.map(ct => '<button class="cov-chip" data-u="' + esc(ct.username) + '">' +
+            (ct.avatarUrl ? '<img class="mini" src="' + esc(ct.avatarUrl) + '" alt="">' : '<span class="mini">' + esc(initials(ct.username)) + '</span>') +
+            esc(ct.username) + '</button>').join('') + '</div>';
+        el('covContactsWrap').querySelectorAll('.cov-chip').forEach(ch => ch.addEventListener('click', () => addByUsername(ch.dataset.u)));
+      }
+    } catch (e) {}
+  }
+  function addByUsername(u){ u = (u || '').trim(); if (!u) return; act(() => apiRequest('/api/subscription/covered', { method: 'POST', body: JSON.stringify({ username: u }) })); }
+  function inviteHtml(c){
+    const url = location.origin + '/claim.html?token=' + encodeURIComponent(c.inviteToken);
+    return '<div class="cov-empty-title">Invite link ready 💛</div>' +
+      '<div class="cov-empty-desc">Send this to the person you want to cover. When they open it and sign in (or sign up), they\'re covered automatically.</div>' +
+      '<div class="cov-invite"><input type="text" id="covLink" readonly value="' + esc(url) + '"><button class="btn btn-primary" id="covCopy" style="width:auto">Copy</button></div>' +
+      '<div class="cov-actions" style="margin-top:14px"><button class="btn btn-ghost" id="covCancelInvite">Cancel invite</button></div>' +
+      '<div class="cov-msg" id="covMsg"></div>';
+  }
+  function wireInvite(){
+    el('covCopy').addEventListener('click', async () => {
+      const inp = el('covLink'); inp.select();
+      try { await navigator.clipboard.writeText(inp.value); cmsg('Link copied 💛', 'ok'); } catch (e) { try { document.execCommand('copy'); cmsg('Link copied 💛', 'ok'); } catch (_) {} }
+    });
+    el('covCancelInvite').addEventListener('click', () => act(() => apiRequest('/api/subscription/covered', { method: 'DELETE' })));
+  }
+  async function act(fn){
+    try { await fn(); covered = await apiRequest('/api/subscription/covered'); renderCovered(window.__status); }
+    catch (e) { cmsg(e.message || 'Something went wrong.', 'err'); }
+  }
+
+  // ── Init ──
+  (async () => {
+    const justUpgraded = new URLSearchParams(location.search).has('upgraded');
+    let s;
+    try { s = await apiRequest('/api/subscription/status'); }
+    catch (e) { planName.textContent = 'Something went wrong'; say(e.message || '', 'err'); return; }
+
+    // Just paid? Wait for the (authoritative) webhook rather than flashing "Free".
+    if (justUpgraded && !s.unlimited) {
+      planName.textContent = 'Finalizing your upgrade…';
+      planStatus.textContent = 'This takes a few seconds — hang tight. 💛';
+      for (let i = 0; i < 6 && !s.unlimited; i++) { await sleep(2000); try { s = await apiRequest('/api/subscription/status'); } catch (e) {} }
+    }
+
+    window.__status = s;
+    if (s.plan === 'together' && s.source === 'own') {
+      try { covered = await apiRequest('/api/subscription/covered'); } catch (e) { covered = null; }
+    }
+    renderPlan(s);
+    renderCovered(s);
+  })();
+  </script>
+</body>
+</html>
