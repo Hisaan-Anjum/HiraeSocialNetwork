@@ -1699,3 +1699,111 @@ html { scroll-behavior: smooth; }
   .ms-form-grid .ms-field:nth-child(3) { grid-column: 1 / -1; }
   .ms-month-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Shared Watchlist — the two-column profile layout, the watchlist panel,
+   the "Add Movie" overlay and the movie-detail modal. Same tokens and card
+   language as the rest of the site.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Desktop: watchlist left, moments feed right. Mobile: watchlist above the
+   feed (the Memories banner already sits above both). */
+.profile-split { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 28px; align-items: start; }
+.profile-split-main { min-width: 0; }
+.profile-split-main .feed-list { max-width: 640px; margin: 0; }
+.profile-split-side { position: sticky; top: 20px; }
+@media (max-width: 900px) {
+  .profile-split { grid-template-columns: 1fr; gap: 24px; }
+  .profile-split-side { position: static; }
+  .profile-split-main .feed-list { margin: 0 auto; }
+}
+
+/* ── The panel ── */
+.wl-panel {
+  border-radius: 20px; padding: 20px;
+  background: linear-gradient(170deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border);
+}
+.wl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.wl-head h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 700; margin: 0; color: var(--ink); }
+.wl-count { font-size: 12px; font-weight: 700; color: var(--ink-faint); white-space: nowrap; }
+.wl-add-btn { width: 100%; margin-top: 16px; }
+
+.wl-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.wl-item {
+  display: flex; gap: 12px; padding: 12px; border-radius: 14px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  transition: border-color .15s ease, opacity .15s ease, transform .15s ease;
+}
+.wl-item:hover { border-color: rgba(139,92,246,.4); }
+.wl-item.is-dragging { opacity: .45; transform: scale(.99); }
+.wl-item.is-watched { opacity: .62; }
+.wl-item.is-watched .wl-title { text-decoration: line-through; text-decoration-color: var(--ink-faint); }
+.wl-grip { color: var(--ink-faint); cursor: grab; font-size: 15px; line-height: 1.2; user-select: none; align-self: center; }
+.wl-grip:active { cursor: grabbing; }
+.wl-art {
+  width: 54px; height: 78px; flex-shrink: 0; border-radius: 8px; cursor: pointer;
+  background: var(--bg-1) center/cover no-repeat;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.wl-main { flex: 1; min-width: 0; }
+.wl-title { font-weight: 700; font-size: 15px; color: var(--ink); cursor: pointer; line-height: 1.3; }
+.wl-title:hover { color: var(--purple); }
+.wl-meta { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
+.wl-comment { font-size: 12px; color: var(--ink-dim); font-style: italic; margin-top: 6px; line-height: 1.45; }
+
+.wl-stars { display: flex; align-items: center; gap: 2px; margin-top: 6px; }
+.wl-star { background: none; border: none; padding: 0 1px; cursor: pointer; font-size: 15px; color: var(--ink-faint); line-height: 1; }
+.wl-star.is-on { color: var(--gold); }
+.wl-star:hover { color: var(--gold); }
+.wl-clear { background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 11px; margin-left: 4px; }
+.wl-clear:hover { color: #fb7185; }
+
+.wl-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.wl-chip {
+  font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--ink-dim);
+}
+.wl-chip:hover { color: var(--ink); border-color: var(--purple); }
+.wl-chip-go { color: #c4b5fd; }
+.wl-chip-danger:hover { color: #fb7185; border-color: rgba(251,113,133,.5); }
+
+.wl-empty { text-align: center; padding: 26px 12px; }
+.wl-empty-emoji { font-size: 32px; }
+.wl-empty-title { font-weight: 700; color: var(--ink); margin-top: 8px; }
+.wl-empty-sub { font-size: 12px; color: var(--ink-dim); margin-top: 6px; line-height: 1.5; }
+
+/* ── "Add Movie" overlay ── */
+.wl-add { max-width: 720px; width: 100%; }
+.wl-add-search {
+  width: 100%; margin-bottom: 16px; padding: 11px 14px; border-radius: 12px;
+  background: var(--bg-1); border: 1px solid var(--border); color: var(--ink); font-size: 14px; font-family: inherit;
+}
+.wl-add-search:focus { outline: none; border-color: var(--purple); }
+.wl-add-kicker { text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+.wl-add-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; max-height: 56vh; overflow-y: auto; }
+.wl-add-card { background: none; border: none; padding: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+.wl-add-art {
+  position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px;
+  background: var(--bg-2) center/cover no-repeat; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.wl-add-card:hover .wl-add-art { transform: translateY(-3px); border-color: var(--purple); }
+.wl-add-on {
+  position: absolute; inset: auto 6px 6px 6px; text-align: center;
+  font-size: 10px; font-weight: 800; padding: 4px; border-radius: 999px;
+  background: rgba(13,11,18,.8); color: #6ee7b7;
+}
+.wl-add-name { font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.wl-add-year { font-size: 11px; color: var(--ink-faint); }
+.wl-add-empty { grid-column: 1 / -1; text-align: center; color: var(--ink-dim); padding: 28px 10px; }
+
+/* ── Movie detail modal (reuses the movie page's own markup) ── */
+.movie-modal { max-width: 860px; width: 100%; padding: 0; overflow: hidden; position: relative; }
+.movie-modal-close { position: absolute; top: 14px; right: 14px; z-index: 3; background: rgba(13,11,18,.6); }
+.movie-modal-body { max-height: 86vh; overflow-y: auto; }
+.movie-modal-body .movie-hero { border-radius: 0; }
+.movie-modal-body .movie-body { padding-bottom: 28px; }
+.movie-modal-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.movie-modal-msg { font-size: 13px; color: #fb7185; }
