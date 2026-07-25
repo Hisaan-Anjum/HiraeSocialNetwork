@@ -410,6 +410,46 @@ function momentPublicUrl(id) {
   return `${origin}/post.html?id=${encodeURIComponent(id)}`;
 }
 
+// ── Relationship Memory Engine ───────────────────────────────────────
+// Everything the Memories section on a contact profile renders — stats,
+// milestones, the month/year matrix, available story types, Important Dates —
+// aggregated server-side for the (me, :username) pair. See
+// server/src/relationships.js. All of these require an accepted contact
+// (the server 403s otherwise); the site only calls them on such profiles.
+function getRelationshipSummary(username) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/summary`);
+}
+
+// Important Dates — the shared relationship calendar. `payload` is
+// { title, emoji, date: 'YYYY-MM-DD', description?, cover? } where cover is an
+// optional base64 image data URL (downscaled client-side first, like avatars).
+function listImportantDates(username) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/dates`);
+}
+function createImportantDate(username, payload) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/dates`, { method: 'POST', body: JSON.stringify(payload) });
+}
+function updateImportantDate(username, id, payload) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/dates/${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+}
+function deleteImportantDate(username, id) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/dates/${id}`, { method: 'DELETE' });
+}
+
+// A Memory Story's cached manifest. getStory returns { story: null } when one
+// hasn't been generated yet (or is stale — the caller compares contentVersion).
+// saveStory upserts the manifest the client just built; uploadStoryVideo is the
+// optional rendered .mp4, sent only when a story is shared/downloaded.
+function getStory(username, type, key) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/stories/${encodeURIComponent(type)}/${encodeURIComponent(key)}`);
+}
+function saveStory(username, type, key, payload) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/stories/${encodeURIComponent(type)}/${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+function uploadStoryVideo(username, type, key, videoDataUrl) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/stories/${encodeURIComponent(type)}/${encodeURIComponent(key)}/video`, { method: 'POST', body: JSON.stringify({ video: videoDataUrl }) });
+}
+
 // ── Recommendations (admin.html + any future public "recommended" surface) ─
 // Read routes work for any logged-in account; the /admin/ ones 403 for a
 // non-admin JWT (see server/src/recommendations.js) — admin.js is the only

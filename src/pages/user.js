@@ -24,13 +24,12 @@ import { renderAvatar } from '../components/avatar.js';
 import { initSearch } from '../components/search.js';
 import { mountAvatarControls } from '../components/avatarUpload.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
-import { buildRecap, renderRecapCard } from '../components/recap.js';
-import { openMediaViewer } from '../components/mediaViewer.js';
+import { mountMemoriesSection } from '../memories/section.js';
 
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
   requestContact, acceptContactRequest, removeContact,
-  deleteAccount, clearAuth, trackEvent,
+  deleteAccount, clearAuth,
 } = window;
 
 const auth = requireAuth();
@@ -41,7 +40,30 @@ const headerEl = document.getElementById('profileHeader');
 
 const target = (new URLSearchParams(window.location.search).get('u') || '').toLowerCase().trim();
 
-const state = { cursor: undefined, done: false, loading: false, profile: null, sessionsSeen: [], recapDone: false };
+const state = { cursor: undefined, done: false, loading: false, profile: null, sessionsSeen: [] };
+
+// The premium Relationship Memory section lives above the feed. One container,
+// re-mounted whenever the profile (and so the relationship) changes — e.g. the
+// moment you become, or stop being, a contact.
+let memoriesEl = null;
+function mountMemories() {
+  if (!memoriesEl) {
+    memoriesEl = document.createElement('div');
+    memoriesEl.id = 'memoriesSection';
+    contentEl.parentNode.insertBefore(memoriesEl, contentEl);
+  }
+  memoriesEl.innerHTML = '';
+  if (state.profile) {
+    mountMemoriesSection(memoriesEl, {
+      profile: state.profile,
+      // For an accepted contact the memories module renders the unified
+      // relationship banner INTO the top header (#profileHeader), replacing the
+      // default one; it triggers contact removal through this callback.
+      headerEl,
+      onRemoveContact: () => runContactAction('remove'),
+    });
+  }
+}
 
 if (auth) {
   document.getElementById('whoAmI').textContent = `logged in as ${auth.username}`;
@@ -66,6 +88,7 @@ const CONTACT_ACTIONS = {
 };
 
 function renderHeader(profile) {
+  headerEl.onclick = null; // drop any relationship-banner handler from a prior render
   const conf = CONTACT_ACTIONS[profile.contact.status];
   const counts = profile.counts;
   headerEl.innerHTML = `
@@ -202,13 +225,15 @@ function openDeleteModal(profile) {
 // side may have changed it since this page loaded), and it's one small
 // request on an explicit user action, not a render-loop cost.
 async function runContactAction(action, btn) {
-  btn.disabled = true;
+  // `btn` is optional — the default header passes its button (to disable it),
+  // but the relationship banner's "Remove contact" calls this without one.
+  if (btn) btn.disabled = true;
   try {
     if (action === 'request') await requestContact(target);
     else if (action === 'accept') await acceptContactRequest(state.profile.contact.id);
     else if (action === 'cancel' || action === 'decline') await removeContact(state.profile.contact.id);
     else if (action === 'remove') {
-      if (!confirm(`Remove ${target} from your contacts?`)) { btn.disabled = false; return; }
+      if (!confirm(`Remove ${target} from your contacts?`)) { if (btn) btn.disabled = false; return; }
       await removeContact(state.profile.contact.id);
     }
     await loadProfile();
@@ -218,7 +243,7 @@ async function runContactAction(action, btn) {
     resetFeed();
   } catch (err) {
     alert(err.message);
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -228,6 +253,7 @@ async function loadProfile() {
   document.title = `${profile.username} — Herae Memories`;
   document.getElementById('brandSub').textContent = `${profile.username}'s profile`;
   renderHeader(profile);
+  mountMemories();
 }
 
 // ── Their content (the shared feed pipeline) ─────────────────────────
@@ -278,37 +304,6 @@ function resetFeed() {
   loadMore(true);
 }
 
-// ── Moments Recap ──────────────────────────────────────────────────────
-// Built once, from the moments already loaded into the feed, and only on your
-// own profile. Opens through the same media viewer as any post and carries the
-// Share flow. If there aren't enough moments (or the canvas can't be exported),
-// buildRecap returns null and nothing is shown — exactly the spec's behavior.
-async function maybeBuildRecap() {
-  if (state.recapDone || !state.profile?.isMe) return;
-  state.recapDone = true;
-  const moments = state.sessionsSeen.flatMap((s) => s.moments || []);
-  const profileUrl = `${location.origin}/user.html?u=${encodeURIComponent(state.profile.username)}`;
-  let recap;
-  try {
-    recap = await buildRecap({ username: state.profile.username, moments, profileUrl });
-  } catch (e) { return; }
-  if (!recap || !contentEl.firstChild) return;
-
-  contentEl.insertAdjacentHTML('afterbegin', renderRecapCard(recap));
-  if (trackEvent) trackEvent('recap_generated');
-  const card = contentEl.querySelector('.recap-card');
-  if (!card) return;
-  const open = () => openMediaViewer(recap, { caption: 'Your Herae Recap', shareItem: recap });
-  card.addEventListener('click', (e) => {
-    // The "Open recap" button and the card both open it.
-    e.preventDefault();
-    open();
-  });
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
-  });
-}
-
 async function loadMore(isFirstPage = false) {
   if (state.loading || state.done) return;
   state.loading = true;
@@ -338,11 +333,6 @@ async function loadMore(isFirstPage = false) {
     const html = grouped.map(renderSessionCard).join('');
     if (isFirstPage) contentEl.innerHTML = html;
     else contentEl.insertAdjacentHTML('beforeend', html);
-
-    // On your OWN profile, once there's a first page of content, try to
-    // generate a featured Moments Recap from what's loaded — entirely
-    // client-side (see recap.js). Silently does nothing if there isn't enough.
-    if (isFirstPage) maybeBuildRecap();
 
     if (state.done) {
       sentinelEl.textContent = "That's everything 💜";

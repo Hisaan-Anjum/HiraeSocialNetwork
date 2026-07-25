@@ -77,9 +77,11 @@ export function openShareSheet(moment) {
   // Extension derived from the actual stored media — a video may be .mp4 (new,
   // iOS-shareable) or .webm (older) — so the shared file carries the right name
   // and, below, the right MIME type for navigator.canShare to accept it.
-  const mediaExt = isVideo
-    ? (/\.mp4(?:$|\?)/i.test(moment.videoUrl || '') ? 'mp4' : 'webm')
-    : 'jpg';
+  // A synthetic item (e.g. a client-rendered Story video served from a blob:
+  // URL) can't carry its extension in the URL, so it passes `mediaExt`
+  // explicitly. Fall back to sniffing the URL for real stored media.
+  const mediaExt = moment.mediaExt
+    || (isVideo ? (/\.mp4(?:$|\?)/i.test(moment.videoUrl || '') ? 'mp4' : 'webm') : 'jpg');
   const filename = `herae-moment-${moment.id}.${mediaExt}`;
 
   // The media as a File object — used both to hand off to another app via the
