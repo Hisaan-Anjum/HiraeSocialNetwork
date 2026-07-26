@@ -80,13 +80,22 @@ function buildScenes(m) {
       build() {
         const el = document.createElement('div');
         el.className = 'ms-scene ms-moment';
+        // The moment is shown WHOLE (object-fit: contain) — a photo or clip
+        // that isn't the screen's aspect ratio must never lose its edges, and
+        // people frame their moments deliberately. The gap that leaves is
+        // filled with a blurred, dimmed copy of the same image rather than
+        // black bars, which is what keeps it looking composed instead of
+        // letterboxed.
+        const backdrop = `<div class="ms-media-bg" style="background-image:url('${escapeHtml(sc.url || '')}')"></div>`;
         if (sc.videoUrl) {
           el.innerHTML = `
+            ${backdrop}
             <video class="ms-media" src="${escapeHtml(sc.videoUrl)}" poster="${escapeHtml(sc.url || '')}" muted playsinline loop></video>
             <div class="ms-vignette"></div>
             ${captionHtml(sc)}`;
         } else {
           el.innerHTML = `
+            ${backdrop}
             <img class="ms-media ${kb ? 'ms-kenburns' : 'ms-fadein'}" src="${escapeHtml(sc.url)}" alt="">
             <div class="ms-vignette"></div>
             ${captionHtml(sc)}`;
