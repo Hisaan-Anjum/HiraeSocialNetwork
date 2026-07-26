@@ -80,46 +80,90 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
 
   let linkedId = detail.watchlistItemId || null;
 
+  // Both ways in behave the same: the field takes the film's name and LOCKS,
+  // the night is filed under that entry, and its rating (the average across
+  // everyone who reviewed the session) rolls up to the watchlist item. Press
+  // Change to unlock and pick something else.
   function renderLinked() {
     const it = items.find((x) => x.id === linkedId);
     if (!it) { mount.innerHTML = ''; return; }
     input.value = it.movie.title;
     input.readOnly = true;
     input.classList.add('is-locked');
+    const rating = it.sessionRating != null
+      ? ` · ★ ${it.sessionRating} from ${it.sessionCount} night${it.sessionCount === 1 ? '' : 's'}`
+      : '';
     mount.innerHTML = `
       <div class="sl-linked">
-        <span class="sl-linked-text">🍿 Filed under <strong>${escapeHtml(it.movie.title)}</strong> on your shared watchlist</span>
+        <span class="sl-linked-text">🔒 Filed under <strong>${escapeHtml(it.movie.title)}</strong>${escapeHtml(rating)}</span>
         <button type="button" class="sl-unlink" data-sl="unlink">Change</button>
       </div>`;
   }
 
+  // The detected content title, if it confidently matches something on the
+  // list. Shown as a pinned first option rather than instead of the list, so
+  // the autocomplete is always right there either way.
+  function currentGuess() {
+    return detail.content?.title ? bestWatchlistMatch(detail.content.title, items) : null;
+  }
+
   function renderSuggestion() {
-    // Offer the detected content title first — one tap, no typing.
-    const guess = detail.content?.title ? bestWatchlistMatch(detail.content.title, items) : null;
-    if (!guess) { mount.innerHTML = ''; return; }
+    const guess = currentGuess();
+    if (guess) {
+      mount.innerHTML = `
+        <div class="sl-suggest">
+          <span>Was this <strong>${escapeHtml(guess.item.movie.title)}</strong> from your watchlist?</span>
+          <button type="button" class="sl-yes" data-sl="link" data-id="${guess.item.id}">Yes, file it</button>
+        </div>
+        <button type="button" class="sl-hint" data-sl="browse">
+          🍿 No — pick a different one from your watchlist (${items.length})
+        </button>`;
+      return;
+    }
+    // No confident guess — say the option exists rather than leaving a dead
+    // field the user has to discover by clicking into it.
     mount.innerHTML = `
-      <div class="sl-suggest">
-        <span>Was this <strong>${escapeHtml(guess.item.movie.title)}</strong> from your watchlist?</span>
-        <button type="button" class="sl-yes" data-sl="link" data-id="${guess.item.id}">Yes, file it</button>
-      </div>`;
+      <button type="button" class="sl-hint" data-sl="browse">
+        🍿 Pick it from your shared watchlist (${items.length})
+      </button>`;
   }
 
   function renderMatches(query) {
     const q = query.trim();
-    if (!q) { renderSuggestion(); return; }
-    const hits = items
-      .map((it) => ({ it, s: similarity(q, it.movie.title) }))
-      .filter((x) => x.s > 0.3 || normalise(x.it.movie.title).startsWith(normalise(q)))
-      .sort((a, b) => b.s - a.s)
-      .slice(0, 4);
+    const nq = normalise(q);
+    const guess = currentGuess();
+    let hits;
+    if (!nq) {
+      // Focused with nothing typed: show the list itself, unwatched first.
+      // Showing NOTHING here was the whole reason this felt broken — an
+      // autocomplete you have to guess the first letters of isn't one.
+      hits = items.slice().sort((a, b) => Number(a.watched) - Number(b.watched));
+    } else {
+      hits = items
+        .map((it) => ({ it, s: similarity(q, it.movie.title), n: normalise(it.movie.title) }))
+        // Substring as well as prefix: people type a distinctive word from the
+        // middle of a title ("getaway") far more often than its opening word.
+        .filter((x) => x.s > 0.28 || x.n.startsWith(nq) || x.n.includes(nq))
+        .sort((a, b) => b.s - a.s)
+        .map(({ it }) => it);
+    }
+    // Pin the detected match to the top wherever it qualifies, so the obvious
+    // answer is always the first thing under the cursor.
+    if (guess) {
+      hits = hits.filter((it) => it.id !== guess.item.id);
+      if (!nq || similarity(q, guess.item.movie.title) > 0.28) hits.unshift(guess.item);
+    }
+    hits = hits.slice(0, 6);
     if (!hits.length) { mount.innerHTML = ''; return; }
     mount.innerHTML = `
       <div class="sl-list">
-        <div class="sl-list-head">From your shared watchlist</div>
-        ${hits.map(({ it }) => `
+        <div class="sl-list-head">From your shared watchlist — picking one names, locks and files this night</div>
+        ${hits.map((it) => `
           <button type="button" class="sl-option" data-sl="link" data-id="${it.id}">
             <span class="sl-option-art" style="${it.movie.posterUrl ? `background-image:url('${escapeHtml(it.movie.posterUrl)}')` : ''}"></span>
             <span class="sl-option-title">${escapeHtml(it.movie.title)}</span>
+            ${guess && it.id === guess.item.id ? '<span class="sl-option-guess">looks like this</span>' : ''}
+            ${it.watched ? '<span class="sl-option-seen">watched</span>' : ''}
           </button>`).join('')}
       </div>`;
   }
@@ -131,7 +175,12 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
       const id = Number(t.dataset.id);
       mount.innerHTML = '<div class="sl-busy">Filing…</div>';
       try {
-        await attachSessionToWatchlistItem(partner, id, detail.clientSessionId);
+        // The server hands back the whole updated list, so adopt it — that's
+        // what makes the rating this night just contributed (the average across
+        // everyone who reviewed it) show immediately, instead of the stale
+        // pre-link copy we loaded on mount.
+        const res = await attachSessionToWatchlistItem(partner, id, detail.clientSessionId);
+        if (res?.items?.length) items = res.items;
         linkedId = id;
         renderLinked();
         onLinked?.();
@@ -140,8 +189,12 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
       }
       return;
     }
+    if (t.dataset.sl === 'browse') { renderMatches(''); input.focus(); return; }
     if (t.dataset.sl === 'unlink') {
-      try { await detachSessionFromWatchlist(partner, detail.clientSessionId); } catch (err) { /* fall through */ }
+      try {
+        const res = await detachSessionFromWatchlist(partner, detail.clientSessionId);
+        if (res?.items?.length) items = res.items;
+      } catch (err) { /* fall through — unlocking locally still makes sense */ }
       linkedId = null;
       input.readOnly = false;
       input.classList.remove('is-locked');

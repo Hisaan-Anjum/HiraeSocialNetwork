@@ -1549,7 +1549,22 @@ html { scroll-behavior: smooth; }
 .ms-chooser-open { color: var(--purple); font-size: 13px; font-weight: 600; }
 
 /* ── Story selector overlay ── */
-.ms-selector, .ms-dates { max-width: 640px; width: 100%; }
+.ms-selector, .ms-dates {
+  max-width: 640px; width: 100%;
+  /* Cap it and scroll the body: with a few years of month circles and a row of
+     story-type buttons this overlay grew past the viewport, putting its lower
+     half out of reach. The heading stays put; only the content moves. */
+  display: flex; flex-direction: column; max-height: min(86vh, 760px);
+}
+.ms-sel-head { flex: 0 0 auto; }
+.ms-sel-body {
+  overflow-y: auto; min-height: 0; padding-right: 6px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.ms-sel-body::-webkit-scrollbar { width: 8px; }
+.ms-sel-body::-webkit-scrollbar-track { background: transparent; }
+.ms-sel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.ms-sel-body::-webkit-scrollbar-thumb:hover { background: var(--purple); }
 .ms-sel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .ms-sel-head h2 { font-family: Georgia, serif; margin: 0; font-size: 24px; }
 .ms-sel-types { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
@@ -1683,7 +1698,18 @@ html { scroll-behavior: smooth; }
 .ms-tl-emoji { font-size: 28px; } .ms-tl-title { font-weight: 700; } .ms-tl-date { margin-left: auto; color: rgba(255,255,255,.6); font-size: 15px; }
 .ms-top-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; opacity: 0; animation: ms-rise .6s both;
   border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom: 12px; }
-.ms-top-title { font-size: 22px; font-weight: 700; } .ms-top-rating { color: var(--gold); font-size: 20px; }
+.ms-top-title { font-size: 22px; font-weight: 700; } .ms-top-rating { color: var(--gold); font-size: 20px; white-space: nowrap; }
+/* With cover art the rows become posters: taller, no divider, the artwork
+   carrying the row instead of a rule under it. */
+.ms-top-art .ms-top-item { border-bottom: none; padding-bottom: 0; gap: 18px; }
+.ms-top-poster {
+  width: 62px; height: 92px; flex: 0 0 auto; border-radius: 10px;
+  background: var(--bg-2) center/cover no-repeat;
+  box-shadow: 0 10px 26px rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.12);
+}
+.ms-top-poster.is-blank { display: grid; place-items: center; font-size: 26px; }
+.ms-top-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; text-align: left; }
+.ms-top-year { font-size: 14px; color: rgba(255,255,255,.6); }
 .ms-top-num { color: rgba(255,255,255,.8); margin-left: 8px; font-size: 16px; }
 .ms-quote { margin: 0; opacity: 0; animation: ms-rise .6s both; }
 .ms-quote-text { display: block; font-family: Georgia, serif; font-size: 24px; font-style: italic; line-height: 1.4; }
@@ -1723,6 +1749,9 @@ html { scroll-behavior: smooth; }
   .profile-split { grid-template-columns: 1fr; gap: 24px; }
   .profile-split-side { position: static; }
   .profile-split-main .feed-list { margin: 0 auto; }
+  /* Stacked, the panel sits ABOVE the feed — a viewport-tall list would push
+     the feed entirely off screen, so it gets a shorter window of its own. */
+  .wl-panel { max-height: 60vh; }
 }
 
 /* ── The panel ── */
@@ -1730,13 +1759,27 @@ html { scroll-behavior: smooth; }
   border-radius: 20px; padding: 20px;
   background: linear-gradient(170deg, var(--card), var(--bg-1));
   border: 1px solid var(--border);
+  /* The panel is sticky, so it must never be taller than the viewport or its
+     bottom (and the Add Movie button) is simply unreachable — which is what a
+     long list did. Cap it to the visible area and let the LIST scroll inside,
+     so the heading and the button stay put. */
+  display: flex; flex-direction: column;
+  max-height: calc(100vh - 40px);
 }
-.wl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.wl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex: 0 0 auto; }
 .wl-head h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 700; margin: 0; color: var(--ink); }
 .wl-count { font-size: 12px; font-weight: 700; color: var(--ink-faint); white-space: nowrap; }
-.wl-add-btn { width: 100%; margin-top: 16px; }
+.wl-add-btn { width: 100%; margin-top: 16px; flex: 0 0 auto; }
 
-.wl-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.wl-list {
+  list-style: none; margin: 0; padding: 0 6px 2px 0; display: flex; flex-direction: column; gap: 12px;
+  overflow-y: auto; min-height: 0; /* min-height:0 is what lets a flex child actually shrink and scroll */
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.wl-list::-webkit-scrollbar { width: 8px; }
+.wl-list::-webkit-scrollbar-track { background: transparent; }
+.wl-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.wl-list::-webkit-scrollbar-thumb:hover { background: var(--purple); }
 .wl-item {
   display: flex; gap: 12px; padding: 12px; border-radius: 14px;
   background: var(--bg-2); border: 1px solid var(--border);
@@ -1856,3 +1899,28 @@ html { scroll-behavior: smooth; }
 .sl-option-title { font-size: 13px; font-weight: 700; }
 .sl-busy, .sl-err { margin-top: 10px; font-size: 12px; color: var(--ink-dim); }
 .sl-err { color: #fb7185; }
+
+/* Three actions now (Watch Together / Share Card / Important Dates) — a 3-up
+   row on desktop keeps them one balanced band rather than a 2+1 orphan. */
+.rel-actions { grid-template-columns: repeat(3, minmax(132px, 156px)); }
+/* Watch Together is the primary act on a contact's profile, so it carries the
+   filled treatment while the other two stay secondary. */
+.ms-action-tile.ms-action-primary {
+  background: linear-gradient(150deg, var(--purple), var(--purple-deep));
+  border-color: transparent;
+  box-shadow: 0 10px 26px -10px rgba(139, 92, 246, .8);
+}
+.ms-action-primary .ms-action-title { color: #fff; }
+.ms-action-primary .ms-action-sub { color: rgba(255, 255, 255, .78); }
+.ms-action-primary:hover { border-color: transparent; filter: brightness(1.06); }
+@media (max-width: 900px) { .rel-actions { grid-template-columns: repeat(3, minmax(110px, 1fr)); } }
+@media (max-width: 640px) { .rel-actions { grid-template-columns: 1fr 1fr; } .ms-action-primary { grid-column: 1 / -1; } }
+.sl-option-seen { margin-left: auto; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+.sl-hint {
+  display: block; width: 100%; margin-top: 10px; padding: 9px 14px; border-radius: 12px; cursor: pointer;
+  background: rgba(139,92,246,.08); border: 1px dashed var(--border);
+  color: var(--ink-dim); font-size: 12.5px; font-weight: 600; text-align: left; font-family: inherit;
+}
+.sl-hint:hover { color: var(--ink); border-color: var(--purple); }
+.sl-option-guess { margin-left: auto; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); }
+.sl-option-guess + .sl-option-seen { margin-left: 8px; }

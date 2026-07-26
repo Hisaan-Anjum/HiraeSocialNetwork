@@ -295,14 +295,18 @@ function videoScenes(manifest, images, videos, ratio) {
       });
     }
   });
-  if (manifest.topSessions?.length) scenes.push({ kind: 'top', dur: 2400 });
+  if (manifest.topSessions?.length) {
+    // Longer when there's cover art to actually look at.
+    const withArt = manifest.topSessions.some((t) => t.posterUrl);
+    scenes.push({ kind: 'top', dur: withArt ? 3600 : 2400 });
+  }
   if (manifest.comments?.length) scenes.push({ kind: 'comments', dur: 2600 });
   scenes.push({ kind: 'ending', dur: 2800 });
   return scenes;
 }
 
 // Renders one scene at progress p (0..1). W/H are the vertical canvas dims.
-function drawScene(ctx, W, H, manifest, scene, p, logo) {
+function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
   const accent = manifest.variant?.accent || 'purple';
   const line = ACCENT_LINE[accent] || ACCENT_LINE.purple;
   const fade = Math.min(1, p / 0.15, (1 - p) / 0.15); // fade in + out at the edges
@@ -382,9 +386,40 @@ function drawScene(ctx, W, H, manifest, scene, p, logo) {
         if (t.dateLabel) { ctx.fillStyle = 'rgba(233,213,255,0.6)'; ctx.font = '400 28px -apple-system, sans-serif'; ctx.fillText(t.dateLabel, cx, H / 2 - 140 + i * 130); }
       });
     } else if (scene.kind === 'top') {
-      manifest.topSessions.slice(0, 3).forEach((s, i) => {
-        ctx.fillStyle = '#fff'; ctx.font = '700 48px Georgia, serif'; ctx.fillText(String(s.title).slice(0, 24), cx, H / 2 - 150 + i * 170);
-        ctx.fillStyle = line[0]; ctx.font = '44px serif'; ctx.fillText('★'.repeat(Math.round(s.rating)), cx, H / 2 - 100 + i * 170);
+      const tops = manifest.topSessions.slice(0, 3);
+      const anyArt = topArt.some(Boolean);
+      tops.forEach((s, i) => {
+        const y = H / 2 - 210 + i * 200;
+        if (anyArt) {
+          // Poster-left, details-right — the same composition as the player,
+          // so the exported video and the on-screen story read identically.
+          const pw = 132, ph = 196, px = cx - 400;
+          const art = topArt[i];
+          if (art) {
+            ctx.save();
+            roundRect(ctx, px, y - ph / 2, pw, ph, 14);
+            ctx.clip();
+            drawContain(ctx, art, px, y - ph / 2, pw, ph, 1);
+            ctx.restore();
+            ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 2;
+            roundRect(ctx, px, y - ph / 2, pw, ph, 14); ctx.stroke();
+          } else {
+            ctx.fillStyle = 'rgba(255,255,255,.07)';
+            roundRect(ctx, px, y - ph / 2, pw, ph, 14); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '52px serif'; ctx.textAlign = 'center';
+            ctx.fillText('🎬', px + pw / 2, y + 18);
+          }
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#fff'; ctx.font = '700 46px Georgia, serif';
+          ctx.fillText(String(s.title).slice(0, 22), px + pw + 34, y - 14);
+          if (s.year) { ctx.fillStyle = 'rgba(233,213,255,.65)'; ctx.font = '500 30px -apple-system, sans-serif'; ctx.fillText(String(s.year), px + pw + 34, y + 26); }
+          ctx.fillStyle = line[0]; ctx.font = '38px serif';
+          ctx.fillText('★'.repeat(Math.round(s.rating)) + '  ' + s.rating, px + pw + 34, y + 74);
+          ctx.textAlign = 'center';
+        } else {
+          ctx.fillStyle = '#fff'; ctx.font = '700 48px Georgia, serif'; ctx.fillText(String(s.title).slice(0, 24), cx, y);
+          ctx.fillStyle = line[0]; ctx.font = '44px serif'; ctx.fillText('★'.repeat(Math.round(s.rating)), cx, y + 52);
+        }
       });
     } else {
       manifest.comments.slice(0, 3).forEach((c, i) => {
@@ -455,11 +490,16 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
 
   const W = DES_W, H = DES_H; // all scene drawing happens in design units
   const momentScenes = (manifest.scenes || []).filter((s) => s.url);
-  const [logo, imgs, vids] = await Promise.all([
+  const topSessions = manifest.topSessions || [];
+  const [logo, imgs, vids, topArt] = await Promise.all([
     loadImage('logo.png'),
     Promise.all(momentScenes.map((s) => loadImage(s.url))),
     // Video moments play for real in the export; a photo moment resolves null.
     Promise.all(momentScenes.map((s) => (s.videoUrl ? loadVideoEl(s.videoUrl) : Promise.resolve(null)))),
+    // Cover art for "your best nights". Preloaded with everything else: a
+    // drawImage of a half-loaded poster renders nothing, and the recorder is
+    // real-time so there is no second chance at that frame.
+    Promise.all(topSessions.map((t) => (t.posterUrl ? loadImage(t.posterUrl) : Promise.resolve(null)))),
   ]);
   const scenes = videoScenes(manifest, imgs, vids, DES_H / DES_W);
   const total = scenes.reduce((a, s) => a + s.dur, 0);
@@ -489,7 +529,7 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
     // Absolute transform each frame: draw in 1080×1920 design units, land on the
     // 720×1280 canvas. (drawTile's save/restore only nests inside this.)
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-    drawScene(ctx, W, H, manifest, seg, p, logo);
+    drawScene(ctx, W, H, manifest, seg, p, logo, topArt);
     drawProgress(ctx, W, scenes, idx, p);
   }
   const stopVideos = () => { for (const v of vids) { if (v) { try { v.pause(); } catch (e) { /* ignore */ } } } };

@@ -107,15 +107,25 @@ function buildScenes(m) {
 
   // 5 — top sessions
   if (m.topSessions?.length) {
+    // Nights filed under a shared-watchlist film get their real cover art; the
+    // rest keep the plain row. Whichever a story has, the scene stays balanced
+    // rather than half-empty — hence the poster/no-poster variants below.
+    const anyArt = m.topSessions.some((s) => s.posterUrl);
     scenes.push({
       kind: 'top',
-      duration: 3600,
+      duration: anyArt ? 4200 : 3600,
       html: `
-        <div class="ms-scene ms-top">
+        <div class="ms-scene ms-top${anyArt ? ' ms-top-art' : ''}">
           <div class="ms-scene-kicker">Your best nights</div>
           ${m.topSessions.map((s, i) => `
             <div class="ms-top-item" style="animation-delay:${0.3 + i * 0.25}s">
-              <span class="ms-top-title">${escapeHtml(s.title)}</span>
+              ${anyArt ? `<span class="ms-top-poster${s.posterUrl ? '' : ' is-blank'}"
+                    style="${s.posterUrl ? `background-image:url('${escapeHtml(s.posterUrl)}')` : ''}"
+                >${s.posterUrl ? '' : '🎬'}</span>` : ''}
+              <span class="ms-top-info">
+                <span class="ms-top-title">${escapeHtml(s.title)}</span>
+                ${s.year ? `<span class="ms-top-year">${escapeHtml(String(s.year))}</span>` : ''}
+              </span>
               <span class="ms-top-rating">${'★'.repeat(Math.round(s.rating))}<span class="ms-top-num">${s.rating}</span></span>
             </div>`).join('')}
         </div>`,
