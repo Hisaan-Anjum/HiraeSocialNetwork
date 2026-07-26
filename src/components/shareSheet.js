@@ -13,6 +13,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const { mediaUrl, momentPublicUrl, trackEvent } = window;
 
@@ -52,8 +53,7 @@ export function openShareSheet(moment) {
       <div class="share-status" id="shareStatus" aria-live="polite"></div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const statusEl = overlay.querySelector('#shareStatus');
   const setStatus = (msg, kind = '') => {
@@ -65,7 +65,7 @@ export function openShareSheet(moment) {
     if (openSheet !== close) return;
     openSheet = null;
     document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = prevOverflow;
+    releaseScroll();
     overlay.remove();
   };
   openSheet = close;

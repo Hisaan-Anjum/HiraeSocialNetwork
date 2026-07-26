@@ -7,6 +7,7 @@
 
 import { escapeHtml, formatDuration } from '../lib/util.js';
 import { renderCarousel, attachCarouselHandlers } from './carousel.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const { getRecommendationById } = window;
 
@@ -82,12 +83,11 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const close = () => {
     document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = prevOverflow;
+    releaseScroll();
     overlay.remove();
   };
   const onKey = (e) => { if (e.key === 'Escape') close(); };

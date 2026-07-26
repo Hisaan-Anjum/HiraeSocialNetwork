@@ -8,6 +8,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 // Build the ordered scene list from a manifest. Each scene: { html or build(),
 // duration(ms), kind }. Durations vary a little by variant for pacing variety.
@@ -195,8 +196,7 @@ export function playStory(manifest, opts = {}) {
     <button class="ms-nav ms-nav-prev" data-ms="prev" aria-label="Previous"></button>
     <button class="ms-nav ms-nav-next" data-ms="next" aria-label="Next"></button>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const stage = overlay.querySelector('.ms-stage');
   const segs = [...overlay.querySelectorAll('.ms-seg i')];
@@ -249,7 +249,7 @@ export function playStory(manifest, opts = {}) {
   function close() {
     cancelAnimationFrame(raf);
     document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = prevOverflow;
+    releaseScroll();
     overlay.remove();
     if (opts.onExit) opts.onExit();
   }

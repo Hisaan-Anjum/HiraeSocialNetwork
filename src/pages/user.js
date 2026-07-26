@@ -26,6 +26,7 @@ import { mountAvatarControls } from '../components/avatarUpload.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 import { mountMemoriesSection } from '../memories/section.js';
 import { mountWatchlist } from '../watchlist/panel.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
@@ -227,15 +228,14 @@ function openDeleteModal(profile) {
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const input = overlay.querySelector('#deleteConfirmInput');
   const errEl = overlay.querySelector('#deleteError');
   const confirmBtn = overlay.querySelector('#deleteConfirm');
   input.focus();
 
-  const close = () => { document.body.style.overflow = prevOverflow; overlay.remove(); };
+  const close = () => { releaseScroll(); overlay.remove(); };
   overlay.querySelector('#deleteCancel').addEventListener('click', close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });

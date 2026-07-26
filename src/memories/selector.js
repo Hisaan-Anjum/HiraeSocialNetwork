@@ -8,6 +8,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -53,8 +54,7 @@ export function openStorySelector({ summary, onPick }) {
     </div>`;
 
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const grid = overlay.querySelector('#msMonthGrid');
   const yearLabel = overlay.querySelector('#msYearLabel');
@@ -74,7 +74,7 @@ export function openStorySelector({ summary, onPick }) {
   }
   renderMonths();
 
-  const close = () => { document.body.style.overflow = prevOverflow; overlay.remove(); };
+  const close = () => { releaseScroll(); overlay.remove(); };
 
   overlay.addEventListener('click', (e) => {
     const t = e.target.closest('[data-sel]');

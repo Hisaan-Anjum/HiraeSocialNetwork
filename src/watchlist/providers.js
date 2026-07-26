@@ -16,6 +16,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 // Brand colours only — no logo assets. `key` matches what the ingestion writes.
 const BRAND = {
@@ -59,12 +60,11 @@ export function openWatchPicker(movie, { onPick }) {
       <div class="wp-note">Opens the title page on that service. Availability varies by country and changes over time.</div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const close = () => {
     document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = prevOverflow;
+    releaseScroll();
     overlay.remove();
   };
   const onKey = (e) => { if (e.key === 'Escape') close(); };

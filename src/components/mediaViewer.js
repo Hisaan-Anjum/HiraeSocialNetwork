@@ -11,6 +11,7 @@
 
 import { escapeHtml } from '../lib/util.js';
 import { openShareSheet } from './shareSheet.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const { mediaUrl } = window;
 
@@ -80,8 +81,7 @@ export function openMediaViewer(item, opts = {}) {
   }
   document.body.appendChild(overlay);
   // The page behind must not scroll while the overlay owns the screen.
-  const prevBodyOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const stage = overlay.querySelector('.mv-stage');
   const media = overlay.querySelector(isVideo ? '.mv-video' : '.mv-image');
@@ -101,7 +101,7 @@ export function openMediaViewer(item, opts = {}) {
     // Stop playback explicitly — removing the element alone can leave audio
     // running for a beat in some Chromium builds.
     if (isVideo) { try { media.pause(); media.removeAttribute('src'); media.load(); } catch (e) {} }
-    document.body.style.overflow = prevBodyOverflow;
+    releaseScroll();
     overlay.remove();
   };
   const api = { close };

@@ -15,6 +15,7 @@
 
 import { escapeHtml, debounce } from '../lib/util.js';
 import { renderAvatar } from '../components/avatar.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const { getContacts, getWatchlist, addToWatchlist } = window;
 
@@ -35,8 +36,7 @@ export function openPickContact({ movie, onAdded }) {
       <div class="pc-body" id="pcBody"><div class="spinner-text">Loading your contacts…</div></div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const body = overlay.querySelector('#pcBody');
   const searchEl = overlay.querySelector('#pcSearch');
@@ -51,7 +51,7 @@ export function openPickContact({ movie, onAdded }) {
   const close = () => {
     observer?.disconnect();
     document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = prevOverflow;
+    releaseScroll();
     overlay.remove();
   };
   const onKey = (e) => { if (e.key === 'Escape') close(); };

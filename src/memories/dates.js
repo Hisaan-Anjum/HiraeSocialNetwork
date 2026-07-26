@@ -7,6 +7,7 @@
 'use strict';
 
 import { escapeHtml, formatDate } from '../lib/util.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const { createImportantDate, updateImportantDate, deleteImportantDate } = window;
 
@@ -63,11 +64,10 @@ export function openImportantDates({ username, dates = [], onChange }) {
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
   const body = overlay.querySelector('#msDatesBody');
 
-  function close() { document.body.style.overflow = prevOverflow; overlay.remove(); }
+  function close() { releaseScroll(); overlay.remove(); }
 
   function renderList() {
     if (!list.length) {

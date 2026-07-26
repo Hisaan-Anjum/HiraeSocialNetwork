@@ -11,6 +11,7 @@
 
 import { escapeHtml, debounce } from '../lib/util.js';
 import { openMovieModal } from '../components/movieDetail.js';
+import { lockScroll } from '../lib/scrollLock.js';
 
 const { getRecommendations } = window;
 
@@ -30,8 +31,7 @@ export function openAddMovie({ onAdd, isOnList = () => false }) {
       <div class="wl-add-grid" id="wlAddGrid"><div class="spinner-text">Loading…</div></div>
     </div>`;
   document.body.appendChild(overlay);
-  const prevOverflow = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
+  const releaseScroll = lockScroll();
 
   const grid = overlay.querySelector('#wlAddGrid');
   const kicker = overlay.querySelector('#wlAddKicker');
@@ -39,7 +39,7 @@ export function openAddMovie({ onAdd, isOnList = () => false }) {
 
   const close = () => {
     document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = prevOverflow;
+    releaseScroll();
     overlay.remove();
   };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
