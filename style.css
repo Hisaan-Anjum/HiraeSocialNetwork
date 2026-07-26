@@ -1924,3 +1924,28 @@ html { scroll-behavior: smooth; }
 .sl-hint:hover { color: var(--ink); border-color: var(--purple); }
 .sl-option-guess { margin-left: auto; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); }
 .sl-option-guess + .sl-option-seen { margin-left: 8px; }
+
+/* ── "Add to a shared watchlist" contact picker (movie page) ── */
+.pc-card { max-width: 460px; width: 100%; display: flex; flex-direction: column; max-height: min(82vh, 640px); }
+.pc-movie { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 12px; flex: 0 0 auto; }
+.pc-search {
+  width: 100%; margin-bottom: 12px; padding: 10px 13px; border-radius: 11px; flex: 0 0 auto;
+  background: var(--bg-1); border: 1px solid var(--border); color: var(--ink); font-size: 14px; font-family: inherit;
+}
+.pc-search:focus { outline: none; border-color: var(--purple); }
+.pc-body { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.pc-body::-webkit-scrollbar { width: 8px; }
+.pc-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.pc-list { display: flex; flex-direction: column; gap: 8px; }
+.pc-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px;
+  border-radius: 12px; cursor: pointer; text-align: left;
+  background: var(--bg-2); border: 1px solid var(--border); color: var(--ink);
+  transition: border-color .15s ease, transform .15s ease;
+}
+.pc-row:hover:not(:disabled) { border-color: var(--purple); transform: translateY(-1px); }
+.pc-row:disabled, .pc-row.is-on { cursor: default; opacity: .65; }
+.pc-name { font-weight: 700; font-size: 14px; }
+.pc-state { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--purple); white-space: nowrap; }
+.pc-row.is-on .pc-state { color: #6ee7b7; }
+.pc-empty { text-align: center; color: var(--ink-dim); padding: 26px 12px; line-height: 1.6; }
