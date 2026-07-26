@@ -27,6 +27,26 @@ function toast(message) {
   setTimeout(() => { t.classList.remove('is-in'); setTimeout(() => t.remove(), 300); }, 3200);
 }
 
+// Offers a "watch this together" hand-off to the Herae extension and resolves
+// true only if it acknowledges. Resolves false quickly when there's no
+// extension (or it declined, e.g. this origin isn't the one the user is signed
+// in against), so the caller can just open the link itself.
+function handOffToExtension(url, target, { timeoutMs = 700 } = {}) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (v) => { if (!settled) { settled = true; window.removeEventListener('message', onAck); resolve(v); } };
+    function onAck(e) {
+      if (e.source !== window) return;
+      if (e.data && e.data.__heraeStartSessionAck === true) done(true);
+    }
+    window.addEventListener('message', onAck);
+    try {
+      window.postMessage({ __heraeStartSession: true, target, url }, window.location.origin);
+    } catch (e) { return done(false); }
+    setTimeout(() => done(false), timeoutMs);
+  });
+}
+
 export function mountWatchlist(container, { profile }) {
   if (profile.isMe || profile.contact?.status !== 'accepted') return; // a shared list needs two people
   const username = profile.username;
@@ -201,13 +221,21 @@ export function mountWatchlist(container, { profile }) {
       // step is theirs: hit Herae in the new tab.
       return openWatchPicker(it.movie, {
         onPick: async (link) => {
-          window.open(link.url, '_blank', 'noopener');
+          // Ask the extension to open the title in its sync window AND invite
+          // them, in one click. It only accepts this on a trusted Herae page
+          // (content.js's isTrustedMomentsPage guard) and acknowledges when it
+          // does — so a browser WITHOUT the extension falls back to simply
+          // opening the link, and one WITH it never gets a duplicate tab.
+          const tookIt = await handOffToExtension(link.url, username);
+          if (!tookIt) window.open(link.url, '_blank', 'noopener');
           try {
             const ids = [id, ...items.filter((x) => x.id !== id).map((x) => x.id)];
             const { items: updated } = await reorderWatchlist(username, ids);
             items = updated; render();
           } catch (err) { /* pinning is a nicety, not the point */ }
-          toast(`Opening “${it.movie.title}” on ${link.name} — start the party from the Herae extension 💜`);
+          toast(tookIt
+            ? `Opening “${it.movie.title}” on ${link.name} — inviting ${username} 💜`
+            : `Opening “${it.movie.title}” on ${link.name} — start the party from the Herae extension 💜`);
         },
       });
     }
