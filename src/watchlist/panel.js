@@ -13,6 +13,7 @@
 import { escapeHtml, formatDate } from '../lib/util.js';
 import { openAddMovie } from './addMovie.js';
 import { openMovieModal } from '../components/movieDetail.js';
+import { openWatchPicker, hasWatchLinks } from './providers.js';
 
 const {
   getWatchlist, addToWatchlist, updateWatchlistItem, removeFromWatchlist, reorderWatchlist,
@@ -81,11 +82,17 @@ export function mountWatchlist(container, { profile }) {
                       aria-label="${n} star${n === 1 ? '' : 's'}">★</button>`).join('')}
             ${it.rating ? `<button class="wl-clear" data-wl="rate" data-id="${it.id}" data-rating="0" aria-label="Clear rating">✕</button>` : ''}
           </div>
+          ${!it.rating && it.sessionRating ? `
+            <div class="wl-derived" title="Averaged across everyone who reviewed those nights">
+              ★ ${it.sessionRating} from ${it.sessionCount} movie night${it.sessionCount === 1 ? '' : 's'}
+            </div>` : ''}
+          ${it.rating && it.sessionCount ? `
+            <div class="wl-derived">🍿 Watched ${it.sessionCount} time${it.sessionCount === 1 ? '' : 's'} together</div>` : ''}
           ${it.comment ? `<div class="wl-comment">“${escapeHtml(it.comment)}”</div>` : ''}
           <div class="wl-actions">
             <button class="wl-chip" data-wl="watched" data-id="${it.id}">${it.watched ? '✓ Watched' : 'Mark watched'}</button>
             <button class="wl-chip" data-wl="comment" data-id="${it.id}">${it.comment ? 'Edit note' : 'Add note'}</button>
-            <button class="wl-chip wl-chip-go" data-wl="start" data-id="${it.id}">▶ Watch together</button>
+            ${hasWatchLinks(m) ? `<button class="wl-chip wl-chip-go" data-wl="start" data-id="${it.id}">▶ Watch now</button>` : ''}
             <button class="wl-chip wl-chip-danger" data-wl="remove" data-id="${it.id}" aria-label="Remove">✕</button>
           </div>
         </div>
@@ -188,16 +195,21 @@ export function mountWatchlist(container, { profile }) {
       return;
     }
     if (act === 'start') {
-      // The extension is what actually runs a watch party, and it exposes no
-      // "start a session" hook to this page — so this pins the film to the top
-      // of the list as what's up next and tells them how to begin. Marking it
-      // watched afterwards is a normal one-tap action.
-      try {
-        const ids = [id, ...items.filter((x) => x.id !== id).map((x) => x.id)];
-        const { items: updated } = await reorderWatchlist(username, ids);
-        items = updated; render();
-      } catch (err) { /* pinning is a nicety, not the point */ }
-      toast(`“${it.movie.title}” is up next — open it in a tab and start the party from the Herae extension 💜`);
+      // Pick a service, open the title there, and pin the film to the top of
+      // the list as what's up next. The extension is what actually runs a watch
+      // party and exposes no "start a session" hook to this page, so the last
+      // step is theirs: hit Herae in the new tab.
+      return openWatchPicker(it.movie, {
+        onPick: async (link) => {
+          window.open(link.url, '_blank', 'noopener');
+          try {
+            const ids = [id, ...items.filter((x) => x.id !== id).map((x) => x.id)];
+            const { items: updated } = await reorderWatchlist(username, ids);
+            items = updated; render();
+          } catch (err) { /* pinning is a nicety, not the point */ }
+          toast(`Opening “${it.movie.title}” on ${link.name} — start the party from the Herae extension 💜`);
+        },
+      });
     }
   });
 

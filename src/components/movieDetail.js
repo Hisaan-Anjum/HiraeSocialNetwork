@@ -96,16 +96,25 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
   (async () => {
     try {
       const { recommendation: rec, similar } = await getRecommendationById(recommendationId);
-      const actions = onAdd
+      // "Find it on" only appears when we actually hold links for this title —
+      // most of the long tail has none, and a dead button is worse than none.
+      const canWatch = Array.isArray(rec.watchLinks) && rec.watchLinks.length > 0;
+      const actions = (onAdd || canWatch)
         ? `<div class="movie-modal-actions">
-             <button class="btn btn-primary" data-mm="add" ${alreadyAdded ? 'disabled' : ''}>
+             ${onAdd ? `<button class="btn btn-primary" data-mm="add" ${alreadyAdded ? 'disabled' : ''}>
                ${alreadyAdded ? '✓ On your watchlist' : '❤️ Add to Shared Watchlist'}
-             </button>
+             </button>` : ''}
+             ${canWatch ? '<button class="btn btn-ghost" data-mm="watch">▶ Find it on…</button>' : ''}
              <span class="movie-modal-msg" id="movieModalMsg"></span>
            </div>`
         : '';
       body.innerHTML = renderMovieDetail(rec, { similar, actionsHtml: actions });
       attachCarouselHandlers(body);
+
+      body.querySelector('[data-mm="watch"]')?.addEventListener('click', async () => {
+        const { openWatchPicker } = await import('../watchlist/providers.js');
+        openWatchPicker(rec, { onPick: (link) => window.open(link.url, '_blank', 'noopener') });
+      });
 
       const addBtn = body.querySelector('[data-mm="add"]');
       if (addBtn && onAdd) {

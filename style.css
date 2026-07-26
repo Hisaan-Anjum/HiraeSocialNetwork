@@ -1814,3 +1814,45 @@ html { scroll-behavior: smooth; }
 .movie-modal-body .movie-body { padding-bottom: 28px; }
 .movie-modal-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
 .movie-modal-msg { font-size: 13px; color: #fb7185; }
+
+/* ── "Find it on…" provider picker ── */
+.wp-card { max-width: 460px; width: 100%; }
+.wp-movie { font-family: Georgia, serif; font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 16px; }
+.wp-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.wp-chip {
+  padding: 11px 20px; border-radius: 12px; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 800; letter-spacing: .01em;
+  background: var(--wp-bg); color: var(--wp-fg);
+  transition: transform .14s ease, filter .14s ease;
+}
+.wp-chip:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.wp-note { margin-top: 16px; font-size: 12px; color: var(--ink-faint); line-height: 1.5; }
+
+/* ── Watchlist: rating derived from attached movie nights ── */
+.wl-derived { font-size: 11px; color: var(--gold); margin-top: 5px; font-weight: 700; }
+
+/* ── Review page: file this night under a watchlist film ── */
+#sessionTitleInput.is-locked { border-color: var(--purple); background: rgba(139,92,246,.10); font-weight: 700; }
+.sl-suggest, .sl-linked {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 10px; padding: 10px 14px; border-radius: 12px;
+  background: rgba(139,92,246,.10); border: 1px solid var(--border);
+  font-size: 13px; color: var(--ink-dim);
+}
+.sl-linked-text strong, .sl-suggest strong { color: var(--ink); }
+.sl-yes, .sl-unlink {
+  background: none; border: 1px solid var(--border); color: var(--purple);
+  font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+}
+.sl-yes:hover, .sl-unlink:hover { color: var(--ink); border-color: var(--purple); }
+.sl-list { margin-top: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-2); overflow: hidden; }
+.sl-list-head { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); padding: 9px 14px 4px; }
+.sl-option {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 14px;
+  background: none; border: none; cursor: pointer; text-align: left; color: var(--ink);
+}
+.sl-option:hover { background: rgba(139,92,246,.14); }
+.sl-option-art { width: 26px; height: 38px; border-radius: 5px; flex-shrink: 0; background: var(--bg-1) center/cover no-repeat; }
+.sl-option-title { font-size: 13px; font-weight: 700; }
+.sl-busy, .sl-err { margin-top: 10px; font-size: 12px; color: var(--ink-dim); }
+.sl-err { color: #fb7185; }

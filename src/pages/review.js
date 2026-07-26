@@ -14,6 +14,7 @@ import { renderUserLink, renderUserLinks } from '../components/userLink.js';
 import { renderAvatarLink } from '../components/avatar.js';
 import { attachPostActionHandlers, renderPostMenu, renderReviewBody } from '../components/postActions.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
+import { mountSessionLink } from '../watchlist/sessionLink.js';
 
 const { requireAuth, getSessionDetail, postReview } = window;
 
@@ -107,6 +108,7 @@ async function loadSession() {
         <label for="sessionTitleInput">Name this session <span style="font-weight:400;color:var(--ink-faint);text-transform:none;letter-spacing:0">(optional — you both see it)</span></label>
         <input type="text" id="sessionTitleInput" maxlength="120" autocomplete="off"
                placeholder="e.g. Finale night 💜" value="${escapeHtml(detail.sessionTitle || '')}">
+        <div id="sessionLinkMount"></div>
       </div>
       <button class="btn btn-gold" id="saveReviewBtn" style="width:100%">${myReview ? '✏️ Update Review' : '💾 Save Review'}</button>
       <div class="save-confirm" id="saveConfirm"></div>
@@ -115,6 +117,18 @@ async function loadSession() {
   `;
 
   const picker = renderStarPicker(document.getElementById('starPickerMount'), myReview?.rating || 0, () => {});
+
+  // Offer to file this night under a film on the pair's shared watchlist —
+  // autocomplete while naming it, or a one-tap "was this …?" when the detected
+  // title already matches something on the list. Entirely optional; the page
+  // works exactly as before if they ignore it (or aren't contacts).
+  mountSessionLink({
+    mount: document.getElementById('sessionLinkMount'),
+    input: document.getElementById('sessionTitleInput'),
+    detail,
+    me: auth.username,
+    onLinked: () => loadSession(),
+  });
 
   // Editing your own review here stays the existing "type into the form and
   // save" flow (postReview upserts) — the ⋯ menu's inline editor is for the

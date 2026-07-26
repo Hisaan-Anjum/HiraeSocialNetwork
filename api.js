@@ -473,6 +473,17 @@ function updateWatchlistItem(username, itemId, patch) {
 function removeFromWatchlist(username, itemId) {
   return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/${itemId}`, { method: 'DELETE' });
 }
+// Files a watch night under a watchlist entry (and marks it watched), so the
+// entry can show the rating everyone actually gave it that night.
+function attachSessionToWatchlistItem(username, itemId, clientSessionId) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/${itemId}/session`, {
+    method: 'POST', body: JSON.stringify({ clientSessionId }),
+  });
+}
+function detachSessionFromWatchlist(username, clientSessionId) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/session/${encodeURIComponent(clientSessionId)}`, { method: 'DELETE' });
+}
+
 // `ids` is the full list in its new order — see the reorder route's comment.
 function reorderWatchlist(username, ids) {
   return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/reorder`, {
