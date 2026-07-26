@@ -40,6 +40,24 @@ export function renderSimilarGrid(similar, { inModal = false } = {}) {
   `;
 }
 
+// Credit for catalogue titles. Not decoration — two of the sources require it:
+// the description is Wikipedia prose under CC BY-SA 4.0, which obliges
+// attribution plus a link to the licence, and TMDB's terms require the "not
+// endorsed or certified" wording wherever their artwork appears. Shown only for
+// imported rows, since admin-written entries use none of these sources.
+function renderDataCredit(rec) {
+  if (!rec.imported) return '';
+  return `
+    <div class="movie-credit">
+      Title details from <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a> (CC0).
+      Description from <a href="https://en.wikipedia.org/" target="_blank" rel="noopener">Wikipedia</a>, used under
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
+      Artwork from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a> and
+      <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a>.
+      This product uses the TMDB API but is not endorsed or certified by TMDB.
+    </div>`;
+}
+
 // The hero + body of a movie. `actionsHtml` is an optional slot under the
 // title — the modal drops "❤️ Add to Shared Watchlist" in there; the page
 // passes nothing and looks exactly as it always has.
@@ -63,6 +81,7 @@ export function renderMovieDetail(rec, { similar = [], actionsHtml = '', inModal
 
     <div class="page-wrap movie-body">
       ${rec.description ? `<div class="movie-description">${escapeHtml(rec.description)}</div>` : ''}
+      ${renderDataCredit(rec)}
       ${rec.gallery.length ? `<div class="movie-gallery-title">Gallery</div>${renderCarousel(galleryItems, { className: 'movie-gallery-carousel' })}` : ''}
       ${renderSimilarGrid(similar, { inModal })}
     </div>
