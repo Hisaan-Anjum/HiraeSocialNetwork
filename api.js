@@ -450,13 +450,59 @@ function uploadStoryVideo(username, type, key, videoDataUrl) {
   return apiRequest(`/api/relationships/${encodeURIComponent(username)}/stories/${encodeURIComponent(type)}/${encodeURIComponent(key)}/video`, { method: 'POST', body: JSON.stringify({ video: videoDataUrl }) });
 }
 
+// ── Shared Watchlist ─────────────────────────────────────────────────
+// The relationship's shared "what should we watch next" list. Each entry points
+// at a `recommendations` title, so the movie data is the same one the
+// recommendations surfaces use. Every mutation returns the FULL updated list,
+// so the caller re-renders from one authoritative response instead of patching
+// local state and hoping it matches the server.
+function getWatchlist(username) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist`);
+}
+function addToWatchlist(username, recommendationId) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist`, {
+    method: 'POST', body: JSON.stringify({ recommendationId }),
+  });
+}
+// `patch` is any subset of { watched, rating (1-5 or null), comment }.
+function updateWatchlistItem(username, itemId, patch) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/${itemId}`, {
+    method: 'PATCH', body: JSON.stringify(patch),
+  });
+}
+function removeFromWatchlist(username, itemId) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/${itemId}`, { method: 'DELETE' });
+}
+// Files a watch night under a watchlist entry (and marks it watched), so the
+// entry can show the rating everyone actually gave it that night.
+function attachSessionToWatchlistItem(username, itemId, clientSessionId) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/${itemId}/session`, {
+    method: 'POST', body: JSON.stringify({ clientSessionId }),
+  });
+}
+function detachSessionFromWatchlist(username, clientSessionId) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/session/${encodeURIComponent(clientSessionId)}`, { method: 'DELETE' });
+}
+
+// `ids` is the full list in its new order — see the reorder route's comment.
+function reorderWatchlist(username, ids) {
+  return apiRequest(`/api/relationships/${encodeURIComponent(username)}/watchlist/reorder`, {
+    method: 'POST', body: JSON.stringify({ ids }),
+  });
+}
+
 // ── Recommendations (admin.html + any future public "recommended" surface) ─
 // Read routes work for any logged-in account; the /admin/ ones 403 for a
 // non-admin JWT (see server/src/recommendations.js) — admin.js is the only
 // caller of those today.
-function getRecommendations(cursor) {
-  const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
-  return apiRequest(`/api/recommendations${qs}`);
+// `q` is an optional title search — the SAME movie database and paging, used by
+// the watchlist's "add a movie" overlay so there's one movie index, not two.
+function getRecommendations(cursor, q) {
+  const p = new URLSearchParams();
+  if (cursor) p.set('cursor', cursor);
+  if (q) p.set('q', q);
+  const qs = p.toString();
+  return apiRequest(`/api/recommendations${qs ? `?${qs}` : ''}`);
 }
 function getFeaturedRecommendation() {
   return apiRequest('/api/recommendations/featured');

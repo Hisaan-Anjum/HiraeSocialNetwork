@@ -25,6 +25,7 @@ import { initSearch } from '../components/search.js';
 import { mountAvatarControls } from '../components/avatarUpload.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 import { mountMemoriesSection } from '../memories/section.js';
+import { mountWatchlist } from '../watchlist/panel.js';
 
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
@@ -63,6 +64,45 @@ function mountMemories() {
       onRemoveContact: () => runContactAction('remove'),
     });
   }
+  mountWatchlistColumn();
+}
+
+// Below the Memories section the page becomes two columns on desktop — the
+// shared Watchlist on the left, the moments feed on the right — and stacks back
+// to Watchlist-then-feed on mobile (the CSS does the switch; this only builds
+// the structure). #content and #scrollSentinel keep their ids and their
+// element identity, so the feed's own paging code is untouched by the move.
+let splitEl = null;
+let watchlistEl = null;
+function mountWatchlistColumn() {
+  if (!state.profile) return;
+  const wants = !state.profile.isMe && state.profile.contact?.status === 'accepted';
+
+  if (!wants) {
+    // Not a relationship (own profile, stranger, pending) — put the feed back
+    // to full width if a previous render had split it.
+    if (splitEl) {
+      splitEl.parentNode.insertBefore(contentEl, splitEl);
+      splitEl.parentNode.insertBefore(sentinelEl, splitEl);
+      splitEl.remove();
+      splitEl = null; watchlistEl = null;
+    }
+    return;
+  }
+
+  if (!splitEl) {
+    splitEl = document.createElement('div');
+    splitEl.className = 'profile-split';
+    watchlistEl = document.createElement('aside');
+    watchlistEl.className = 'profile-split-side';
+    const feedCol = document.createElement('div');
+    feedCol.className = 'profile-split-main';
+    contentEl.parentNode.insertBefore(splitEl, contentEl);
+    splitEl.append(watchlistEl, feedCol);
+    feedCol.append(contentEl, sentinelEl); // moved, not recreated
+  }
+  watchlistEl.innerHTML = '';
+  mountWatchlist(watchlistEl, { profile: state.profile });
 }
 
 if (auth) {

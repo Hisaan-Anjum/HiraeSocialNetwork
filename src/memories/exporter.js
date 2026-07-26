@@ -41,18 +41,51 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-// Accepts an <img> OR a <video> (naturalWidth vs videoWidth), so a video moment
-// can be drawn frame-by-frame exactly like a photo.
-function drawCover(ctx, src, x, y, w, h, r, zoom = 1) {
+// Draws the source WHOLE inside the box (contain), centred — the export must
+// never crop a moment. Accepts an <img> OR a <video> (naturalWidth vs
+// videoWidth), so a video moment is drawn frame-by-frame exactly like a photo.
+// `zoom` ≤ 1 shrinks within the fitted size, so a drift animation still can't
+// clip an edge.
+function drawContain(ctx, src, x, y, w, h, zoom = 1) {
   const iw = src.naturalWidth || src.videoWidth;
   const ih = src.naturalHeight || src.videoHeight;
   if (!iw || !ih) return;
-  ctx.save();
-  if (r) { roundRect(ctx, x, y, w, h, r); ctx.clip(); }
-  ctx.imageSmoothingQuality = 'high';
-  const s = Math.max(w / iw, h / ih) * zoom;
+  const s = Math.min(w / iw, h / ih) * zoom;
   const dw = iw * s, dh = ih * s;
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(src, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
+// A tiny cover-cropped copy of the image. Drawn back out at full size with
+// smoothing on, an image this small becomes a soft blur for free — which is
+// what fills the space around a contained moment. Pre-rendered ONCE per scene
+// rather than blurring every frame, because a real per-frame ctx.filter blur at
+// 720×1280 is exactly the kind of cost that makes the encoder fall behind.
+function makeBackdrop(src, ratio) {
+  const iw = src.naturalWidth || src.videoWidth;
+  const ih = src.naturalHeight || src.videoHeight;
+  if (!iw || !ih) return null;
+  const sw = 48, sh = Math.max(1, Math.round(48 * ratio));
+  const c = document.createElement('canvas');
+  c.width = sw; c.height = sh;
+  const cx = c.getContext('2d');
+  const s = Math.max(sw / iw, sh / ih);
+  cx.drawImage(src, (sw - iw * s) / 2, (sh - ih * s) / 2, iw * s, ih * s);
+  return c;
+}
+
+// One rounded collage tile on the share card: the photo WHOLE, over a blurred
+// copy of itself filling the tile. Same rule as the story montage — a moment is
+// never cropped, wherever it's shown.
+function drawTile(ctx, img, x, y, w, h, r) {
+  ctx.save();
+  roundRect(ctx, x, y, w, h, r);
+  ctx.clip();
+  const bg = makeBackdrop(img, h / w);
+  if (bg) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(bg, x, y, w, h); }
+  ctx.fillStyle = 'rgba(0,0,0,0.30)';
+  ctx.fillRect(x, y, w, h);
+  drawContain(ctx, img, x, y, w, h, 1);
   ctx.restore();
 }
 
@@ -149,7 +182,7 @@ export async function buildStoryShareCard(manifest) {
     usable.forEach((img, i) => {
       const c = i % cols, r = Math.floor(i / cols);
       if (r >= rows) return;
-      drawCover(ctx, img, pad + c * (cw + gap), gy + r * (ch + gap), cw, ch, 22);
+      drawTile(ctx, img, pad + c * (cw + gap), gy + r * (ch + gap), cw, ch, 22);
     });
   }
 
@@ -244,26 +277,36 @@ function pickMime() {
 // title → stats → timeline → moment montage → top sessions → comments → ending.
 // EVERY moment in the manifest is included (the engine already caps them at 12),
 // so the exported video is the whole story, not an excerpt.
-function videoScenes(manifest, images, videos) {
+function videoScenes(manifest, images, videos, ratio) {
   const scenes = [];
   scenes.push({ kind: 'title', dur: 2600 });
   if (manifest.stats?.length) scenes.push({ kind: 'stats', dur: 2600 });
   if (manifest.timeline?.length) scenes.push({ kind: 'timeline', dur: 2600 });
   manifest.scenes.filter((s) => s.url).forEach((s, i) => {
     // A video moment is kept even if only the clip loaded, and gets a little
-    // longer on screen so the motion actually reads.
+    // longer on screen so the motion actually reads. The backdrop is built from
+    // the poster image (cheap, and a video's own frames would change anyway).
     const img = images[i] || null;
     const vid = videos[i] || null;
-    if (img || vid) scenes.push({ kind: 'moment', dur: vid ? 3200 : 2400, m: s, img, vid });
+    if (img || vid) {
+      scenes.push({
+        kind: 'moment', dur: vid ? 3200 : 2400, m: s, img, vid,
+        bg: img ? makeBackdrop(img, ratio) : null,
+      });
+    }
   });
-  if (manifest.topSessions?.length) scenes.push({ kind: 'top', dur: 2400 });
+  if (manifest.topSessions?.length) {
+    // Longer when there's cover art to actually look at.
+    const withArt = manifest.topSessions.some((t) => t.posterUrl);
+    scenes.push({ kind: 'top', dur: withArt ? 3600 : 2400 });
+  }
   if (manifest.comments?.length) scenes.push({ kind: 'comments', dur: 2600 });
   scenes.push({ kind: 'ending', dur: 2800 });
   return scenes;
 }
 
 // Renders one scene at progress p (0..1). W/H are the vertical canvas dims.
-function drawScene(ctx, W, H, manifest, scene, p, logo) {
+function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
   const accent = manifest.variant?.accent || 'purple';
   const line = ACCENT_LINE[accent] || ACCENT_LINE.purple;
   const fade = Math.min(1, p / 0.15, (1 - p) / 0.15); // fade in + out at the edges
@@ -273,12 +316,17 @@ function drawScene(ctx, W, H, manifest, scene, p, logo) {
 
   if (scene.kind === 'moment') {
     ctx.globalAlpha = Math.max(0.001, fade);
-    // A video moment draws its LIVE frames (it's already moving, so no Ken
-    // Burns); a photo gets the slow zoom. Falls back to the poster if the clip
-    // hasn't buffered.
+    // The moment is drawn WHOLE (contain) — never cropped to fill the frame.
+    // Behind it goes the pre-blurred backdrop so the leftover space reads as
+    // part of the composition instead of black bars.
+    if (scene.bg) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(scene.bg, 0, 0, W, H); }
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(0, 0, W, H);
+    // A video moment draws its LIVE frames (already moving, so no drift); a
+    // photo drifts gently UP TO its fitted size, which can't clip an edge.
+    // Falls back to the poster if the clip hasn't buffered.
     const live = scene.vid && scene.vid.readyState >= 2 ? scene.vid : null;
-    if (live) drawCover(ctx, live, 0, 0, W, H, 0, 1);
-    else if (scene.img) drawCover(ctx, scene.img, 0, 0, W, H, 0, 1 + p * 0.12);
+    if (live) drawContain(ctx, live, 0, 0, W, H, 1);
+    else if (scene.img) drawContain(ctx, scene.img, 0, 0, W, H, 0.94 + p * 0.06);
     const scrim = ctx.createLinearGradient(0, H * 0.5, 0, H);
     scrim.addColorStop(0, 'rgba(0,0,0,0)'); scrim.addColorStop(1, 'rgba(0,0,0,0.8)');
     ctx.fillStyle = scrim; ctx.fillRect(0, H * 0.5, W, H * 0.5);
@@ -338,9 +386,40 @@ function drawScene(ctx, W, H, manifest, scene, p, logo) {
         if (t.dateLabel) { ctx.fillStyle = 'rgba(233,213,255,0.6)'; ctx.font = '400 28px -apple-system, sans-serif'; ctx.fillText(t.dateLabel, cx, H / 2 - 140 + i * 130); }
       });
     } else if (scene.kind === 'top') {
-      manifest.topSessions.slice(0, 3).forEach((s, i) => {
-        ctx.fillStyle = '#fff'; ctx.font = '700 48px Georgia, serif'; ctx.fillText(String(s.title).slice(0, 24), cx, H / 2 - 150 + i * 170);
-        ctx.fillStyle = line[0]; ctx.font = '44px serif'; ctx.fillText('★'.repeat(Math.round(s.rating)), cx, H / 2 - 100 + i * 170);
+      const tops = manifest.topSessions.slice(0, 3);
+      const anyArt = topArt.some(Boolean);
+      tops.forEach((s, i) => {
+        const y = H / 2 - 210 + i * 200;
+        if (anyArt) {
+          // Poster-left, details-right — the same composition as the player,
+          // so the exported video and the on-screen story read identically.
+          const pw = 132, ph = 196, px = cx - 400;
+          const art = topArt[i];
+          if (art) {
+            ctx.save();
+            roundRect(ctx, px, y - ph / 2, pw, ph, 14);
+            ctx.clip();
+            drawContain(ctx, art, px, y - ph / 2, pw, ph, 1);
+            ctx.restore();
+            ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 2;
+            roundRect(ctx, px, y - ph / 2, pw, ph, 14); ctx.stroke();
+          } else {
+            ctx.fillStyle = 'rgba(255,255,255,.07)';
+            roundRect(ctx, px, y - ph / 2, pw, ph, 14); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '52px serif'; ctx.textAlign = 'center';
+            ctx.fillText('🎬', px + pw / 2, y + 18);
+          }
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#fff'; ctx.font = '700 46px Georgia, serif';
+          ctx.fillText(String(s.title).slice(0, 22), px + pw + 34, y - 14);
+          if (s.year) { ctx.fillStyle = 'rgba(233,213,255,.65)'; ctx.font = '500 30px -apple-system, sans-serif'; ctx.fillText(String(s.year), px + pw + 34, y + 26); }
+          ctx.fillStyle = line[0]; ctx.font = '38px serif';
+          ctx.fillText('★'.repeat(Math.round(s.rating)) + '  ' + s.rating, px + pw + 34, y + 74);
+          ctx.textAlign = 'center';
+        } else {
+          ctx.fillStyle = '#fff'; ctx.font = '700 48px Georgia, serif'; ctx.fillText(String(s.title).slice(0, 24), cx, y);
+          ctx.fillStyle = line[0]; ctx.font = '44px serif'; ctx.fillText('★'.repeat(Math.round(s.rating)), cx, y + 52);
+        }
       });
     } else {
       manifest.comments.slice(0, 3).forEach((c, i) => {
@@ -411,13 +490,18 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
 
   const W = DES_W, H = DES_H; // all scene drawing happens in design units
   const momentScenes = (manifest.scenes || []).filter((s) => s.url);
-  const [logo, imgs, vids] = await Promise.all([
+  const topSessions = manifest.topSessions || [];
+  const [logo, imgs, vids, topArt] = await Promise.all([
     loadImage('logo.png'),
     Promise.all(momentScenes.map((s) => loadImage(s.url))),
     // Video moments play for real in the export; a photo moment resolves null.
     Promise.all(momentScenes.map((s) => (s.videoUrl ? loadVideoEl(s.videoUrl) : Promise.resolve(null)))),
+    // Cover art for "your best nights". Preloaded with everything else: a
+    // drawImage of a half-loaded poster renders nothing, and the recorder is
+    // real-time so there is no second chance at that frame.
+    Promise.all(topSessions.map((t) => (t.posterUrl ? loadImage(t.posterUrl) : Promise.resolve(null)))),
   ]);
-  const scenes = videoScenes(manifest, imgs, vids);
+  const scenes = videoScenes(manifest, imgs, vids, DES_H / DES_W);
   const total = scenes.reduce((a, s) => a + s.dur, 0);
   const totalFrames = Math.max(1, Math.round((total / 1000) * FPS));
 
@@ -443,9 +527,9 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
       if (playing) { try { playing.currentTime = 0; playing.play().catch(() => {}); } catch (e) { /* ignore */ } }
     }
     // Absolute transform each frame: draw in 1080×1920 design units, land on the
-    // 720×1280 canvas. (drawCover's save/restore only nests inside this.)
+    // 720×1280 canvas. (drawTile's save/restore only nests inside this.)
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-    drawScene(ctx, W, H, manifest, seg, p, logo);
+    drawScene(ctx, W, H, manifest, seg, p, logo, topArt);
     drawProgress(ctx, W, scenes, idx, p);
   }
   const stopVideos = () => { for (const v of vids) { if (v) { try { v.pause(); } catch (e) { /* ignore */ } } } };

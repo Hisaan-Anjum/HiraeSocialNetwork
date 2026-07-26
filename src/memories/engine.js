@@ -20,7 +20,7 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
 
 const MAX_SCENES = 12;      // moments shown in the cinematic montage
 const MOMENT_CAP = 240;     // hard ceiling on how many moments we ever scan
-const MANIFEST_VERSION = 3; // bump to force every cached story to regenerate
+const MANIFEST_VERSION = 4; // bump to force every cached story to regenerate
 
 // created_at / event dates are 'YYYY-MM-DD HH:MM:SS' (UTC) or 'YYYY-MM-DD'.
 function parseTs(s) {
@@ -160,7 +160,11 @@ export async function buildStoryManifest({ summary, descriptor }) {
   const videos = moments.filter((m) => m.videoUrl);
   const captioned = moments.filter((m) => m.description);
   const allComments = moments.flatMap((m) => (m.comments || []).map((c) => ({ username: c.username, text: c.text })));
-  const allReviews = moments.flatMap((m) => (m.reviews || []).map((r) => ({ ...r, sessionTitle: m.sessionTitle || m.content?.title })));
+  // clientSessionId is carried through so reviews can be grouped by the NIGHT
+  // they belong to (see topSessions below), not merely by its title.
+  const allReviews = moments.flatMap((m) => (m.reviews || []).map((r) => ({
+    ...r, sessionTitle: m.sessionTitle || m.content?.title, clientSessionId: m.clientSessionId,
+  })));
 
   const feel = {
     videoHeavy: videos.length >= Math.max(3, moments.length * 0.4),
@@ -208,13 +212,33 @@ export async function buildStoryManifest({ summary, descriptor }) {
     .map((t) => ({ emoji: t.emoji, title: t.title, dateLabel: t.date }));
 
   // ── top-rated sessions in this story ──
+  // Grouped by the session itself, not by its title: two different nights can
+  // share a name, and the id is what carries the film they were filed under.
   const bySession = {};
-  for (const r of allReviews) {
-    if (r.rating == null) continue;
-    (bySession[r.sessionTitle || 'Movie Night'] ||= []).push(r.rating);
+  for (const m of moments) {
+    const sid = m.clientSessionId;
+    (bySession[sid] ||= {
+      title: m.sessionTitle || m.content?.title || 'Movie Night',
+      movie: m.sessionMovie || null,
+      ratings: [],
+    });
+    if (m.sessionMovie && !bySession[sid].movie) bySession[sid].movie = m.sessionMovie;
   }
-  const topSessions = Object.entries(bySession)
-    .map(([title, rs]) => ({ title, rating: Math.round((rs.reduce((a, b) => a + b, 0) / rs.length) * 10) / 10 }))
+  for (const r of allReviews) {
+    if (r.rating == null || !bySession[r.clientSessionId]) continue;
+    bySession[r.clientSessionId].ratings.push(r.rating);
+  }
+  const topSessions = Object.values(bySession)
+    .filter((s) => s.ratings.length)
+    .map((s) => ({
+      title: s.title,
+      rating: Math.round((s.ratings.reduce((a, b) => a + b, 0) / s.ratings.length) * 10) / 10,
+      // Cover art, when this night was filed under a shared-watchlist film —
+      // that's what lets the story illustrate its best nights instead of
+      // listing bare titles.
+      posterUrl: s.movie?.posterUrl || null,
+      year: s.movie?.releaseYear || null,
+    }))
     .sort((a, b) => b.rating - a.rating).slice(0, 3);
 
   const comments = shuffle(allComments).slice(0, 3);

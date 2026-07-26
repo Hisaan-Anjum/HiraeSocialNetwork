@@ -28,6 +28,7 @@ export function openStorySelector({ summary, onPick }) {
         <button class="share-close" data-sel="close" aria-label="Close">✕</button>
       </div>
 
+      <div class="ms-sel-body">
       ${(summary.storyTypes || []).length ? `
         <div class="ms-sel-types">
           ${summary.storyTypes.map((t) => `
@@ -48,6 +49,7 @@ export function openStorySelector({ summary, onPick }) {
           <div class="ms-sel-hint">Only months you filled with memories appear here.</div>
         </div>` : `
         <div class="ms-sel-empty">Monthly stories will appear here once you've shared a few movie nights in the same month. 💜</div>`}
+      </div>
     </div>`;
 
   document.body.appendChild(overlay);

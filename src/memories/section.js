@@ -11,12 +11,13 @@
 
 import { escapeHtml } from '../lib/util.js';
 import { renderAvatar } from '../components/avatar.js';
-import { buildStoryManifest } from './engine.js';
+import { buildStoryManifest, MANIFEST_VERSION } from './engine.js';
 import { playStory } from './player.js';
 import { openStorySelector } from './selector.js';
 import { openImportantDates } from './dates.js';
 import { buildStoryShareCard, renderStoryVideo, buildRelationshipCard } from './exporter.js';
 import { openShareSheet } from '../components/shareSheet.js';
+import { handOffToExtension } from '../watchlist/panel.js';
 
 const {
   getRelationshipSummary, getStory, saveStory, uploadStoryVideo,
@@ -129,6 +130,11 @@ async function mountRelationship(container, profile, opts = {}) {
             </div>
           </div>
           <div class="rel-actions">
+            <button class="ms-action-tile ms-action-primary" data-ms="watch">
+              <span class="ms-action-ico">▶</span>
+              <span class="ms-action-title">Watch Together</span>
+              <span class="ms-action-sub">Start a session</span>
+            </button>
             <button class="ms-action-tile" data-ms="sharecard">
               <span class="ms-action-ico">💞</span>
               <span class="ms-action-title">Share Card</span>
@@ -151,7 +157,19 @@ async function mountRelationship(container, profile, opts = {}) {
     const act = t.dataset.ms;
     if (act === 'sharecard') return shareRelationshipCard();
     if (act === 'dates') return openDates();
+    if (act === 'watch') return startSession();
     if (act === 'remove') return onRemoveContact && onRemoveContact();
+  }
+
+  // "Watch Together" — start a session with this person right from their
+  // profile, with no title chosen yet. The extension opens its sync window and
+  // invites them; without the extension there's nothing meaningful to do, so we
+  // say so rather than silently doing nothing.
+  async function startSession() {
+    const r = await handOffToExtension('', username, { timeoutMs: 900 });
+    if (r.handled && r.error) return toast(r.error);
+    if (r.handled) return toast(`Starting a session — inviting ${username} 💜`);
+    toast('Install or sign in to the Herae extension to start a session 💜');
   }
 
   function renderSection() {
@@ -215,7 +233,14 @@ async function mountRelationship(container, profile, opts = {}) {
       let manifest = null;
       try {
         const cached = await getStory(username, descriptor.type, descriptor.key);
-        if (cached?.story?.manifest && cached.story.contentVersion === summary.contentVersion) {
+        // Reuse only when the content AND the engine version both match.
+        // Checking contentVersion alone meant a manifest built by an older
+        // engine was cached forever: MANIFEST_VERSION exists precisely to force
+        // regeneration when the shape changes (new fields like the best-nights
+        // cover art), but nothing was enforcing it.
+        if (cached?.story?.manifest
+            && cached.story.contentVersion === summary.contentVersion
+            && cached.story.manifest.v === MANIFEST_VERSION) {
           manifest = cached.story.manifest;
         }
       } catch (e) { /* fall through to generation */ }

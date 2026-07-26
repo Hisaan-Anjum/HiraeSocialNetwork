@@ -1549,7 +1549,22 @@ html { scroll-behavior: smooth; }
 .ms-chooser-open { color: var(--purple); font-size: 13px; font-weight: 600; }
 
 /* ── Story selector overlay ── */
-.ms-selector, .ms-dates { max-width: 640px; width: 100%; }
+.ms-selector, .ms-dates {
+  max-width: 640px; width: 100%;
+  /* Cap it and scroll the body: with a few years of month circles and a row of
+     story-type buttons this overlay grew past the viewport, putting its lower
+     half out of reach. The heading stays put; only the content moves. */
+  display: flex; flex-direction: column; max-height: min(86vh, 760px);
+}
+.ms-sel-head { flex: 0 0 auto; }
+.ms-sel-body {
+  overflow-y: auto; min-height: 0; padding-right: 6px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.ms-sel-body::-webkit-scrollbar { width: 8px; }
+.ms-sel-body::-webkit-scrollbar-track { background: transparent; }
+.ms-sel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.ms-sel-body::-webkit-scrollbar-thumb:hover { background: var(--purple); }
 .ms-sel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .ms-sel-head h2 { font-family: Georgia, serif; margin: 0; font-size: 24px; }
 .ms-sel-types { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
@@ -1640,12 +1655,19 @@ html { scroll-behavior: smooth; }
 
 .ms-scene { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; padding: 8vh 8vw; color: #fff; }
-.ms-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* contain, never cover: the whole moment is always visible. The blurred copy
+   behind it fills the leftover space so nothing reads as an empty bar. */
+.ms-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ms-media-bg {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  filter: blur(34px) brightness(.42) saturate(1.1); transform: scale(1.16);
+}
 .ms-vignette { position: absolute; inset: 0; background: radial-gradient(120% 120% at 50% 30%, transparent 40%, rgba(0,0,0,.55)); }
 .ms-fadein { animation: ms-fade .8s ease both; }
 .ms-kenburns { animation: ms-kb 5s ease-out both; }
 @keyframes ms-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes ms-kb { from { transform: scale(1.02); } to { transform: scale(1.14); } }
+/* Scales UP TO its fitted size — never past it, so the drift can't crop. */
+@keyframes ms-kb { from { transform: scale(.94); } to { transform: scale(1); } }
 
 .ms-title-emoji { font-size: 68px; animation: ms-pop .7s ease both; }
 .ms-title-names { color: rgba(255,255,255,.8); font-weight: 600; margin-top: 8px; letter-spacing: .04em; animation: ms-fade .8s .1s both; }
@@ -1676,7 +1698,18 @@ html { scroll-behavior: smooth; }
 .ms-tl-emoji { font-size: 28px; } .ms-tl-title { font-weight: 700; } .ms-tl-date { margin-left: auto; color: rgba(255,255,255,.6); font-size: 15px; }
 .ms-top-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; opacity: 0; animation: ms-rise .6s both;
   border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom: 12px; }
-.ms-top-title { font-size: 22px; font-weight: 700; } .ms-top-rating { color: var(--gold); font-size: 20px; }
+.ms-top-title { font-size: 22px; font-weight: 700; } .ms-top-rating { color: var(--gold); font-size: 20px; white-space: nowrap; }
+/* With cover art the rows become posters: taller, no divider, the artwork
+   carrying the row instead of a rule under it. */
+.ms-top-art .ms-top-item { border-bottom: none; padding-bottom: 0; gap: 18px; }
+.ms-top-poster {
+  width: 62px; height: 92px; flex: 0 0 auto; border-radius: 10px;
+  background: var(--bg-2) center/cover no-repeat;
+  box-shadow: 0 10px 26px rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.12);
+}
+.ms-top-poster.is-blank { display: grid; place-items: center; font-size: 26px; }
+.ms-top-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; text-align: left; }
+.ms-top-year { font-size: 14px; color: rgba(255,255,255,.6); }
 .ms-top-num { color: rgba(255,255,255,.8); margin-left: 8px; font-size: 16px; }
 .ms-quote { margin: 0; opacity: 0; animation: ms-rise .6s both; }
 .ms-quote-text { display: block; font-family: Georgia, serif; font-size: 24px; font-style: italic; line-height: 1.4; }
@@ -1699,3 +1732,220 @@ html { scroll-behavior: smooth; }
   .ms-form-grid .ms-field:nth-child(3) { grid-column: 1 / -1; }
   .ms-month-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Shared Watchlist — the two-column profile layout, the watchlist panel,
+   the "Add Movie" overlay and the movie-detail modal. Same tokens and card
+   language as the rest of the site.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Desktop: watchlist left, moments feed right. Mobile: watchlist above the
+   feed (the Memories banner already sits above both). */
+.profile-split { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 28px; align-items: start; }
+.profile-split-main { min-width: 0; }
+.profile-split-main .feed-list { max-width: 640px; margin: 0; }
+.profile-split-side { position: sticky; top: 20px; }
+@media (max-width: 900px) {
+  .profile-split { grid-template-columns: 1fr; gap: 24px; }
+  .profile-split-side { position: static; }
+  .profile-split-main .feed-list { margin: 0 auto; }
+  /* Stacked, the panel sits ABOVE the feed — a viewport-tall list would push
+     the feed entirely off screen, so it gets a shorter window of its own. */
+  .wl-panel { max-height: 60vh; }
+}
+
+/* ── The panel ── */
+.wl-panel {
+  border-radius: 20px; padding: 20px;
+  background: linear-gradient(170deg, var(--card), var(--bg-1));
+  border: 1px solid var(--border);
+  /* The panel is sticky, so it must never be taller than the viewport or its
+     bottom (and the Add Movie button) is simply unreachable — which is what a
+     long list did. Cap it to the visible area and let the LIST scroll inside,
+     so the heading and the button stay put. */
+  display: flex; flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+.wl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex: 0 0 auto; }
+.wl-head h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 700; margin: 0; color: var(--ink); }
+.wl-count { font-size: 12px; font-weight: 700; color: var(--ink-faint); white-space: nowrap; }
+.wl-add-btn { width: 100%; margin-top: 16px; flex: 0 0 auto; }
+
+.wl-list {
+  list-style: none; margin: 0; padding: 0 6px 2px 0; display: flex; flex-direction: column; gap: 12px;
+  overflow-y: auto; min-height: 0; /* min-height:0 is what lets a flex child actually shrink and scroll */
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.wl-list::-webkit-scrollbar { width: 8px; }
+.wl-list::-webkit-scrollbar-track { background: transparent; }
+.wl-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.wl-list::-webkit-scrollbar-thumb:hover { background: var(--purple); }
+.wl-item {
+  display: flex; gap: 12px; padding: 12px; border-radius: 14px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  transition: border-color .15s ease, opacity .15s ease, transform .15s ease;
+}
+.wl-item:hover { border-color: rgba(139,92,246,.4); }
+.wl-item.is-dragging { opacity: .45; transform: scale(.99); }
+.wl-item.is-watched { opacity: .62; }
+.wl-item.is-watched .wl-title { text-decoration: line-through; text-decoration-color: var(--ink-faint); }
+.wl-grip { color: var(--ink-faint); cursor: grab; font-size: 15px; line-height: 1.2; user-select: none; align-self: center; }
+.wl-grip:active { cursor: grabbing; }
+.wl-art {
+  width: 54px; height: 78px; flex-shrink: 0; border-radius: 8px; cursor: pointer;
+  background: var(--bg-1) center/cover no-repeat;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.wl-main { flex: 1; min-width: 0; }
+.wl-title { font-weight: 700; font-size: 15px; color: var(--ink); cursor: pointer; line-height: 1.3; }
+.wl-title:hover { color: var(--purple); }
+.wl-meta { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
+.wl-comment { font-size: 12px; color: var(--ink-dim); font-style: italic; margin-top: 6px; line-height: 1.45; }
+
+.wl-stars { display: flex; align-items: center; gap: 2px; margin-top: 6px; }
+.wl-star { background: none; border: none; padding: 0 1px; cursor: pointer; font-size: 15px; color: var(--ink-faint); line-height: 1; }
+.wl-star.is-on { color: var(--gold); }
+.wl-star:hover { color: var(--gold); }
+.wl-clear { background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 11px; margin-left: 4px; }
+.wl-clear:hover { color: #fb7185; }
+
+.wl-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.wl-chip {
+  font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--ink-dim);
+}
+.wl-chip:hover { color: var(--ink); border-color: var(--purple); }
+.wl-chip-go { color: #c4b5fd; }
+.wl-chip-danger:hover { color: #fb7185; border-color: rgba(251,113,133,.5); }
+
+.wl-empty { text-align: center; padding: 26px 12px; }
+.wl-empty-emoji { font-size: 32px; }
+.wl-empty-title { font-weight: 700; color: var(--ink); margin-top: 8px; }
+.wl-empty-sub { font-size: 12px; color: var(--ink-dim); margin-top: 6px; line-height: 1.5; }
+
+/* ── "Add Movie" overlay ── */
+.wl-add { max-width: 720px; width: 100%; }
+.wl-add-search {
+  width: 100%; margin-bottom: 16px; padding: 11px 14px; border-radius: 12px;
+  background: var(--bg-1); border: 1px solid var(--border); color: var(--ink); font-size: 14px; font-family: inherit;
+}
+.wl-add-search:focus { outline: none; border-color: var(--purple); }
+.wl-add-kicker { text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+.wl-add-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; max-height: 56vh; overflow-y: auto; }
+.wl-add-card { background: none; border: none; padding: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+.wl-add-art {
+  position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px;
+  background: var(--bg-2) center/cover no-repeat; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.wl-add-card:hover .wl-add-art { transform: translateY(-3px); border-color: var(--purple); }
+.wl-add-on {
+  position: absolute; inset: auto 6px 6px 6px; text-align: center;
+  font-size: 10px; font-weight: 800; padding: 4px; border-radius: 999px;
+  background: rgba(13,11,18,.8); color: #6ee7b7;
+}
+.wl-add-name { font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.wl-add-year { font-size: 11px; color: var(--ink-faint); }
+.wl-add-empty { grid-column: 1 / -1; text-align: center; color: var(--ink-dim); padding: 28px 10px; }
+
+/* ── Movie detail modal (reuses the movie page's own markup) ── */
+.movie-modal { max-width: 860px; width: 100%; padding: 0; overflow: hidden; position: relative; }
+.movie-modal-close { position: absolute; top: 14px; right: 14px; z-index: 3; background: rgba(13,11,18,.6); }
+.movie-modal-body { max-height: 86vh; overflow-y: auto; }
+.movie-modal-body .movie-hero { border-radius: 0; }
+.movie-modal-body .movie-body { padding-bottom: 28px; }
+.movie-modal-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.movie-modal-msg { font-size: 13px; color: #fb7185; }
+
+/* ── "Find it on…" provider picker ── */
+.wp-card { max-width: 460px; width: 100%; }
+.wp-movie { font-family: Georgia, serif; font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 16px; }
+.wp-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.wp-chip {
+  padding: 11px 20px; border-radius: 12px; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 800; letter-spacing: .01em;
+  background: var(--wp-bg); color: var(--wp-fg);
+  transition: transform .14s ease, filter .14s ease;
+}
+.wp-chip:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.wp-note { margin-top: 16px; font-size: 12px; color: var(--ink-faint); line-height: 1.5; }
+
+/* ── Watchlist: rating derived from attached movie nights ── */
+.wl-derived { font-size: 11px; color: var(--gold); margin-top: 5px; font-weight: 700; }
+
+/* ── Review page: file this night under a watchlist film ── */
+#sessionTitleInput.is-locked { border-color: var(--purple); background: rgba(139,92,246,.10); font-weight: 700; }
+.sl-suggest, .sl-linked {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 10px; padding: 10px 14px; border-radius: 12px;
+  background: rgba(139,92,246,.10); border: 1px solid var(--border);
+  font-size: 13px; color: var(--ink-dim);
+}
+.sl-linked-text strong, .sl-suggest strong { color: var(--ink); }
+.sl-yes, .sl-unlink {
+  background: none; border: 1px solid var(--border); color: var(--purple);
+  font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+}
+.sl-yes:hover, .sl-unlink:hover { color: var(--ink); border-color: var(--purple); }
+.sl-list { margin-top: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-2); overflow: hidden; }
+.sl-list-head { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); padding: 9px 14px 4px; }
+.sl-option {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 14px;
+  background: none; border: none; cursor: pointer; text-align: left; color: var(--ink);
+}
+.sl-option:hover { background: rgba(139,92,246,.14); }
+.sl-option-art { width: 26px; height: 38px; border-radius: 5px; flex-shrink: 0; background: var(--bg-1) center/cover no-repeat; }
+.sl-option-title { font-size: 13px; font-weight: 700; }
+.sl-busy, .sl-err { margin-top: 10px; font-size: 12px; color: var(--ink-dim); }
+.sl-err { color: #fb7185; }
+
+/* Three actions now (Watch Together / Share Card / Important Dates) — a 3-up
+   row on desktop keeps them one balanced band rather than a 2+1 orphan. */
+.rel-actions { grid-template-columns: repeat(3, minmax(132px, 156px)); }
+/* Watch Together is the primary act on a contact's profile, so it carries the
+   filled treatment while the other two stay secondary. */
+.ms-action-tile.ms-action-primary {
+  background: linear-gradient(150deg, var(--purple), var(--purple-deep));
+  border-color: transparent;
+  box-shadow: 0 10px 26px -10px rgba(139, 92, 246, .8);
+}
+.ms-action-primary .ms-action-title { color: #fff; }
+.ms-action-primary .ms-action-sub { color: rgba(255, 255, 255, .78); }
+.ms-action-primary:hover { border-color: transparent; filter: brightness(1.06); }
+@media (max-width: 900px) { .rel-actions { grid-template-columns: repeat(3, minmax(110px, 1fr)); } }
+@media (max-width: 640px) { .rel-actions { grid-template-columns: 1fr 1fr; } .ms-action-primary { grid-column: 1 / -1; } }
+.sl-option-seen { margin-left: auto; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+.sl-hint {
+  display: block; width: 100%; margin-top: 10px; padding: 9px 14px; border-radius: 12px; cursor: pointer;
+  background: rgba(139,92,246,.08); border: 1px dashed var(--border);
+  color: var(--ink-dim); font-size: 12.5px; font-weight: 600; text-align: left; font-family: inherit;
+}
+.sl-hint:hover { color: var(--ink); border-color: var(--purple); }
+.sl-option-guess { margin-left: auto; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); }
+.sl-option-guess + .sl-option-seen { margin-left: 8px; }
+
+/* ── "Add to a shared watchlist" contact picker (movie page) ── */
+.pc-card { max-width: 460px; width: 100%; display: flex; flex-direction: column; max-height: min(82vh, 640px); }
+.pc-movie { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 12px; flex: 0 0 auto; }
+.pc-search {
+  width: 100%; margin-bottom: 12px; padding: 10px 13px; border-radius: 11px; flex: 0 0 auto;
+  background: var(--bg-1); border: 1px solid var(--border); color: var(--ink); font-size: 14px; font-family: inherit;
+}
+.pc-search:focus { outline: none; border-color: var(--purple); }
+.pc-body { overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.pc-body::-webkit-scrollbar { width: 8px; }
+.pc-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.pc-list { display: flex; flex-direction: column; gap: 8px; }
+.pc-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px;
+  border-radius: 12px; cursor: pointer; text-align: left;
+  background: var(--bg-2); border: 1px solid var(--border); color: var(--ink);
+  transition: border-color .15s ease, transform .15s ease;
+}
+.pc-row:hover:not(:disabled) { border-color: var(--purple); transform: translateY(-1px); }
+.pc-row:disabled, .pc-row.is-on { cursor: default; opacity: .65; }
+.pc-name { font-weight: 700; font-size: 14px; }
+.pc-state { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--purple); white-space: nowrap; }
+.pc-row.is-on .pc-state { color: #6ee7b7; }
+.pc-empty { text-align: center; color: var(--ink-dim); padding: 26px 12px; line-height: 1.6; }

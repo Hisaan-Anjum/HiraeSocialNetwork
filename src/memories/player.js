@@ -80,13 +80,22 @@ function buildScenes(m) {
       build() {
         const el = document.createElement('div');
         el.className = 'ms-scene ms-moment';
+        // The moment is shown WHOLE (object-fit: contain) — a photo or clip
+        // that isn't the screen's aspect ratio must never lose its edges, and
+        // people frame their moments deliberately. The gap that leaves is
+        // filled with a blurred, dimmed copy of the same image rather than
+        // black bars, which is what keeps it looking composed instead of
+        // letterboxed.
+        const backdrop = `<div class="ms-media-bg" style="background-image:url('${escapeHtml(sc.url || '')}')"></div>`;
         if (sc.videoUrl) {
           el.innerHTML = `
+            ${backdrop}
             <video class="ms-media" src="${escapeHtml(sc.videoUrl)}" poster="${escapeHtml(sc.url || '')}" muted playsinline loop></video>
             <div class="ms-vignette"></div>
             ${captionHtml(sc)}`;
         } else {
           el.innerHTML = `
+            ${backdrop}
             <img class="ms-media ${kb ? 'ms-kenburns' : 'ms-fadein'}" src="${escapeHtml(sc.url)}" alt="">
             <div class="ms-vignette"></div>
             ${captionHtml(sc)}`;
@@ -98,15 +107,25 @@ function buildScenes(m) {
 
   // 5 — top sessions
   if (m.topSessions?.length) {
+    // Nights filed under a shared-watchlist film get their real cover art; the
+    // rest keep the plain row. Whichever a story has, the scene stays balanced
+    // rather than half-empty — hence the poster/no-poster variants below.
+    const anyArt = m.topSessions.some((s) => s.posterUrl);
     scenes.push({
       kind: 'top',
-      duration: 3600,
+      duration: anyArt ? 4200 : 3600,
       html: `
-        <div class="ms-scene ms-top">
+        <div class="ms-scene ms-top${anyArt ? ' ms-top-art' : ''}">
           <div class="ms-scene-kicker">Your best nights</div>
           ${m.topSessions.map((s, i) => `
             <div class="ms-top-item" style="animation-delay:${0.3 + i * 0.25}s">
-              <span class="ms-top-title">${escapeHtml(s.title)}</span>
+              ${anyArt ? `<span class="ms-top-poster${s.posterUrl ? '' : ' is-blank'}"
+                    style="${s.posterUrl ? `background-image:url('${escapeHtml(s.posterUrl)}')` : ''}"
+                >${s.posterUrl ? '' : '🎬'}</span>` : ''}
+              <span class="ms-top-info">
+                <span class="ms-top-title">${escapeHtml(s.title)}</span>
+                ${s.year ? `<span class="ms-top-year">${escapeHtml(String(s.year))}</span>` : ''}
+              </span>
               <span class="ms-top-rating">${'★'.repeat(Math.round(s.rating))}<span class="ms-top-num">${s.rating}</span></span>
             </div>`).join('')}
         </div>`,
