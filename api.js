@@ -6,6 +6,28 @@
 const AUTH_KEY = 'moments_auth'; // { token, username, serverUrl }
 const SERVER_URL_KEY = 'moments_server_url';
 
+// ── One canonical origin for the app ──────────────────────────────────
+// CloudFront serves BOTH herae.app and app.herae.app from this same backend, so
+// the apex answers /login.html and /api/* perfectly well. That sounds harmless
+// and isn't: every in-app link is relative, so whoever starts on the apex stays
+// there for the whole session, and localStorage — which holds the session — is
+// per-origin.
+//
+// The concrete failure: sign in on herae.app, and the shared .herae.app
+// auth-hint cookie later convinces index.html to send you to
+// app.herae.app/memories.html, where there is no stored session at all. You get
+// bounced to the login page while apparently already signed in.
+//
+// So app pages move to the app subdomain before anything reads or writes
+// storage. The apex keeps the landing page and the legal pages, which don't
+// load this file — except index.html, which does, and is excluded by path.
+(function canonicalOrigin() {
+  if (location.hostname !== 'herae.app') return;
+  const p = location.pathname;
+  if (p === '/' || p === '/index.html') return;   // the marketing landing lives here
+  location.replace(`https://app.herae.app${p}${location.search}${location.hash}`);
+}());
+
 function getSavedServerUrl() {
   // The site is normally served BY the API server itself now (see the
   // static mount in server/src/index.js) — in that case the server's
