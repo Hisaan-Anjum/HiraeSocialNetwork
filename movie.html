@@ -17,8 +17,12 @@
     <nav class="nav-links">
       <a href="memories.html" class="nav-link">Feed</a>
       <a href="contacts.html" class="nav-link">Contacts</a>
+      <!-- search.html now browses on filters alone, so this is a real "find
+           another film" entry point rather than an empty search box. -->
+      <a href="search.html" class="nav-link">Browse movies</a>
     </nav>
     <div class="topbar-right">
+      <button class="btn btn-ghost" id="searchTrigger" aria-label="Search">🔍 Search</button>
       <span class="who" id="whoAmI"></span>
       <button class="btn btn-ghost" id="logoutBtn">Log out</button>
     </div>

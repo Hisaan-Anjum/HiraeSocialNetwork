@@ -3,7 +3,7 @@
 //
 // Sources, all existing endpoints — no new search infrastructure:
 //   People    GET /api/users?q=            (cursor-paged, "show more")
-//   Movies    GET /api/recommendations     (small curated set, filtered here)
+//   Movies    GET /api/recommendations?q=  (searched in SQL, whole catalogue)
 //   Sessions/Reviews/Moments — the same two cursor-paged feeds the main
 //   page merges (GET /sessions/mine + GET /feed), pulled page by page as
 //   you scroll and filtered as they stream in. That IS the pagination:
@@ -26,6 +26,7 @@ import { renderStars } from '../components/starRating.js';
 import { renderUserLink } from '../components/userLink.js';
 import { groupMomentsBySession } from '../lib/feedGrouping.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
+import { createMovieFilters } from '../components/movieFilters.js';
 
 const {
   requireAuth, logout, searchUsers, getSessionsMine, getFeed, getRecommendations, getContacts,
@@ -47,12 +48,81 @@ for (const name of ['users', 'sessions', 'reviews', 'moments', 'movies']) {
 
 const state = {
   usersCursor: null,
+  moviesCursor: null, moviesDone: false, moviesLoading: false,
   ownCursor: undefined, ownDone: false,
   feedCursor: undefined, feedDone: false,
   seenSessions: new Set(), seenReviews: new Set(), seenMoments: new Set(),
   loading: false,
   total: 0,
 };
+
+// Mounted before anything loads so the controls are usable while results
+// stream in. Changing a filter re-queries only the movies group — the other
+// groups aren't filterable and shouldn't flicker.
+const movieFilters = createMovieFilters({
+  onChange: () => {
+    const g = groups.movies;
+    g.items.innerHTML = '';
+    state.total -= g.n;
+    g.n = 0;
+    g.count.textContent = '0';
+    // A new filter set is a new result set — carrying the old cursor forward
+    // would page into the middle of a list that no longer exists.
+    state.moviesCursor = null;
+    state.moviesDone = false;
+    loadMovies();
+  },
+});
+document.getElementById('movieFilters').appendChild(movieFilters.el);
+
+// ── Tabs ──────────────────────────────────────────────────────────────
+// Results arrive asynchronously and keep arriving as the feed pages in, so this
+// runs on every addition rather than once: a tab's count, and whether it's
+// selectable at all, both change while you're looking at the page.
+let activeTab = 'all';
+const tabsEl = document.getElementById('searchTabs');
+
+function applyTab() {
+  tabsEl.hidden = false;
+
+  for (const btn of tabsEl.querySelectorAll('.search-tab')) {
+    const name = btn.dataset.tab;
+    const n = name === 'all' ? state.total : groups[name].n;
+    const badge = btn.querySelector('[data-n]');
+    if (badge) {
+      badge.textContent = n;
+      badge.hidden = n === 0;
+    }
+    // Movies keeps its tab live even at zero, because the filter bar lives in
+    // that group — being over-filtered has to stay recoverable.
+    btn.disabled = n === 0 && name !== 'all' && name !== 'movies';
+    if (btn.disabled && activeTab === name) activeTab = 'all';
+    btn.classList.toggle('is-active', activeTab === name);
+    btn.setAttribute('aria-selected', String(activeTab === name));
+  }
+
+  for (const [name, g] of Object.entries(groups)) {
+    const showable = g.n > 0 || name === 'movies';
+    g.el.hidden = activeTab === 'all' ? !showable : activeTab !== name;
+    // The heading is redundant once a tab names the group — but in "All" it's
+    // the only thing separating one list from the next.
+    const title = g.el.querySelector('.search-group-title');
+    if (title) title.hidden = activeTab !== 'all';
+  }
+}
+
+tabsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.search-tab');
+  if (!btn || btn.disabled) return;
+  activeTab = btn.dataset.tab;
+  applyTab();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // The new tab has its own idea of whether more exists — and switching to a
+  // short one can leave the sentinel already on screen, which would never fire
+  // an intersection because it never re-enters the viewport.
+  sentinelEl.classList.toggle('hidden', !moreToLoadForTab());
+  if (moreToLoadForTab()) loadMoreForTab();
+});
 
 if (auth) {
   document.getElementById('whoAmI').textContent = `logged in as ${auth.username}`;
@@ -76,33 +146,76 @@ if (auth) {
   init();
 }
 
+// Scrolling has to page whatever you're LOOKING at. A single sentinel wired
+// only to the feed meant the Movies tab stopped at its first page however far
+// you scrolled, and People needed a button while everything else was automatic.
+function loadMoreForTab() {
+  if (activeTab === 'movies') return loadMovies({ append: true });
+  if (activeTab === 'users') {
+    if (!state.usersCursor) return undefined;
+    const cursor = state.usersCursor;
+    state.usersCursor = null;        // claim it, so overlapping ticks can't double-fetch
+    return loadUsers(cursor);
+  }
+  // 'all' and the three feed-backed tabs share the one feed stream.
+  if (state.ownDone && state.feedDone) return undefined;
+  return loadMoreFeed();
+}
+
+function moreToLoadForTab() {
+  if (activeTab === 'movies') return !state.moviesDone;
+  if (activeTab === 'users') return !!state.usersCursor;
+  return !(state.ownDone && state.feedDone);
+}
+
+function observeSentinel() {
+  if (!('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && moreToLoadForTab()) loadMoreForTab();
+  }, { rootMargin: '500px 0px' });
+  io.observe(sentinelEl);
+}
+
 function addTo(name, html) {
   const g = groups[name];
-  g.el.hidden = false;
   g.items.insertAdjacentHTML('beforeend', html);
   g.n += 1;
   g.count.textContent = g.n;
   state.total += 1;
+  applyTab();
 }
 
 async function init() {
-  if (!q) {
+  // Filters alone are a legitimate search: "Netflix comedies rated 8+" is a
+  // question with no title in it. Only prompt for text when there's nothing
+  // to go on at all.
+  if (!q && !movieFilters.isActive()) {
     emptyEl.hidden = false;
-    emptyEl.innerHTML = renderEmptyState('🔍', 'Type something to search for.');
+    emptyEl.innerHTML = renderEmptyState('🔍', 'Type something to search for — or use the movie filters below.');
+    groups.movies.el.hidden = false;
     sentinelEl.classList.add('hidden');
+    loadMovies();
     return;
   }
-  document.title = `“${q}” — Herae Memories`;
-
-  loadUsers();
+  document.title = q ? `“${q}” — Herae Memories` : 'Browse movies — Herae Memories';
   loadMovies();
 
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !(state.ownDone && state.feedDone)) loadMoreFeed();
-    }, { rootMargin: '500px 0px' });
-    io.observe(sentinelEl);
+  // People/sessions/reviews/moments are all TEXT matches, and every one of them
+  // reduces to `.includes(lower)` — which is vacuously true for an empty string.
+  // Streaming the feed with no query would therefore match every session, review
+  // and moment the viewer can see and dump the lot on screen. A filter-only
+  // browse is about the catalogue, so those groups simply don't participate.
+  if (!q) {
+    // The feed groups sit out a query-less browse, but movies still page —
+    // otherwise browsing the catalogue by filter alone stops dead at 20.
+    state.ownDone = true;
+    state.feedDone = true;
+    observeSentinel();
+    return;
   }
+
+  loadUsers();
+  observeSentinel();
   loadMoreFeed();
 }
 
@@ -131,16 +244,31 @@ async function loadUsers(cursor) {
   settleEmptyState();
 }
 
-// ── Movies (small curated set, filtered client-side like the overlay) ──
-async function loadMovies() {
+// ── Movies (searched server-side across the whole catalogue) ───────────
+// This used to fetch one page of recommendations and filter it here, which only
+// ever worked while the catalogue was a few dozen curated titles — against
+// thousands it searches a ~20-row sample and reports almost nothing. ?q= pushes
+// the match into SQL where the whole table is visible.
+async function loadMovies({ append = false } = {}) {
+  if (state.moviesLoading) return;
+  if (append && state.moviesDone) return;
+  state.moviesLoading = true;
   try {
-    const { recommendations } = await getRecommendations();
-    for (const rec of recommendations || []) {
-      const hit = rec.title.toLowerCase().includes(lower)
-        || (rec.genres || []).some((g) => g.toLowerCase().includes(lower));
-      if (hit) addTo('movies', renderRecommendationCard(rec));
-    }
-  } catch (e) { /* fine */ }
+    const res = await getRecommendations(
+      append ? state.moviesCursor : null, q || undefined, undefined, movieFilters.params(),
+    );
+    movieFilters.setCount(res.total);
+    // nextCursor means different things on the two server paths — a row id when
+    // searching, a row offset when taste-ranked — but it is always opaque here
+    // and handed straight back, so this doesn't care which.
+    state.moviesCursor = res.nextCursor ?? null;
+    state.moviesDone = res.nextCursor == null;
+    for (const rec of res.recommendations || []) addTo('movies', renderRecommendationCard(rec));
+  } catch (e) {
+    state.moviesDone = true;   // don't retry a failing page on every scroll tick
+  } finally {
+    state.moviesLoading = false;
+  }
   settleEmptyState();
 }
 
@@ -237,7 +365,12 @@ async function loadMoreFeed() {
 function settleEmptyState() {
   if (state.total === 0 && state.ownDone && state.feedDone) {
     emptyEl.hidden = false;
-    emptyEl.innerHTML = renderEmptyState('🔍', `Nothing matched “${escapeHtml(q)}”.`);
+    // Name what actually came up empty. Reporting a missing query when the
+    // filters are what excluded everything sends people to retype a title that
+    // was never the problem.
+    emptyEl.innerHTML = q
+      ? renderEmptyState('🔍', `Nothing matched “${escapeHtml(q)}”.`)
+      : renderEmptyState('🎬', 'No films match these filters. Try relaxing one.');
   } else if (state.total > 0) {
     emptyEl.hidden = true;
   }

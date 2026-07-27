@@ -35,6 +35,13 @@
       <div class="login-title">Create your Herae account</div>
       <div class="login-sub">Free — and it takes less than a minute.</div>
 
+      <!-- Above the form on purpose: Google sign-up is one click versus three
+           fields, and /api/google creates the account itself, so it's a complete
+           alternative rather than a shortcut into this form. Both parts stay
+           hidden until google-signin.js confirms the server offers Google. -->
+      <div id="googleMount"></div>
+      <div class="auth-or hidden" id="googleDivider"><span>or sign up with email</span></div>
+
       <form id="signupForm" autocomplete="on" novalidate>
         <!-- Hidden in production (site served by the API server) — same rule
              as login.html. Shown only for file:// or a localhost dev server. -->
@@ -86,6 +93,7 @@
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="pw-toggle.js"></script>
+  <script src="google-signin.js"></script>
   <script>
   'use strict';
   (function () {
@@ -102,8 +110,21 @@
     var pwFill = document.getElementById('pwFill');
     var pwHint = document.getElementById('pwHint');
 
-    // Already signed in? Straight to the feed.
-    if (typeof getAuth === 'function' && getAuth()) { window.location.href = 'memories.html'; return; }
+    // An invite can arrive as ?invite=CODE as well as in localStorage, because
+    // localStorage is per-origin and doesn't survive a herae.app →
+    // app.herae.app hop. invite.html sets both.
+    var inviteParam = new URLSearchParams(location.search).get('invite');
+    if (inviteParam) window.savePendingInvite(inviteParam);
+
+    // Already signed in? Redeem anything pending before leaving.
+    if (typeof getAuth === 'function' && getAuth()) {
+      window.redeemPendingInvite().then(function (r) {
+        window.location.href = r && r.username && !r.self
+          ? 'user.html?u=' + encodeURIComponent(r.username)
+          : 'memories.html';
+      });
+      return;
+    }
 
     serverUrlEl.value = getSavedServerUrl();
     var isLocalHost = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
@@ -196,6 +217,9 @@
           if (!res.ok) throw new Error(res.d.error || 'Could not create your account.');
           // Same session shape login() writes, so every other page picks it up.
           setAuth({ token: res.d.token, username: res.d.username, serverUrl: b });
+          return window.redeemPendingInvite();
+        })
+        .then(function () {
           // Honour a stashed return target the same way login.js does — this is
           // what lets a Herae Together invite (claim.html?token=…) auto-activate
           // the reserved seat right after a brand-new account is created.
@@ -208,6 +232,43 @@
           btn.disabled = false; btn.textContent = 'Create account';
         });
     });
+
+    // Google sign-in doubles as sign-UP: /api/google creates the account on
+    // first use, so there's no separate "register with Google" path and nothing
+    // to keep in step with the form above. Offered only when the server reports
+    // a client id, so this is a no-op where Google isn't configured.
+    if (window.mountGoogleButton) {
+      window.mountGoogleButton(document.getElementById('googleMount'), {
+        label: 'Continue with Google',
+        onToken: function (accessToken) {
+          errorText.textContent = '';
+          // completeGoogleSignIn runs the "pick a username" step a brand-new
+          // account needs, retrying on a taken name, and resolves null if the
+          // person backs out of it.
+          return window.completeGoogleSignIn(accessToken, function (token, username) {
+            return window.loginWithGoogle(token, serverUrlEl.value.trim(), username);
+          })
+            .then(function (result) {
+              // Backed out of the username step — stay put. Nested rather than
+              // chained so "no account" and "account, now redirect" stay
+              // distinguishable; a flat chain has to signal that with a
+              // sentinel value, and null is already a legitimate result here.
+              if (!result) return;
+              return window.redeemPendingInvite().then(function () {
+                var returnTo = sessionStorage.getItem('moments_return_to');
+                sessionStorage.removeItem('moments_return_to');
+                window.location.href = returnTo || 'memories.html';
+              });
+            })
+            .catch(function (err) { errorText.textContent = err.message; });
+        },
+      }).then(function (mounted) {
+        if (mounted) {
+          var d = document.getElementById('googleDivider');
+          if (d) d.classList.remove('hidden');
+        }
+      });
+    }
   })();
   </script>
 </body>

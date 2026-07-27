@@ -11,6 +11,7 @@ import { attachCarouselHandlers } from '../components/carousel.js';
 // watchlist's movie modal render the identical view from one definition.
 import { renderMovieDetail } from '../components/movieDetail.js';
 import { openPickContact } from '../watchlist/pickContact.js';
+import { initSearch } from '../components/search.js';
 
 const { requireAuth, logout, getRecommendationById } = window;
 
@@ -21,6 +22,10 @@ if (auth) {
   document.getElementById('whoAmI').textContent = `logged in as ${auth.username}`;
   document.getElementById('logoutBtn').addEventListener('click', logout);
   attachCarouselHandlers(contentEl);
+  // Looking at one film is exactly when you want to go and find another, so the
+  // same overlay the feed uses is available here. No sessions to offer from this
+  // page — contacts and the movie catalogue are both searched server-side.
+  initSearch({ getSessions: () => [] });
   load();
 }
 

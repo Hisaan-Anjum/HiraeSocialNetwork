@@ -28,9 +28,6 @@ const {
 
 const auth = requireAuth();
 
-// Every recommendation not yet placed anywhere, kept around for the
-// search overlay's client-side movie filter regardless of interleave state.
-let allRecommendationsSeen = [];
 // Every session card (own + contacts'/public) rendered so far, for the
 // search overlay's client-side session filter.
 let allSessionsSeen = [];
@@ -62,7 +59,7 @@ if (auth) {
   attachMediaTileHandlers(contentEl, { viewerOptsFor: momentViewerOpts });
   attachCarouselHandlers(contentEl);
   attachPostActionHandlers(contentEl);
-  initSearch({ getSessions: () => allSessionsSeen, getMovies: () => allRecommendationsSeen });
+  initSearch({ getSessions: () => allSessionsSeen });
 
   document.querySelectorAll('.feed-scope-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -137,7 +134,6 @@ async function primeRecommendations() {
   try {
     const { recommendations } = await getRecommendations();
     state.recBuffer = recommendations;
-    allRecommendationsSeen = recommendations;
   } catch (e) { /* the feed still works without recommendation cards */ }
 }
 

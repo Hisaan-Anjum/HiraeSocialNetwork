@@ -11,6 +11,53 @@
   gap: 20px; margin-bottom: 28px; flex-wrap: wrap;
 }
 
+/* ── Toolbar: search + sort + count ────────────────────────────────── */
+.admin-toolbar {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.admin-search { position: relative; flex: 1 1 260px; min-width: 220px; }
+.admin-search-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  font-size: 13px; opacity: .6; pointer-events: none;
+}
+.admin-search input {
+  width: 100%; padding: 11px 14px 11px 38px;
+  background: var(--bg-1); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 12px;
+  font-size: 14px; font-family: inherit;
+}
+.admin-search input:focus {
+  outline: none; border-color: rgba(139,92,246,0.6);
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+}
+/* The browser's own clear button is invisible on a dark field. */
+.admin-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none; height: 14px; width: 14px; cursor: pointer;
+  background: var(--ink-dim);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='2' fill='none'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.admin-sort { display: inline-flex; align-items: center; gap: 9px; }
+.admin-sort > span { font-size: 13px; color: var(--ink-dim); }
+.admin-sort select {
+  padding: 10px 12px; border-radius: 12px; font-size: 14px; font-family: inherit;
+  background: var(--bg-1); color: var(--ink); border: 1px solid var(--border);
+  cursor: pointer;
+}
+.admin-sort select:focus { outline: none; border-color: rgba(139,92,246,0.6); }
+.admin-count { font-size: 13px; color: var(--ink-faint); margin-left: auto; }
+
+/* ── Pager ─────────────────────────────────────────────────────────── */
+.admin-pager {
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px; margin: 26px 0 10px; flex-wrap: wrap;
+}
+.admin-pager button:disabled { opacity: .38; cursor: default; }
+.admin-pager-info {
+  font-size: 13px; color: var(--ink-dim); text-align: center;
+  font-variant-numeric: tabular-nums; min-width: 220px;
+}
+
 /* ── Recommendations table ─────────────────────────────────────────── */
 .rec-table {
   width: 100%; border-collapse: separate; border-spacing: 0 10px;

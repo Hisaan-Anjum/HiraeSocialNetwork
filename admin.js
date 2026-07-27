@@ -19,9 +19,27 @@ let editingId = null;
 // that artwork slot" (see the artwork PATCH route's "any subset" shape).
 let pendingArtwork = {};
 
+// Server-side list state. The catalogue import made this table far too big to
+// hold in the page, so search/sort/paging all round-trip rather than filtering
+// an in-memory array.
+const PAGE_SIZE = 50;
+let query = '';
+let sortKey = 'manual';
+let offset = 0;
+let total = 0;
+// Guards against a slow response for an old query landing after a newer one and
+// repainting the table with stale rows.
+let listSeq = 0;
+
 const gateEl = document.getElementById('gate');
 const appEl = document.getElementById('adminApp');
 const tableWrap = document.getElementById('tableWrap');
+const searchEl = document.getElementById('adminSearch');
+const sortEl = document.getElementById('adminSort');
+const countEl = document.getElementById('adminCount');
+const pagerEl = document.getElementById('adminPager');
+const pageInfoEl = document.getElementById('pageInfo');
+const subEl = document.getElementById('adminSub');
 
 if (auth) {
   document.getElementById('whoAmI').textContent = `logged in as ${auth.username}`;
@@ -31,11 +49,10 @@ if (auth) {
 
 async function init() {
   try {
-    const { recommendations: rows } = await getAdminRecommendations();
-    recommendations = rows;
+    await loadPage({ keepOffset: true });
     gateEl.classList.add('hidden');
     appEl.classList.remove('hidden');
-    renderTable();
+    wireListControls();
   } catch (err) {
     if (err.message === 'Admin access required.') {
       gateEl.innerHTML = `
@@ -65,16 +82,106 @@ function showToast(message, kind) {
   showToast._t = setTimeout(() => { el.className = 'toast'; }, 2600);
 }
 
+// ── Search / sort / paging ────────────────────────────────────────────
+async function loadPage({ keepOffset = false } = {}) {
+  if (!keepOffset) offset = 0;
+  const seq = ++listSeq;
+  const res = await getAdminRecommendations({ q: query, sort: sortKey, cursor: offset, limit: PAGE_SIZE });
+  if (seq !== listSeq) return;   // a newer request already won
+  recommendations = res.recommendations;
+  total = res.total ?? recommendations.length;
+  offset = res.offset ?? 0;
+  renderTable();
+  renderPager();
+}
+
+// Reloading must not lose the admin's place: after an edit or a delete the row
+// count can shrink past the current offset, which would otherwise show an empty
+// page with no obvious way back.
+async function reload() {
+  if (offset > 0 && offset >= total - 1) offset = Math.max(0, offset - PAGE_SIZE);
+  try {
+    await loadPage({ keepOffset: true });
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function renderPager() {
+  const showing = recommendations.length;
+  countEl.textContent = total
+    ? `${total.toLocaleString()} title${total === 1 ? '' : 's'}${query ? ' matching' : ''}`
+    : '';
+
+  if (total <= showing && offset === 0) {
+    pagerEl.classList.add('hidden');
+  } else {
+    pagerEl.classList.remove('hidden');
+    const from = total ? offset + 1 : 0;
+    const to = offset + showing;
+    const page = Math.floor(offset / PAGE_SIZE) + 1;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    pageInfoEl.textContent = `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}  ·  page ${page} of ${pages}`;
+    document.getElementById('pagePrev').disabled = offset === 0;
+    document.getElementById('pageNext').disabled = to >= total;
+  }
+
+  // Dragging writes sort_order, which only means anything while the table is
+  // actually showing that order. Under any other sort the row positions the
+  // admin sees aren't sort_order, so a drag would save an order they never
+  // arranged — so it's turned off and the hint says why.
+  const manual = sortKey === 'manual' && !query;
+  subEl.textContent = manual
+    ? 'Drag rows to reorder how they appear in the app. Changes save immediately.'
+    : 'Reordering is only available under “Manual order” with no search — switch back to drag rows.';
+}
+
+function wireListControls() {
+  let t;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      query = searchEl.value.trim();
+      try { await loadPage(); } catch (err) { showToast(err.message, 'error'); }
+    }, 250);
+  });
+
+  sortEl.addEventListener('change', async () => {
+    sortKey = sortEl.value;
+    try { await loadPage(); } catch (err) { showToast(err.message, 'error'); }
+  });
+
+  document.getElementById('pagePrev').addEventListener('click', async () => {
+    offset = Math.max(0, offset - PAGE_SIZE);
+    try { await loadPage({ keepOffset: true }); window.scrollTo({ top: 0 }); }
+    catch (err) { showToast(err.message, 'error'); }
+  });
+
+  document.getElementById('pageNext').addEventListener('click', async () => {
+    if (offset + PAGE_SIZE >= total) return;
+    offset += PAGE_SIZE;
+    try { await loadPage({ keepOffset: true }); window.scrollTo({ top: 0 }); }
+    catch (err) { showToast(err.message, 'error'); }
+  });
+}
+
 // ── Table rendering + drag-to-reorder ─────────────────────────────────
+function canReorder() {
+  return sortKey === 'manual' && !query;
+}
+
 function renderTable() {
   if (!recommendations.length) {
-    tableWrap.innerHTML = `<div class="empty-state"><div class="icon">🎬</div><div class="msg">No recommendations yet.<br>Click "+ New recommendation" to add the first one.</div></div>`;
+    tableWrap.innerHTML = query
+      ? `<div class="empty-state"><div class="icon">🔍</div><div class="msg">Nothing matches “${escapeHtml(query)}”.<br>Try a different title.</div></div>`
+      : `<div class="empty-state"><div class="icon">🎬</div><div class="msg">No recommendations yet.<br>Click "+ New recommendation" to add the first one.</div></div>`;
     return;
   }
+  const drag = canReorder();
   tableWrap.innerHTML = `
     <table class="rec-table">
       <thead class="rec-table-head">
-        <tr><th></th><th></th><th>Title</th><th>Year</th><th>Runtime</th><th>Rating</th><th>Featured</th><th></th></tr>
+        <tr>${drag ? '<th></th>' : ''}<th></th><th>Title</th><th>Year</th><th>Runtime</th><th>Rating</th><th>Added</th><th>Featured</th><th></th></tr>
       </thead>
       <tbody id="recTbody">
         ${recommendations.map(rowHtml).join('')}
@@ -83,11 +190,24 @@ function renderTable() {
   attachRowHandlers();
 }
 
+// Short, unambiguous, and locale-aware — the admin only needs to tell recent
+// from old at a glance, so the year is dropped for this year's rows.
+function addedLabel(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const opts = d.getFullYear() === new Date().getFullYear()
+    ? { day: 'numeric', month: 'short' }
+    : { day: 'numeric', month: 'short', year: 'numeric' };
+  return d.toLocaleDateString(undefined, opts);
+}
+
 function rowHtml(rec) {
   const genres = (rec.genres || []).join(', ');
+  const drag = canReorder();
   return `
-    <tr class="rec-row" draggable="true" data-id="${rec.id}">
-      <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+    <tr class="rec-row" ${drag ? 'draggable="true"' : ''} data-id="${rec.id}">
+      ${drag ? '<td><span class="drag-handle" title="Drag to reorder">⠿</span></td>' : ''}
       <td>${rec.posterUrl
         ? `<img class="rec-thumb" src="${momentImageUrl(rec.posterUrl)}" alt="">`
         : `<div class="rec-thumb-empty">🎬</div>`}</td>
@@ -98,6 +218,7 @@ function rowHtml(rec) {
       <td class="rec-meta">${rec.releaseYear ?? '—'}</td>
       <td class="rec-meta">${rec.runtimeMinutes ? `${rec.runtimeMinutes}m` : '—'}</td>
       <td class="rec-rating">${rec.rating != null ? `★ ${rec.rating}` : '—'}</td>
+      <td class="rec-meta">${addedLabel(rec.createdAt)}</td>
       <td>${rec.featured ? '<span class="featured-pill">Featured</span>' : ''}</td>
       <td>
         <div class="rec-actions">
@@ -116,6 +237,8 @@ function attachRowHandlers() {
   tbody.querySelectorAll('[data-action="delete"]').forEach((btn) => {
     btn.addEventListener('click', () => openDeleteConfirm(Number(btn.dataset.id)));
   });
+
+  if (!canReorder()) return;
 
   let dragSrc = null;
   tbody.querySelectorAll('.rec-row').forEach((row) => {
@@ -149,7 +272,9 @@ function attachRowHandlers() {
 async function persistOrder() {
   const ids = Array.from(document.querySelectorAll('#recTbody .rec-row')).map((r) => Number(r.dataset.id));
   try {
-    await reorderRecommendations(ids);
+    // `offset` matters: these are only the rows on this page, so the server has
+    // to number them from where the page starts, not from zero.
+    await reorderRecommendations(ids, offset);
     recommendations = ids.map((id) => recommendations.find((r) => r.id === id));
     showToast('Order saved.');
   } catch (err) {
@@ -299,10 +424,18 @@ recForm.addEventListener('submit', async (e) => {
       ({ recommendation: rec } = await uploadRecommendationArtwork(rec.id, pendingArtwork));
     }
     const idx = recommendations.findIndex((r) => r.id === rec.id);
-    if (idx >= 0) recommendations[idx] = rec; else recommendations.push(rec);
+    const wasEdit = idx >= 0;
+    if (wasEdit) {
+      // An edit stays on the row the admin is looking at — patching it in place
+      // keeps their scroll position and avoids a round trip.
+      recommendations[idx] = rec;
+      renderTable();
+    }
     closeForm();
-    renderTable();
     showToast(editingId ? 'Recommendation updated.' : 'Recommendation created.');
+    // A new row belongs wherever the current sort puts it, which only the server
+    // knows — so refetch rather than appending it to the end of this page.
+    if (!wasEdit) await reload();
   } catch (err) {
     formError.textContent = err.message;
   } finally {
@@ -336,10 +469,12 @@ document.getElementById('deleteConfirm').addEventListener('click', async () => {
   btn.textContent = 'Deleting…';
   try {
     await deleteRecommendation(pendingDeleteId);
-    recommendations = recommendations.filter((r) => r.id !== pendingDeleteId);
     closeDeleteConfirm();
-    renderTable();
     showToast('Recommendation deleted.');
+    // Refetch so the freed slot pulls the next row up from the following page,
+    // rather than leaving this page one short until a manual reload.
+    total = Math.max(0, total - 1);
+    await reload();
   } catch (err) {
     showToast(err.message, 'error');
   } finally {

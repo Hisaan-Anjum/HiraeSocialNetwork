@@ -16,6 +16,13 @@
       <div class="login-title">Herae Memories</div>
       <div class="login-sub">The little moments you've saved together</div>
 
+      <!-- Above the form on purpose: it's the one-click path, and Google-created
+           accounts have no usable password, so a returning Google user must not
+           meet the password field first. Both parts stay hidden until
+           google-signin.js confirms the server offers Google. -->
+      <div id="googleMount"></div>
+      <div class="auth-or hidden" id="googleDivider"><span>or continue with password</span></div>
+
       <form id="loginForm">
         <!-- Hidden in production: the site is served by the API server, so the
              address is just this page's origin (see api.js getSavedServerUrl and
@@ -56,6 +63,7 @@
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="pw-toggle.js"></script>
+  <script src="google-signin.js"></script>
   <script type="module" src="/src/pages/login.js"></script>
 </body>
 </html>

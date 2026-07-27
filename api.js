@@ -41,6 +41,11 @@ function setAuth(auth) {
   localStorage.setItem(SERVER_URL_KEY, auth.serverUrl);
   setAuthHintCookie(true);
   broadcastAuthChange(auth);
+  // One hook for every route into a session — password login, signup, and Google
+  // on either surface — so no individual auth path has to know invites exist.
+  // Deliberately not awaited: connecting a pair must never delay or fail the
+  // login itself, and redeemPendingInvite swallows its own errors.
+  redeemPendingInvite();
 }
 
 function clearAuth() {
@@ -203,6 +208,90 @@ async function login(serverUrl, username, password) {
   }
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok) throw new Error(data.error || 'Login failed.');
+  setAuth({ token: data.token, username: data.username, serverUrl: base });
+  return data;
+}
+
+// ── Invite links ──────────────────────────────────────────────────────
+// A code parked by invite.html, redeemed the moment an account exists. Stored in
+// localStorage rather than sessionStorage on purpose: signing up with Google
+// bounces through accounts.google.com and back, and sessionStorage does not
+// reliably survive that round trip — the invite would be silently lost exactly
+// on the path most new users take.
+//
+// setAuth() calls redeemPendingInvite(), so EVERY way of arriving at a session —
+// password login, signup, Google on either surface — connects the pair without
+// each of those paths knowing invites exist.
+const PENDING_INVITE_KEY = 'moments_pending_invite';
+
+function savePendingInvite(code) {
+  try { localStorage.setItem(PENDING_INVITE_KEY, String(code || '').toUpperCase()); } catch (e) { /* private mode */ }
+}
+function getPendingInvite() {
+  try { return localStorage.getItem(PENDING_INVITE_KEY) || ''; } catch (e) { return ''; }
+}
+function clearPendingInvite() {
+  try { localStorage.removeItem(PENDING_INVITE_KEY); } catch (e) { /* ignore */ }
+}
+
+// The in-flight redemption, so setAuth() can start it and the auth page can
+// await that same request before it navigates. Without this the login pages
+// would redirect out from under a fire-and-forget fetch and cancel it — the
+// invite would appear to work and silently connect nobody.
+let redeemInFlight = null;
+
+// Cleared whatever the outcome: a code that's invalid, already used, or a
+// self-invite must not be retried on every page load forever.
+function redeemPendingInvite() {
+  if (redeemInFlight) return redeemInFlight;
+  const code = getPendingInvite();
+  if (!code || !getAuth()) return Promise.resolve(null);
+  clearPendingInvite();
+  redeemInFlight = apiRequest('/api/invite/redeem', { method: 'POST', body: JSON.stringify({ code }) })
+    // Never block someone from using the app over a bad invite.
+    .catch(() => null)
+    .finally(() => { redeemInFlight = null; });
+  return redeemInFlight;
+}
+
+function getMyInvite() {
+  return apiRequest('/api/me/invite');
+}
+
+// Trades a Google access token for a Herae session. Lands in exactly the same
+// place as login() — same setAuth, so the same extension bridge fires and the
+// rest of the site can't tell which way someone signed in.
+//
+// The server derives the email from Google directly and never trusts anything
+// this function sends beyond the token itself, so there is no account identity
+// to pass here.
+// `username` is supplied only on the second call of a first-time signup: the
+// server refuses to invent one, so a brand-new Google account comes back as
+// { needsUsername: true } and the caller asks before calling again with the same
+// token. Returns that response untouched rather than throwing, since needing a
+// username is a step in the flow, not a failure.
+async function loginWithGoogle(accessToken, serverUrl, username) {
+  const base = (serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
+  const body = { access_token: accessToken };
+  if (username) body.username = username;
+  let resp;
+  try {
+    resp = await fetch(`${base}/api/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    throw new Error('Could not reach the server. Check the address and that it is running.');
+  }
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    // A rejected username is recoverable — hand it back so the caller can show
+    // the message against the field instead of blowing the whole flow away.
+    if (data.needsUsername) return data;
+    throw new Error(data.error || 'Google sign-in failed.');
+  }
+  if (data.needsUsername) return data;
   setAuth({ token: data.token, username: data.username, serverUrl: base });
   return data;
 }
@@ -497,10 +586,18 @@ function reorderWatchlist(username, ids) {
 // caller of those today.
 // `q` is an optional title search — the SAME movie database and paging, used by
 // the watchlist's "add a movie" overlay so there's one movie index, not two.
-function getRecommendations(cursor, q) {
+// Ordered by what the viewer actually likes unless `q` is set, in which case it's
+// a plain title search. `withUser` blends that contact's taste in too — used when
+// picking for a shared watchlist, which is a decision about the pair.
+// `filters` is the object components/movieFilters.js produces — any of
+// { providers, genres, yearMin, yearMax, ratingMin }. They narrow both the
+// taste-ranked list and a title search, so the same call covers either.
+function getRecommendations(cursor, q, withUser, filters) {
   const p = new URLSearchParams();
   if (cursor) p.set('cursor', cursor);
   if (q) p.set('q', q);
+  if (withUser) p.set('with', withUser);
+  for (const [k, v] of Object.entries(filters || {})) if (v) p.set(k, v);
   const qs = p.toString();
   return apiRequest(`/api/recommendations${qs ? `?${qs}` : ''}`);
 }
@@ -529,8 +626,16 @@ function trackEvent(name, props = {}) {
   } catch (e) { /* never throws into the caller */ }
 }
 
-function getAdminRecommendations() {
-  return apiRequest('/api/admin/recommendations');
+// { q, sort, cursor, limit } — all optional. `cursor` is a row offset; the
+// response carries { recommendations, total, offset, pageSize, sort, nextCursor }.
+function getAdminRecommendations({ q = '', sort = '', cursor = 0, limit = 0 } = {}) {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (sort) params.set('sort', sort);
+  if (cursor) params.set('cursor', String(cursor));
+  if (limit) params.set('limit', String(limit));
+  const qs = params.toString();
+  return apiRequest('/api/admin/recommendations' + (qs ? `?${qs}` : ''));
 }
 function createRecommendation(payload) {
   return apiRequest('/api/admin/recommendations', { method: 'POST', body: JSON.stringify(payload) });
@@ -541,8 +646,10 @@ function updateRecommendation(id, payload) {
 function deleteRecommendation(id) {
   return apiRequest(`/api/admin/recommendations/${id}`, { method: 'DELETE' });
 }
-function reorderRecommendations(ids) {
-  return apiRequest('/api/admin/recommendations/reorder', { method: 'POST', body: JSON.stringify({ ids }) });
+// `startIndex` is the offset of the page being reordered, so dragging on page 5
+// doesn't renumber its rows over the top of page 1's.
+function reorderRecommendations(ids, startIndex = 0) {
+  return apiRequest('/api/admin/recommendations/reorder', { method: 'POST', body: JSON.stringify({ ids, startIndex }) });
 }
 // artwork: any subset of { poster, backdrop, gallery: [...] }, each a
 // base64 data URL — see admin.js's resizeImageFile for how a <input

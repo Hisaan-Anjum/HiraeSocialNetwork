@@ -1,18 +1,27 @@
-// search.js — the feed's search overlay. Contacts are searched server-side
-// (GET /api/contacts?q=, a small per-account list — see server/src/
-// contacts.js's own comment on why that's not a real pagination/index
-// concern). Sessions and movies are filtered client-side over whatever the
-// feed has already loaded/paginated in — realistic data volumes here don't
-// call for a server-side full-text index, per the task brief.
+// search.js — the search overlay, mounted anywhere the page provides a
+// #searchTrigger button.
+//
+// Contacts and movies are searched server-side; sessions are still filtered
+// client-side over whatever the feed has loaded, which is fine because a
+// person's own sessions are a bounded list.
+//
+// Movies USED to be client-side too, over the recommendation cards the feed
+// happened to have fetched. That was reasonable against a few dozen curated
+// titles and became wrong the moment the catalogue import took the table to
+// thousands: searching a ~20-card buffer misses almost everything. It now hits
+// GET /api/recommendations?q=, which searches the whole catalogue.
 'use strict';
 
 import { escapeHtml, debounce, sessionDisplayTitle } from '../lib/util.js';
 import { renderContactRow } from './contactRow.js';
 
-const { getContacts } = window;
+const { getContacts, getRecommendations } = window;
 
 let overlayEl = null;
-let dataSource = { getSessions: () => [], getMovies: () => [] };
+let dataSource = { getSessions: () => [] };
+// Both lookups are async, so a slow reply for "ma" must not land after "matrix"
+// and repaint the panel with stale results.
+let searchSeq = 0;
 
 function sessionMatches(session, q) {
   // Matches on whatever the session is CALLED (its own title when it has
@@ -21,9 +30,6 @@ function sessionMatches(session, q) {
   const watched = (session.content?.title || '').toLowerCase();
   const people = session.participants.join(' ').toLowerCase();
   return title.includes(q) || watched.includes(q) || people.includes(q);
-}
-function movieMatches(rec, q) {
-  return rec.title.toLowerCase().includes(q) || rec.genres.some((g) => g.toLowerCase().includes(q));
 }
 
 function renderResultsSection(title, items, renderItem) {
@@ -45,15 +51,18 @@ async function runSearch(q) {
   }
   resultsEl.innerHTML = `<div class="spinner-text">Searching…</div>`;
 
+  const mine = ++searchSeq;
   const lower = query.toLowerCase();
   const sessions = dataSource.getSessions().filter((s) => sessionMatches(s, lower)).slice(0, 8);
-  const movies = dataSource.getMovies().filter((m) => movieMatches(m, lower)).slice(0, 8);
 
-  let contacts = [];
-  try {
-    const res = await getContacts(query);
-    contacts = res.contacts || [];
-  } catch (e) { /* contacts search is best-effort — sessions/movies still show */ }
+  // Both are best-effort and independent: one failing still shows the other,
+  // which matters because a movie search hitting a cold cache is the slower of
+  // the two and shouldn't be able to hide the contact hits.
+  const [contacts, movies] = await Promise.all([
+    getContacts(query).then((r) => r.contacts || []).catch(() => []),
+    getRecommendations(null, query).then((r) => (r.recommendations || []).slice(0, 8)).catch(() => []),
+  ]);
+  if (mine !== searchSeq) return;   // a newer keystroke already won
 
   const html = [
     // The same row component the contacts page uses (picture, name,

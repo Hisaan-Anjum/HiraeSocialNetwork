@@ -30,6 +30,21 @@
       <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
+    <!-- Result types as tabs rather than five stacked sections. Stacked, a
+         match in Movies could sit several screens below People and be missed
+         entirely, and the page length varied wildly with what happened to
+         match. Counts live on the tabs so everything found is visible at a
+         glance without scrolling. "All" keeps the old stacked view as the
+         default, so nothing is lost — it just isn't the only option. -->
+    <div class="search-tabs" id="searchTabs" role="tablist" hidden>
+      <button type="button" class="search-tab is-active" data-tab="all" role="tab" aria-selected="true">All</button>
+      <button type="button" class="search-tab" data-tab="users" role="tab" aria-selected="false">People <span class="search-tab-n" data-n hidden></span></button>
+      <button type="button" class="search-tab" data-tab="sessions" role="tab" aria-selected="false">Sessions <span class="search-tab-n" data-n hidden></span></button>
+      <button type="button" class="search-tab" data-tab="reviews" role="tab" aria-selected="false">Reviews <span class="search-tab-n" data-n hidden></span></button>
+      <button type="button" class="search-tab" data-tab="moments" role="tab" aria-selected="false">Moments <span class="search-tab-n" data-n hidden></span></button>
+      <button type="button" class="search-tab" data-tab="movies" role="tab" aria-selected="false">Movies <span class="search-tab-n" data-n hidden></span></button>
+    </div>
+
     <div id="results">
       <section class="search-group" id="group-users" hidden>
         <h2 class="search-group-title">People <span class="pill-count" data-count></span></h2>
@@ -50,6 +65,10 @@
       </section>
       <section class="search-group" id="group-movies" hidden>
         <h2 class="search-group-title">Movies <span class="pill-count" data-count></span></h2>
+        <!-- Filter bar mounts here (components/movieFilters.js). Movies are the
+             one result type worth filtering — the catalogue runs to thousands,
+             where contacts and your own sessions do not. -->
+        <div id="movieFilters"></div>
         <div class="feed-list" data-items></div>
       </section>
       <div id="searchEmpty" hidden></div>

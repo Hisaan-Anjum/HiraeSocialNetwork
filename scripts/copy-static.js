@@ -42,6 +42,10 @@ const FILES = [
   // Show/hide password eye toggle — a classic global <script> loaded by every
   // auth page (login/signup/reset), same passthrough treatment as config.js.
   'pw-toggle.js',
+  // "Continue with Google" — a classic global <script> for the same reason
+  // pw-toggle.js is: login.html is Vite-processed but signup.html is copied
+  // verbatim, and one global keeps both on one implementation.
+  'google-signin.js',
   // Auth flows that live outside login: password reset (request + set) and
   // email confirmation. Plain self-contained pages (their own inline scripts,
   // no bundled module) so they work whether the site is served by the Node
@@ -54,6 +58,10 @@ const FILES = [
   // (its own inline module-less script hitting /api/signup), copied verbatim
   // like the other auth pages so it works under both the Node server and Vite.
   'signup.html',
+  // The page behind /invite/<CODE>. Served by an express route (there is no such
+  // file at that path), and self-contained like the other auth-adjacent pages so
+  // it works under both the Node server and Vite.
+  'invite.html',
   // Legal & policy pages — self-contained static pages sharing legal.css.
   // They reference each other and the rest of the site by plain relative
   // links, so they're copied through verbatim rather than Vite-processed.

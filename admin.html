@@ -34,13 +34,39 @@
     <div class="admin-header">
       <div>
         <div class="page-title">Recommendations</div>
-        <div class="page-sub">Drag rows to reorder how they appear in the app. Changes save immediately.</div>
+        <div class="page-sub" id="adminSub">Drag rows to reorder how they appear in the app. Changes save immediately.</div>
       </div>
       <button class="btn btn-gold" id="btnNew">+ New recommendation</button>
     </div>
 
+    <div class="admin-toolbar">
+      <div class="admin-search">
+        <span class="admin-search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="adminSearch" placeholder="Search by title…" autocomplete="off"
+               aria-label="Search recommendations by title">
+      </div>
+      <label class="admin-sort">
+        <span>Sort</span>
+        <select id="adminSort" aria-label="Sort recommendations">
+          <option value="manual">Manual order</option>
+          <option value="added_desc">Date added — newest</option>
+          <option value="added_asc">Date added — oldest</option>
+          <option value="year_desc">Year — newest</option>
+          <option value="year_asc">Year — oldest</option>
+          <option value="title">Title A–Z</option>
+        </select>
+      </label>
+      <div class="admin-count" id="adminCount"></div>
+    </div>
+
     <div id="tableWrap">
       <div class="spinner-text">Loading…</div>
+    </div>
+
+    <div class="admin-pager hidden" id="adminPager">
+      <button class="btn btn-ghost" id="pagePrev">← Previous</button>
+      <div class="admin-pager-info" id="pageInfo"></div>
+      <button class="btn btn-ghost" id="pageNext">Next →</button>
     </div>
   </div>
 

@@ -34,7 +34,8 @@ const requestsEl = document.getElementById('requests');
 if (auth) {
   document.getElementById('whoAmI').textContent = `logged in as ${auth.username}`;
   document.getElementById('logoutBtn').addEventListener('click', logout);
-  initSearch({ getSessions: () => [], getMovies: () => [] });
+  initSearch({ getSessions: () => [] });
+  initInviteCard();
 
   const searchInput = document.getElementById('contactSearch');
   searchInput.addEventListener('input', debounce(() => {
@@ -196,5 +197,74 @@ async function load(q) {
     renderList();
   } catch (err) {
     contentEl.innerHTML = renderErrorState(escapeHtml(err.message));
+  }
+}
+
+// ── Invite Friends ────────────────────────────────────────────────────
+// The card stays hidden until the link is in hand, so a failed request leaves
+// nothing broken on screen rather than an empty box with a dead Copy button.
+async function initInviteCard() {
+  const card = document.getElementById('inviteCard');
+  if (!card) return;
+  let invite;
+  try {
+    invite = await window.getMyInvite();
+  } catch (e) {
+    return;   // contacts still work perfectly without it
+  }
+
+  const linkEl = document.getElementById('inviteLink');
+  const copyEl = document.getElementById('inviteCopy');
+  const shareEl = document.getElementById('inviteShare');
+  const countEl = document.getElementById('inviteCount');
+
+  linkEl.textContent = invite.url;
+  if (invite.invitedCount > 0) {
+    countEl.textContent = `${invite.invitedCount} joined`;
+    countEl.hidden = false;
+  }
+  card.hidden = false;
+
+  copyEl.addEventListener('click', async () => {
+    const ok = await copyText(invite.url);
+    copyEl.textContent = ok ? '✓ Copied' : 'Press ⌘C';
+    copyEl.classList.toggle('is-done', ok);
+    setTimeout(() => { copyEl.textContent = 'Copy'; copyEl.classList.remove('is-done'); }, 1800);
+  });
+
+  // Shown only where the OS actually has a share sheet — on desktop Chrome the
+  // button would either do nothing or open something unhelpful, and Copy is the
+  // better action there anyway.
+  if (navigator.share) {
+    shareEl.hidden = false;
+    shareEl.addEventListener('click', async () => {
+      try {
+        await navigator.share({
+          title: 'Join me on Herae',
+          text: 'Keep every movie night we watch together.',
+          url: invite.url,
+        });
+      } catch (e) { /* dismissed — not an error */ }
+    });
+  }
+}
+
+// navigator.clipboard needs a secure context, which rules it out on a plain-http
+// LAN address in development; the textarea fallback works everywhere.
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (e2) { return false; }
   }
 }

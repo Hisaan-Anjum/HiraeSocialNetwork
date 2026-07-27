@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You're invited — Herae</title>
+<meta name="description" content="Someone invited you to keep your movie nights together on Herae.">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- invite.html — the page behind https://herae.app/invite/<CODE>.
+       There is no such file on disk at that path; server/src/index.js routes
+       /invite/:code here and this page reads the code back out of the URL.
+
+       A real page rather than a redirect, because the code has to OUTLIVE the
+       trip through login or signup. It's parked in localStorage (not session
+       storage — Google sign-in can bounce through another origin and back, and
+       sessionStorage doesn't reliably survive that), then redeemed by api.js the
+       moment an account exists. Nobody ever types a code. -->
+  <div class="login-wrap">
+    <div class="login-card">
+      <img src="/logo.png" alt="Herae" class="login-logo">
+      <div class="login-title">You've been invited 💜</div>
+      <div class="login-sub" id="inviteSub">Setting things up…</div>
+      <div id="inviteActions" hidden>
+        <!-- Two real buttons, not a button and a footnote. Roughly half the
+             people opening an invite already have an account, and burying their
+             route in small print made the link read as signup-only. -->
+        <a class="btn btn-primary invite-cta" id="inviteSignup" href="/signup.html">Create an account</a>
+        <a class="btn btn-ghost invite-cta" id="inviteLogin" href="/login.html">I already have one — log in</a>
+      </div>
+      <div class="login-hint login-legal">
+        Herae is a private place for two people to keep every movie night they've shared.
+      </div>
+    </div>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/api.js"></script>
+  <script>
+  'use strict';
+  (function () {
+    var sub = document.getElementById('inviteSub');
+    var actions = document.getElementById('inviteActions');
+
+    // Last path segment, uppercased. Tolerates a trailing slash and any query.
+    var code = (location.pathname.split('/').filter(Boolean).pop() || '').toUpperCase();
+    if (!/^[0-9A-F]{7}$/.test(code)) {
+      sub.textContent = 'That invite link doesn’t look right. Ask for a fresh one.';
+      return;
+    }
+
+    savePendingInvite(code);
+
+    // ALSO carried in the URL, not just localStorage. localStorage is
+    // per-origin: a link opened on herae.app is invisible to app.herae.app,
+    // where logging in actually happens — so the storage copy alone silently
+    // loses the invite on exactly that hop. Both auth pages read ?invite= back.
+    var q = '?invite=' + encodeURIComponent(code);
+    document.getElementById('inviteSignup').href = '/signup.html' + q;
+    document.getElementById('inviteLogin').href = '/login.html' + q;
+
+    // Signed in already → redeem now and go straight to the new contact.
+    if (getAuth()) {
+      sub.textContent = 'Connecting you…';
+      redeemPendingInvite()
+        .then(function (r) {
+          if (r && r.username && !r.self) {
+            window.location.replace('/user.html?u=' + encodeURIComponent(r.username));
+          } else {
+            window.location.replace('/contacts.html');
+          }
+        })
+        .catch(function () { window.location.replace('/contacts.html'); });
+      return;
+    }
+
+    // Not signed in → the code is parked; either route redeems it afterwards.
+    sub.textContent = 'Create an account or log in, and you’ll be connected automatically.';
+    actions.hidden = false;
+  })();
+  </script>
+</body>
+</html>

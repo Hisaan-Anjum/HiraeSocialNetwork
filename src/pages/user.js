@@ -115,7 +115,7 @@ if (auth) {
   attachMediaTileHandlers(contentEl, { viewerOptsFor: momentViewerOpts });
   attachCarouselHandlers(contentEl);
   attachPostActionHandlers(contentEl);
-  initSearch({ getSessions: () => state.sessionsSeen, getMovies: () => [] });
+  initSearch({ getSessions: () => state.sessionsSeen });
   init();
 }
 

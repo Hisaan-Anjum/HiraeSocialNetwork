@@ -192,6 +192,8 @@ export function mountWatchlist(container, { profile }) {
     if (act === 'add') {
       return openAddMovie({
         isOnList: onList,
+        // The list belongs to both of you, so the suggestions weigh both tastes.
+        withUser: username,
         onAdd: async (recId) => {
           const { items: updated } = await addToWatchlist(username, recId);
           items = updated; render();

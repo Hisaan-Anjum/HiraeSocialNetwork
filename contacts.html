@@ -29,13 +29,32 @@
     <div class="page-title">Contacts</div>
     <div class="page-sub">Tap someone to open their profile and see what they've shared.</div>
 
-    <div class="add-contact-card">
-      <div class="section-title">Add a contact</div>
+    <!-- ONE card, not two. Adding by username and sharing a link are the same
+         job — bringing someone in — so they belong in one unit; as separate
+         equal-weight cards they competed with each other and between them ate
+         half the first screen on a page that is really about the list below.
+         The link is the quieter of the two: no card, no heading of its own,
+         text buttons rather than a second primary. -->
+    <div class="add-someone">
+      <div class="add-someone-head">
+        <div class="section-title" style="margin:0">Add someone</div>
+        <div class="invite-count" id="inviteCount" hidden></div>
+      </div>
+
       <form class="add-contact-row" id="addContactForm">
         <input type="text" id="addContactInput" placeholder="Their username" autocomplete="off" maxlength="64">
         <button type="submit" class="btn btn-primary" id="addContactBtn">Send request</button>
       </form>
       <div class="add-contact-msg" id="addContactMsg"></div>
+
+      <div class="invite-inline" id="inviteCard" hidden>
+        <div class="invite-inline-label">or send them your invite link — whoever opens it is connected to you</div>
+        <div class="invite-inline-row">
+          <code class="invite-link" id="inviteLink" title="Your permanent invite link"></code>
+          <button type="button" class="invite-mini" id="inviteCopy">Copy</button>
+          <button type="button" class="invite-mini" id="inviteShare" hidden>Share</button>
+        </div>
+      </div>
     </div>
 
     <div id="requests"></div>
