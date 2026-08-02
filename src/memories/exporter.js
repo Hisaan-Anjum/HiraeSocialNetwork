@@ -261,7 +261,7 @@ export async function buildRelationshipCard(summary) {
   let url; try { url = canvas.toDataURL('image/jpeg', 0.9); } catch (e) { return null; }
   return {
     id: 'relationship-card', mediaType: 'photo', url,
-    description: `${summary.me} & ${summary.them} — ${summary.label?.text || 'our story on Herae'}`,
+    description: `${summary.me} & ${summary.them} — ${summary.label?.text || 'our story on Herae.app'}`,
     privacy: 'private', shareUrl: location.href, isStory: true,
   };
 }

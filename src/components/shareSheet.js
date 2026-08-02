@@ -30,8 +30,8 @@ export function openShareSheet(moment) {
   const link = moment.shareUrl || momentPublicUrl(moment.id);
   const isPublic = moment.privacy === 'public';
   const caption = moment.description
-    ? `${moment.description} — on Herae`
-    : 'A moment from Herae 💜';
+    ? `${moment.description} — on Herae.app`
+    : 'A moment from Herae.app 💜';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay share-overlay';
@@ -173,7 +173,7 @@ export function openShareSheet(moment) {
         || !navigator.canShare({ files: [file] })) {
       return Promise.resolve('unsupported');
     }
-    return navigator.share({ files: [file], text, title: 'Herae' })
+    return navigator.share({ files: [file], text, title: 'Herae.app' })
       .then(() => 'shared')
       .catch((e) => (e && e.name === 'AbortError') ? 'aborted' : 'unsupported');
   }

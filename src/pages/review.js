@@ -15,6 +15,7 @@ import { renderAvatarLink } from '../components/avatar.js';
 import { attachPostActionHandlers, renderPostMenu, renderReviewBody } from '../components/postActions.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 import { mountSessionLink } from '../watchlist/sessionLink.js';
+import { mountAiMoments } from '../components/aiMoments.js';
 
 const { requireAuth, getSessionDetail, postReview } = window;
 
@@ -38,6 +39,37 @@ if (auth) {
   loadSession();
 }
 
+// The only two things a link/unlink changes on this page: the banner across
+// the top, and the session-name field. Everything else — the moments strip,
+// the AI memories panel and whatever is playing inside it, the review form
+// and its unsaved text, the scroll position — is deliberately left alone.
+function applySessionLink({ linked, title } = {}) {
+  if (!detail) return; // nothing mounted yet — nothing to patch
+  const nextTitle = linked ? (title || '') : '';
+  detail.sessionTitle = nextTitle;
+
+  const input = document.getElementById('sessionTitleInput');
+  // Never clobber something the person is in the middle of typing.
+  if (input && document.activeElement !== input) input.value = nextTitle;
+
+  let banner = contentEl.querySelector('.review-session-title-banner');
+  if (nextTitle) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.className = 'review-session-title-banner';
+      contentEl.prepend(banner);
+    }
+    banner.textContent = nextTitle;
+  } else if (banner) {
+    banner.remove();
+  }
+}
+
+// `detail` is held at module scope so applySessionLink above can keep it in
+// step without re-fetching — the page's own copy of the session it is
+// describing, updated in place exactly as the DOM is.
+let detail = null;
+
 async function loadSession() {
   const sessionId = getSessionIdFromUrl();
   if (!sessionId) {
@@ -45,7 +77,6 @@ async function loadSession() {
     return;
   }
 
-  let detail;
   try {
     detail = await getSessionDetail(sessionId);
   } catch (err) {
@@ -72,6 +103,7 @@ async function loadSession() {
   contentEl.innerHTML = `
     ${detail.sessionTitle ? `<div class="review-session-title-banner">${escapeHtml(detail.sessionTitle)}</div>` : ''}
     ${title ? `<div class="review-content-banner">📺 ${escapeHtml(title)}</div>` : ''}
+    <div id="aiMomentsMount"></div>
     ${momentsStrip}
     <div class="review-panel">
       <div class="review-section-title">Watched with ${others.length ? renderUserLinks(others) : escapeHtml(partnerName)}</div>
@@ -116,6 +148,12 @@ async function loadSession() {
     </div>
   `;
 
+  // The moments Herae found on this machine, offered before the review form
+  // because they are the part of the night that is about to be lost if nobody
+  // looks. Fire-and-forget: the page must render identically for someone
+  // without the extension, or with the feature switched off.
+  mountAiMoments(document.getElementById('aiMomentsMount'), { sessionId });
+
   const picker = renderStarPicker(document.getElementById('starPickerMount'), myReview?.rating || 0, () => {});
 
   // Offer to file this night under a film on the pair's shared watchlist —
@@ -127,7 +165,12 @@ async function loadSession() {
     input: document.getElementById('sessionTitleInput'),
     detail,
     me: auth.username,
-    onLinked: () => loadSession(),
+    // Patch, do not reload. Filing a night under a film used to rebuild the
+    // whole page: the moments strip flickered, any AI memory that was
+    // mid-playback stopped dead, an open caption field was wiped, and the
+    // scroll jumped to the top — all to change one line of text. Filing is a
+    // small, confident action and it should feel like one.
+    onLinked: (info) => applySessionLink(info),
   });
 
   // Editing your own review here stays the existing "type into the form and
@@ -171,9 +214,11 @@ async function loadSession() {
       confirmEl.style.color = '#6ee7b7';
       confirmEl.textContent = '✓ Saved';
       if (text) btn.textContent = '✏️ Update Review';
-      // A renamed session must re-render its banner/heading; a first review
-      // also swaps the form into its "written" state.
-      if (!myReview || titleChanged) loadSession();
+      // A FIRST review swaps the form into its "written" state, which is a
+      // genuine structural change and worth a rebuild. A rename is not — it
+      // is the same one line applySessionLink already knows how to patch.
+      if (!myReview) loadSession();
+      else if (titleChanged) applySessionLink({ linked: !!sessionTitle, title: sessionTitle });
     } catch (err) {
       confirmEl.style.color = '#f87171';
       confirmEl.textContent = err.message;

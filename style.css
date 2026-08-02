@@ -1110,11 +1110,23 @@ a.search-result.contact-row { display: flex; padding: 8px 10px; border: none; ba
   line-height: 1; user-select: none;
 }
 .avatar-initial { position: relative; z-index: 0; }
+/* The picture sits on top of the gradient initial, which is the fallback for
+   everyone who has not uploaded one. It must therefore be INVISIBLE until it
+   has actually decoded: the opaque backdrop below exists so a transparent PNG
+   does not show the initial through it, but applied before load it painted an
+   empty circle over a perfectly good fallback for as long as the request took
+   — and forever if the request failed. That is the intermittent "avatar does
+   not render" everyone saw. Now it fades in only once it has loaded, and a
+   failure simply never arrives, leaving the initial exactly where it was. */
 .avatar-img {
   position: absolute; inset: 0; z-index: 1;
   width: 100%; height: 100%; object-fit: cover;
-  background: var(--bg-2);
+  background: transparent;
+  opacity: 0;
+  transition: opacity .18s ease;
 }
+.avatar-img.is-loaded { background: var(--bg-2); opacity: 1; }
+.avatar-img.is-failed { display: none; }
 .avatar-sm { width: 28px; height: 28px; font-size: 11px; }
 .avatar-md { width: 44px; height: 44px; font-size: 16px; }
 .avatar-lg { width: 72px; height: 72px; font-size: 26px; }
@@ -2178,3 +2190,219 @@ html { scroll-behavior: smooth; }
 .pc-state { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--purple); white-space: nowrap; }
 .pc-row.is-on .pc-state { color: #6ee7b7; }
 .pc-empty { text-align: center; color: var(--ink-dim); padding: 26px 12px; line-height: 1.6; }
+
+/* ── AI Moments (review page) ──────────────────────────────────────── */
+/* Moments Herae found on the watcher's own machine. They live in the
+   extension until kept, so this panel is the only place they exist — hence
+   the deliberate weight: it reads as the main event of the review, not a
+   sidebar. */
+.aim-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 20px 22px;
+  margin-bottom: 20px;
+}
+.aim-head { margin-bottom: 16px; }
+.aim-heading { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+.aim-sub { font-size: 13px; color: var(--ink-faint); line-height: 1.55; margin-top: 5px; max-width: 56ch; }
+.aim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+
+.aim-card {
+  background: var(--surface-2, rgba(255,255,255,.03));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.aim-card-out { opacity: 0; transform: scale(.96); }
+
+.aim-thumb { position: relative; aspect-ratio: 16 / 9; background: #100e17; overflow: hidden; }
+.aim-thumb img, .aim-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aim-thumb-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 26px; opacity: .5; }
+/* Purely decorative — it says "this is a video", it is not a control. The
+   whole thumbnail is the control, so this must never swallow a click. */
+.aim-play {
+  position: absolute; inset: 0; margin: auto;
+  width: 58px; height: 58px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10,8,14,.52); color: #fff;
+  border: 1.5px solid rgba(255,255,255,.5);
+  box-shadow: 0 6px 20px rgba(0,0,0,.45);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+  transition: transform .22s cubic-bezier(.2,.7,.3,1), background .22s ease, border-color .22s ease;
+}
+/* Optically centred: a triangle's visual centre sits left of its bounding box. */
+.aim-play-glyph { font-size: 19px; line-height: 1; margin-left: 3px; }
+.aim-card:hover .aim-play,
+.aim-thumb:focus-visible .aim-play {
+  transform: scale(1.09);
+  background: rgba(10,8,14,.68);
+  border-color: rgba(255,255,255,.8);
+}
+/* A single soft pulse on hover — enough to read as "playable", short enough
+   never to become wallpaper. */
+@keyframes aim-play-pulse {
+  0%   { box-shadow: 0 6px 20px rgba(0,0,0,.45), 0 0 0 0 rgba(255,255,255,.30); }
+  100% { box-shadow: 0 6px 20px rgba(0,0,0,.45), 0 0 0 14px rgba(255,255,255,0); }
+}
+.aim-card:hover .aim-play { animation: aim-play-pulse .9s ease-out; }
+
+/* The duration badge carries its own tiny glyph, so a video is identifiable
+   from the corner alone even at a glance. */
+.aim-duration-video { display: inline-flex; align-items: center; gap: 5px; }
+.aim-duration-icon { font-size: 8px; opacity: .9; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aim-play { transition: none; }
+  .aim-card:hover .aim-play { animation: none; transform: none; }
+}
+.aim-duration {
+  position: absolute; right: 8px; bottom: 8px;
+  background: rgba(0,0,0,.62); color: #fff;
+  font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+  padding: 3px 7px; border-radius: 6px;
+}
+
+.aim-body { padding: 12px 13px 13px; display: flex; flex-direction: column; gap: 8px; }
+.aim-title { font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.aim-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--gold); background: rgba(245,185,66,.14);
+  border: 1px solid rgba(245,185,66,.28); border-radius: 5px; padding: 2px 6px;
+}
+.aim-when { font-size: 11.5px; color: var(--ink-faint); font-variant-numeric: tabular-nums; margin-top: -4px; }
+
+.aim-caption {
+  width: 100%; box-sizing: border-box;
+  background: rgba(0,0,0,.22); border: 1px solid var(--line);
+  border-radius: 9px; padding: 8px 10px;
+  color: inherit; font-family: inherit; font-size: 12.5px;
+}
+.aim-caption::placeholder { color: var(--ink-faint); }
+
+.aim-privacy { display: flex; gap: 5px; flex-wrap: wrap; }
+.aim-chip {
+  border: 1px solid var(--line); background: transparent;
+  color: var(--ink-faint); font-family: inherit; font-size: 11px; font-weight: 600;
+  padding: 5px 8px; border-radius: 7px; cursor: pointer;
+  transition: background .14s ease, color .14s ease, border-color .14s ease;
+}
+.aim-chip:hover { color: inherit; }
+.aim-chip.is-active {
+  color: var(--gold); border-color: rgba(245,185,66,.42); background: rgba(245,185,66,.12);
+}
+
+.aim-actions { display: flex; gap: 7px; margin-top: 2px; }
+.aim-actions .btn { flex: 1; padding: 8px 10px; font-size: 12.5px; }
+.aim-status { font-size: 11.5px; color: var(--ink-faint); min-height: 15px; }
+
+@media (max-width: 520px) {
+  .aim-grid { grid-template-columns: 1fr; }
+}
+
+/* The guest name, demoted to what it actually is: a nice-to-have that sits
+   BELOW the button rather than in front of it. See invite.html for why. */
+.field-optional { margin-top: 16px; margin-bottom: 8px; }
+.field-optional label { display: flex; align-items: center; gap: 7px; }
+.field-optional-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); background: rgba(255,255,255,.05);
+  border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px;
+}
+
+/* ── Confirmation dialog ───────────────────────────────────────────── */
+/* For decisions worth showing rather than merely asking about — see
+   src/components/confirmDialog.js. */
+.cd-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(0,0,0,.66);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  animation: cd-fade .15s ease;
+}
+@keyframes cd-fade { from { opacity: 0 } to { opacity: 1 } }
+body.cd-open { overflow: hidden; }
+.cd-card {
+  width: 100%; max-width: 420px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 22px 22px 18px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.55);
+  animation: cd-rise .2s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes cd-rise { from { transform: translateY(10px) scale(.98) } to { transform: none } }
+.cd-title { font-size: 17px; font-weight: 700; letter-spacing: -.015em; margin-bottom: 9px; }
+.cd-body {
+  font-size: 14px; line-height: 1.6; color: var(--ink-faint);
+  white-space: pre-line; margin-bottom: 20px;
+}
+.cd-actions { display: flex; gap: 9px; justify-content: flex-end; flex-wrap: wrap; }
+.cd-actions .btn { min-width: 120px; }
+@media (max-width: 460px) {
+  .cd-actions { flex-direction: column-reverse; }
+  .cd-actions .btn { width: 100%; }
+}
+
+/* ── Media viewer: collection navigation ───────────────────────────── */
+/* Added for the AI Moments gallery, but deliberately part of the shared
+   viewer rather than the panel — any collection can now pass `nav`. */
+.mv-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(12,10,18,.62);
+  color: #fff; font-size: 30px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  opacity: 0; transition: opacity .18s ease, background .15s ease, transform .15s ease;
+  z-index: 4;
+}
+.mv-overlay:hover .mv-nav, .mv-nav:focus-visible { opacity: 1; }
+.mv-nav:hover { background: rgba(12,10,18,.86); }
+.mv-nav:active { transform: translateY(-50%) scale(.94); }
+.mv-nav-prev { left: 18px; padding-right: 3px; }
+.mv-nav-next { right: 18px; padding-left: 3px; }
+.mv-counter {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-faint);
+  background: rgba(12,10,18,.6); border: 1px solid var(--line);
+  padding: 5px 12px; border-radius: 20px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  z-index: 4; pointer-events: none;
+}
+/* Keep is the affirmative action and reads as one; Delete stays quiet until
+   hovered, so the destructive option is never the loudest thing on screen. */
+.mv-btn-keep {
+  background: linear-gradient(150deg, var(--gold), var(--gold-deep));
+  border-color: transparent; color: #1c1408; font-weight: 700;
+}
+.mv-btn-keep:hover { filter: brightness(1.07); }
+.mv-btn-delete { color: var(--ink-faint); }
+.mv-btn-delete:hover { color: #f87171; border-color: rgba(248,113,113,.42); }
+
+/* Touch and narrow screens: arrows are always visible (no hover to reveal)
+   and pulled in so they never sit over the subject's face. */
+@media (hover: none), (max-width: 640px) {
+  .mv-nav { opacity: 1; width: 44px; height: 44px; font-size: 26px; }
+  .mv-nav-prev { left: 8px; }
+  .mv-nav-next { right: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mv-nav { transition: none; }
+}
+
+/* The AI card's thumbnail is now the primary way into the gallery, so it has
+   to look like it can be clicked. */
+/* The whole thumbnail is the control now — the play glyph is decoration. */
+.aim-thumb { cursor: pointer; }
+.aim-thumb:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.aim-play { pointer-events: none; }
+/* A gentle lift on hover, so a poster reads as openable without a caption
+   telling you so. */
+.aim-card .aim-thumb img { transition: transform .28s cubic-bezier(.2,.7,.3,1); }
+.aim-card:hover .aim-thumb img { transform: scale(1.035); }
+@media (prefers-reduced-motion: reduce) {
+  .aim-card .aim-thumb img { transition: none; }
+  .aim-card:hover .aim-thumb img { transform: none; }
+}

@@ -5,34 +5,222 @@
 <meta name="herae-memories-site" content="1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>You're invited — Herae</title>
-<meta name="description" content="Someone invited you to keep your movie nights together on Herae.">
+<meta name="description" content="Someone wants to watch something with you on Herae. Join in one click — no account needed.">
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="stylesheet" href="/style.css">
+<style>
+  /* Page-local styling only. Everything structural (cards, buttons, fields,
+     the palette) comes from style.css so this reads as the same product as the
+     rest of the site — see the token list at the top of that file. */
+  .invite-card { width: 440px; }
+
+  /* ── Who invited you ────────────────────────────────────────────── */
+  .invite-host { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .invite-avatar {
+    width: 76px; height: 76px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 30px; font-weight: 700; color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(140deg, var(--purple), var(--purple-deep));
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.35);
+    position: relative; overflow: hidden; flex: none;
+  }
+  .invite-avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  /* The dot lives outside the clipped avatar so it can sit on the edge. */
+  .invite-avatar-wrap { position: relative; }
+  .invite-presence {
+    position: absolute; right: 2px; bottom: 2px;
+    width: 17px; height: 17px; border-radius: 50%;
+    border: 3px solid var(--bg-1); background: var(--ink-faint);
+  }
+  .invite-presence.is-online { background: #34d399; }
+  .invite-presence.is-online::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    border: 2px solid rgba(52, 211, 153, 0.5); animation: invitePulse 2s ease-out infinite;
+  }
+  @keyframes invitePulse {
+    0%   { transform: scale(0.85); opacity: 0.9; }
+    100% { transform: scale(1.7);  opacity: 0; }
+  }
+
+  .invite-title { font-family: Georgia, 'Times New Roman', serif; font-size: 25px; font-weight: 700; text-align: center; line-height: 1.25; }
+  .invite-title em { font-style: normal; color: var(--gold); }
+  .invite-sub { font-size: 14px; color: var(--ink-dim); text-align: center; line-height: 1.6; margin-top: 8px; }
+  .invite-online-note { font-size: 12.5px; color: #34d399; font-weight: 600; text-align: center; margin-top: 8px; }
+
+  /* ── Steps ──────────────────────────────────────────────────────── */
+  .invite-body { margin-top: 26px; }
+  .invite-panel { display: none; }
+  .invite-panel.is-active { display: block; animation: invitePanelIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes invitePanelIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .invite-steps { display: flex; gap: 7px; justify-content: center; margin-bottom: 22px; }
+  .invite-step-dot {
+    height: 4px; width: 34px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12); transition: background 0.3s ease;
+  }
+  .invite-step-dot.is-done { background: var(--purple); }
+  .invite-step-dot.is-current { background: linear-gradient(90deg, var(--purple), var(--gold)); }
+
+  .invite-cta { width: 100%; margin-top: 4px; }
+  .invite-secondary {
+    display: block; width: 100%; text-align: center; margin-top: 14px;
+    font-size: 13px; color: var(--ink-dim); background: none; border: 0;
+    cursor: pointer; font-family: inherit; padding: 4px;
+  }
+  .invite-secondary:hover { color: var(--ink); text-decoration: underline; }
+
+  .invite-note { font-size: 12px; color: var(--ink-faint); text-align: center; margin-top: 16px; line-height: 1.55; }
+  .invite-legal { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* ── The install step ───────────────────────────────────────────── */
+  .invite-install-list { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 12px; }
+  .invite-install-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; color: var(--ink-dim); line-height: 1.5; }
+  .invite-install-list b { color: var(--ink); font-weight: 650; }
+  .invite-num {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 11.5px; font-weight: 700;
+    background: rgba(139, 92, 246, 0.16); color: #c4b5fd; border: 1px solid var(--border);
+  }
+  .invite-waiting {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    margin-top: 16px; font-size: 12.5px; color: var(--ink-faint);
+  }
+
+  /* ── Progress / working state ───────────────────────────────────── */
+  .invite-spinner {
+    width: 15px; height: 15px; flex: none; border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.16); border-top-color: var(--purple);
+    animation: inviteSpin 0.8s linear infinite;
+  }
+  @keyframes inviteSpin { to { transform: rotate(360deg); } }
+
+  .invite-done-mark {
+    width: 62px; height: 62px; border-radius: 50%; margin: 0 auto 16px;
+    display: grid; place-items: center; font-size: 27px;
+    background: rgba(52, 211, 153, 0.14); border: 1px solid rgba(52, 211, 153, 0.4);
+    animation: invitePOP 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes invitePOP { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .invite-error { color: #f87171; font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; line-height: 1.5; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .invite-panel.is-active, .invite-done-mark { animation: none; }
+    .invite-presence.is-online::after, .invite-spinner { animation: none; }
+  }
+
+  @media (max-width: 480px) {
+    .invite-card { width: 100%; padding: 28px 22px; }
+    .invite-title { font-size: 21px; }
+  }
+</style>
 </head>
 <body>
   <!-- invite.html — the page behind https://herae.app/invite/<CODE>.
        There is no such file on disk at that path; server/src/index.js routes
        /invite/:code here and this page reads the code back out of the URL.
 
-       A real page rather than a redirect, because the code has to OUTLIVE the
-       trip through login or signup. It's parked in localStorage (not session
-       storage — Google sign-in can bounce through another origin and back, and
-       sessionStorage doesn't reliably survive that), then redeemed by api.js the
-       moment an account exists. Nobody ever types a code. -->
+       WHAT THIS PAGE IS FOR: it is the only thing standing between "a friend
+       sent me a link" and "we are watching something together", and it used to
+       answer that with two buttons, both of which led to an account form. The
+       person on the other end of an invite has no reason to want an account —
+       they want the film. So the page now sorts visitors into the shortest
+       route each of them actually has:
+
+         already signed in, extension installed  → redeem, then straight into
+                                                   the session. No screens.
+         extension installed, no account         → guest join: a first name,
+                                                   one button, in the session.
+         no extension                            → install, and the page picks
+                                                   itself back up afterwards
+                                                   (background.js reloads this
+                                                   very tab on install).
+
+       The code is still parked in localStorage before anything else happens,
+       because it has to OUTLIVE whichever of those routes is taken — including
+       a trip through Google, which bounces via another origin. Nobody ever
+       types a code. -->
   <div class="login-wrap">
-    <div class="login-card">
-      <img src="/logo.png" alt="Herae" class="login-logo">
-      <div class="login-title">You've been invited 💜</div>
-      <div class="login-sub" id="inviteSub">Setting things up…</div>
-      <div id="inviteActions" hidden>
-        <!-- Two real buttons, not a button and a footnote. Roughly half the
-             people opening an invite already have an account, and burying their
-             route in small print made the link read as signup-only. -->
-        <a class="btn btn-primary invite-cta" id="inviteSignup" href="/signup.html">Create an account</a>
-        <a class="btn btn-ghost invite-cta" id="inviteLogin" href="/login.html">I already have one — log in</a>
+    <div class="login-card invite-card">
+
+      <div class="invite-host">
+        <div class="invite-avatar-wrap">
+          <div class="invite-avatar" id="hostAvatar" aria-hidden="true">
+            <img src="/logo.png" alt="" id="hostAvatarImg" hidden>
+            <span id="hostInitial">·</span>
+          </div>
+          <span class="invite-presence" id="hostPresence" hidden></span>
+        </div>
+        <div>
+          <div class="invite-title" id="inviteTitle">You've been invited</div>
+          <div class="invite-sub" id="inviteSub">Checking the link…</div>
+          <div class="invite-online-note" id="hostOnlineNote" hidden></div>
+        </div>
       </div>
-      <div class="login-hint login-legal">
-        Herae is a private place for two people to keep every movie night they've shared.
+
+      <div class="invite-body">
+        <div class="invite-steps" id="inviteSteps" hidden>
+          <span class="invite-step-dot" id="dot1"></span>
+          <span class="invite-step-dot" id="dot2"></span>
+        </div>
+
+        <!-- 1. Working — resolving the code, redeeming, connecting. -->
+        <div class="invite-panel is-active" id="panelLoading">
+          <div class="invite-waiting"><span class="invite-spinner"></span><span id="loadingLabel">One moment…</span></div>
+        </div>
+
+        <!-- 2. The link is no good. -->
+        <div class="invite-panel" id="panelBad">
+          <p class="invite-sub" id="badMessage">That invite link doesn't look right. Ask for a fresh one.</p>
+          <a class="btn btn-ghost invite-cta" href="/index.html">See what Herae is</a>
+        </div>
+
+        <!-- 3. Install the extension. -->
+        <div class="invite-panel" id="panelInstall">
+          <ol class="invite-install-list">
+            <li><span class="invite-num">1</span><span><b>Add Herae to Chrome</b> — it's free, and takes about ten seconds.</span></li>
+            <li><span class="invite-num">2</span><span><b>Come back to this tab.</b> It picks up on its own the moment Herae is installed.</span></li>
+            <li><span class="invite-num">3</span><span><b>You're watching together.</b> No account, no setup.</span></li>
+          </ol>
+          <a class="btn btn-gold invite-cta" id="installBtn" target="_blank" rel="noopener"
+             href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=invite">Add Herae to Chrome — free →</a>
+          <div class="invite-waiting"><span class="invite-spinner"></span><span>Waiting for Herae…</span></div>
+          <button class="invite-secondary" id="installedBtn" type="button">Already installed it? Check again</button>
+        </div>
+
+        <!-- 4. Guest join — the fast path for someone with no account. -->
+        <div class="invite-panel" id="panelJoin">
+          <!-- The button comes FIRST, and the name is optional and secondary.
+               Nothing about joining requires a name — the server already falls
+               back to a friendly one (see guests.js) — so putting a text field
+               in front of the only thing this page exists to do was asking for
+               a decision in exchange for nothing. Someone who wants to be
+               called something can say so; everybody else presses the button. -->
+          <button class="btn btn-primary invite-cta" id="joinBtn" type="button">Join <span id="joinHostName">now</span> — no account needed</button>
+          <div class="field field-optional">
+            <label for="guestName">What should we call you? <span class="field-optional-tag">optional</span></label>
+            <input type="text" id="guestName" maxlength="40" autocomplete="given-name"
+                   placeholder="Your first name — or skip it" spellcheck="false">
+          </div>
+          <div class="invite-error" id="joinError"></div>
+          <p class="invite-note" id="joinNote">
+            You'll be watching in seconds. Your guest pass lasts a day —
+            keep the night whenever you're ready, and nothing is lost either way.
+          </p>
+          <button class="invite-secondary" id="haveAccountBtn" type="button">I already have a Herae account</button>
+        </div>
+
+        <!-- 5. Done — in the session, or waiting for the host to appear. -->
+        <div class="invite-panel" id="panelDone">
+          <div class="invite-done-mark" aria-hidden="true">✓</div>
+          <p class="invite-sub" id="doneMessage"></p>
+          <p class="invite-note" id="doneNote"></p>
+        </div>
+      </div>
+
+      <div class="login-hint login-legal invite-legal">
+        Herae is a private place for two people to keep every night they've watched together.
       </div>
     </div>
   </div>
@@ -42,45 +230,291 @@
   <script>
   'use strict';
   (function () {
-    var sub = document.getElementById('inviteSub');
-    var actions = document.getElementById('inviteActions');
+    // ── Elements ──────────────────────────────────────────────────────
+    const el = (id) => document.getElementById(id);
+    const panels = {
+      loading: el('panelLoading'), bad: el('panelBad'), install: el('panelInstall'),
+      join: el('panelJoin'), done: el('panelDone'),
+    };
 
+    function show(name, loadingLabel) {
+      for (const [key, node] of Object.entries(panels)) node.classList.toggle('is-active', key === name);
+      if (loadingLabel) el('loadingLabel').textContent = loadingLabel;
+      // Two dots, because there are only ever two things to do: get Herae,
+      // then get in. A progress bar with more steps than that would be
+      // inventing work to look thorough.
+      const steps = el('inviteSteps');
+      steps.hidden = name === 'bad' || name === 'loading';
+      el('dot1').className = 'invite-step-dot ' + (name === 'install' ? 'is-current' : 'is-done');
+      el('dot2').className = 'invite-step-dot ' + (
+        name === 'done' ? 'is-done' : name === 'join' ? 'is-current' : ''
+      );
+    }
+
+    function fail(message) {
+      el('inviteTitle').textContent = 'This link didn’t work';
+      el('inviteSub').textContent = '';
+      el('badMessage').textContent = message;
+      show('bad');
+    }
+
+    // ── The code ──────────────────────────────────────────────────────
     // Last path segment, uppercased. Tolerates a trailing slash and any query.
-    var code = (location.pathname.split('/').filter(Boolean).pop() || '').toUpperCase();
+    const code = (location.pathname.split('/').filter(Boolean).pop() || '').toUpperCase();
     if (!/^[0-9A-F]{7}$/.test(code)) {
-      sub.textContent = 'That invite link doesn’t look right. Ask for a fresh one.';
+      fail('That invite link doesn’t look right. Ask whoever sent it for a fresh one.');
       return;
     }
 
+    // Parked before anything else can go wrong, and ALSO carried in the URL on
+    // every hand-off below. localStorage is per-origin and a sign-in can bounce
+    // through another origin and back; the storage copy alone silently loses
+    // the invite on exactly that hop.
     savePendingInvite(code);
+    const inviteQuery = '?invite=' + encodeURIComponent(code);
 
-    // ALSO carried in the URL, not just localStorage. localStorage is
-    // per-origin: a link opened on herae.app is invisible to app.herae.app,
-    // where logging in actually happens — so the storage copy alone silently
-    // loses the invite on exactly that hop. Both auth pages read ?invite= back.
-    var q = '?invite=' + encodeURIComponent(code);
-    document.getElementById('inviteSignup').href = '/signup.html' + q;
-    document.getElementById('inviteLogin').href = '/login.html' + q;
+    // ── Is the extension here? ────────────────────────────────────────
+    // content.js announces itself on trusted Herae pages, and answers a ping if
+    // it was already listening. Content scripts usually run before this script
+    // does, so both directions are needed to avoid a race in either order.
+    // Everything downstream waits on this one promise.
+    let extension = null;
+    let resolveExtension;
+    const extensionReady = new Promise((resolve) => { resolveExtension = resolve; });
 
-    // Signed in already → redeem now and go straight to the new contact.
-    if (getAuth()) {
-      sub.textContent = 'Connecting you…';
-      redeemPendingInvite()
-        .then(function (r) {
-          if (r && r.username && !r.self) {
-            window.location.replace('/user.html?u=' + encodeURIComponent(r.username));
-          } else {
-            window.location.replace('/contacts.html');
-          }
-        })
-        .catch(function () { window.location.replace('/contacts.html'); });
-      return;
+    window.addEventListener('message', (e) => {
+      if (e.source !== window || !e.data) return;
+      if (e.data.__heraeExtension === true) {
+        extension = e.data;
+        resolveExtension(e.data);
+      }
+    });
+
+    function detectExtension(timeoutMs) {
+      const ping = () => window.postMessage({ __heraePing: true }, location.origin);
+      ping();
+      const timer = setInterval(ping, 250);
+      const stop = () => clearInterval(timer);
+      extensionReady.then(stop);
+      return Promise.race([
+        extensionReady,
+        new Promise((resolve) => setTimeout(() => { stop(); resolve(null); }, timeoutMs)),
+      ]);
     }
 
-    // Not signed in → the code is parked; either route redeems it afterwards.
-    sub.textContent = 'Create an account or log in, and you’ll be connected automatically.';
-    actions.hidden = false;
-  })();
+    // ── Talking to the extension ──────────────────────────────────────
+    // Each of these posts a message content.js is listening for and waits for
+    // its matching ack, so the page can report what actually happened rather
+    // than assuming on a timer.
+    function askExtension(message, ackKey, timeoutMs) {
+      return new Promise((resolve) => {
+        const done = (value) => { window.removeEventListener('message', onMessage); clearTimeout(timer); resolve(value); };
+        const onMessage = (e) => {
+          if (e.source !== window || !e.data || e.data[ackKey] !== true) return;
+          done(e.data);
+        };
+        const timer = setTimeout(() => done(null), timeoutMs);
+        window.addEventListener('message', onMessage);
+        window.postMessage(message, location.origin);
+      });
+    }
+
+    // ── Host details ──────────────────────────────────────────────────
+    let host = null;
+
+    function renderHost(preview) {
+      host = preview;
+      const name = preview.host;
+      el('hostInitial').textContent = (name[0] || '?').toUpperCase();
+      if (preview.hostAvatarUrl) {
+        const img = el('hostAvatarImg');
+        img.src = mediaUrl(preview.hostAvatarUrl);
+        img.hidden = false;
+        img.onerror = () => { img.hidden = true; };
+      }
+      const dot = el('hostPresence');
+      dot.hidden = false;
+      dot.classList.toggle('is-online', !!preview.hostOnline);
+      dot.title = preview.hostOnline ? `${name} is online` : `${name} is offline`;
+
+      el('inviteTitle').innerHTML = '<em></em> wants to watch something with you';
+      el('inviteTitle').querySelector('em').textContent = name;
+      el('inviteSub').textContent = 'Same film, same moment, from wherever you both are.';
+      if (preview.hostOnline) {
+        el('hostOnlineNote').textContent = `${name} is online right now`;
+        el('hostOnlineNote').hidden = false;
+      }
+      el('joinHostName').textContent = name;
+      document.title = `${name} invited you — Herae`;
+    }
+
+    // ── The three routes ──────────────────────────────────────────────
+
+    // Signed in, extension installed: nothing to ask. Become contacts, then go
+    // straight into the session. This is the path the brief calls "just add to
+    // contacts and join" — it should feel like the link simply worked.
+    async function fastPath() {
+      show('loading', `Connecting you to ${host.host}…`);
+      // Redeemed by the EXTENSION, not by api.js. Someone who signed in through
+      // the popup and never opened the site has no site session at this instant
+      // — content.js is still in the middle of mirroring one across — so
+      // redeemPendingInvite() here would silently connect nobody, and the
+      // invite below would then fail with "you can only invite an existing
+      // contact". The extension always holds a usable session, so it redeems.
+      const redeemed = await askExtension({ __heraeRedeemInvite: true, code }, '__heraeRedeemInviteAck', 8000);
+      if (redeemed && redeemed.ok) clearPendingInvite();
+      // A failure here is not fatal on its own: they may already be contacts,
+      // in which case the session below works regardless.
+
+      const ack = await askExtension(
+        { __heraeStartSession: true, target: host.host, title: '' },
+        '__heraeStartSessionAck', 8000
+      );
+      if (ack && ack.ok) return finish(true);
+      if (ack && ack.busy) {
+        return finish(false, ack.error
+          || `You're already in another session. Leave it, then start one with ${host.host}.`);
+      }
+      // Contacts are made either way, so this is a smaller failure than it
+      // looks: the session is one click away in the popup.
+      return finish(false, `You're connected to ${host.host}. Open the Herae popup to start watching.`);
+    }
+
+    // No account: mint a guest pass and hand it to the extension.
+    // Guards a mint that is already running. `button.disabled` alone is not
+    // enough: the Enter key path and a second tab both reach here, and a
+    // second POST /api/guest creates a SECOND account — stranding the first
+    // along with its contact edge and anything captured under it. The
+    // extension refuses a duplicate too (see background.js's guest_join),
+    // because a guard on one side of a network call is not a guard.
+    let joinInFlight = false;
+    async function guestJoin() {
+      if (joinInFlight) return;
+      joinInFlight = true;
+      const button = el('joinBtn');
+      const error = el('joinError');
+      error.textContent = '';
+      button.disabled = true;
+      const label = button.innerHTML;
+      button.textContent = 'Getting you in…';
+
+      try {
+        const resp = await fetch(`${getSavedServerUrl().replace(/\/+$/, '')}/api/guest`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, name: el('guestName').value.trim() }),
+        });
+        const data = await resp.json().catch(function () { return {}; });
+        if (!resp.ok) throw new Error(data.error || 'Could not get you in just now.');
+
+        const ack = await askExtension({
+          __heraeGuestJoin: true,
+          token: data.token,
+          username: data.username,
+          host: data.host,
+          expiresAt: data.expiresAt,
+        }, '__heraeGuestJoinAck', 8000);
+
+        if (!ack || !ack.ok) throw new Error(ack && ack.error ? ack.error : 'Herae didn’t pick that up — reload the page and try again.');
+        // The guest pass is spent; leaving the code parked would have a later
+        // signup try to redeem a link they are already connected through.
+        clearPendingInvite();
+        finish(!!data.hostOnline);
+      } catch (e) {
+        error.textContent = e.message === 'Failed to fetch'
+          ? 'Could not reach Herae. Check your connection and try again.'
+          : e.message;
+        button.disabled = false;
+        button.innerHTML = label;
+        joinInFlight = false;
+      }
+    }
+
+    function finish(connecting, note) {
+      el('doneMessage').textContent = connecting
+        ? `You're in. Herae is opening a shared window with ${host.host}…`
+        : `You're connected to ${host.host}.`;
+      el('doneNote').textContent = note || (connecting
+        ? 'Whatever either of you opens in that window stays in sync on both sides — play, pause, skip, all of it.'
+        : `${host.host} isn't online yet. Leave Herae running and it'll connect you the moment they are.`);
+      show('done');
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────
+    (async function start() {
+      // The preview and the extension check run together — neither depends on
+      // the other, and doing them in series would show a spinner for twice as
+      // long on the one page where speed is the entire product promise.
+      //
+      // 2.5s because content scripts run at document_idle, which is AFTER this
+      // inline script — the window has to comfortably outlast a slow first
+      // paint, or a perfectly good install gets told to install again.
+      const [preview, detected] = await Promise.all([
+        fetch(`${getSavedServerUrl().replace(/\/+$/, '')}/api/invite/${encodeURIComponent(code)}/preview`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(function () { return null; }),
+        detectExtension(2500),
+      ]);
+
+      if (!preview) {
+        fail('That invite link isn’t valid any more. Ask whoever sent it for a fresh one.');
+        return;
+      }
+      renderHost(preview);
+      route(detected);
+    }());
+
+    // Which of the three routes this visitor takes. Split out of start() so it
+    // can run a second time if the extension announces itself late — arriving
+    // a moment after the detection window closed should move the page on, not
+    // strand it on an install step for something already installed.
+    function route(detected) {
+      const preview = host;
+
+      // No extension. Everyone needs it — signed in or not — so the install
+      // step is the honest next screen either way, and the page keeps watching
+      // for Herae to appear while they do it.
+      if (!detected) { show('install'); waitForExtension(); return; }
+
+      // A live guest pass for a different host can't redeem this link (the
+      // server refuses, by design) — say so plainly instead of failing later.
+      if (detected.signedInAsGuest && detected.signedInAs) {
+        el('inviteSub').textContent = `You're watching as a guest right now — one pass at a time. Create your free account and ${preview.host} becomes a contact too.`;
+        el('joinBtn').textContent = 'Create my free account';
+        el('joinNote').textContent = 'Everything from your guest night comes with you — same name, same memories, nothing to set up again.';
+        el('guestName').closest('.field').hidden = true;
+        el('haveAccountBtn').hidden = true;
+        joinAction = () => { window.location.href = '/signup.html' + inviteQuery; };
+        show('join');
+        return;
+      }
+
+      if (detected.signedInAs || getAuth()) { fastPath(); return; }
+
+      show('join');
+      // Deliberately NOT focusing the name field any more — it is optional,
+      // and a blinking cursor in a text box reads as "fill this in first".
+      el('joinBtn').focus();
+    }
+
+    // The install step's own loop. background.js reloads this tab the moment
+    // the extension is installed, which is the reliable path; this covers the
+    // cases where it can't (the tab was moved, the reload raced a navigation)
+    // so the page still comes alive on its own. Re-routes in place rather than
+    // reloading — there is nothing on the server to re-fetch.
+    function waitForExtension() {
+      detectExtension(10 * 60 * 1000).then((found) => { if (found) route(found); });
+    }
+
+    // ── Wiring ────────────────────────────────────────────────────────
+    // One handler, one action variable — the guest-pass branch above swaps the
+    // action rather than adding a second listener that would also fire.
+    let joinAction = () => { if (host) guestJoin(); };
+    el('joinBtn').addEventListener('click', () => joinAction());
+    el('guestName').addEventListener('keydown', (e) => { if (e.key === 'Enter') el('joinBtn').click(); });
+    el('haveAccountBtn').addEventListener('click', () => { window.location.href = '/login.html' + inviteQuery; });
+    el('installedBtn').addEventListener('click', () => location.reload());
+  }());
   </script>
 </body>
 </html>

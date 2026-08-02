@@ -69,7 +69,10 @@ export function partnerForSession(participants, me) {
 //   input        — the #sessionTitleInput element
 //   detail       — the session detail (participants, content, watchlistItemId)
 //   me           — the logged-in username
-//   onLinked()   — called after a successful link/unlink so the page can refresh
+//   onLinked(info) — called after a successful link/unlink. `info` carries
+//                  { linked, title } so the page can update the two things
+//                  that actually changed rather than rebuilding itself. See
+//                  review.js's applySessionLink for why that matters.
 export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
   const partner = partnerForSession(detail.participants, me);
   if (!mount || !input || !partner) return;
@@ -183,7 +186,7 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
         if (res?.items?.length) items = res.items;
         linkedId = id;
         renderLinked();
-        onLinked?.();
+        onLinked?.({ linked: true, title: items.find((x) => x.id === id)?.movie?.title || null });
       } catch (err) {
         mount.innerHTML = `<div class="sl-err">${escapeHtml(err.message || 'Could not file that.')}</div>`;
       }
@@ -200,7 +203,7 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
       input.classList.remove('is-locked');
       input.focus();
       renderMatches(input.value);
-      onLinked?.();
+      onLinked?.({ linked: false, title: null });
     }
   });
 

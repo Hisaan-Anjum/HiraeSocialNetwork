@@ -44,11 +44,20 @@ export function openMediaViewer(item, opts = {}) {
             <button class="mv-btn" data-mv="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
             <button class="mv-btn" data-mv="zoom-reset" aria-label="Reset zoom" title="Reset zoom">⟲</button>
           `}
+          ${opts.actions ? opts.actions.map((a, i) => `
+            <button class="mv-btn mv-btn-${escapeHtml(a.kind || 'default')}" data-mv="action" data-mv-action="${i}"
+                    aria-label="${escapeHtml(a.label)}" title="${escapeHtml(a.title || a.label)}">${escapeHtml(a.label)}</button>
+          `).join('') : ''}
           ${opts.shareItem ? '<button class="mv-btn mv-btn-share" data-mv="share" aria-label="Share this moment" title="Share">❤ Share</button>' : ''}
           <button class="mv-btn" data-mv="fullscreen" aria-label="Fullscreen" title="Fullscreen">⛶</button>
           <button class="mv-btn mv-btn-close" data-mv="close" aria-label="Close" title="Close (Esc)">✕</button>
         </div>
       </div>
+      ${opts.nav ? `
+        <button class="mv-nav mv-nav-prev" data-mv="prev" aria-label="Previous moment" title="Previous (←)">‹</button>
+        <button class="mv-nav mv-nav-next" data-mv="next" aria-label="Next moment" title="Next (→)">›</button>
+        <div class="mv-counter" aria-live="polite">${opts.nav.index + 1} of ${opts.nav.total}</div>
+      ` : ''}
       <div class="mv-stage">
         ${isVideo
           ? `<div class="mv-video-wrap">
@@ -124,6 +133,13 @@ export function openMediaViewer(item, opts = {}) {
       return;
     }
     if (isVideo) return;
+    // Left/Right move through the collection. Only when navigation was
+    // offered — on a single item the arrows belong to the video scrubber.
+    if (opts.nav && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault();
+      (e.key === 'ArrowLeft' ? opts.nav.onPrev : opts.nav.onNext)?.();
+      return;
+    }
     if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1.3); }
     if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomBy(1 / 1.3); }
     if (e.key === '0') { e.preventDefault(); reset(); }
@@ -146,6 +162,15 @@ export function openMediaViewer(item, opts = {}) {
       const action = btn.dataset.mv;
       if (action === 'close') close();
       else if (action === 'share') openShareSheet(opts.shareItem);
+      else if (action === 'prev') opts.nav?.onPrev?.();
+      else if (action === 'next') opts.nav?.onNext?.();
+      else if (action === 'action') {
+        // Keep/Delete run in place. The handler decides whether the viewer
+        // stays open (moving to the next moment) or closes — deciding here
+        // would make the viewer responsible for a collection it does not own.
+        const chosen = opts.actions?.[Number(btn.dataset.mvAction)];
+        if (chosen) chosen.onClick({ close });
+      }
       else if (action === 'fullscreen') toggleFullscreen();
       else if (action === 'zoom-in') zoomBy(1.4);
       else if (action === 'zoom-out') zoomBy(1 / 1.4);

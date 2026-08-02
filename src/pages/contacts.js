@@ -12,11 +12,13 @@
 
 import { escapeHtml, debounce } from '../lib/util.js';
 import { renderEmptyState, renderErrorState } from '../components/skeleton.js';
+import { confirmDialog, listPhrase } from '../components/confirmDialog.js';
 import { renderContactRow } from '../components/contactRow.js';
 import { initSearch } from '../components/search.js';
 
 const {
   requireAuth, logout, getContacts, requestContact, acceptContactRequest, removeContact,
+  getSharedHistory, deleteSharedHistory,
 } = window;
 
 const CHUNK = 24; // rows revealed per scroll step
@@ -94,11 +96,69 @@ async function onActionClick(e) {
     return;
   }
   const { contactAction, contactId, contactName } = btn.dataset;
-  if (contactAction === 'remove' && !confirm(`Remove ${contactName} from your contacts?`)) return;
+
+  // Removing an accepted contact is the one action here that can cost
+  // somebody something. Declining or cancelling a REQUEST is not — there is
+  // no history behind a request — so those stay a single click and are not
+  // dressed up as consequential.
+  let purgeShared = false;
+  if (contactAction === 'remove') {
+    // Two questions, deliberately different ones. The first is reversible:
+    // add them back and every moment and night is still there. The second is
+    // not, and it deletes for BOTH people, which is why it says so.
+    const removeConfirmed = await confirmDialog({
+      title: `Remove ${contactName}?`,
+      body: `They'll come off your contacts list and you won't see when they're online. `
+        + `Everything you've watched and saved together stays exactly where it is.`,
+      confirmLabel: 'Remove',
+      danger: true,
+    });
+    if (!removeConfirmed) return;
+
+    // Asked before the relationship row goes — it is what the server uses to
+    // work out whose history this is. Best-effort: if the preview cannot be
+    // fetched we simply do not offer the second question, rather than
+    // offering it without being able to say what it would do.
+    let shared = null;
+    try { shared = await getSharedHistory(contactId); } catch (err) { /* preview only */ }
+
+    const bits = shared ? [
+      shared.moments && `${shared.moments} moment${shared.moments === 1 ? '' : 's'}`,
+      shared.nights && `${shared.nights} night${shared.nights === 1 ? '' : 's'}`,
+      shared.reviews && `${shared.reviews} review${shared.reviews === 1 ? '' : 's'}`,
+      shared.watchlist && `${shared.watchlist} on your shared watchlist`,
+      shared.importantDates && `${shared.importantDates} important date${shared.importantDates === 1 ? '' : 's'}`,
+    ].filter(Boolean) : [];
+
+    // Only worth asking when there is something to answer it about.
+    if (bits.length) {
+      purgeShared = await confirmDialog({
+        title: 'Delete everything you made together?',
+        body: `This permanently deletes ${listPhrase(bits)}. It deletes them for ${contactName} too, `
+          + `and it can't be undone.`
+          + (shared.protectedNights
+            ? `\n\n${shared.protectedNights} night${shared.protectedNights === 1 ? '' : 's'} you watched `
+              + `with other people ${shared.protectedNights === 1 ? 'is' : 'are'} never touched.`
+            : ''),
+        confirmLabel: 'Delete everything',
+        cancelLabel: 'Keep our memories',
+        danger: true,
+      });
+    }
+  }
+
   btn.disabled = true;
   try {
-    if (contactAction === 'accept') await acceptContactRequest(contactId);
-    else await removeContact(contactId); // decline / cancel / remove — one route
+    if (contactAction === 'accept') {
+      await acceptContactRequest(contactId);
+    } else {
+      // History first, relationship second. A failed purge then leaves the
+      // contact exactly as it was and the whole thing can be retried —
+      // whereas the other order can strand history with no relationship left
+      // to reach it through.
+      if (purgeShared) await deleteSharedHistory(contactId);
+      await removeContact(contactId); // decline / cancel / remove — one route
+    }
     await load(currentQuery);
   } catch (err) {
     alert(err.message);
@@ -240,7 +300,7 @@ async function initInviteCard() {
     shareEl.addEventListener('click', async () => {
       try {
         await navigator.share({
-          title: 'Join me on Herae',
+          title: 'Join me on Herae.app',
           text: 'Keep every movie night we watch together.',
           url: invite.url,
         });

@@ -429,6 +429,23 @@ function removeContact(id) {
   return apiRequest(`/api/contacts/${id}`, { method: 'DELETE' });
 }
 
+// What the two of you made together, counted but not yet touched. Asked
+// BEFORE the contact row is deleted, because the relationship is what the
+// server uses to work out whose history this is.
+function getSharedHistory(id) {
+  return apiRequest(`/api/contacts/${id}/shared`);
+}
+
+// The irreversible half, and deliberately a separate call from removing the
+// contact: "delete our history but stay in touch" is a real thing to want,
+// and a failure here must leave the contact list untouched.
+//
+// Nothing involving a third person is ever deleted — the server enforces
+// that, not the caller. See contacts.js's protectedSessionIds.
+function deleteSharedHistory(id) {
+  return apiRequest(`/api/contacts/${id}/shared`, { method: 'DELETE' });
+}
+
 // `extra` may include { rating: 1-5, content: {title,url,thumbnailUrl},
 // sessionTitle } — all optional, matching /api/moments/session/:id/review's
 // body shape. sessionTitle names the SESSION (not the review) and is shared
