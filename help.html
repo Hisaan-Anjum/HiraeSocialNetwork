@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help &amp; Guides — Herae</title>
+<meta name="description" content="How Herae works: watching together, AI Moments, manual moments, sharing, and what to do when something is not working.">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
+<link rel="stylesheet" href="site-help.css">
+</head>
+<body>
+  <header class="legal-topbar">
+    <a class="legal-brand" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae">
+      <span class="legal-brand-text">
+        <span class="legal-brand-name">Herae</span>
+        <span class="legal-brand-sub">Help &amp; Guides</span>
+      </span>
+    </a>
+    <a class="btn btn-ghost" href="index.html">← Back to Herae</a>
+  </header>
+
+  <main class="sh-main">
+    <!-- ── Guided onboarding ────────────────────────────────────────
+         Spec 04 asks for guided onboarding on the site, not only in the
+         extension. It is the same four beats the extension's welcome page
+         walks through, so somebody who set up on one machine and opened the
+         site on another recognises where they are. -->
+    <section class="sh-hero">
+      <h1>How Herae works</h1>
+      <p class="sh-lede">
+        Watch something together from anywhere, see each other while you do,
+        and keep the moments worth remembering.
+      </p>
+      <ol class="sh-onboard">
+        <li>
+          <span class="sh-step-n">1</span>
+          <strong>Install the extension</strong>
+          <span>It lives in your browser toolbar and works on the sites you already watch on.</span>
+        </li>
+        <li>
+          <span class="sh-step-n">2</span>
+          <strong>Add each other</strong>
+          <span>Send an invite link. Whoever opens it appears in your contacts — no account needed to start.</span>
+        </li>
+        <li>
+          <span class="sh-step-n">3</span>
+          <strong>Watch together</strong>
+          <span>Play, pause and seek happen for both of you. Talk over video or voice while it plays.</span>
+        </li>
+        <li>
+          <span class="sh-step-n">4</span>
+          <strong>Keep the good bits</strong>
+          <span>Herae notices real reactions and offers them at the end of the night. What you keep lands here.</span>
+        </li>
+      </ol>
+    </section>
+
+    <div class="sh-search-wrap">
+      <input id="shSearch" class="sh-search" type="search" autocomplete="off"
+             placeholder="Search the guides — try “moments”, “sync”, “privacy”…"
+             aria-label="Search the guides">
+    </div>
+
+    <div class="sh-layout">
+      <nav id="shNav" class="sh-nav" aria-label="Guides"></nav>
+      <article id="shArticle" class="sh-article" tabindex="-1"></article>
+    </div>
+
+    <p id="shEmpty" class="sh-empty" hidden>Nothing matched that. Try a shorter word.</p>
+  </main>
+
+  <!-- The SAME article data the extension's Help Centre renders. Copied into
+       the site at build time by scripts/copy-static.js rather than duplicated
+       here — two copies of this prose would drift within a week, and the
+       drift would be invisible until somebody read both. -->
+  <script src="help-content.js"></script>
+  <script src="site-help.js"></script>
+</body>
+</html>

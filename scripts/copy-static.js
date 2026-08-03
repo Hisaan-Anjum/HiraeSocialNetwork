@@ -69,6 +69,12 @@ const FILES = [
   'terms.html',
   'cookies.html',
   'community.html',
+  // The guides page and its renderer. help-content.js is NOT listed here —
+  // it lives in the extension and is copied in by the step below, so the
+  // site and the Help Centre cannot drift apart.
+  'help.html',
+  'site-help.js',
+  'site-help.css',
   'dmca.html',
   'takedown.html',
   'account-deletion.html',
@@ -108,3 +114,30 @@ for (const f of FILES) {
 }
 
 console.log(`Copied ${FILES.length} static passthrough file(s) into dist/.`);
+
+// ── The shared Help articles ──────────────────────────────────────────
+// help-content.js belongs to the EXTENSION. The site renders the same
+// articles with its own chrome (site-help.js), so the prose has exactly one
+// home and a wording fix lands on both surfaces at once. Two copies of this
+// text would drift within a week, and the drift would be invisible until
+// somebody happened to read both.
+//
+// Located relative to this repo rather than assumed: the site builds both as
+// a submodule of the extension repo and standalone in CI, and the parent is
+// not always there.
+{
+  const candidates = [
+    path.join(ROOT, '..', 'help-content.js'),   // built inside the extension repo
+    path.join(ROOT, 'help-content.js'),         // vendored copy, if one was placed
+  ];
+  const found = candidates.find((p) => fs.existsSync(p));
+  if (found) {
+    fs.copyFileSync(found, path.join(DIST, 'help-content.js'));
+    console.log('Copied the shared Help articles from ' + path.relative(ROOT, found) + '.');
+  } else {
+    // Not fatal: the site still builds and every other page works. The guides
+    // page renders its onboarding and reports that the articles are missing,
+    // which is a far better failure than a silently empty index.
+    console.warn('warning: help-content.js not found — help.html will have no articles.');
+  }
+}
