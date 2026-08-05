@@ -535,7 +535,12 @@ function momentPublicUrl(id) {
   const origin = location.protocol.startsWith('http')
     ? location.origin
     : ((getAuth()?.serverUrl || getSavedServerUrl()).replace(/\/+$/, ''));
-  return `${origin}/post.html?id=${encodeURIComponent(id)}`;
+  // /post/<id>, not /post.html?id=<id>: the server route at that path injects
+  // this moment's real Open Graph tags before the HTML is sent, so a link
+  // pasted into WhatsApp or Discord previews as the memory itself rather than
+  // as a generic Herae card. The old query-string form still works and is
+  // still given real tags — every link already shared stays valid.
+  return `${origin}/post/${encodeURIComponent(id)}`;
 }
 
 // ── Relationship Memory Engine ───────────────────────────────────────

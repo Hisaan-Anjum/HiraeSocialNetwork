@@ -21,7 +21,12 @@ const __dirname = import.meta.dirname;
 // own comment for the full list and reasoning.
 export default defineConfig({
   root: '.',
-  base: '',
+  // Root-absolute asset URLs, not relative ones. Every page is served from
+  // the origin root EXCEPT /post/<id>, the shareable moment link — and a
+  // relative "./assets/x.js" resolves to "/post/assets/x.js" there and 404s.
+  // '/' makes every page depth-independent, which is what a shareable URL
+  // shape requires. See server/src/og.js.
+  base: '/',
   build: {
     outDir: 'dist',
     emptyOutDir: true,

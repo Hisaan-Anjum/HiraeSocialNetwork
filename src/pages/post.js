@@ -20,7 +20,15 @@ const auth = requireAuth();
 
 function getParams() {
   const params = new URLSearchParams(window.location.search);
-  return { type: params.get('type') === 'review' ? 'review' : 'moment', id: params.get('id') };
+  // Two URL shapes reach this page. /post/<id> is the shareable one — the
+  // server injects that moment's Open Graph tags at that path, so a link
+  // pasted into a chat previews as the memory itself (server/src/og.js).
+  // /post.html?id=<id> is what every link shared before then looks like, and
+  // what the in-app cards still use. Both must work, forever: a shared link is
+  // permanent and lives in other people's message histories.
+  const fromPath = window.location.pathname.match(/^\/post\/(\d+)\/?$/);
+  const id = params.get('id') || (fromPath ? fromPath[1] : null);
+  return { type: params.get('type') === 'review' ? 'review' : 'moment', id };
 }
 
 if (auth) {
