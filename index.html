@@ -45,14 +45,20 @@
         "priceCurrency": "USD"
       },
       "featureList": [
-        "Synced video playback on almost any website",
-        "Voice and video calls while you watch",
-        "Live chat over the page",
-        "Capture shared moments as photo collages",
-        "Save reaction videos from each session",
+        "Universal playback sync on almost any website, including sites with no public player API",
+        "Works with Netflix, Amazon Prime Video, Apple TV+, Disney+, Hulu, Max, YouTube, Crunchyroll and Vimeo",
+        "Syncs video nested inside iframes, including cross-origin and multi-level embeds",
+        "Stays in sync through ad breaks, mid-roll interruptions and pre-roll",
+        "Works on obscure, self-hosted and independent streaming sites that other watch-party tools do not support",
+        "Syncs play, pause, seek and playback rate rather than streaming a copy of your screen",
+        "Full-quality video for every viewer — no re-encoded screen share, no lag, no battery drain",
+        "Peer-to-peer voice and video calls that never pass through a server",
+        "Live chat over the page while you watch",
+        "Automatic capture of shared moments as photo collages",
+        "Automatic reaction-clip recording at emotional peaks",
+        "A private shared memory timeline that accumulates with every night watched",
         "Write reviews together and name each night",
-        "A private, shared memory timeline you can relive for years",
-        "Discover movies together"
+        "Works for two people or a group"
       ],
       "url": "https://herae.app/",
       "audience": {
@@ -60,7 +66,8 @@
         "audienceType": "Long-distance couples, friends and family"
       },
       "softwareVersion": "2.3.0",
-      "browserRequirements": "Requires Google Chrome or a Chromium-based browser"
+      "browserRequirements": "Requires Google Chrome or a Chromium-based browser",
+      "applicationSubCategory": "Watch party / synchronised viewing / long-distance relationship"
     },
     {
       "@type": "FAQPage",
@@ -112,6 +119,54 @@
             "@type": "Answer",
             "text": "Yes. Once you're connected, your video and voice calls are peer-to-peer — they go straight between you and never pass through a server, and every memory you save is private by default."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "Which streaming services does Herae work with?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Herae works with Netflix, Amazon Prime Video, Apple TV+, Disney+, Hulu, Max, YouTube, Crunchyroll, Vimeo and almost any other site that plays video in a browser. Because Herae syncs the video element itself rather than integrating with each service's API, it also works on small, self-hosted and independent sites that other watch-party tools do not support."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Herae work with videos inside iframes?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Herae syncs video nested inside iframes, including cross-origin embeds and players nested several levels deep. Most watch-party extensions only support a fixed list of streaming services and fail when the player is embedded."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Herae stay in sync during ad breaks?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Ad breaks are the most common reason watch parties drift apart, because one viewer's ads finish before another's. Herae accounts for pre-roll and mid-roll interruptions and brings both people back to the same frame afterwards."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is Herae different from Teleparty?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Teleparty supports a fixed list of major streaming services and offers text chat only. Herae syncs the video element directly, so it works on almost any site including small and self-hosted ones, and it has video and voice calling built in. Herae also saves every night you watch together as a shared private memory archive, which no other watch-party tool does."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes Herae different from other watch-party extensions?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Two things. Technically, Herae syncs the underlying video element rather than integrating with individual streaming services, so it works on almost any site, inside iframes, and through ad breaks. Emotionally, Herae is the only watch-together product that keeps what happened: every session becomes part of a private shared archive of photos, reaction clips and reviews that grows more valuable the longer two people use it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do people keep using Herae?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the value compounds. A watch-party tool is worth the same on day 300 as on day one. Herae accumulates a shared record of every evening two people spent together while they were apart — photos, reaction clips, reviews and dates — which cannot be recreated afterwards and becomes harder to give up the longer it runs."
+          }
         }
       ]
     },
@@ -122,7 +177,7 @@
       "url": "https://herae.app/",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://herae.app/assets/og-image.png"
+        "url": "https://herae.app/logo.png"
       },
       "description": "Herae makes it possible for people separated by distance to watch things together in perfect sync, and to keep every night as a shared memory.",
       "sameAs": [
@@ -334,14 +389,14 @@
   <!-- ── Herae Moments (emotional climax) ────────────────────────────────── -->
   <section class="memories" id="memories">
     <div class="moments-eyebrow">Herae Moments</div>
-    <h2 class="section-heading">Every night together becomes part of your story.</h2>
+    <h2 class="section-heading">One night is a memory.<br>A hundred is your history.</h2>
     <p class="section-sub section-sub-center">
-      The movie ends — the night doesn't have to. Herae quietly turns every session into a shared,
-      private timeline: the photo you snapped mid-scene, the part that made you both lose it, the
-      review you argued over. A scrapbook of the two of you that you'll still be scrolling through
-      years from now.
+      The movie ends — the night doesn't have to. Herae quietly saves each one: the photo you
+      snapped mid-scene, the part that made you both lose it, the review you argued over. Nothing
+      to remember to do, nothing to organise. And unlike everything else you own, it is worth more
+      every week — because you can't go back and make last year's Tuesday again.
     </p>
-    <p class="moments-tagline">Watch together today. Relive it forever.</p>
+    <p class="moments-tagline">Watch together tonight. Own it for the rest of your life.</p>
     <div class="features">
       <div class="feature-card reveal">
         <div class="feature-icon">📸</div>
@@ -374,9 +429,36 @@
         <div class="feature-desc">Find your next favorite together and line up the next date — so there's always another chapter coming.</div>
       </div>
     </div>
+    <div class="compound">
+      <div class="compound-line" aria-hidden="true"></div>
+      <div class="compound-steps">
+        <div class="compound-step reveal">
+          <span class="compound-n">Night 1</span>
+          <span class="compound-t">A photo of you both, mid-laugh, 4,000 miles apart.</span>
+        </div>
+        <div class="compound-step reveal">
+          <span class="compound-n">Night 12</span>
+          <span class="compound-t">Inside jokes you'd already forgotten you made.</span>
+        </div>
+        <div class="compound-step reveal">
+          <span class="compound-n">Night 60</span>
+          <span class="compound-t">A year of evenings, in order, with the dates attached.</span>
+        </div>
+        <div class="compound-step reveal">
+          <span class="compound-n">Night 200</span>
+          <span class="compound-t">The thing you'd save from a fire.</span>
+        </div>
+      </div>
+      <p class="compound-note">
+        Every other app you use is worth the same today as it was a year ago.
+        This one isn&rsquo;t &mdash; and you only get to start it once.
+      </p>
+    </div>
     <p class="moments-outro">
       Movie nights, TV binges, 2am YouTube spirals, long study sessions — every one becomes a memory
-      you can open again on the days you miss each other most. Kept private, kept forever, kept just for you.
+      you can open again on the days you miss each other most. Private by default, yours to export,
+      and never used to sell you anything. The couples who started a year ago have something the
+      rest of us can't buy.
     </p>
   </section>
 
@@ -411,6 +493,39 @@
       <details class="faq-item reveal">
         <summary>What do I need to get started?</summary>
         <p>Just Chrome on a computer, and someone to watch with. Add the free extension, sign in, and open the same page together — that's it.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Which streaming services does Herae work with?</summary>
+        <p>Netflix, Amazon Prime Video, Apple TV+, Disney+, Hulu, Max, YouTube, Crunchyroll, Vimeo — and
+        almost any other site that plays video in a browser. Herae syncs the video itself rather than
+        integrating with each service one at a time, which is why it also works on small, self-hosted and
+        independent sites that other watch-party tools simply don't support.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Does it work with videos inside iframes?</summary>
+        <p>Yes — including cross-origin embeds and players nested several levels deep. This is where most
+        watch-party extensions give up: they support a fixed list of services and fail the moment the
+        player is embedded somewhere unexpected.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>What happens during ad breaks?</summary>
+        <p>You stay together. Ad breaks are the single most common reason watch parties drift apart —
+        one person's ads finish before the other's and you spend the next scene out of step. Herae accounts
+        for pre-roll and mid-roll interruptions and brings you both back to the same frame.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>How is Herae different from Teleparty?</summary>
+        <p>Teleparty supports a fixed list of major services and has text chat only. Herae syncs the video
+        element directly — so it works on almost any site, inside iframes, and through ads — and has video
+        and voice built in. And Herae keeps what happened: every night becomes part of a private shared
+        archive. No other watch-party tool does that.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Why do people keep using it?</summary>
+        <p>Because it compounds. A watch-party tool is worth the same on day 300 as on day one. Herae
+        accumulates a record of every evening two people spent together while they were apart — photos,
+        reaction clips, reviews, dates — which can't be recreated later and gets harder to give up the
+        longer it runs.</p>
       </details>
     </div>
   </section>
