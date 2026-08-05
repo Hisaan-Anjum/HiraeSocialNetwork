@@ -384,3 +384,9 @@ body.reveal-ready .reveal.reveal-visible { opacity: 1; transform: translateY(0);
 @media (prefers-reduced-motion: reduce) {
   .compound-step { transition: none; }
 }
+
+/* The paragraph that explains WHY capture is automatic. Sits between the
+   tagline and the cards, so the reader has the argument before the features. */
+.moments-why {
+  max-width: 660px; margin: -14px auto 34px; font-size: 15.5px; line-height: 1.75;
+}
