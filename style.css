@@ -2406,3 +2406,63 @@ body.cd-open { overflow: hidden; }
   .aim-card .aim-thumb img { transition: none; }
   .aim-card:hover .aim-thumb img { transform: none; }
 }
+
+/* ══ Mobile correctness ═══════════════════════════════════════════════
+   Measured against the rendered layout at 390px across every page, not
+   assumed. Three defects were shared by eight pages because they all fall
+   back to the same auth shell. None of this changes desktop. */
+@media (max-width: 720px) {
+  /* iOS Safari ZOOMS the whole page when a focused input has a font-size
+     below 16px. The field then sits off-screen, the layout is scaled, and
+     the only way back is a pinch — on the login form, which is the first
+     thing most people meet. 16px is the exact threshold; this is not a
+     preference. */
+  input, select, textarea,
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="search"], input[type="number"] {
+    font-size: 16px;
+  }
+
+  /* Tap targets below the 44px floor. A thumb is ~10mm; a 15px link is
+     hit by accident as often as on purpose. Padding grows the hit area,
+     not the text, so nothing shifts visually. */
+  .login-back,
+  .legal-brand,
+  .footer-links a,
+  .footer-col a {
+    display: inline-flex; align-items: center;
+    min-height: 44px; padding: 4px 2px;
+  }
+  .pw-toggle { min-width: 44px; min-height: 44px; }
+  .btn, button, [role="button"] { min-height: 44px; }
+}
+
+/* The notch and the home indicator. Without this the last row of any page
+   sits underneath the iOS home bar on a full-screen phone. */
+@supports (padding: max(0px)) {
+  body { padding-left: max(0px, env(safe-area-inset-left));
+         padding-right: max(0px, env(safe-area-inset-right)); }
+}
+
+/* ── Privacy inside the inline editor ─────────────────────────────────
+   Changing who can see a moment belongs with editing it, not on a
+   separate surface. */
+.inline-edit-privacy {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 10px; font-size: 13px; color: var(--ink-dim);
+}
+.inline-privacy-select {
+  background: var(--bg-2); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 10px; font-size: 14px; min-height: 40px;
+}
+.inline-edit-note {
+  margin: 8px 0 0; font-size: 12.5px; line-height: 1.5;
+  color: var(--gold); background: rgba(245,185,66,0.08);
+  border: 1px solid rgba(245,185,66,0.22); border-radius: 10px; padding: 8px 10px;
+}
+@media (max-width: 720px) {
+  /* Stacked, and both controls at thumb size. */
+  .inline-edit-privacy { flex-direction: column; align-items: stretch; gap: 6px; }
+  .inline-privacy-select { min-height: 44px; font-size: 16px; width: 100%; }
+}

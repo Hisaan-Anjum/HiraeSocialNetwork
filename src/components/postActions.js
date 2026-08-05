@@ -13,7 +13,11 @@ import { escapeHtml } from '../lib/util.js';
 import { renderStars, renderStarPicker } from './starRating.js';
 import { renderUserLink } from './userLink.js';
 
-const { updateMoment, deleteMoment, updateReview, deleteReview } = window;
+const { updateMoment, deleteMoment, updateReview, deleteReview, setMomentPrivacy } = window;
+
+// Same labels as the card's own control, so the two never disagree about
+// what 'contacts' means.
+const EDIT_PRIVACY_LABELS = { public: '🌐 Public', contacts: '👥 Contacts', private: '🔒 Just us' };
 
 // `canEdit` comes from the server on every moment/review (see
 // hydrateMoments) — the menu simply isn't rendered without it. The routes
@@ -126,15 +130,43 @@ function startMomentEdit(menu, momentId) {
   if (!slot || slot.querySelector('textarea')) return;
   const original = slot.dataset.description || '';
 
+  // Who can see this is part of editing it, not a separate act. It used to
+  // live only on surfaces that passed showPrivacyControl, so on every other
+  // one "Edit" meant "edit the caption" and the only way to make a moment
+  // private again was to find the surface that happened to offer the control.
+  // For a product whose shared links carry real previews, changing your mind
+  // about who can see something has to be reachable wherever you can edit.
+  const currentPrivacy = card.dataset.privacy
+    || card.querySelector('.privacy-select')?.value
+    || 'private';
+
   slot.innerHTML = `
     <div class="inline-editor">
       <textarea class="inline-edit-text" maxlength="300" placeholder="Add a caption…">${escapeHtml(original)}</textarea>
+      <label class="inline-edit-privacy">
+        <span>Who can see this</span>
+        <select class="inline-privacy-select">
+          ${Object.entries(EDIT_PRIVACY_LABELS).map(([id, label]) =>
+            `<option value="${id}" ${currentPrivacy === id ? 'selected' : ''}>${label}</option>`).join('')}
+        </select>
+      </label>
+      <p class="inline-edit-note" hidden>
+        Anyone with the link will be able to see this moment, and a preview of it
+        will appear when the link is shared.
+      </p>
       <div class="inline-editor-actions">
         <button class="btn-inline inline-save">Save</button>
         <button class="btn-inline btn-inline-ghost inline-cancel">Cancel</button>
       </div>
     </div>`;
   const textarea = slot.querySelector('textarea');
+  const privacySelect = slot.querySelector('.inline-privacy-select');
+  const note = slot.querySelector('.inline-edit-note');
+  // Making something public is the one choice here with consequences outside
+  // this page, so it says so at the moment it is chosen rather than in a FAQ.
+  const syncNote = () => { note.hidden = privacySelect.value !== 'public'; };
+  privacySelect.addEventListener('change', syncNote);
+  syncNote();
   textarea.focus();
 
   const restore = (description) => {
@@ -146,7 +178,21 @@ function startMomentEdit(menu, momentId) {
   slot.querySelector('.inline-save').addEventListener('click', async (ev) => {
     const btn = ev.currentTarget;
     btn.disabled = true;
+    const nextPrivacy = privacySelect.value;
     try {
+      // Privacy FIRST, and only then the caption. If the second call fails the
+      // moment is already at the stricter visibility the person asked for —
+      // the opposite order can leave something public that they just made
+      // private, which is the one failure worth ordering around.
+      if (nextPrivacy !== currentPrivacy) {
+        await setMomentPrivacy(momentId, nextPrivacy);
+        card.dataset.privacy = nextPrivacy;
+        // Keep every visible indicator on this card in step.
+        const badge = card.querySelector('.privacy-badge');
+        if (badge) badge.textContent = EDIT_PRIVACY_LABELS[nextPrivacy] || nextPrivacy;
+        const cardSelect = card.querySelector('.privacy-select');
+        if (cardSelect) { cardSelect.value = nextPrivacy; cardSelect.dataset.prev = nextPrivacy; }
+      }
       const { description } = await updateMoment(momentId, textarea.value.trim());
       restore(description);
     } catch (err) {

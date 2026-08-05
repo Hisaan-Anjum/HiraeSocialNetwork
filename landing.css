@@ -390,3 +390,45 @@ body.reveal-ready .reveal.reveal-visible { opacity: 1; transform: translateY(0);
 .moments-why {
   max-width: 660px; margin: -14px auto 34px; font-size: 15.5px; line-height: 1.75;
 }
+
+/* ── Mobile touch targets ──────────────────────────────────────────────
+   Measured on a 390px viewport against the rendered layout, not guessed:
+   nav links were 32px tall, footer links 15px, and the two hero buttons
+   38-40px. Apple's HIG floor is 44px and Material's is 48; below that a
+   thumb hits the gap between two links as often as it hits either.
+
+   Nothing here changes how anything LOOKS on desktop — the padding only
+   applies under 720px, and it grows the hit area rather than the text. */
+@media (max-width: 720px) {
+  .topnav-links a,
+  .footer-links a,
+  .footer-col a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    /* Vertical padding alone would space the rows out enormously; a small
+       negative margin keeps the visual rhythm while the hit area grows. */
+    padding: 4px 2px;
+  }
+  .topnav-links {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 2px 18px;
+    /* "How it works" was wrapping mid-phrase and colliding with the row
+       below — the two-line link read as two separate destinations. */
+    white-space: nowrap;
+  }
+  .btn { min-height: 44px; }
+  .hero-cta { min-height: 50px; }        /* the primary action, thumb-sized */
+  .brand-link { min-height: 44px; display: inline-flex; align-items: center; }
+  .footer-brand { min-width: 44px; min-height: 44px; }
+  /* A <summary> is the FAQ's tap target and was inheriting body line-height. */
+  .faq-item summary { min-height: 48px; display: flex; align-items: center; }
+}
+
+/* Respect the notch and the home indicator. Without this the footer's last
+   row sits underneath the iOS home bar on every full-screen phone. */
+@supports (padding: max(0px)) {
+  .site-footer { padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+  .hero, .cta-section { padding-left: max(24px, env(safe-area-inset-left));
+                        padding-right: max(24px, env(safe-area-inset-right)); }
+}

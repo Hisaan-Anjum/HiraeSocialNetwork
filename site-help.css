@@ -116,3 +116,11 @@
   .sh-nav-item:hover { background: rgba(0, 0, 0, .05); }
   .sh-issue { border-color: rgba(0, 0, 0, .12); }
 }
+
+/* The help sidebar is the primary navigation on this page and its items
+   were 37px — under the 44px touch floor, in a list where mis-taps send
+   you to the wrong article entirely. */
+@media (max-width: 720px) {
+  .sh-nav-item { min-height: 44px; }
+  .sh-toc a, .sh-article a { min-height: 32px; display: inline-flex; align-items: center; }
+}

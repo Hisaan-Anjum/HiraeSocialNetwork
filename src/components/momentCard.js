@@ -52,7 +52,7 @@ export function renderMomentCard(moment, opts = {}) {
   const mediaHtml = renderMediaTile(moment, { className: opts.detail ? 'post-detail-media' : 'moment-card-media' });
 
   return `
-    <div class="${opts.detail ? 'post-detail-card' : 'moment-card'}" data-moment-id="${moment.id}">
+    <div class="${opts.detail ? 'post-detail-card' : 'moment-card'}" data-moment-id="${moment.id}" data-privacy="${moment.privacy}">
       ${mediaHtml}
       <div class="moment-body">
         <div class="moment-meta-row">

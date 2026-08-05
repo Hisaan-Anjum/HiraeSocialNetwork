@@ -90,3 +90,18 @@
   .legal-doc h1 { font-size: 27px; }
   .legal-wrap { padding: 24px 14px 72px; }
 }
+
+/* Legal pages are mostly links; they were 17px tall. */
+@media (max-width: 720px) {
+  /* Class-based selectors missed these: the links are bare <a> inside
+     prose and inside the footer row. Scoped to the page container so this
+     cannot reach the landing page's own links. */
+  /* Only STANDALONE links get a bigger hit area — the footer row and the
+     top bar. Links inside a sentence are deliberately left alone: WCAG
+     2.5.8 exempts inline text links from the target-size rule, and forcing
+     44px on them would put 40px of leading inside every paragraph that
+     contains one. Bigger is not automatically better here. */
+  .legal-footer-links a, .legal-topbar a, .legal-brand {
+    min-height: 44px; display: inline-flex; align-items: center;
+  }
+}
