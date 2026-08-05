@@ -1,0 +1,50 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  @font-face { font-family: 'Sys'; src: local('DejaVu Sans'); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1200px; height:630px; }
+  body {
+    /* Same tokens as landing.css so the card and the site are one system. */
+    background:
+      radial-gradient(120% 130% at 8% 100%, rgba(139,92,246,0.28), transparent 62%),
+      radial-gradient(90% 110% at 100% 0%, rgba(245,185,66,0.16), transparent 58%),
+      linear-gradient(168deg, #171320 0%, #0d0b12 100%);
+    font-family: 'DejaVu Sans', 'Liberation Sans', sans-serif;
+    color: #f3f0f8;
+    display:flex; flex-direction:column; justify-content:center;
+    padding: 0 92px 150px; position:relative; overflow:hidden;
+  }
+  .eyebrow {
+    font-size:22px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase;
+    color:#f5b942; margin-bottom:30px;
+  }
+  h1 { font-size:66px; line-height:1.12; font-weight:800; letter-spacing:-0.02em; }
+  h1 .dim { color:#a79fc0; font-weight:700; }
+  .rule { width:96px; height:5px; border-radius:3px; margin:34px 0 28px;
+          background:linear-gradient(90deg,#8b5cf6,#f5b942); }
+  .sub { font-size:28px; line-height:1.5; color:#a79fc0; max-width:820px; }
+  .foot {
+    position:absolute; left:92px; bottom:54px;
+    display:flex; align-items:center; gap:16px;
+    font-size:26px; font-weight:700; color:#f3f0f8; letter-spacing:0.01em;
+  }
+  .dot { width:12px; height:12px; border-radius:50%;
+         background:linear-gradient(135deg,#8b5cf6,#f5b942); }
+  /* The compounding idea, as a visual: four rising bars. */
+  .bars { position:absolute; right:92px; bottom:54px; display:flex; align-items:flex-end; gap:11px; }
+  .bars i { display:block; width:16px; border-radius:4px;
+            background:linear-gradient(180deg,#8b5cf6,rgba(139,92,246,0.25)); }
+  .bars i:nth-child(1){ height:26px; }
+  .bars i:nth-child(2){ height:48px; }
+  .bars i:nth-child(3){ height:78px; }
+  .bars i:nth-child(4){ height:104px; background:linear-gradient(180deg,#f5b942,rgba(245,185,66,0.3)); }
+</style></head>
+<body>
+  <div class="eyebrow">Watch together · Long distance</div>
+  <h1>Watch movies together,<br><span class="dim">however far apart.</span></h1>
+  <div class="rule"></div>
+  <div class="sub">In perfect sync on almost any site — and every night you<br>spend together is kept forever.</div>
+  <div class="foot"><span class="dot"></span>herae.app</div>
+  <div class="bars"><i></i><i></i><i></i><i></i></div>
+</body></html>
