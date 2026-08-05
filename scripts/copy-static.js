@@ -28,6 +28,16 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 
 const FILES = [
+  // Crawler-facing files. Neither is referenced by any page, so nothing in the
+  // build graph pulls them in — they have to be listed here explicitly or they
+  // simply do not exist in production, which is exactly what happened: the
+  // sitemap was written, committed, and 404ing at herae.app/sitemap.xml.
+  'robots.txt',
+  'sitemap.xml',
+  // The social share card. Same reason: referenced only from <meta> tags,
+  // which Vite does not follow.
+  'og-image.png',
+  'og-image-source.html',
   'index.html',
   'index.js',
   'landing.css',
