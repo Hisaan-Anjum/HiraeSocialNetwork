@@ -179,7 +179,7 @@ const CORRECTION_CHIPS = Object.freeze([
 function calibHtml(moment) {
   if (!moment.askCalibration) return '';
   return `
-    <div class="aim-calib" data-aim-calib="idle">
+    <div class="aim-calib" data-aim-calib="idle" role="status" aria-live="polite">
       <button type="button" class="aim-calib-btn" data-aim-verdict="confirm"
         title="Herae read this one right" aria-label="Herae read this one right">👍</button>
       <button type="button" class="aim-calib-btn" data-aim-verdict="reject"
@@ -309,18 +309,28 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
   // Nothing here is sent for a moment nobody touched. Silence is not a weak
   // yes: a system that reads it as one becomes confident it is right in
   // exactly the cases where nobody could be bothered to tell it otherwise.
-  function sendCalibration(card, verdict, correction) {
+  async function sendCalibration(card, verdict, correction) {
     const id = card.dataset.aimId;
     const row = card.querySelector('.aim-calib');
     if (!id || !row || row.dataset.aimCalib === 'done') return;
+    const before = row.innerHTML;
     row.dataset.aimCalib = 'done';
-    act({ action: 'calibrate', id, verdict, correction, requestId: nextRequestId() });
-    // Settled in place. The row keeps its height so the card does not jump
-    // under the cursor, and the correction panel — if one was open — closes
-    // with it, because the question has been answered.
+    // Settled in place, optimistically. The row keeps its height so the card
+    // does not jump under the cursor, and the correction panel — if one was
+    // open — closes with it, because the question has been answered.
     const panel = card.querySelector('.aim-correct');
     if (panel) panel.remove();
     row.innerHTML = '<span class="aim-calib-done">✓ Noted</span>';
+    // ── …but "Noted" has to be true ──────────────────────────────────
+    // The extension refuses a verdict it cannot attach to a real reading, and
+    // stores nothing at all when personalisation is switched off. Saying
+    // "Noted" anyway would be the product claiming to have listened while
+    // discarding what it heard — a small lie, and exactly the one that makes
+    // somebody stop believing the feature does anything.
+    const ack = await act({ action: 'calibrate', id, verdict, correction, requestId: nextRequestId() });
+    if (ack && ack.ok) return;
+    row.dataset.aimCalib = 'idle';
+    row.innerHTML = before;
   }
 
   mountEl.addEventListener('click', (e) => {
