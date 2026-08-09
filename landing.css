@@ -28,7 +28,14 @@
   background: linear-gradient(140deg, #f5b942 0%, #8b5cf6 60%, #6d28d9 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.hero-sub { font-size: 16.5px; line-height: 1.75; color: var(--ink-dim); margin-bottom: 34px; }
+/* The line that carries the value. It was 16.5px in the dimmed ink used for
+   captions, which is a size for text somebody has already decided to read —
+   not for the sentence deciding it. Larger, brighter, and measured so no line
+   runs past about 62 characters. */
+.hero-sub {
+  font-size: clamp(17px, 1.9vw, 19px); line-height: 1.65; color: var(--ink);
+  margin: 0 auto 34px; max-width: 62ch; opacity: .95;
+}
 .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
 .hero-cta { font-size: 15.5px; padding: 14px 30px; }
 .hero-note { font-size: 12.5px; color: var(--ink-faint); }
@@ -431,4 +438,125 @@ body.reveal-ready .reveal.reveal-visible { opacity: 1; transform: translateY(0);
   .site-footer { padding-bottom: max(28px, env(safe-area-inset-bottom)); }
   .hero, .cta-section { padding-left: max(24px, env(safe-area-inset-left));
                         padding-right: max(24px, env(safe-area-inset-right)); }
+}
+
+/* ── The forwardable sentence ───────────────────────────────────────────
+   Deliberately looks like a message rather than marketing: left-aligned,
+   lower case, no exclamation. If it reads as copy the user will rewrite it,
+   and the point is that they don't have to. */
+.forward-card {
+  max-width: 620px; margin: 34px auto 0; padding: 18px 20px;
+  border: 1px solid rgba(255,255,255,.12); border-radius: 14px;
+  background: rgba(255,255,255,.04); text-align: left;
+}
+.forward-label { font-size: 13px; color: var(--text-dim, #9a9aa8); margin: 0 0 10px; }
+.forward-text {
+  margin: 0 0 14px; font-size: 15px; line-height: 1.5;
+  color: var(--text, #f5f5f7);
+  padding: 12px 14px; border-radius: 10px; background: rgba(0,0,0,.28);
+}
+.forward-copy { margin: 0; }
+@media (max-width: 560px) { .forward-card { margin-top: 26px; padding: 15px 16px; } }
+/* The audience line, a beat quieter than the sentence above it: couples are
+   who this is for, and everyone else should still see themselves in it
+   without the primary reading going soft. */
+.hero-sub-also { display: block; margin-top: 8px; color: var(--text-dim, #9a9aa8); font-size: .95em; }
+
+/* ── The recognition line ───────────────────────────────────────────────
+   Set apart from the headline rather than under it as a subtitle: it is the
+   reader's own sentence, not ours, and it stops reading like copy the moment
+   it looks like copy. Sized between the H1 and the body so the eye lands on
+   it second, which is the order the two lines are meant to be read in. */
+.hero-hook {
+  margin: 18px auto 14px; max-width: 30ch;
+  font-size: clamp(17px, 2.4vw, 21px); line-height: 1.35;
+  color: var(--text, #f5f5f7); font-style: italic; opacity: .92;
+  padding-left: 14px; border-left: 2px solid var(--gold, #f5b942); text-align: left;
+}
+@media (max-width: 560px) { .hero-hook { margin: 14px auto 12px; padding-left: 11px; } }
+
+/* ══════════════════════════════════════════════════════════════════════
+   REFINEMENT LAYER
+   ──────────────────────────────────────────────────────────────────────
+   The page was built at desktop sizes with fixed pixels: a 42px headline,
+   four unrelated breakpoints, and body text that stayed 16.5px whether the
+   viewport was 1400px or 360px. On a phone that reads as a desktop page
+   that has been squeezed, which is the specific thing that makes a landing
+   page feel cheap regardless of how good the writing is.
+
+   This layer adds three things and changes no markup:
+     · one fluid type scale, so nothing is sized for a single screen
+     · one vertical rhythm, so sections breathe consistently
+     · one set of rules for touch, so nothing important is under 44px
+
+   Appended rather than woven in, so it can be read — and reverted — as a
+   single decision.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --lp-gap-section: clamp(56px, 9vw, 104px);
+  --lp-gap-block:   clamp(20px, 3.2vw, 34px);
+  --lp-radius:      16px;
+  --lp-edge:        clamp(18px, 5vw, 32px);
+}
+
+/* ── Nothing may push the page sideways ─────────────────────────────── */
+html, body { overflow-x: hidden; }
+.hero, .problem, .compare, .how-it-works, .together, .usecases,
+.features-section, .memories, .faq, .cta-section {
+  padding-left: var(--lp-edge); padding-right: var(--lp-edge);
+  padding-top: var(--lp-gap-section); padding-bottom: var(--lp-gap-section);
+}
+.hero { padding-top: clamp(34px, 7vw, 64px); }
+
+/* ── One type scale, fluid all the way down ─────────────────────────── */
+.hero-title    { font-size: clamp(30px, 7vw, 46px); line-height: 1.14; letter-spacing: -.01em; }
+.section-heading { font-size: clamp(23px, 4vw, 32px); line-height: 1.22; letter-spacing: -.005em; }
+.section-sub   { font-size: clamp(15.5px, 1.7vw, 17px); line-height: 1.65; }
+.step-title, .feature-title { font-size: clamp(16px, 1.8vw, 18px); }
+.step-desc, .feature-desc   { font-size: clamp(14.5px, 1.6vw, 15.5px); line-height: 1.6; }
+.faq-item summary           { font-size: clamp(15px, 1.7vw, 16.5px); }
+.faq-item p                 { font-size: clamp(14.5px, 1.6vw, 15.5px); line-height: 1.65; }
+
+/* Measure. Long lines are the commonest reason a beautiful page is hard to
+   read, and they only appear on the widest screens where nobody tests. */
+.section-sub-center, .problem-inner > p, .moments-outro { max-width: 64ch; margin-left: auto; margin-right: auto; }
+
+/* ── Cards: one radius, one border, one hover ───────────────────────── */
+.step-card, .feature-card, .compare-col, .usecase-card, .forward-card, .faq-item {
+  border-radius: var(--lp-radius);
+}
+.step-card, .feature-card, .usecase-card {
+  transition: transform .22s cubic-bezier(.3,.7,.3,1), border-color .22s ease, background-color .22s ease;
+}
+@media (hover: hover) {
+  .step-card:hover, .feature-card:hover, .usecase-card:hover { transform: translateY(-3px); }
+}
+
+/* ── Touch ──────────────────────────────────────────────────────────── */
+.btn, .topnav-links a, .footer-links a, .faq-item summary {
+  min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+}
+.faq-item summary { justify-content: space-between; gap: 12px; text-align: left; }
+.hero-cta { padding: 15px 28px; }
+
+/* ── Mobile ─────────────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .compare-grid, .together, .steps-grid, .features, .usecase-grid { grid-template-columns: 1fr; }
+  .together { gap: var(--lp-gap-block); }
+  .hero-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .hero-cta { width: 100%; }
+  .hero-trust { gap: 8px 14px; }
+  .topnav-links { display: none; }          /* the CTA is the only nav that matters here */
+  .hero-hook { margin-left: 0; margin-right: 0; }
+}
+@media (max-width: 420px) {
+  .hero-trust li { font-size: 12px; }
+  .forward-text { font-size: 14px; }
+}
+
+/* ── Motion, only if it is wanted ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .step-card, .feature-card, .usecase-card { transition: none; }
+  .step-card:hover, .feature-card:hover, .usecase-card:hover { transform: none; }
 }
