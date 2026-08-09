@@ -36,6 +36,17 @@ if (auth) {
   // review" form below flips back to its empty/write state, which patching
   // the DOM in place couldn't do correctly.
   attachPostActionHandlers(contentEl, { onDeleted: () => loadSession() });
+  // ── Mounted FIRST, and never again ────────────────────────────────
+  // The moments Herae found on this machine are the part of the night about
+  // to be lost if nobody looks, and they owe the server nothing. Mounted
+  // before the session is fetched, into a container outside #content, so
+  // re-rendering the page (a review posted, one deleted) cannot take them
+  // away mid-decision — and a server that never answers cannot hide them.
+  //
+  // Fire-and-forget: the page must render identically for somebody without
+  // the extension, or with the feature switched off.
+  mountAiMoments(document.getElementById('aiMomentsMount'),
+    { sessionId: getSessionIdFromUrl() });
   loadSession();
 }
 
@@ -89,9 +100,7 @@ async function loadSession() {
     // Returning here is why the recovery prompt appeared to do nothing: it
     // opened the review, the fetch failed, and the one thing the prompt was
     // about was never mounted.
-    contentEl.innerHTML = renderErrorState(escapeHtml(err.message))
-      + '<div id="aiMomentsMount"></div>';
-    mountAiMoments(document.getElementById('aiMomentsMount'), { sessionId });
+    contentEl.innerHTML = renderErrorState(escapeHtml(err.message));
     return;
   }
 
@@ -114,7 +123,6 @@ async function loadSession() {
   contentEl.innerHTML = `
     ${detail.sessionTitle ? `<div class="review-session-title-banner">${escapeHtml(detail.sessionTitle)}</div>` : ''}
     ${title ? `<div class="review-content-banner">📺 ${escapeHtml(title)}</div>` : ''}
-    <div id="aiMomentsMount"></div>
     ${momentsStrip}
     <div class="review-panel">
       <div class="review-section-title">Watched with ${others.length ? renderUserLinks(others) : escapeHtml(partnerName)}</div>
@@ -158,12 +166,6 @@ async function loadSession() {
       ${myReview ? `<div style="margin-top:14px">${renderReactionRow('review', myReview.id, myReview.likes, myReview.comments)}</div>` : ''}
     </div>
   `;
-
-  // The moments Herae found on this machine, offered before the review form
-  // because they are the part of the night that is about to be lost if nobody
-  // looks. Fire-and-forget: the page must render identically for someone
-  // without the extension, or with the feature switched off.
-  mountAiMoments(document.getElementById('aiMomentsMount'), { sessionId });
 
   const picker = renderStarPicker(document.getElementById('starPickerMount'), myReview?.rating || 0, () => {});
 

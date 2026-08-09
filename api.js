@@ -195,16 +195,36 @@ function cameFromThisSite() {
   return !!navCameFrom && history.length > 1;
 }
 
+// Long enough that a slow connection still loads a night's memories, short
+// enough that nobody sits in front of a spinner wondering.
+const REQUEST_TIMEOUT_MS = 20_000;
+
 async function apiRequest(path, options = {}) {
   const auth = getAuth();
   const base = (auth?.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
   let resp;
+  // ── A request that never answers is not an error anybody sees ─────
+  // fetch() rejects when a connection FAILS. It waits indefinitely when one
+  // is accepted and then goes quiet — a server mid-restart, a tunnel that
+  // dropped, a laptop that slept — and every page here awaits it before
+  // rendering anything. The symptom is a spinner that never stops, with no
+  // error, no retry and nothing in the console.
+  //
+  // A deadline turns that into the failure the code already handles. Generous
+  // on purpose: this is a stall guard, not a performance budget, and a slow
+  // connection must still be able to load a night's memories.
+  const timer = new AbortController();
+  const deadline = setTimeout(() => timer.abort(), REQUEST_TIMEOUT_MS);
   try {
-    resp = await fetch(`${base}${path}`, { ...options, headers });
+    resp = await fetch(`${base}${path}`, { ...options, headers, signal: timer.signal });
   } catch (e) {
-    throw new Error('Could not reach the server. Check the address and that it is running.');
+    throw new Error(e && e.name === 'AbortError'
+      ? 'The server took too long to answer. It may be restarting — try again in a moment.'
+      : 'Could not reach the server. Check the address and that it is running.');
+  } finally {
+    clearTimeout(deadline);
   }
   const data = await resp.json().catch(() => ({}));
   if (resp.status === 401) {

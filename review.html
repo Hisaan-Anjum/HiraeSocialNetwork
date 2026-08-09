@@ -40,6 +40,15 @@
   </div>
 
   <div class="page-wrap" style="max-width:640px">
+    <!-- ── Outside #content on purpose ──────────────────────────────────
+         AI Moments have never been uploaded: they live inside the extension
+         until somebody keeps one. They used to be mounted into #content,
+         which is only written once the session fetch SETTLES — so a server
+         that answered slowly, or accepted the request and never replied,
+         left somebody looking at "Loading this session…" with their evening
+         sitting on disk a few feet away, about to be discarded unseen.
+         Their own container, painted immediately, owing the network nothing. -->
+    <div id="aiMomentsMount"></div>
     <div id="content">
       <div class="spinner-text">Loading this session…</div>
     </div>
