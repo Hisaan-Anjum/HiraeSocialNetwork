@@ -286,7 +286,25 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     '__heraeAiMomentsAck',
   );
   const moments = (listed && listed.ok && listed.moments) || [];
-  if (!moments.length) return;
+  // ── Three different silences, told apart ─────────────────────────
+  // This returned quietly for all of them, and they mean opposite things:
+  // the extension never answered (not installed, or this origin is not the
+  // one configured in Settings — content.js says which, just above this line
+  // in the same console), it answered with an error, or the night genuinely
+  // produced nothing. Somebody told "8 moments from tonight" and shown an
+  // empty review needs to be able to tell which.
+  if (!moments.length) {
+    if (!listed) {
+      console.warn('[Herae memories] the extension did not answer, so no AI Moments'
+        + ' can be shown. Either it is not installed here, or this page is not the'
+        + ' address set in Settings → Memories (see the line above).');
+    } else if (!listed.ok) {
+      console.warn('[Herae memories] the extension refused the request:', listed.error || 'no reason given');
+    } else {
+      console.info('[Herae memories] the extension has no moments for this evening.');
+    }
+    return;
+  }
   // WHICH moments to ask about is the extension's decision, not the page's.
   // It arrives as a list of ids; anything not on it renders no calibration at
   // all, so there is no second schedule here to drift from the real one.
