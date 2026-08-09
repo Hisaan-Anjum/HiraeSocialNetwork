@@ -24,14 +24,32 @@ const ASK_TIMEOUT_MS = 20000;
 // on the invite page — same reason it exists there: without an ack the page
 // cannot tell "the extension handled it" from "there is no extension", and
 // would have to guess on a timer.
-function askExtension(message, ackKey, matcher) {
+// ── postMessage is not a queue ────────────────────────────────────────
+// The content script attaches its listener at document_idle. This module is a
+// deferred <script type="module">, so it runs at roughly the same moment —
+// genuinely racy, and a message sent before the listener exists is not
+// delivered late, it is DROPPED. The page then waits out the full timeout for
+// a reply that can never arrive and renders nothing, which is
+// indistinguishable from an evening that produced no moments.
+//
+// This was hidden for as long as the first request happened after a network
+// round trip: awaiting the session fetch gave the content script all the time
+// it needed. Moving the panel ahead of that fetch — so moments no longer wait
+// on the server — removed the accidental delay that was holding it together.
+//
+// So a request that can safely be repeated is repeated, on a short backoff,
+// until it is answered. `retryEveryMs` is opt-in for exactly that reason: a
+// LIST may be asked twice and cost nothing, while a keep or a calibration
+// verdict may not.
+function askExtension(message, ackKey, matcher, { retryEveryMs = null } = {}) {
   return new Promise((resolve) => {
     let settled = false;
+    const timers = [];
     const done = (value) => {
       if (settled) return;
       settled = true;
       window.removeEventListener('message', onMessage);
-      clearTimeout(timer);
+      for (const t of timers) clearTimeout(t);
       resolve(value);
     };
     const onMessage = (e) => {
@@ -40,8 +58,19 @@ function askExtension(message, ackKey, matcher) {
       done(e.data);
     };
     window.addEventListener('message', onMessage);
-    const timer = setTimeout(() => done(null), ASK_TIMEOUT_MS);
-    window.postMessage(message, window.location.origin);
+    timers.push(setTimeout(() => done(null), ASK_TIMEOUT_MS));
+    const send = () => { if (!settled) window.postMessage(message, window.location.origin); };
+    send();
+    if (retryEveryMs) {
+      // Widening gaps rather than a fixed interval: the listener either
+      // attaches within a frame or two, or something is genuinely wrong and
+      // hammering it will not help.
+      let delay = retryEveryMs;
+      for (let i = 0; i < 5; i++) {
+        timers.push(setTimeout(send, delay));
+        delay *= 2;
+      }
+    }
   });
 }
 
@@ -281,9 +310,13 @@ function finishingNote(n) {
 export async function mountAiMoments(mountEl, { sessionId } = {}) {
   if (!mountEl) return;
 
+  // Retried: asking for the list twice costs nothing, and this is the one
+  // request that races the content script's own startup.
   const listed = await askExtension(
     { __heraeAiMoments: true, session: sessionId || null },
     '__heraeAiMomentsAck',
+    null,
+    { retryEveryMs: 150 },
   );
   const moments = (listed && listed.ok && listed.moments) || [];
   // ── Three different silences, told apart ─────────────────────────
