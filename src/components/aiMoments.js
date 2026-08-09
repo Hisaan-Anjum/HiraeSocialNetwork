@@ -159,6 +159,55 @@ function thumbLabel(moment) {
   return `${moment.label} — ${moment.hasVideo && state === 'ready' ? 'play full screen' : 'view full screen'}`;
 }
 
+// ── Personalisation, and how little of it there is ────────────────────
+// The review page is where two people relive an evening. Calibration is a
+// guest here: two icons on the handful of moments the extension actually
+// asked about, nothing on the rest, and no second thing to read.
+//
+// The words matter as much as the size. Nobody is helping improve a model or
+// sending feedback — they are telling Herae about their own face, and every
+// string here says so.
+const CORRECTION_CHIPS = Object.freeze([
+  ['neutral', 'Nothing'], ['laugh', 'Laugh'], ['smile', 'Smile'],
+  ['surprise', 'Surprise'], ['fear', 'Fear'], ['horror', 'Horror'],
+  ['excitement', 'Excitement'], ['embarrassment', 'Embarrassment'],
+  ['cute', 'Cute'], ['tender', 'Tender'], ['celebration', 'Celebration'],
+  ['cry', 'Cry'], ['disgust', 'Disgust'], ['wink', 'Wink'],
+  ['squint', 'Squint'], ['other', 'Other'],
+]);
+
+function calibHtml(moment) {
+  if (!moment.askCalibration) return '';
+  return `
+    <div class="aim-calib" data-aim-calib="idle">
+      <button type="button" class="aim-calib-btn" data-aim-verdict="confirm"
+        title="Herae read this one right" aria-label="Herae read this one right">👍</button>
+      <button type="button" class="aim-calib-btn" data-aim-verdict="reject"
+        title="That is not what this was" aria-label="That is not what this was">👎</button>
+    </div>`;
+}
+
+// Built only when somebody presses 👎 — the one place this feature is allowed
+// to take up room, and only because they asked a question by pressing it.
+function correctionHtml() {
+  return `
+    <div class="aim-correct" role="group" aria-label="What was it instead?">
+      <div class="aim-correct-q">What was it instead?</div>
+      <div class="aim-correct-chips">
+        ${CORRECTION_CHIPS.map(([v, label]) =>
+    `<button type="button" class="aim-chip aim-correct-chip" data-aim-correction="${v}">${label}</button>`).join('')}
+      </div>
+      <!-- ── A different kind of answer, and it looks like one ─────────
+           "You read it right, I just would not have kept it." Set apart from
+           the chips because it is not a correction at all: it never touches
+           detection, only which moments are worth keeping. Putting it in the
+           same row would invite somebody to read it as one more label. -->
+      <button type="button" class="aim-correct-taste" data-aim-verdict="dislike">
+        I just didn’t want this moment
+      </button>
+    </div>`;
+}
+
 function cardHtml(moment) {
   // Duration, timestamp, thumbnail, play, keep, delete — the amendment's
   // exact list, in the order somebody actually reads them. Confidence and
@@ -178,7 +227,7 @@ function cardHtml(moment) {
           ${escapeHtml(moment.label)}
           ${moment.synced ? '<span class="aim-badge" title="You both reacted at the same time">together</span>' : ''}
         </div>
-        <div class="aim-when">${escapeHtml(formatClock(moment.at))}</div>
+        <div class="aim-when">${escapeHtml(formatClock(moment.at))}${calibHtml(moment)}</div>
         <input class="aim-caption" type="text" maxlength="300" placeholder="Add a caption (optional)">
         <div class="aim-privacy" role="group" aria-label="Who can see this">
           <button type="button" class="aim-chip is-active" data-aim-privacy="private">🔒 Just us</button>
@@ -238,6 +287,11 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
   );
   const moments = (listed && listed.ok && listed.moments) || [];
   if (!moments.length) return;
+  // WHICH moments to ask about is the extension's decision, not the page's.
+  // It arrives as a list of ids; anything not on it renders no calibration at
+  // all, so there is no second schedule here to drift from the real one.
+  const askIds = new Set((listed && listed.askCalibration) || []);
+  for (const m of moments) m.askCalibration = askIds.has(m.id);
 
   mountEl.innerHTML = panelHtml(moments);
 
@@ -246,6 +300,52 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     '__heraeAiMomentActionAck',
     (d) => d.requestId === payload.requestId,
   );
+
+  // ── The four acts ────────────────────────────────────────────────
+  // A tap is the whole interaction. 👍 selects and stops — no toast, no
+  // panel, no thank-you; the point of the gesture is that it costs nothing.
+  // 👎 is the only thing that ever opens anything.
+  //
+  // Nothing here is sent for a moment nobody touched. Silence is not a weak
+  // yes: a system that reads it as one becomes confident it is right in
+  // exactly the cases where nobody could be bothered to tell it otherwise.
+  function sendCalibration(card, verdict, correction) {
+    const id = card.dataset.aimId;
+    const row = card.querySelector('.aim-calib');
+    if (!id || !row || row.dataset.aimCalib === 'done') return;
+    row.dataset.aimCalib = 'done';
+    act({ action: 'calibrate', id, verdict, correction, requestId: nextRequestId() });
+    // Settled in place. The row keeps its height so the card does not jump
+    // under the cursor, and the correction panel — if one was open — closes
+    // with it, because the question has been answered.
+    const panel = card.querySelector('.aim-correct');
+    if (panel) panel.remove();
+    row.innerHTML = '<span class="aim-calib-done">✓ Noted</span>';
+  }
+
+  mountEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-aim-verdict], [data-aim-correction]');
+    if (!btn) return;
+    const card = btn.closest('.aim-card');
+    if (!card) return;
+    const correction = btn.dataset.aimCorrection;
+    if (correction) { sendCalibration(card, 'reject', correction); return; }
+    const verdict = btn.dataset.aimVerdict;
+    if (verdict === 'confirm' || verdict === 'dislike') { sendCalibration(card, verdict, null); return; }
+    if (verdict !== 'reject') return;
+    // 👎 asks a question rather than answering one. The panel is built here
+    // and nowhere else, so a card nobody rejected has no correction markup in
+    // it at all — not hidden, absent.
+    const row = card.querySelector('.aim-calib');
+    if (!row || row.dataset.aimCalib === 'done') return;
+    if (card.querySelector('.aim-correct')) return;
+    row.dataset.aimCalib = 'asking';
+    btn.classList.add('is-active');
+    // Directly under the two icons, not at the foot of the card: the answer
+    // belongs beside the question, and appending to the body would put it
+    // below the caption and the Keep button somebody is reaching for.
+    (row.parentElement || row).insertAdjacentHTML('afterend', correctionHtml());
+  });
 
   // Everything that is still on the page when it goes away is dropped. A
   // pagehide handler rather than a button: leaving IS the decision, and

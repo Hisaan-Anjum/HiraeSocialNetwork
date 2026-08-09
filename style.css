@@ -2298,6 +2298,46 @@ html { scroll-behavior: smooth; }
    as "Making video…" so the line does not jump on its last update — only the
    words and the colour change. */
 .aim-making-label.is-complete { color: var(--gold, #f5b942); }
+
+/* ── Personalisation ────────────────────────────────────────────────────
+   Two icons on a handful of cards. It sits on the timestamp line rather than
+   in a row of its own, because a row of its own is a section, and a section
+   is the thing this must never become — the page belongs to the memories.
+
+   Everything here is sized and coloured to sit BELOW the caption and the Keep
+   button in the reading order somebody actually uses. If the eye lands on it
+   first, it is wrong however small it is. */
+.aim-calib { display: inline-flex; gap: 2px; margin-left: 8px; vertical-align: -2px; }
+.aim-calib-btn {
+  border: 0; background: none; cursor: pointer;
+  font-size: 12px; line-height: 1; padding: 3px 4px; border-radius: 6px;
+  /* Nearly invisible until looked at. Present for anyone who wants it,
+     never competing with the photograph above it. */
+  opacity: .38; filter: grayscale(1);
+  transition: opacity .18s ease, filter .18s ease, background-color .18s ease;
+}
+.aim-calib-btn:hover, .aim-calib-btn:focus-visible { opacity: 1; filter: none; background: rgba(255,255,255,.07); }
+.aim-calib-btn.is-active { opacity: 1; filter: none; }
+.aim-calib-done { font-size: 11px; color: var(--ink-faint); letter-spacing: .01em; }
+
+.aim-correct { margin: 8px 0 2px; }
+.aim-correct-q { font-size: 11.5px; color: var(--ink-faint); margin-bottom: 6px; }
+.aim-correct-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.aim-correct-chip { font-size: 11px; padding: 3px 8px; }
+/* Set apart, because it is not a correction. Detection never hears about it. */
+.aim-correct-taste {
+  display: block; margin-top: 8px; width: 100%;
+  border: 1px dashed rgba(255,255,255,.16); border-radius: 8px;
+  background: none; color: var(--ink-faint); cursor: pointer;
+  font-size: 11.5px; padding: 6px 8px; text-align: left;
+  transition: border-color .18s ease, color .18s ease;
+}
+.aim-correct-taste:hover, .aim-correct-taste:focus-visible {
+  border-color: rgba(255,255,255,.32); color: var(--ink, #fff);
+}
+@media (prefers-reduced-motion: reduce) {
+  .aim-calib-btn, .aim-correct-taste { transition: none; }
+}
 .aim-making-label-lg.is-complete { color: var(--gold, #f5b942); }
 .aim-progress {
   position: relative; height: 4px;
