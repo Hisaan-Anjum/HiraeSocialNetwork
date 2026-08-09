@@ -2266,6 +2266,74 @@ html { scroll-behavior: smooth; }
   padding: 3px 7px; border-radius: 6px;
 }
 
+/* ── A clip that is still being put together ──────────────────────────
+   Recorded raw during the evening and given its theme afterwards, in the
+   background. The poster is real and final, so the card is fully usable —
+   only the play affordance waits. Deliberately quiet: this is a few seconds
+   of a background job, not an error and not a progress bar to watch. */
+.aim-duration-waiting { background: rgba(0,0,0,.62); font-weight: 650; letter-spacing: .01em; }
+.aim-card[data-aim-state="finishing"] .aim-thumb img { opacity: .82; }
+.aim-card[data-aim-state="finishing"] .aim-thumb { cursor: progress; }
+.aim-finishing-note { color: var(--ink-faint); }
+
+/* A determinate bar, because the figure behind it is exact — the compositor
+   plays the footage back in real time, so elapsed over duration is not an
+   estimate. It sits along the bottom edge of the poster: visible at a glance
+   across a grid, without covering the memory it is describing. */
+/* The bar and its caption travel together along the bottom of the poster: the
+   percentage says how FAR, the caption says WHAT — and a card showing a still
+   photograph that refuses to play needs to say what it is doing. */
+.aim-making {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 0 0 6px;
+  background: linear-gradient(to top, rgba(8,6,14,.78), rgba(8,6,14,0));
+}
+.aim-making-label {
+  font-size: 10.5px; font-weight: 650; letter-spacing: .02em;
+  color: rgba(255,255,255,.92); padding: 0 9px; min-height: 13px;
+}
+.aim-making-label-lg { font-size: 12px; padding: 0; color: var(--ink-faint); min-height: 0; }
+.aim-progress {
+  position: relative; height: 4px;
+  background: rgba(255,255,255,.16);
+}
+.aim-progress-fill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--gold, #f5b942), #a78bfa);
+  transition: width .45s cubic-bezier(.3,.7,.3,1);
+}
+@media (prefers-reduced-motion: reduce) { .aim-progress-fill { transition: none; } }
+
+/* ── The waiting view ───────────────────────────────────────────────────
+   Pressing play on a clip that is not composited yet must not answer with a
+   still photograph: that is the one thing the person did not ask for, and it
+   is indistinguishable from the clip having silently become a photo. */
+.aim-wait {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(8,6,14,.78); backdrop-filter: blur(6px);
+  padding: 24px;
+}
+.aim-wait-card {
+  position: relative; width: min(420px, 100%);
+  background: var(--panel, #17131f); color: inherit;
+  border: 1px solid rgba(255,255,255,.1); border-radius: 16px;
+  overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.5);
+}
+.aim-wait-poster { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; opacity: .38; }
+.aim-wait-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+.aim-wait-title { font-size: 15px; font-weight: 700; }
+.aim-wait-sub { font-size: 12.5px; color: var(--ink-faint); line-height: 1.5; }
+.aim-progress-lg { height: 6px; border-radius: 3px; overflow: hidden; }
+.aim-wait-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(0,0,0,.5); color: #fff;
+  border: 1px solid rgba(255,255,255,.18); cursor: pointer; font-size: 13px;
+}
+.aim-wait-close:hover { background: rgba(0,0,0,.7); }
+
 .aim-body { padding: 12px 13px 13px; display: flex; flex-direction: column; gap: 8px; }
 .aim-title { font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .aim-badge {

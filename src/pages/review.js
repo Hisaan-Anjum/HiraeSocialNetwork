@@ -80,7 +80,18 @@ async function loadSession() {
   try {
     detail = await getSessionDetail(sessionId);
   } catch (err) {
-    contentEl.innerHTML = renderErrorState(escapeHtml(err.message));
+    // ── The AI moments are not the server's to lose ──────────────────
+    // They have never been uploaded: they live inside the extension until
+    // somebody keeps one. So they must render whether or not this session can
+    // be fetched — and for an evening RESCUED from a crash it often cannot be,
+    // because the session never ended cleanly enough to exist server-side.
+    //
+    // Returning here is why the recovery prompt appeared to do nothing: it
+    // opened the review, the fetch failed, and the one thing the prompt was
+    // about was never mounted.
+    contentEl.innerHTML = renderErrorState(escapeHtml(err.message))
+      + '<div id="aiMomentsMount"></div>';
+    mountAiMoments(document.getElementById('aiMomentsMount'), { sessionId });
     return;
   }
 
