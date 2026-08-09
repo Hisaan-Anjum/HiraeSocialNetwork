@@ -2622,3 +2622,20 @@ body.cd-open { overflow: hidden; }
   .inline-edit-privacy { flex-direction: column; align-items: stretch; gap: 6px; }
   .inline-privacy-select { min-height: 44px; font-size: 16px; width: 100%; }
 }
+
+/* ── Share a night ──────────────────────────────────────────────────────
+   In the card head beside the rating, where the eye already goes for what
+   this session IS rather than what is in it. Quiet until hovered: sharing is
+   a thing somebody chooses to do, not a call to action on every card. */
+.session-share {
+  align-self: center; flex: none;
+  border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05);
+  color: var(--ink-faint); cursor: pointer;
+  font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+  white-space: nowrap; position: relative; z-index: 2;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+.session-share:hover, .session-share:focus-visible {
+  background: rgba(255,255,255,.12); color: var(--ink, #fff); border-color: rgba(255,255,255,.28);
+}
+@media (prefers-reduced-motion: reduce) { .session-share { transition: none; } }

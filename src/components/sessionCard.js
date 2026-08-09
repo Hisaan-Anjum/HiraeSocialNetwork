@@ -18,6 +18,7 @@ import { renderStars } from './starRating.js';
 import { renderReactionRow } from './reactions.js';
 import { renderCarousel } from './carousel.js';
 import { renderMediaTile } from './mediaTile.js';
+import { openShareSheet } from './shareSheet.js';
 import { renderUserLink, renderUserLinks } from './userLink.js';
 import { renderAvatarLink } from './avatar.js';
 import { renderPostMenu, renderReviewBody } from './postActions.js';
@@ -45,6 +46,57 @@ function renderReviewSummary(review) {
         : `<a class="review-open-link" href="post.html?type=review&id=${review.id}">Open review ↗</a>`}
     </div>
   `;
+}
+
+// ── Sharing a whole night ─────────────────────────────────────────────
+// The same sheet a moment uses, given a session-shaped item. What travels is
+// the session's OWN page, which the server already gates by who may see it —
+// so this adds a way to send a link and no new way to reach anything. A
+// recipient who is not allowed sees what they would have seen anyway.
+//
+// Privacy is DERIVED rather than assumed. A session has no privacy field of
+// its own, and claiming "public" would put the sheet's confident link wording
+// on a link most people cannot open. Public only when every moment in it is,
+// which is the only reading under which the link is unconditionally useful.
+export function sessionPublicUrl(clientSessionId) {
+  const origin = location.protocol.startsWith('http')
+    ? location.origin
+    : ((window.getAuth?.()?.serverUrl || window.getSavedServerUrl?.() || '').replace(/\/+$/, ''));
+  return `${origin}/session.html?session=${encodeURIComponent(clientSessionId)}`;
+}
+
+export function sessionShareItem(session) {
+  const moments = session.moments || [];
+  const allPublic = moments.length > 0 && moments.every((m) => m.privacy === 'public');
+  // The media a download or an Instagram export actually gets. A night is not
+  // a file, so its first moment stands for it — the same frame the card leads
+  // with, so what is exported is what was on screen when they pressed Share.
+  const lead = moments.find((m) => m.privacy === 'public') || moments[0] || null;
+  return {
+    id: session.clientSessionId,
+    mediaType: lead && lead.mediaType === 'video' && lead.videoUrl ? 'video' : 'photo',
+    url: lead ? lead.url : '',
+    videoUrl: lead ? lead.videoUrl || null : null,
+    description: sessionDisplayTitle(session),
+    privacy: allPublic ? 'public' : 'private',
+    shareUrl: sessionPublicUrl(session.clientSessionId),
+  };
+}
+
+// One delegated handler per container, matching attachMediaTileHandlers. The
+// card markup carries the session id, so nothing has to be captured or kept
+// in step with a re-render.
+export function attachSessionShareHandlers(container, sessionsById) {
+  if (!container || container.__wtSessionShare) return;
+  container.__wtSessionShare = true;
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-session-share]');
+    if (!btn || !container.contains(btn)) return;
+    e.preventDefault();
+    e.stopPropagation();   // the whole card head is a link to the session
+    const session = sessionsById(btn.dataset.sessionShare);
+    if (session) openShareSheet(sessionShareItem(session));
+  });
 }
 
 export function renderSessionCard(session) {
@@ -100,6 +152,15 @@ export function renderSessionCard(session) {
           ${watchedSub ? `<div class="feed-card-watched">📺 ${escapeHtml(watchedSub)}</div>` : ''}
         </div>
         ${session.averageRating ? `<div class="session-avg-rating">${renderStars(session.averageRating)}<span class="session-avg-num">${session.averageRating}</span></div>` : ''}
+        <!-- ── Share a NIGHT, not just a frame of it ──────────────────
+             A moment has been shareable since the share sheet existed, and a
+             session — the thing people actually talk about — had no way out of
+             the product at all. Same sheet, same destinations, same wording:
+             what is shared is the session's own page, which the server already
+             gates by who may see it, so this adds a way to send a link and no
+             new way to reach anything. -->
+        <button class="session-share" data-session-share="${escapeHtml(session.clientSessionId)}"
+          type="button" title="Share this session" aria-label="Share this session">❤ Share</button>
       </div>
 
       ${session.moments.length ? `

@@ -12,7 +12,7 @@
 
 import { escapeHtml, initBackLinks, sessionDisplayTitle } from '../lib/util.js';
 import { renderEmptyState, renderErrorState, renderFeedSkeletons } from '../components/skeleton.js';
-import { renderSessionCard } from '../components/sessionCard.js';
+import { renderSessionCard, attachSessionShareHandlers } from '../components/sessionCard.js';
 import { attachReactionHandlers } from '../components/reactions.js';
 import { attachMomentCardHandlers } from '../components/momentCard.js';
 import { attachMediaTileHandlers } from '../components/mediaTile.js';
@@ -25,6 +25,8 @@ const { requireAuth, logout, getSessionDetail } = window;
 const auth = requireAuth();
 const contentEl = document.getElementById('content');
 const sid = new URLSearchParams(window.location.search).get('session') || '';
+// The session this page is showing, kept so the share handler can find it.
+let shownSession = null;
 
 let detail = null;
 
@@ -37,6 +39,9 @@ if (auth) {
   attachCarouselHandlers(contentEl);
   attachPostActionHandlers(contentEl);
   attachMediaTileHandlers(contentEl, { viewerOptsFor: momentViewerOpts });
+  // One session on this page, so the lookup is trivial — but it goes through
+  // the same door as the feed's, rather than a second share path here.
+  attachSessionShareHandlers(contentEl, (id) => (shownSession && shownSession.clientSessionId === id ? shownSession : null));
   load();
 }
 
@@ -81,6 +86,7 @@ async function load() {
   };
   document.title = `${sessionDisplayTitle(session)} — Herae Memories`;
   registerSessionForPanel(session);
+  shownSession = session;
   contentEl.innerHTML = renderSessionCard(session);
 }
 

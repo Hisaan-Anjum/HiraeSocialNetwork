@@ -7,7 +7,7 @@
 'use strict';
 
 import { renderEmptyState, renderErrorState, renderFeedSkeletons } from '../components/skeleton.js';
-import { renderSessionCard } from '../components/sessionCard.js';
+import { renderSessionCard, attachSessionShareHandlers } from '../components/sessionCard.js';
 import { renderRecommendationCard, renderFeaturedHero } from '../components/recommendationCard.js';
 import { attachReactionHandlers } from '../components/reactions.js';
 import { attachMomentCardHandlers } from '../components/momentCard.js';
@@ -59,6 +59,9 @@ if (auth) {
   attachMediaTileHandlers(contentEl, { viewerOptsFor: momentViewerOpts });
   attachCarouselHandlers(contentEl);
   attachPostActionHandlers(contentEl);
+  // Sharing a night, from the same list the cards were rendered from.
+  attachSessionShareHandlers(contentEl,
+    (id) => allSessionsSeen.find((x) => x.clientSessionId === id) || null);
   initSearch({ getSessions: () => allSessionsSeen });
 
   document.querySelectorAll('.feed-scope-tab').forEach((tab) => {

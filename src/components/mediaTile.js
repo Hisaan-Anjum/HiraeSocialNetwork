@@ -45,8 +45,34 @@ export function renderMediaTile(moment, opts = {}) {
 // `opts.viewerOptsFor(tile)` lets a page add viewer options per tile — the
 // session page uses it to hand the viewer its comments/review side panel.
 export function attachMediaTileHandlers(container, opts = {}) {
+  // ── Which moments the arrow keys move between ────────────────────────
+  // A night is looked at as a night. Opening one moment and having to close
+  // it to reach the next turns "remember this evening" into a filing task —
+  // and the viewer has supported ArrowLeft/ArrowRight all along, it was
+  // simply never handed a list.
+  //
+  // The group is the carousel a moment sits in when there is one, which on
+  // the session and feed pages IS the session's own row. Otherwise every tile
+  // in this container, which is what a page showing a single set means.
+  // Deliberately not "all tiles on the page": stepping out of one evening and
+  // into another mid-arrow is exactly the mixing the review scoping exists to
+  // prevent, in a different surface.
+  const groupOf = (tile) => tile.closest('.carousel') || container;
+  const siblings = (tile) => [...groupOf(tile).querySelectorAll('.media-tile')];
+
   const open = (tile) => {
     const isVideo = tile.classList.contains('media-tile-video');
+    const order = siblings(tile);
+    const index = order.indexOf(tile);
+    const go = (delta) => {
+      // Re-read at the moment of the keypress. A tile can be deleted from
+      // under the viewer, and a list captured on open would then navigate to
+      // a node that is no longer on the page.
+      const now = siblings(tile);
+      const at = now.indexOf(tile);
+      const next = now[((at < 0 ? 0 : at) + delta + now.length) % now.length];
+      if (next && next !== tile) open(next);
+    };
     // Rebuilt from data-* rather than a captured object: these URLs are
     // already absolute (momentImageUrl ran at render), and mediaViewer's
     // mediaUrl() join is a no-op on an absolute URL.
@@ -56,7 +82,13 @@ export function attachMediaTileHandlers(container, opts = {}) {
       url: tile.dataset.poster,
       videoUrl: isVideo ? tile.dataset.videoSrc : null,
       durationMs: Number(tile.dataset.durationMs) || null,
-    }, { caption: tile.dataset.caption || '', ...(opts.viewerOptsFor?.(tile) || {}) });
+    }, {
+      caption: tile.dataset.caption || '',
+      nav: order.length > 1
+        ? { index: index < 0 ? 0 : index, total: order.length, onPrev: () => go(-1), onNext: () => go(1) }
+        : null,
+      ...(opts.viewerOptsFor?.(tile) || {}),
+    });
   };
 
   container.addEventListener('click', (e) => {
