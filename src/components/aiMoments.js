@@ -272,7 +272,49 @@ function cardHtml(moment) {
     </div>`;
 }
 
-function panelHtml(moments) {
+// ── The nights this review is not about ───────────────────────────────
+// Moments from several evenings can be waiting at once — one that ended in a
+// crash, one finished while an earlier was never looked at. They must never be
+// shown TOGETHER: a review is a record of one night, and merging them puts
+// last night's reactions in tonight's memories.
+//
+// But the others must not simply be invisible either. Until now the only way
+// back to them was a notification, and a notification nobody clicks is how an
+// evening quietly gets discarded unseen.
+//
+// So: a quiet line at the FOOT of the panel, after the decision about tonight,
+// never above it. It is a door, not a task list — no counts shouted, no badge,
+// no "you have unreviewed items". Just the date, how many, and a way through.
+function formatNight(at) {
+  try {
+    const d = new Date(at);
+    const today = new Date();
+    const days = Math.round((today.setHours(0, 0, 0, 0) - new Date(at).setHours(0, 0, 0, 0)) / 86400000);
+    if (days === 0) return 'Earlier today';
+    if (days === 1) return 'Last night';
+    if (days < 7) return d.toLocaleDateString([], { weekday: 'long' });
+    return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  } catch (e) { return 'Another night'; }
+}
+
+function otherNightsHtml(others) {
+  if (!others || !others.length) return '';
+  return `
+    <div class="aim-others">
+      <div class="aim-others-title">${others.length === 1
+    ? 'Another night is still waiting'
+    : `${others.length} other nights are still waiting`}</div>
+      ${others.map((o) => `
+        <a class="aim-other" href="review.html?session=${encodeURIComponent(o.clientSessionId || '')}"
+           data-aim-other="1">
+          <span class="aim-other-when">${escapeHtml(formatNight(o.at))}</span>
+          <span class="aim-other-count">${o.count === 1 ? '1 moment' : `${o.count} moments`}</span>
+          <span class="aim-other-go" aria-hidden="true">→</span>
+        </a>`).join('')}
+    </div>`;
+}
+
+function panelHtml(moments, others) {
   const finishing = moments.filter((m) => stateOf(m) === 'finishing').length;
   return `
     <div class="aim-panel" id="aiMomentsPanel">
@@ -290,6 +332,7 @@ function panelHtml(moments) {
         </div>
       </div>
       <div class="aim-grid">${moments.map(cardHtml).join('')}</div>
+      ${otherNightsHtml(others)}
     </div>`;
 }
 
@@ -344,7 +387,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
   const askIds = new Set((listed && listed.askCalibration) || []);
   for (const m of moments) m.askCalibration = askIds.has(m.id);
 
-  mountEl.innerHTML = panelHtml(moments);
+  mountEl.innerHTML = panelHtml(moments, (listed && listed.otherEvenings) || []);
 
   const act = (payload) => askExtension(
     { __heraeAiMomentAction: true, requestId: payload.requestId, ...payload },
@@ -408,11 +451,27 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     (row.parentElement || row).insertAdjacentHTML('afterend', correctionHtml());
   });
 
+  // ── Stepping to another night is not leaving ──────────────────────
+  // Leaving IS the decision: anything still here when the page goes away is
+  // discarded, which is the promise made at capture time and the reason the
+  // decision can be a calm one.
+  //
+  // Following a link to another waiting night is not that. It is somebody
+  // going to look at MORE of their moments — and destroying tonight's on the
+  // way would turn the one affordance offering an evening back into the thing
+  // that deletes a different one. Tonight stays where it is, and is offered
+  // again the next time it is asked for.
+  let steppingAway = false;
+  mountEl.addEventListener('click', (e) => {
+    if (e.target.closest('[data-aim-other]')) steppingAway = true;
+  }, true);
+
   // Everything that is still on the page when it goes away is dropped. A
   // pagehide handler rather than a button: leaving IS the decision, and
   // asking somebody to confirm that they meant to not keep something is the
   // opposite of the calm this feature is supposed to feel like.
   const discardRest = () => {
+    if (steppingAway) return;
     if (!mountEl.querySelector('.aim-card')) return;
     window.postMessage({
       __heraeAiMomentAction: true, action: 'discardRest',

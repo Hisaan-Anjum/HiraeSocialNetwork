@@ -2307,18 +2307,50 @@ html { scroll-behavior: smooth; }
    Everything here is sized and coloured to sit BELOW the caption and the Keep
    button in the reading order somebody actually uses. If the eye lands on it
    first, it is wrong however small it is. */
-.aim-calib { display: inline-flex; gap: 2px; margin-left: 8px; vertical-align: -2px; }
-.aim-calib-btn {
-  border: 0; background: none; cursor: pointer;
-  font-size: 12px; line-height: 1; padding: 3px 4px; border-radius: 6px;
-  /* Nearly invisible until looked at. Present for anyone who wants it,
-     never competing with the photograph above it. */
-  opacity: .38; filter: grayscale(1);
-  transition: opacity .18s ease, filter .18s ease, background-color .18s ease;
+/* ── Visible, then quiet — not invisible ────────────────────────────────
+   These were grayscaled at 38% opacity, which on a dark card is not "subtle",
+   it is gone: nobody could find the control, which makes the whole feature
+   unreachable however elegant it is. Restraint has to come from SIZE and
+   position, not from hiding it. Full colour, a real target, and its own
+   surface so it reads as something you can press — still one small row on a
+   handful of cards, still below the photograph in the eye's order. */
+.aim-calib {
+  display: inline-flex; gap: 4px; margin-left: 10px;
+  vertical-align: -4px; align-items: center;
 }
-.aim-calib-btn:hover, .aim-calib-btn:focus-visible { opacity: 1; filter: none; background: rgba(255,255,255,.07); }
-.aim-calib-btn.is-active { opacity: 1; filter: none; }
-.aim-calib-done { font-size: 11px; color: var(--ink-faint); letter-spacing: .01em; }
+.aim-calib-btn {
+  border: 1px solid rgba(255,255,255,.14); cursor: pointer;
+  background: rgba(255,255,255,.06);
+  font-size: 14px; line-height: 1; padding: 4px 8px; border-radius: 999px;
+  transition: transform .12s ease, background-color .18s ease, border-color .18s ease;
+}
+.aim-calib-btn:hover, .aim-calib-btn:focus-visible {
+  background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.30);
+  transform: translateY(-1px);
+}
+.aim-calib-btn.is-active { background: rgba(167,139,250,.22); border-color: rgba(167,139,250,.55); }
+.aim-calib-done { font-size: 11.5px; color: var(--gold, #f5b942); letter-spacing: .01em; font-weight: 600; }
+
+/* ── Other nights ───────────────────────────────────────────────────────
+   At the FOOT of the panel, after the decision about tonight, never above it.
+   A door, not a task list: no badge, no count shouted, no "unreviewed items".
+   The date, how many, and a way through. */
+.aim-others { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.09); }
+.aim-others-title { font-size: 11.5px; color: var(--ink-faint); margin-bottom: 8px; letter-spacing: .01em; }
+.aim-other {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; margin-bottom: 6px; border-radius: 10px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  color: var(--ink, #fff); text-decoration: none; font-size: 12.5px;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.aim-other:hover, .aim-other:focus-visible {
+  background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.20);
+}
+.aim-other-when { font-weight: 600; }
+.aim-other-count { color: var(--ink-faint); flex: 1; }
+.aim-other-go { color: var(--ink-faint); }
+@media (prefers-reduced-motion: reduce) { .aim-calib-btn, .aim-other { transition: none; } }
 
 .aim-correct { margin: 8px 0 2px; }
 .aim-correct-q { font-size: 11.5px; color: var(--ink-faint); margin-bottom: 6px; }
