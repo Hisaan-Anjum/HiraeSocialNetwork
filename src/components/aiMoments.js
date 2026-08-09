@@ -87,9 +87,20 @@ const pctOf = (moment) => Math.round(Math.max(0, Math.min(1, moment.progress || 
 
 // The words under the bar. A percentage says how far; it does not say what is
 // happening — and "making video" is the honest answer to a card that shows a
-// photograph and refuses to play. It disappears at 100% because at that point
-// the clip IS the answer.
-const makingLabel = (pct) => (pct >= 100 ? '' : 'Making video…');
+// photograph and refuses to play.
+//
+// At 100% it says so rather than going blank. The bar reaching the end and the
+// label vanishing in the same frame reads as the thing being taken away: the
+// card still shows a poster and still will not play for the moment it takes
+// the composite to arrive and the card to be repainted, so an empty line there
+// is the one place somebody would conclude it had failed. Naming the finish is
+// also the only acknowledgement they get that the wait ended in success.
+const makingLabel = (pct) => (pct >= 100 ? 'Video complete' : 'Making video…');
+
+// The figure beside it. "Almost done" is kinder than a number while there is
+// still something to wait for, but at 100 it is a hedge about something that
+// has already happened — so the last state is the plain figure.
+const waitFigure = (pct) => (pct >= 100 ? '100%' : (pct >= 90 ? 'Almost done' : `${pct}%`));
 
 function progressHtml(moment) {
   const pct = pctOf(moment);
@@ -99,9 +110,9 @@ function progressHtml(moment) {
            aria-valuenow="${pct}" aria-label="Making video">
         <div class="aim-progress-fill" style="width:${pct}%"></div>
       </div>
-      <div class="aim-making-label">${escapeHtml(makingLabel(pct))}</div>
+      <div class="aim-making-label${pct >= 100 ? ' is-complete' : ''}">${escapeHtml(makingLabel(pct))}</div>
     </div>
-    <span class="aim-duration aim-duration-waiting">${pct >= 90 ? 'Almost done' : `${pct}%`}</span>`;
+    <span class="aim-duration aim-duration-waiting">${escapeHtml(waitFigure(pct))}</span>`;
 }
 
 function badgeHtml(moment) {
@@ -134,7 +145,7 @@ function waitingOverlayHtml(moment) {
                aria-valuemax="100" aria-valuenow="${pct}">
             <div class="aim-progress-fill" style="width:${pct}%"></div>
           </div>
-          <div class="aim-making-label aim-making-label-lg">${escapeHtml(makingLabel(pct))}</div>
+          <div class="aim-making-label aim-making-label-lg${pct >= 100 ? ' is-complete' : ''}">${escapeHtml(makingLabel(pct))}</div>
           <div class="aim-wait-sub">It will start playing on its own. You can close this and come back.</div>
         </div>
         <button type="button" class="aim-wait-close" aria-label="Close">✕</button>
@@ -273,6 +284,17 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
   // composited event below rather than by polling.
   const queuedKeeps = new Set();
   let awaitingOpen = null;
+  // How long the finished bar is held before the card becomes the clip. Long
+  // enough to read two words, short enough that nobody waits on it.
+  const COMPLETE_HOLD_MS = 1200;
+  const completionHolds = new Map();
+  // Cancels a hold in flight. Called before starting one (a repeated
+  // composited event must not leave two timers racing to repaint) and by
+  // teardown, where a timer firing into a removed grid would throw.
+  function finishCompletion(id) {
+    const t = completionHolds.get(id);
+    if (t) { clearTimeout(t); completionHolds.delete(id); }
+  }
 
   async function keepMoment(id) {
     const card = cardFor(id);
@@ -383,20 +405,26 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
       const bar = card.querySelector('.aim-progress-fill');
       const label = card.querySelector('.aim-duration-waiting');
       const making = card.querySelector('.aim-making-label');
-      if (making) making.textContent = makingLabel(pct);
+      if (making) {
+        making.textContent = makingLabel(pct);
+        making.classList.toggle('is-complete', pct >= 100);
+      }
       // Moved in place rather than re-rendered: repainting the badges every
       // 400ms would restart the CSS transition and make the bar stutter.
       if (bar) bar.style.width = `${pct}%`;
-      if (label) label.textContent = pct >= 90 ? 'Almost done' : `${pct}%`;
+      if (label) label.textContent = waitFigure(pct);
       if (!bar) repaintCard(moment);
     }
     if (waitingEl && awaitingOpen === moment.id) {
       const bar = waitingEl.querySelector('.aim-progress-fill');
       if (bar) bar.style.width = `${pct}%`;
       const title = waitingEl.querySelector('.aim-wait-title');
-      if (title && pct >= 90) title.textContent = 'Almost done…';
+      if (title && pct >= 90) title.textContent = pct >= 100 ? 'Video complete' : 'Almost done…';
       const making = waitingEl.querySelector('.aim-making-label');
-      if (making) making.textContent = makingLabel(pct);
+      if (making) {
+        making.textContent = makingLabel(pct);
+        making.classList.toggle('is-complete', pct >= 100);
+      }
     }
   }
 
@@ -414,18 +442,38 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     if (e.data.__heraeAiMomentComposited === true) {
       const moment = moments.find((m) => m.id === e.data.id);
       if (!moment) return;
-      moment.videoReady = true;
       moment.hasVideo = true;
       moment.failed = false;
       moment.progress = 1;
       if (e.data.durationMs) moment.durationMs = e.data.durationMs;
-      repaintCard(moment);
-      if (waitingEl && awaitingOpen === moment.id) { waitingEl.remove(); waitingEl = null; }
       // Somebody is sitting in front of the viewer waiting for exactly this.
       // A card with a deferred keep is NOT resolved here — the extension owns
       // that upload and reports it below; retrying from both sides would
       // upload the same memory twice.
-      if (awaitingOpen === moment.id) { awaitingOpen = null; openGallery(moment.id); }
+      if (awaitingOpen === moment.id) {
+        moment.videoReady = true;
+        repaintCard(moment);
+        if (waitingEl) { waitingEl.remove(); waitingEl = null; }
+        awaitingOpen = null;
+        openGallery(moment.id);
+        return;
+      }
+      // ── Let the bar finish before the card changes underneath it ─────
+      // The compositor reports 100% and hands over the blob in the same tick,
+      // so without this the bar jumps from 99% to a playable card and the
+      // finish is never seen — the wait just stops, which reads as the card
+      // having given up rather than succeeded.
+      //
+      // Costs nothing: the clip is already playable, openGallery asks the
+      // extension for it rather than trusting the card, and a click during
+      // these few frames plays it immediately.
+      finishCompletion(moment.id);
+      paintProgress(moment);
+      completionHolds.set(moment.id, setTimeout(() => {
+        completionHolds.delete(moment.id);
+        moment.videoReady = true;
+        if (cardFor(moment.id)) repaintCard(moment);
+      }, COMPLETE_HOLD_MS));
       return;
     }
 
@@ -454,6 +502,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     // …or decided it was not a moment at all. Without this the card sits at
     // "Making video…" forever for a clip that no longer exists.
     if (e.data.__heraeAiMomentDropped === true) {
+      finishCompletion(e.data.id);
       const at = moments.findIndex((m) => m.id === e.data.id);
       if (at >= 0) moments.splice(at, 1);
       if (waitingEl && awaitingOpen === e.data.id) closeWaiting();
@@ -474,6 +523,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     if (e.data.__heraeAiMomentFailed === true) {
       const moment = moments.find((m) => m.id === e.data.id);
       if (!moment) return;
+      finishCompletion(moment.id);
       moment.failed = true;
       moment.hasVideo = false;
       moment.videoReady = false;

@@ -2294,6 +2294,11 @@ html { scroll-behavior: smooth; }
   color: rgba(255,255,255,.92); padding: 0 9px; min-height: 13px;
 }
 .aim-making-label-lg { font-size: 12px; padding: 0; color: var(--ink-faint); min-height: 0; }
+/* The finish, said rather than implied. Held to the same weight and position
+   as "Making video…" so the line does not jump on its last update — only the
+   words and the colour change. */
+.aim-making-label.is-complete { color: var(--gold, #f5b942); }
+.aim-making-label-lg.is-complete { color: var(--gold, #f5b942); }
 .aim-progress {
   position: relative; height: 4px;
   background: rgba(255,255,255,.16);
