@@ -2330,6 +2330,17 @@ html { scroll-behavior: smooth; }
 }
 .aim-calib-btn.is-active { background: rgba(167,139,250,.22); border-color: rgba(167,139,250,.55); }
 .aim-calib-done { font-size: 11.5px; color: var(--gold, #f5b942); letter-spacing: .01em; font-weight: 600; }
+/* Present, and quieter than the thing it undoes — the answer is the outcome,
+   this is the way back from a slip. Underlined rather than boxed so it reads
+   as a link and never competes with the two buttons it replaced. */
+.aim-calib-undo {
+  border: 0; background: none; cursor: pointer;
+  font-size: 11.5px; color: var(--ink-faint); margin-left: 8px; padding: 2px 2px;
+  text-decoration: underline; text-underline-offset: 2px;
+  transition: color .18s ease;
+}
+.aim-calib-undo:hover, .aim-calib-undo:focus-visible { color: var(--ink, #fff); }
+.aim-calib-undo[disabled] { opacity: .5; cursor: default; }
 
 /* ── Other nights ───────────────────────────────────────────────────────
    At the FOOT of the panel, after the decision about tonight, never above it.
@@ -2350,7 +2361,7 @@ html { scroll-behavior: smooth; }
 .aim-other-when { font-weight: 600; }
 .aim-other-count { color: var(--ink-faint); flex: 1; }
 .aim-other-go { color: var(--ink-faint); }
-@media (prefers-reduced-motion: reduce) { .aim-calib-btn, .aim-other { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .aim-calib-btn, .aim-calib-undo, .aim-other { transition: none; } }
 
 .aim-correct { margin: 8px 0 2px; }
 .aim-correct-q { font-size: 11.5px; color: var(--ink-faint); margin-bottom: 6px; }

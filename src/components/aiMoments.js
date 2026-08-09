@@ -205,14 +205,19 @@ const CORRECTION_CHIPS = Object.freeze([
   ['squint', 'Squint'], ['other', 'Other'],
 ]);
 
+function calibButtonsHtml() {
+  return `
+    <button type="button" class="aim-calib-btn" data-aim-verdict="confirm"
+      title="Herae read this one right" aria-label="Herae read this one right">👍</button>
+    <button type="button" class="aim-calib-btn" data-aim-verdict="reject"
+      title="That is not what this was" aria-label="That is not what this was">👎</button>`;
+}
+
 function calibHtml(moment) {
   if (!moment.askCalibration) return '';
   return `
     <div class="aim-calib" data-aim-calib="idle" role="status" aria-live="polite">
-      <button type="button" class="aim-calib-btn" data-aim-verdict="confirm"
-        title="Herae read this one right" aria-label="Herae read this one right">👍</button>
-      <button type="button" class="aim-calib-btn" data-aim-verdict="reject"
-        title="That is not what this was" aria-label="That is not what this was">👎</button>
+      ${calibButtonsHtml()}
     </div>`;
 }
 
@@ -407,14 +412,19 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     const id = card.dataset.aimId;
     const row = card.querySelector('.aim-calib');
     if (!id || !row || row.dataset.aimCalib === 'done') return;
-    const before = row.innerHTML;
     row.dataset.aimCalib = 'done';
     // Settled in place, optimistically. The row keeps its height so the card
     // does not jump under the cursor, and the correction panel — if one was
     // open — closes with it, because the question has been answered.
     const panel = card.querySelector('.aim-correct');
     if (panel) panel.remove();
-    row.innerHTML = '<span class="aim-calib-done">✓ Noted</span>';
+    // ── …and a way back ──────────────────────────────────────────────
+    // A tap is a judgement about somebody's own face made in a second, and the
+    // commonest reason to want it back is the most banal: the wrong icon.
+    // Without this the only honest options are to leave a wrong answer in the
+    // profile or to retune the whole thing, and both are worse than the slip.
+    row.innerHTML = '<span class="aim-calib-done">✓ Noted</span>'
+      + '<button type="button" class="aim-calib-undo" data-aim-undo="1">Undo</button>';
     // ── …but "Noted" has to be true ──────────────────────────────────
     // The extension refuses a verdict it cannot attach to a real reading, and
     // stores nothing at all when personalisation is switched off. Saying
@@ -424,10 +434,28 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     const ack = await act({ action: 'calibrate', id, verdict, correction, requestId: nextRequestId() });
     if (ack && ack.ok) return;
     row.dataset.aimCalib = 'idle';
-    row.innerHTML = before;
+    row.innerHTML = calibButtonsHtml();
   }
 
   mountEl.addEventListener('click', (e) => {
+    const undoBtn = e.target.closest('[data-aim-undo]');
+    if (undoBtn) {
+      const card = undoBtn.closest('.aim-card');
+      const row = card && card.querySelector('.aim-calib');
+      if (!card || !row) return;
+      undoBtn.disabled = true;
+      act({ action: 'calibrate', verdict: 'undo', id: card.dataset.aimId, requestId: nextRequestId() })
+        .then((ack) => {
+          // Restored to the question, not to a third state. Somebody undoing a
+          // slip means to answer again, and leaving the card blank would take
+          // the choice away as the price of fixing it.
+          if (ack && ack.ok) {
+            row.dataset.aimCalib = 'idle';
+            row.innerHTML = calibButtonsHtml();
+          } else { undoBtn.disabled = false; }
+        });
+      return;
+    }
     const btn = e.target.closest('[data-aim-verdict], [data-aim-correction]');
     if (!btn) return;
     const card = btn.closest('.aim-card');
