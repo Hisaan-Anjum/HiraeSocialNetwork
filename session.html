@@ -10,18 +10,20 @@
 
   <meta name="description" content="Your Herae session.">
 
-  <link rel="canonical" href="https://herae.app/session.html">
-  <meta name="robots" content="noindex, nofollow">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Herae">
-  <meta property="og:url" content="https://herae.app/session.html">
-  <meta property="og:title" content="Session — Herae">
-  <meta property="og:description" content="Your Herae session.">
-  <meta property="og:image" content="https://herae.app/og-image.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Session — Herae">
-  <meta name="twitter:description" content="Your Herae session.">
-  <meta name="twitter:image" content="https://herae.app/og-image.png">
+  <!-- ── Social tags are injected here, per session ───────────────────
+       server/src/og.js replaces this marker with the night's real tags: the
+       first PUBLIC moment of the session, or the generic card and noindex
+       when it has none.
+
+       The static set that used to sit here had to go rather than stay as a
+       fallback. Injection APPENDS when it finds no marker, so those tags and
+       the real ones both ended up in the head — and a crawler takes the first
+       og:title it sees, which was "Session — Herae" every time. A default
+       that wins over the truth is worse than no default.
+
+       Left in place when nothing injects (a static host, a direct file open),
+       where it is an inert HTML comment. -->
+  <!--herae:og-->
 </head>
 <body>
   <div class="topbar">
