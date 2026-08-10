@@ -118,6 +118,9 @@
     var form = document.getElementById('signupForm');
     var btn = document.getElementById('signupBtn');
     var errorText = document.getElementById('errorText');
+    // The address the person has explicitly said is correct despite looking
+    // like a typo. Compared by value, so editing the field re-arms the check.
+    var emailConfirmed = null;
     var usernameStatus = document.getElementById('usernameStatus');
     var emailStatus = document.getElementById('emailStatus');
     var pwFill = document.getElementById('pwFill');
@@ -223,16 +226,55 @@
       fetch(b + '/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, email: email, password: password }),
+        body: JSON.stringify({
+          username: username, email: email, password: password,
+          // Set only after the person has been shown a suggested correction
+          // and chosen to keep what they typed — see the emailTypo branch.
+          confirmEmail: emailConfirmed === email,
+        }),
       })
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
         .then(function (res) {
+          // ── "Did you mean gmail.com?" ────────────────────────────────
+          // gamil.com is a real domain, so nothing about the address looks
+          // wrong until the verification mail lands in a stranger's inbox and
+          // the account can never be recovered. One click fixes it; keeping
+          // what they typed is also one click, because a person who really
+          // does hold that address must not be argued with.
+          if (!res.ok && res.d && res.d.emailTypo) {
+            errorText.innerHTML = '';
+            errorText.appendChild(document.createTextNode('Did you mean '));
+            var fix = document.createElement('button');
+            fix.type = 'button';
+            fix.className = 'link-btn';
+            fix.textContent = res.d.suggestion;
+            fix.addEventListener('click', function () {
+              emailEl.value = res.d.suggestion;
+              errorText.textContent = '';
+              form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
+            });
+            errorText.appendChild(fix);
+            errorText.appendChild(document.createTextNode('? '));
+            var keep = document.createElement('button');
+            keep.type = 'button';
+            keep.className = 'link-btn';
+            keep.textContent = 'No, use ' + email;
+            keep.addEventListener('click', function () {
+              emailConfirmed = email;
+              errorText.textContent = '';
+              form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
+            });
+            errorText.appendChild(keep);
+            btn.disabled = false; btn.textContent = 'Create account';
+            return null;
+          }
           if (!res.ok) throw new Error(res.d.error || 'Could not create your account.');
           // Same session shape login() writes, so every other page picks it up.
           setAuth({ token: res.d.token, username: res.d.username, serverUrl: b });
           return window.redeemPendingInvite();
         })
-        .then(function () {
+        .then(function (carry) {
+          if (carry === null) return;   // a suggestion is on screen; wait for them
           // Honour a stashed return target the same way login.js does — this is
           // what lets a Herae Together invite (claim.html?token=…) auto-activate
           // the reserved seat right after a brand-new account is created.

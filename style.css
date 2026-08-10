@@ -2789,3 +2789,13 @@ body.cd-open { overflow: hidden; }
 @media (max-width: 400px) {
   .carousel-3d .carousel-item { width: 80vw; margin-left: -40vw; }
 }
+
+/* A correction offered inside an error line — "did you mean gmail.com?" It has
+   to look like something you press while sitting in the middle of a sentence,
+   so it is a button for the keyboard and a link to the eye. */
+.link-btn {
+  background: none; border: 0; padding: 0 2px; margin: 0;
+  font: inherit; color: var(--purple, #a78bfa); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.link-btn:hover, .link-btn:focus-visible { color: var(--ink, #fff); }
