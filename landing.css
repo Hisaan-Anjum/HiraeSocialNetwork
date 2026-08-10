@@ -467,13 +467,30 @@ body.reveal-ready .reveal.reveal-visible { opacity: 1; transform: translateY(0);
    reader's own sentence, not ours, and it stops reading like copy the moment
    it looks like copy. Sized between the H1 and the body so the eye lands on
    it second, which is the order the two lines are meant to be read in. */
+/* ── Centred, and actually centred ────────────────────────────────────
+   It used to carry a border-left and 14px of padding-left. `margin: auto`
+   centres the BOX, but the box included that border and padding — so the
+   text inside sat 16px right of where the eye expected it, in a hero where
+   everything above and below is centred on the page axis. Off by a hair,
+   which is the amount that reads as a mistake rather than a style.
+
+   The accent moves above the line as a short centred rule, which is
+   symmetric by construction and cannot drift no matter how the sentence
+   wraps. */
 .hero-hook {
-  margin: 18px auto 14px; max-width: 30ch;
-  font-size: clamp(17px, 2.4vw, 21px); line-height: 1.35;
-  color: var(--text, #f5f5f7); font-style: italic; opacity: .92;
-  padding-left: 14px; border-left: 2px solid var(--gold, #f5b942); text-align: left;
+  position: relative;
+  margin: 22px auto 18px; max-width: 32ch;
+  padding-top: 18px;
+  font-size: clamp(17px, 2.4vw, 21px); line-height: 1.4;
+  color: var(--text, #f5f5f7); font-style: italic; opacity: .95;
+  text-align: center;
 }
-@media (max-width: 560px) { .hero-hook { margin: 14px auto 12px; padding-left: 11px; } }
+.hero-hook::before {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 34px; height: 2px; border-radius: 2px;
+  background: var(--gold, #f5b942); opacity: .85;
+}
+@media (max-width: 560px) { .hero-hook { margin: 18px auto 14px; padding-top: 15px; } }
 
 /* ══════════════════════════════════════════════════════════════════════
    REFINEMENT LAYER
@@ -548,7 +565,7 @@ html, body { overflow-x: hidden; }
   .hero-cta { width: 100%; }
   .hero-trust { gap: 8px 14px; }
   .topnav-links { display: none; }          /* the CTA is the only nav that matters here */
-  .hero-hook { margin-left: 0; margin-right: 0; }
+  .hero-hook { margin-left: auto; margin-right: auto; }
 }
 @media (max-width: 420px) {
   .hero-trust li { font-size: 12px; }
