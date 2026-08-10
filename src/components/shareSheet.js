@@ -21,7 +21,10 @@ let openSheet = null;
 
 // `moment` needs: id, mediaType, url (poster/photo), videoUrl (if video),
 // description (optional), privacy (optional — enables link-based sharing).
-export function openShareSheet(moment) {
+// `linkOnly` is for things that are not a single file — a session is a whole
+// evening, and offering "download" or "post to Instagram" for one promises
+// something the product cannot hand over. The link is the share.
+export function openShareSheet(moment, { linkOnly = false } = {}) {
   if (openSheet) openSheet();
 
   const isVideo = moment.mediaType === 'video' && moment.videoUrl;
@@ -36,19 +39,20 @@ export function openShareSheet(moment) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay share-overlay';
   overlay.innerHTML = `
-    <div class="modal-card share-card" role="dialog" aria-modal="true" aria-label="Share your moment">
+    <div class="modal-card share-card" role="dialog" aria-modal="true" aria-label="Share">
       <div class="share-head">
-        <h2>❤️ Share your Moment</h2>
+        <h2>❤️ Share ${linkOnly ? 'this night' : 'your Moment'}</h2>
         <button class="share-close" data-share="close" aria-label="Close">✕</button>
       </div>
       ${isPublic ? '' : `<div class="share-note">This moment is <strong>${escapeHtml(moment.privacy || 'private')}</strong>. Links only open for people allowed to see it, so we'll share the media file directly where that's clearer.</div>`}
       <div class="share-grid">
+        ${linkOnly ? '' : `
         <button class="share-opt" data-share="instagram"><span class="share-ico">📸</span><span>Instagram</span></button>
-        <button class="share-opt" data-share="facebook"><span class="share-ico">📘</span><span>Facebook</span></button>
+        <button class="share-opt" data-share="facebook"><span class="share-ico">📘</span><span>Facebook</span></button>`}
         <button class="share-opt" data-share="whatsapp"><span class="share-ico">💬</span><span>WhatsApp</span></button>
         <button class="share-opt" data-share="telegram"><span class="share-ico">✈️</span><span>Telegram</span></button>
         <button class="share-opt" data-share="copy"><span class="share-ico">📋</span><span>Copy Link</span></button>
-        <button class="share-opt" data-share="download"><span class="share-ico">⬇</span><span>Download</span></button>
+        ${linkOnly ? '' : '<button class="share-opt" data-share="download"><span class="share-ico">⬇</span><span>Download</span></button>'}
       </div>
       <div class="share-status" id="shareStatus" aria-live="polite"></div>
     </div>`;

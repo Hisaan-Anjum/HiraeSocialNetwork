@@ -152,14 +152,67 @@ else injectSubscriptionNav();
 // arrives with a ?session= the extension needs to land back on after
 // login, not just dumped at the generic feed; see login.js's
 // redirect-back handling.
+// ── The extension signs you in AFTER this page has decided you are out ──
+// The extension writes `moments_auth` into this origin's localStorage from its
+// content script, and Chrome runs content scripts at document_idle — which is
+// after this file has been evaluated and after requireAuth() has run. So a
+// person who was signed into the extension, opening the site cold, was
+// redirected to the login page a fraction of a second before the credentials
+// they already had arrived. Reported as "the extension login doesn't log the
+// website in", and it is a race the page usually wins.
+//
+// Fixed here rather than in the extension because the extension is already
+// submitted for review, and because this is the side that is wrong: nothing
+// obliges a page to conclude "logged out" in its first millisecond.
+//
+// Cost when no extension is installed: one ping and a short wait for a reply
+// that never comes. It is not a fixed delay on every logged-out visit — the
+// extension announces itself, and silence is answered quickly.
+const EXT_PROBE_MS = 350;    // long enough for a content script that IS there
+const EXT_AUTH_WAIT_MS = 2000; // …and then for it to finish writing the token
+
+function whenExtensionMaybeSignsIn(onAuth, onGiveUp) {
+  let settled = false;
+  let sawExtension = false;
+  const finish = (fn) => { if (settled) return; settled = true; window.removeEventListener('message', onMsg); fn(); };
+
+  const onMsg = (e) => {
+    if (e.source !== window || !e.data) return;
+    // Either the extension answering our ping, or its unsolicited hello.
+    if (e.data.__heraeExtension === true) sawExtension = true;
+  };
+  window.addEventListener('message', onMsg);
+  // The content script answers this if it is listening; if the page got here
+  // first, its own announcement arrives shortly and sets the same flag.
+  try { window.postMessage({ __heraePing: true }, location.origin); } catch (e) { /* origin oddity */ }
+
+  const started = Date.now();
+  const tick = () => {
+    if (settled) return;
+    if (getAuth()) return finish(onAuth);
+    const waited = Date.now() - started;
+    // No sign of an extension by the probe deadline: this is an ordinary
+    // logged-out visitor and must not be made to wait for one.
+    if (!sawExtension && waited >= EXT_PROBE_MS) return finish(onGiveUp);
+    if (waited >= EXT_AUTH_WAIT_MS) return finish(onGiveUp);
+    setTimeout(tick, 50);
+  };
+  tick();
+}
+
 function requireAuth() {
   const auth = getAuth();
-  if (!auth) {
-    sessionStorage.setItem('moments_return_to', location.pathname + location.search);
-    window.location.href = 'login.html';
-    return null;
-  }
-  return auth;
+  if (auth) return auth;
+  whenExtensionMaybeSignsIn(
+    // It arrived. Reload rather than continue: every page reads auth once, at
+    // the top, and half of them have already given up by now.
+    () => window.location.reload(),
+    () => {
+      sessionStorage.setItem('moments_return_to', location.pathname + location.search);
+      window.location.href = 'login.html';
+    },
+  );
+  return null;
 }
 
 function logout() {

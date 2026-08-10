@@ -14,7 +14,7 @@
 
 import { escapeHtml, formatDate, sessionDisplayTitle } from '../lib/util.js';
 import { renderEmptyState, renderErrorState } from '../components/skeleton.js';
-import { renderSessionCard } from '../components/sessionCard.js';
+import { renderSessionCard, attachSessionShareHandlers } from '../components/sessionCard.js';
 import { renderRecommendationCard } from '../components/recommendationCard.js';
 import { renderContactRow } from '../components/contactRow.js';
 import { renderMediaTile, attachMediaTileHandlers } from '../components/mediaTile.js';
@@ -141,6 +141,9 @@ if (auth) {
   attachMomentCardHandlers(resultsEl);
   attachCarouselHandlers(resultsEl);
   attachPostActionHandlers(resultsEl);
+  // Same delegated share as the feed. Search renders real session cards, so
+  // the button exists here too and must not be a control that does nothing.
+  attachSessionShareHandlers(resultsEl, (id) => shownSessions.get(id) || null);
   attachMediaTileHandlers(resultsEl, { viewerOptsFor: momentViewerOpts });
 
   init();
@@ -302,9 +305,14 @@ function momentCell(m, session) {
     </div>`;
 }
 
+// Every session card this page has put on screen, by id — the share
+// handler is delegated and looks its subject up at click time.
+const shownSessions = new Map();
+
 function screenSession(session) {
   if (state.seenSessions.has(session.clientSessionId)) return;
   state.seenSessions.add(session.clientSessionId);
+  shownSessions.set(session.clientSessionId, session);
   registerSessionForPanel(session);
 
   if (sessionMatches(session)) addTo('sessions', renderSessionCard(session));

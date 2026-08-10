@@ -13,7 +13,7 @@
 
 import { escapeHtml, formatDate, initBackLinks } from '../lib/util.js';
 import { renderEmptyState, renderErrorState, renderFeedSkeletons } from '../components/skeleton.js';
-import { renderSessionCard } from '../components/sessionCard.js';
+import { renderSessionCard, attachSessionShareHandlers } from '../components/sessionCard.js';
 import { attachReactionHandlers } from '../components/reactions.js';
 import { attachMomentCardHandlers } from '../components/momentCard.js';
 import { attachMediaTileHandlers } from '../components/mediaTile.js';
@@ -115,6 +115,12 @@ if (auth) {
   attachMediaTileHandlers(contentEl, { viewerOptsFor: momentViewerOpts });
   attachCarouselHandlers(contentEl);
   attachPostActionHandlers(contentEl);
+  // Sharing a night from a profile. The handler is delegated and needs the
+  // sessions this page rendered — without it the button was inert here, which
+  // is worse than not offering it: a control that does nothing reads as the
+  // feature being broken rather than absent.
+  attachSessionShareHandlers(contentEl,
+    (id) => state.sessionsSeen.find((x) => x.clientSessionId === id) || null);
   initSearch({ getSessions: () => state.sessionsSeen });
   init();
 }

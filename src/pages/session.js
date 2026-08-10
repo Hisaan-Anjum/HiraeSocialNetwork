@@ -24,7 +24,11 @@ const { requireAuth, logout, getSessionDetail } = window;
 
 const auth = requireAuth();
 const contentEl = document.getElementById('content');
-const sid = new URLSearchParams(window.location.search).get('session') || '';
+// Either form: ?session=<id> as before, or /s/<id>, which is the shape a
+// shared link takes now so the server can give it a real preview.
+const sid = new URLSearchParams(window.location.search).get('session')
+  || (window.location.pathname.match(/^\/s\/([^/]+)\/?$/) || [])[1]
+  || '';
 // The session this page is showing, kept so the share handler can find it.
 let shownSession = null;
 

@@ -94,3 +94,32 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtn.textContent = 'Log In';
   }
 });
+
+// ── If the extension signs in while this page is open, follow it through ──
+// The extension writes the token into this origin's localStorage from its
+// content script. Somebody who reached this page a moment before that
+// happened — or who was already looking at it when they signed into the
+// extension — would otherwise sit in front of a login form they no longer
+// need, with the credentials already on the machine.
+//
+// Polling rather than a `storage` event, deliberately: that event fires in
+// OTHER tabs, never the one whose localStorage was written, and this is the
+// tab it gets written into.
+(() => {
+  const started = Date.now();
+  const LIMIT_MS = 20_000;
+  const tick = () => {
+    let auth = null;
+    try { auth = JSON.parse(localStorage.getItem('moments_auth') || 'null'); } catch (e) { /* corrupt */ }
+    if (auth && auth.token) {
+      const returnTo = sessionStorage.getItem('moments_return_to');
+      sessionStorage.removeItem('moments_return_to');
+      window.location.href = returnTo || 'memories.html';
+      return;
+    }
+    if (Date.now() - started < LIMIT_MS) setTimeout(tick, 250);
+  };
+  // A beat after load, so a person typing their password is never interrupted
+  // by a redirect they did not ask for on the very first frame.
+  setTimeout(tick, 300);
+})();

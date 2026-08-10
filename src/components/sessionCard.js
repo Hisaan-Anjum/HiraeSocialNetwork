@@ -62,7 +62,12 @@ export function sessionPublicUrl(clientSessionId) {
   const origin = location.protocol.startsWith('http')
     ? location.origin
     : ((window.getAuth?.()?.serverUrl || window.getSavedServerUrl?.() || '').replace(/\/+$/, ''));
-  return `${origin}/session.html?session=${encodeURIComponent(clientSessionId)}`;
+  // /s/<id>, not session.html?session=<id>: the server route at that path
+  // injects the night's real Open Graph tags before the HTML is sent, so a
+  // link pasted into WhatsApp previews as the first public moment of the
+  // evening rather than as a generic Herae card. The query form still works
+  // and gets the same treatment — every link already shared stays valid.
+  return `${origin}/s/${encodeURIComponent(clientSessionId)}`;
 }
 
 export function sessionShareItem(session) {
@@ -95,7 +100,10 @@ export function attachSessionShareHandlers(container, sessionsById) {
     e.preventDefault();
     e.stopPropagation();   // the whole card head is a link to the session
     const session = sessionsById(btn.dataset.sessionShare);
-    if (session) openShareSheet(sessionShareItem(session));
+    // Link only. The other destinations export the MEDIA, and a night is not
+    // a file — offering "download" for an evening promises something the
+    // product cannot give.
+    if (session) openShareSheet(sessionShareItem(session), { linkOnly: true });
   });
 }
 
