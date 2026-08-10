@@ -2750,3 +2750,42 @@ body.cd-open { overflow: hidden; }
    at 390px the sub-line was leaving "now" stranded on its own row under the
    title, which reads as a layout fault rather than a timestamp. */
 .feed-card-when { white-space: nowrap; }
+
+@media (max-width: 640px) {
+  /* ── The couple header, actually centred ──────────────────────────
+     .rel-header-inner is a row — identity on the left, actions on the
+     right — and .rel-identity carries flex:1 inside it. On a phone the
+     actions wrap underneath, but the identity keeps behaving like the left
+     half of a row: its contents centre themselves within a column that is
+     not the width of the screen, so "emma & alex" sits about a third of the
+     way across and reads as a mistake rather than a layout.
+
+     Stacked and centred, with the names scaled down — 40px of serif does
+     not fit two names on a 390px screen, and wrapping "emma &" onto one
+     line and "alex" onto the next is not the shape this was drawn as. */
+  .rel-header-inner { flex-direction: column; align-items: center; gap: 18px; }
+  .rel-identity {
+    flex-direction: column; align-items: center; text-align: center;
+    gap: 14px; width: 100%; flex: 0 1 auto;
+  }
+  .rel-idtext { text-align: center; width: 100%; }
+  .rel-names { align-items: center; margin-bottom: 8px; }
+  .rel-name-line { justify-content: center; }
+  .rel-name-them, .rel-name-me { font-size: clamp(26px, 8.5vw, 36px); }
+  .rel-amp { font-size: clamp(20px, 6vw, 28px); }
+  .rel-together, .rel-sub, .rel-meta { justify-content: center; text-align: center; }
+
+  /* ── Moments nearly fill the card ─────────────────────────────────
+     The tile was 268px inside a card whose content box is about 334px, so a
+     third of the width went to a neighbour nobody was looking at. Sized off
+     the viewport instead: wide enough to be the subject, with just enough
+     of the next one showing to say there is a next one. */
+  .carousel-3d .carousel-item { width: 78vw; margin-left: -39vw; }
+  .carousel-3d .carousel-stage { height: 340px; }
+  .carousel-3d .carousel-item .session-carousel-media,
+  .session-carousel-media .media-tile-img,
+  .session-carousel-media .media-tile-poster { height: 308px; }
+}
+@media (max-width: 400px) {
+  .carousel-3d .carousel-item { width: 80vw; margin-left: -40vw; }
+}
