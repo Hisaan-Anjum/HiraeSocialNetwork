@@ -2688,8 +2688,17 @@ body.cd-open { overflow: hidden; }
   .feed-card-people { font-size: 15px; line-height: 1.3; }
   .feed-card-sub { font-size: 12.5px; line-height: 1.45; margin-top: 3px; }
   .feed-card-watched { margin-top: 3px; }
-  .session-avg-rating { order: 3; margin-left: 0; }
-  .session-share { order: 4; margin-left: auto; }
+  /* The rating and Share are a separate act from "who watched what", so
+     they get a rule and a gap rather than sitting flush under the title.
+     Without it the head reads as six things stacked, which is the whole of
+     the "congested" feeling — nothing is too big, there is just nowhere for
+     the eye to stop. */
+  .session-avg-rating, .session-share { order: 3; margin-top: 4px; }
+  .session-share { margin-left: auto; }
+  .feed-card-head::after {
+    content: ''; order: 2; width: 100%; height: 1px; margin-top: 12px;
+    background: rgba(255,255,255,.07);
+  }
 
   /* ── One moment at a time ─────────────────────────────────────────
      The 3D stage showed a neighbour either side, which on a phone is two
@@ -2706,15 +2715,31 @@ body.cd-open { overflow: hidden; }
   .carousel-arrow-next { right: 2px; }
 
   /* ── Room to read ─────────────────────────────────────────────────── */
-  .page-wrap { padding-left: 14px; padding-right: 14px; }
-  .feed-card { padding: 14px; border-radius: 16px; }
+  /* ── Room, not less of it ─────────────────────────────────────────
+     A first pass took .feed-card down to 14px of padding on the theory
+     that a narrow screen wants tighter boxes. It wants the opposite: the
+     content is already at its narrowest, so the only thing left to give it
+     is air. The desktop card has 18px/20px and the phone had less. */
+  .page-wrap { padding-left: 12px; padding-right: 12px; }
+  .feed-card { padding: 18px 16px 20px; border-radius: 18px; margin-bottom: 20px; }
+  .feed-card-head { margin-bottom: 16px; }
+  .session-carousel-wrap { margin-bottom: 18px; }
+  .carousel-dots { margin-top: 16px; }
+  .reaction-row { gap: 10px; padding: 12px 0; }
+  .session-reviews, .session-no-review { margin-top: 4px; }
   .carousel-item-caption, .moment-description { font-size: 13px; line-height: 1.5; }
 
-  /* Anything tappable gets a real target. */
-  .btn, .nav-link, .like-btn, .comment-toggle-btn, .post-menu-btn, .aim-chip {
-    min-height: 40px;
-  }
-  .reaction-row { gap: 8px; }
+  /* ── The dots are indicators, not buttons ─────────────────────────
+     A blanket `.btn, button, [role="button"] { min-height: 44px }` below
+     gives every control a real touch target — and stretched seven-pixel
+     carousel dots into forty-four-pixel bars, which is what they have been
+     rendering as on every phone.
+     The dot keeps its size; the TARGET is an invisible box around it, which
+     is the thing that was actually wanted. */
+  .carousel-dots { align-items: center; }
+  .carousel-dot { min-height: 0; height: 7px; position: relative; }
+  .carousel-dot.is-active { height: 7px; }
+  .carousel-dot::after { content: ''; position: absolute; inset: -16px -7px; }
 }
 
 @media (max-width: 400px) {
