@@ -2639,3 +2639,89 @@ body.cd-open { overflow: hidden; }
   background: rgba(255,255,255,.12); color: var(--ink, #fff); border-color: rgba(255,255,255,.28);
 }
 @media (prefers-reduced-motion: reduce) { .session-share { transition: none; } }
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE REFINEMENT — the logged-in app
+   ──────────────────────────────────────────────────────────────────────
+   Rendered at 390px and looked at, rather than reasoned about. What was
+   actually wrong:
+
+     · ~150px of chrome before any content — brand, a tagline, three
+       buttons and a nav row, each on its own line.
+     · The session card's head is a four-item flex row (avatars, text,
+       rating, Share) sharing 390px, so "hisaan & sara" broke across three
+       lines and "watched X · just now" across two.
+     · The 3D carousel kept its desktop peek, so a neighbour tile and an
+       arrow sat over the one you were looking at.
+
+   None of that is a missing breakpoint — the rules existed. They were
+   written for a wide row and then asked to survive a narrow one.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  /* ── The bar ──────────────────────────────────────────────────────
+     One line for identity and account, one scrollable line for nav. The
+     tagline is the first thing to go: it is a nice sentence and it costs a
+     whole row on the screen where rows are the scarce thing. */
+  .topbar { padding: 10px 14px; gap: 8px 10px; }
+  .brand-sub { display: none; }
+  .brand { font-size: 17px; }
+  .topbar-right { gap: 6px; }
+  .topbar-right .btn, .topbar-right .btn-muted { padding: 7px 12px; font-size: 12.5px; }
+
+  /* Nav scrolls sideways instead of stretching four links edge to edge —
+     they stay finger-sized and a fifth link later costs nothing. */
+  .nav-links {
+    order: 3; width: 100%; justify-content: flex-start;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; gap: 6px; padding-bottom: 2px;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links .nav-link { flex: 0 0 auto; text-align: center; padding: 8px 14px; min-height: 40px; }
+
+  /* ── The session card head ────────────────────────────────────────
+     Avatars and names take the first row; the rating and Share drop to
+     their own, which is what stops a two-word name breaking into three
+     lines. */
+  .feed-card-head { flex-wrap: wrap; align-items: flex-start; gap: 10px; }
+  .feed-card-headtext { flex: 1 1 55%; min-width: 0; }
+  .feed-card-people { font-size: 15px; line-height: 1.3; }
+  .feed-card-sub { font-size: 12.5px; line-height: 1.45; margin-top: 3px; }
+  .feed-card-watched { margin-top: 3px; }
+  .session-avg-rating { order: 3; margin-left: 0; }
+  .session-share { order: 4; margin-left: auto; }
+
+  /* ── One moment at a time ─────────────────────────────────────────
+     The 3D stage showed a neighbour either side, which on a phone is two
+     slivers crowding the thing you are looking at. */
+  .carousel-3d .carousel-item { width: 268px; margin-left: -134px; }
+  .carousel-3d .carousel-stage { height: 320px; }
+  .carousel-3d .carousel-item .session-carousel-media,
+  .session-carousel-media .media-tile-img,
+  .session-carousel-media .media-tile-poster { height: 288px; }
+  /* Always visible rather than on hover — a phone has no hover, so these
+     were only ever reachable by guessing. */
+  .carousel-arrow { opacity: 1; width: 36px; height: 36px; }
+  .carousel-arrow-prev { left: 2px; }
+  .carousel-arrow-next { right: 2px; }
+
+  /* ── Room to read ─────────────────────────────────────────────────── */
+  .page-wrap { padding-left: 14px; padding-right: 14px; }
+  .feed-card { padding: 14px; border-radius: 16px; }
+  .carousel-item-caption, .moment-description { font-size: 13px; line-height: 1.5; }
+
+  /* Anything tappable gets a real target. */
+  .btn, .nav-link, .like-btn, .comment-toggle-btn, .post-menu-btn, .aim-chip {
+    min-height: 40px;
+  }
+  .reaction-row { gap: 8px; }
+}
+
+@media (max-width: 400px) {
+  .carousel-3d .carousel-item { width: 240px; margin-left: -120px; }
+  .topbar-right .btn, .topbar-right .btn-muted { padding: 7px 10px; font-size: 12px; }
+}
+/* "just now" and "1d ago" are single facts and must not break across lines —
+   at 390px the sub-line was leaving "now" stranded on its own row under the
+   title, which reads as a layout fault rather than a timestamp. */
+.feed-card-when { white-space: nowrap; }

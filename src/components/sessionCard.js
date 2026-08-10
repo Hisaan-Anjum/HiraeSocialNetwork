@@ -148,7 +148,7 @@ export function renderSessionCard(session) {
         </div>
         <div class="feed-card-headtext">
           <div class="feed-card-people">${peopleHtml}</div>
-          <div class="feed-card-sub">watched <span class="feed-card-title-inline">${escapeHtml(title)}</span> · ${formatRelative(session.lastActivityAt || session.startedAt)}</div>
+          <div class="feed-card-sub">watched <span class="feed-card-title-inline">${escapeHtml(title)}</span> <span class="feed-card-when">· ${formatRelative(session.lastActivityAt || session.startedAt)}</span></div>
           ${watchedSub ? `<div class="feed-card-watched">📺 ${escapeHtml(watchedSub)}</div>` : ''}
         </div>
         ${session.averageRating ? `<div class="session-avg-rating">${renderStars(session.averageRating)}<span class="session-avg-num">${session.averageRating}</span></div>` : ''}
