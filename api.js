@@ -731,6 +731,15 @@ function getAnalytics() {
   return apiRequest('/api/admin/analytics');
 }
 
+// One page of the admin people table. Paged rather than "everyone": production
+// is past 7,600 accounts, so the dashboard asks for 50 and appends as the
+// admin scrolls. `q` matches username or email server-side.
+function getAnalyticsUsers({ limit = 50, offset = 0, q = '' } = {}) {
+  const qs = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (q) qs.set('q', q);
+  return apiRequest(`/api/admin/analytics/users?${qs}`);
+}
+
 // Reports a client-only event (a share hand-off, a recap render) to the
 // first-party analytics log. Fire-and-forget: analytics must never affect the
 // action it measures, so this swallows every error and returns nothing.
