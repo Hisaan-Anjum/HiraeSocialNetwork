@@ -278,7 +278,38 @@
       const charts = [];
       const out = [];
 
+      // ── Customers only: the business funnel with the team's own accounts
+      //    left out (see growth() in server/src/analytics.js). Everything
+      //    below it still counts every account. ──
+      const g = d.growth;
+      if (g) {
+        const gf = g.funnel, gc = g.couples, gr = g.revenue;
+        out.push(`<div class="an-section-title">Customers · ${fmt(g.excluded_accounts)} internal accounts excluded</div>
+          <div class="an-grid cols-6">
+            ${kpi('Paying subscriptions', fmt(gr.paying_subscriptions), `${pct(gr.free_to_paid_pct)} of signups`, true)}
+            ${kpi('MRR (estimate)', '$' + fmt(gr.mrr_usd_estimate), `${fmt(gr.scheduled_to_cancel)} cancelling · ${fmt(gr.past_due)} past due`, true)}
+            ${kpi('Couples who watched', fmt(gc.watched_together), `${fmt(gc.active_7d)} this week · ${fmt(gc.active_30d)} in 30 days`)}
+            ${kpi('Came back', fmt(gc.came_back_another_day), `${pct(gc.second_session_rate_pct)} watched again on another day`)}
+            ${kpi('Sessions ≥ 10 min', fmt(g.sessions.ten_min_plus), `of ${fmt(g.sessions.ended)} · median ${fmt(g.sessions.median_min)} min`)}
+            ${kpi('At the free cap', fmt(gr.free_users_at_cap_this_month), 'free users over 15 h this month')}
+          </div>
+          <div class="an-grid cols-2" style="margin-top:14px">
+            <div class="card"><h3>Customer funnel</h3>${[
+              ['Signed up', gf.signed_up], ['Connected a partner', gf.connected_partner],
+              ['Watched together', gf.watched_together], ['Paying', gr.paying_subscriptions],
+            ].map(([l, v]) => barRow(l, v, gf.signed_up || 1, 'linear-gradient(90deg, var(--c-purple), var(--c-pink))')).join('')}</div>
+            <div class="card"><h3>Weekly signup cohorts</h3>${(g.cohorts || []).length ? (g.cohorts || []).map((c) =>
+              barRow(`${c.week.slice(5)} · ${c.signups} signed up`, c.watched, Math.max(1, c.signups), 'var(--c-sky)', ` watched · ${c.returned} back`)).join('')
+              : '<div class="kpi-sub">No customer signups in the last 8 weeks.</div>'}</div>
+          </div>
+          <div class="an-grid" style="grid-template-columns:1fr;margin-top:14px">
+            <div class="card"><h3>Where customer signups came from</h3>${(g.sources || []).map((x) =>
+              barRow(x.source, x.n, Math.max(1, ...(g.sources || []).map((y) => y.n)), 'var(--c-amber)')).join('')}</div>
+          </div>`);
+      }
+
       // ── Top-line KPIs ──
+      out.push(`<div class="an-section-title">All accounts</div>`);
       out.push(`<div class="an-grid cols-6">
         ${kpi('Total users', fmt(o.users), `+${fmt(d.signups.last7d)} this week`)}
         ${kpi('Active today', fmt(o.active_today), `${fmt(o.active_7d)} this week`)}

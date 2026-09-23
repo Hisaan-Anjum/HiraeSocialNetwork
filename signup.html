@@ -232,6 +232,7 @@
           // Set only after the person has been shown a suggested correction
           // and chosen to keep what they typed — see the emailTypo branch.
           confirmEmail: emailConfirmed === email,
+          source: window.signupSourceTag ? window.signupSourceTag() : 'site',
         }),
       })
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })

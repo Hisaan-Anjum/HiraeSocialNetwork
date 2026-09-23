@@ -307,6 +307,27 @@ async function login(serverUrl, username, password) {
   return data;
 }
 
+// ── Where a visitor came from ─────────────────────────────────────────
+// The first utm_source, or failing that the first outside site that sent
+// someone here, remembered until they sign up so the account can say which
+// channel produced it. Nothing identifying: a label and a hostname.
+const FIRST_TOUCH_KEY = 'herae_first_touch';
+(function noteFirstTouch() {
+  try {
+    if (localStorage.getItem(FIRST_TOUCH_KEY)) return;
+    const utm = new URLSearchParams(location.search).get('utm_source');
+    let tag = utm ? 'utm:' + utm : '';
+    if (!tag && document.referrer) {
+      const host = new URL(document.referrer).hostname.replace(/^www\./, '');
+      if (host && !/(^|\.)herae\.app$/.test(host) && host !== location.hostname) tag = 'ref:' + host;
+    }
+    if (tag) localStorage.setItem(FIRST_TOUCH_KEY, tag.toLowerCase().replace(/[^a-z0-9_.:-]/g, '').slice(0, 60));
+  } catch (e) { /* storage blocked, or an odd referrer */ }
+})();
+function signupSourceTag() {
+  try { return localStorage.getItem(FIRST_TOUCH_KEY) || 'site'; } catch (e) { return 'site'; }
+}
+
 // ── Invite links ──────────────────────────────────────────────────────
 // A code parked by invite.html, redeemed the moment an account exists. Stored in
 // localStorage rather than sessionStorage on purpose: signing up with Google
@@ -367,7 +388,7 @@ function getMyInvite() {
 // username is a step in the flow, not a failure.
 async function loginWithGoogle(accessToken, serverUrl, username) {
   const base = (serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
-  const body = { access_token: accessToken };
+  const body = { access_token: accessToken, source: signupSourceTag() };
   if (username) body.username = username;
   let resp;
   try {
