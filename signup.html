@@ -206,6 +206,7 @@
       pwFill.style.background = color;
     });
 
+    var AWAIT_EMAIL_CHOICE = {};
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       errorText.textContent = '';
@@ -266,7 +267,7 @@
             });
             errorText.appendChild(keep);
             btn.disabled = false; btn.textContent = 'Create account';
-            return null;
+            return AWAIT_EMAIL_CHOICE;
           }
           if (!res.ok) throw new Error(res.d.error || 'Could not create your account.');
           // Same session shape login() writes, so every other page picks it up.
@@ -274,7 +275,10 @@
           return window.redeemPendingInvite();
         })
         .then(function (carry) {
-          if (carry === null) return;   // a suggestion is on screen; wait for them
+          // Its own sentinel, never null: redeemPendingInvite() resolves null
+          // whenever there is no invite, which is most signups, and treating
+          // that as "wait" left every one of them on "Creating your account…".
+          if (carry === AWAIT_EMAIL_CHOICE) return;   // a suggestion is on screen; wait for them
           // Honour a stashed return target the same way login.js does — this is
           // what lets a Herae Together invite (claim.html?token=…) auto-activate
           // the reserved seat right after a brand-new account is created.
