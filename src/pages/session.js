@@ -20,9 +20,12 @@ import { attachCarouselHandlers } from '../components/carousel.js';
 import { attachPostActionHandlers } from '../components/postActions.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 
-const { requireAuth, logout, getSessionDetail } = window;
+const { requireAuth, getAuth, whenExtensionMaybeSignsIn, logout, getSessionDetail } = window;
 
-const auth = requireAuth();
+// As on post.html: a night with a public moment has a shareable link, and the
+// person it was sent to usually has no account. They get what the link's
+// preview already shows publicly; anything else goes through requireAuth().
+const auth = getAuth();
 const contentEl = document.getElementById('content');
 // Either form: ?session=<id> as before, or /s/<id>, which is the shape a
 // shared link takes now so the server can give it a real preview.
@@ -47,6 +50,42 @@ if (auth) {
   // the same door as the feed's, rather than a second share path here.
   attachSessionShareHandlers(contentEl, (id) => (shownSession && shownSession.clientSessionId === id ? shownSession : null));
   load();
+} else {
+  showPublicOrLogin();
+}
+
+const STORE_URL = 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=shared-night';
+
+async function showPublicOrLogin() {
+  let pub = null;
+  if (sid) {
+    try {
+      const r = await fetch(`/og/session/${encodeURIComponent(sid)}.json`);
+      if (r.ok) pub = await r.json();
+    } catch (e) { /* treat as not public */ }
+  }
+  if (!pub) { requireAuth(); return; }
+  for (const sel of ['.nav-links', '.topbar-right', '[data-back]']) {
+    const node = document.querySelector(sel);
+    if (node) node.style.display = 'none';
+  }
+  document.title = `${pub.title} — Herae`;
+  sessionStorage.setItem('moments_return_to', location.pathname + location.search);
+  contentEl.innerHTML = `
+    <div class="post-detail-card">
+      ${pub.image ? `<img src="${escapeHtml(pub.image)}" alt="${escapeHtml(pub.title)}" style="width:100%;display:block;border-radius:14px">` : ''}
+      <div class="moment-body">
+        <div style="font-weight:800;font-size:18px;margin-bottom:6px">${escapeHtml(pub.title)}</div>
+        <div style="color:var(--ink-dim);font-size:14px">${escapeHtml(pub.description)}</div>
+      </div>
+    </div>
+    <div style="margin-top:18px;border:1px solid rgba(139,92,246,.45);background:rgba(139,92,246,.08);border-radius:16px;padding:18px">
+      <div style="font-weight:800;margin-bottom:6px">Watch together, however far apart</div>
+      <div style="color:var(--ink-dim);font-size:14px;line-height:1.55">Herae keeps two people's video in sync on almost any site, with a video call beside it, and keeps nights like this one. Free on Chrome.</div>
+      <a class="btn btn-primary" href="${STORE_URL}" target="_blank" rel="noopener" style="margin-top:12px;display:inline-flex">Try Herae — free</a>
+      <a class="btn btn-ghost" href="/login.html" style="margin-top:12px;margin-left:8px;display:inline-flex">Log in</a>
+    </div>`;
+  whenExtensionMaybeSignsIn(() => window.location.reload(), () => {});
 }
 
 async function load() {

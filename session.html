@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Served at /s/<id> as well as /session.html: resolve every relative URL from the root. -->
+<base href="/">
 <meta name="herae-memories-site" content="1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Herae Memories — Session</title>
@@ -28,7 +30,7 @@
 <body>
   <div class="topbar">
     <a class="brand-link" href="memories.html" aria-label="Herae Memories — home">
-      <img src="logo.png" alt="Herae" class="brand-logo">
+      <img src="/logo.png" alt="Herae" class="brand-logo">
       <span class="brand-sub">One session</span>
     </a>
     <nav class="nav-links">
@@ -48,8 +50,8 @@
     </div>
   </div>
 
-  <script src="config.js"></script>
-  <script src="api.js"></script>
+  <script src="/config.js"></script>
+  <script src="/api.js"></script>
   <script type="module" src="/src/pages/session.js"></script>
 </body>
 </html>
