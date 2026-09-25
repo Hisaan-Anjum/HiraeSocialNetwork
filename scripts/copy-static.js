@@ -99,6 +99,7 @@ const FILES = [
   'pay.html',
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
+  'teleparty-alternative.html',
   'refund_policy.html',
   'legal.css',
   // Also copied unhashed to dist root so index.html/admin.html's plain
