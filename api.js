@@ -209,7 +209,7 @@ function requireAuth() {
     () => window.location.reload(),
     () => {
       sessionStorage.setItem('moments_return_to', location.pathname + location.search);
-      window.location.href = 'login.html';
+      window.location.href = '/login.html';
     },
   );
   return null;
@@ -217,7 +217,7 @@ function requireAuth() {
 
 function logout() {
   clearAuth();
-  window.location.href = 'index.html';
+  window.location.href = '/index.html';
 }
 
 // ── In-tab navigation breadcrumb ─────────────────────────────────────
@@ -282,7 +282,7 @@ async function apiRequest(path, options = {}) {
   const data = await resp.json().catch(() => ({}));
   if (resp.status === 401) {
     clearAuth();
-    window.location.href = 'index.html';
+    window.location.href = '/index.html';
     throw new Error('Session expired — please log in again.');
   }
   if (!resp.ok) throw new Error(data.error || 'Something went wrong.');

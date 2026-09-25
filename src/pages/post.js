@@ -14,9 +14,14 @@ import { renderAvatarLink } from '../components/avatar.js';
 import { attachPostActionHandlers, renderPostMenu, renderReviewBody } from '../components/postActions.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 
-const { requireAuth, logout, getMomentById, getReviewById } = window;
+const { requireAuth, getAuth, whenExtensionMaybeSignsIn, logout, getMomentById, getReviewById } = window;
 
-const auth = requireAuth();
+// Signed out is not the same as not allowed: a moment its owners made public
+// has a shareable link, and the person it was sent to usually has no account.
+// They used to be sent to login (and from /post/<id>, to a 404). A public
+// moment now shows what its chat preview already shows publicly; anything
+// else still goes through requireAuth() exactly as before.
+const auth = getAuth();
 
 function getParams() {
   const params = new URLSearchParams(window.location.search);
@@ -43,9 +48,56 @@ if (auth) {
   // card — that would leave a blank page — so this page overrides the
   // default removal and navigates back to the feed instead.
   attachPostActionHandlers(content, {
-    onDeleted: () => { window.location.href = 'memories.html'; },
+    onDeleted: () => { window.location.href = '/memories.html'; },
   });
   load();
+} else {
+  showPublicOrLogin();
+}
+
+const STORE_URL = 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=shared-moment';
+
+async function showPublicOrLogin() {
+  const { type, id } = getParams();
+  let pub = null;
+  if (type === 'moment' && id) {
+    try {
+      const r = await fetch(`/og/moment/${encodeURIComponent(id)}.json`);
+      if (r.ok) pub = await r.json();
+    } catch (e) { /* treat as not public */ }
+  }
+  if (!pub) { requireAuth(); return; }
+  renderPublic(pub);
+  // Someone who has the extension is signed in there even when this site
+  // isn't yet; when the mirror lands, give them the full page.
+  whenExtensionMaybeSignsIn(() => window.location.reload(), () => {});
+}
+
+function renderPublic(pub) {
+  for (const sel of ['.nav-links', '.topbar-right', '[data-back]']) {
+    const node = document.querySelector(sel);
+    if (node) node.style.display = 'none';
+  }
+  document.title = `${pub.title} — Herae`;
+  const image = pub.image
+    ? `<div style="position:relative"><img src="${escapeHtml(pub.image)}" alt="${escapeHtml(pub.title)}" style="width:100%;display:block;border-radius:14px">
+       ${pub.isVideo ? '<span style="position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.6);color:#fff;font-size:12.5px;padding:4px 10px;border-radius:999px">▶ Video moment</span>' : ''}</div>`
+    : '';
+  sessionStorage.setItem('moments_return_to', location.pathname + location.search);
+  document.getElementById('content').innerHTML = `
+    <div class="post-detail-card">
+      ${image}
+      <div class="moment-body">
+        <div style="font-weight:800;font-size:18px;margin-bottom:6px">${escapeHtml(pub.title)}</div>
+        <div style="color:var(--ink-dim);font-size:14px">${escapeHtml(pub.description)}</div>
+      </div>
+    </div>
+    <div style="margin-top:18px;border:1px solid rgba(139,92,246,.45);background:rgba(139,92,246,.08);border-radius:16px;padding:18px">
+      <div style="font-weight:800;margin-bottom:6px">Watch together, however far apart</div>
+      <div style="color:var(--ink-dim);font-size:14px;line-height:1.55">Herae keeps two people's video in sync on almost any site, with a video call beside it, and keeps moments like this one. Free on Chrome.</div>
+      <a class="btn btn-primary" href="${STORE_URL}" target="_blank" rel="noopener" style="margin-top:12px;display:inline-flex">Try Herae — free</a>
+      <a class="btn btn-ghost" href="/login.html" style="margin-top:12px;margin-left:8px;display:inline-flex">Log in</a>
+    </div>`;
 }
 
 async function load() {
