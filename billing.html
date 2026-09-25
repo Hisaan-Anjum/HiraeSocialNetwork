@@ -121,7 +121,10 @@
     planName.textContent = s.unlimited ? planLabel(s.plan) : 'Free plan';
     actions.innerHTML = '';
     if (!s.unlimited) {
-      planStatus.textContent = `${s.hoursUsed || 0} of 15 free hours used this month.`;
+      const left = s.welcomeNightsLeft || 0;
+      planStatus.textContent = left > 0
+        ? `${left} free welcome night${left === 1 ? '' : 's'} left — they don't count toward your hours.`
+        : `${s.hoursUsed || 0} of ${s.hoursLimit || 4} free hours used this month.`;
       actions.appendChild(linkButton('See plans', 'upgrade.html', true));
       return;
     }

@@ -95,6 +95,8 @@ const FILES = [
   'billing.html',
   'claim.html',
   'pricing.html',
+  // Paddle's default payment link: signed-out, opens ?_ptxn= checkouts.
+  'pay.html',
   'refund_policy.html',
   'legal.css',
   // Also copied unhashed to dist root so index.html/admin.html's plain

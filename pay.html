@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure checkout — Herae</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .pay-wrap { max-width: 460px; margin: 0 auto; padding: 56px 16px 64px; text-align: center; }
+  .pay-title { font-size: 22px; font-weight: 800; margin: 18px 0 8px; }
+  .pay-sub { color: var(--ink-dim); font-size: 14px; line-height: 1.5; }
+  .pay-sub a { color: #cbb8ff; }
+</style>
+</head>
+<body>
+  <!-- Paddle's "default payment link". Paddle will not open any checkout until
+       its account has one, and it sends people here itself: every link in its
+       emails (update your card, pay an invoice) is this page with ?_ptxn=<id>.
+       So it must work signed out. Paddle.js opens the checkout on its own when
+       it initialises on a URL carrying _ptxn; the page only has to initialise it. -->
+  <div class="pay-wrap">
+    <img src="logo.png" alt="Herae" class="login-logo" style="margin:0 auto">
+    <div class="pay-title" id="title">Opening secure checkout…</div>
+    <div class="pay-sub" id="sub">Payments are handled by Paddle, our reseller.</div>
+  </div>
+
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <script>
+  'use strict';
+  const title = document.getElementById('title');
+  const sub = document.getElementById('sub');
+  function show(t, html) { title.textContent = t; sub.innerHTML = html; }
+
+  (async () => {
+    // No transaction to open: someone arrived here by hand. The plans page is
+    // what they were looking for.
+    if (!new URLSearchParams(location.search).get('_ptxn')) { location.replace('pricing.html'); return; }
+    let cfg;
+    try { cfg = await (await fetch('/api/subscription/config')).json(); } catch (e) { cfg = null; }
+    if (!cfg || !cfg.configured || typeof Paddle === 'undefined') {
+      show('Checkout could not load', 'Please try again in a minute, or write to <a href="contact.html">Herae support</a>.');
+      return;
+    }
+    let done = false;
+    Paddle.Environment.set(cfg.environment);
+    Paddle.Initialize({
+      token: cfg.clientToken,
+      eventCallback(ev) {
+        if (!ev) return;
+        if (ev.name === 'checkout.completed') {
+          done = true;
+          show('Payment received 💛', 'Your plan switches on within a minute. <a href="billing.html?upgraded=1">See your plan</a>');
+        } else if (ev.name === 'checkout.closed' && !done) {
+          show('Checkout closed', 'Nothing was charged. <a href="pricing.html">Back to plans</a>');
+        } else if (ev.name === 'checkout.error') {
+          show('Checkout could not load', 'Nothing was charged. Please try again, or write to <a href="contact.html">Herae support</a>.');
+        }
+      },
+    });
+  })();
+  </script>
+</body>
+</html>
