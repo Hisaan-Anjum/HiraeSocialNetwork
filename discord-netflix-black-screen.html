@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why Netflix Is a Black Screen on Discord (and What Actually Works) — Herae</title>
+<meta name="description" content="Netflix shows a black screen when you share it on Discord, Meet or Zoom because of DRM. Why it happens, why the hardware-acceleration trick isn't a good fix, and how couples watch together without it.">
+<link rel="canonical" href="https://herae.app/discord-netflix-black-screen.html">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="landing.css">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Herae">
+<meta property="og:url" content="https://herae.app/discord-netflix-black-screen.html">
+<meta property="og:title" content="Why Netflix is a black screen on Discord (and what actually works)">
+<meta property="og:description" content="It's DRM, not your settings. Why the hardware-acceleration trick isn't a good fix, and how to watch together without screen sharing.">
+<meta property="og:image" content="https://herae.app/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Written 2026-09-26. Deliberately does not give step-by-step instructions
+     for defeating a service's content protection (the "disable hardware
+     acceleration" trick); it explains it and why we don't recommend it. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Why is Netflix a black screen when I stream it on Discord?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Netflix protects its video with DRM. When Discord (or Meet, Zoom, WhatsApp) tries to capture the window, the browser hands it a black frame instead of the film. Your settings aren't broken; the protection is working as designed."}},
+    {"@type": "Question", "name": "Does turning off hardware acceleration fix the Discord Netflix black screen?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Sometimes, but it works by getting around the service's content protection, which Netflix's terms ask members not to do. It can stop working with any update, it moves video decoding onto your processor, and the other person still gets a compressed copy of your screen."}},
+    {"@type": "Question", "name": "How can we watch Netflix together without screen sharing?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Each person plays the film on their own account and something keeps the two players in sync: a countdown on a call, or a sync extension such as Teleparty or Herae. Nothing is captured, so nothing goes black. The title has to be available in both countries."}}
+  ]
+}
+</script>
+<style>
+  .guide { max-width: 720px; margin: 0 auto; padding: 36px 20px 70px; line-height: 1.65; font-size: 16px; }
+  .guide h1 { font-size: 32px; line-height: 1.2; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 14px; }
+  .guide h2 { font-size: 22px; font-weight: 800; margin: 40px 0 10px; letter-spacing: -.01em; }
+  .guide p, .guide li { color: var(--ink); }
+  .guide p { margin: 0 0 12px; }
+  .guide .lede { color: var(--ink-dim); font-size: 17px; }
+  .guide ul { padding-left: 20px; }
+  .guide li { margin: 6px 0; }
+  .guide .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  .note { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,.03); margin: 14px 0; font-size: 15px; }
+  .cta-box { border: 1px solid rgba(139,92,246,.45); background: rgba(139,92,246,.08); border-radius: 16px; padding: 20px; margin: 34px 0 10px; }
+  .cta-box .btn { margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="hero-topbar">
+    <a class="brand-link" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae" width="30" height="30"><span>Herae</span>
+    </a>
+    <nav class="topnav-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="index.html#why">Why Herae</a>
+      <a href="pricing.html">Pricing</a>
+    </nav>
+    <div class="topbar-ctas">
+      <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=black-screen" class="btn btn-gold" target="_blank" rel="noopener">Add to Chrome — free</a>
+    </div>
+  </div>
+
+  <article class="guide">
+    <div class="eyebrow">Fix · Watching together</div>
+    <h1>Why Netflix is a black screen on Discord (and what actually works)</h1>
+    <p class="lede">You share your screen, press play, and the other person sees black with the sound still playing. It isn't your settings, and it isn't Discord.</p>
+
+    <h2>Why it happens</h2>
+    <p>Netflix, Prime Video, Disney+, Max and most paid services protect their video with DRM. The browser plays the film through a protected path, and when a screen-capture tool asks for the picture, it gets a black frame. Discord, Google Meet, Zoom, WhatsApp and FaceTime all see the same thing. Free sites and YouTube usually share fine, because they don't use that protection.</p>
+
+    <h2>What about turning off hardware acceleration?</h2>
+    <p>Most guides you'll find tell you to switch off hardware acceleration in your browser and in Discord. It sometimes lets the picture through. Before you rely on it:</p>
+    <ul>
+      <li>It works by getting around the service's content protection, which Netflix's terms of use (section 1.8) ask members not to do.</li>
+      <li>It can stop working with any browser or Discord update.</li>
+      <li>Your processor now decodes the video, which can make playback choppier on the sending side.</li>
+      <li>The other person still gets a compressed copy of your screen: 720p on free Discord, and only as good as your upload speed.</li>
+    </ul>
+
+    <h2>What works without any workaround</h2>
+    <p>Don't send the picture at all. Each of you plays the film on your own account, and only the timing is shared. That's also what Netflix's terms expect: the service isn't meant to be shared outside your household, so each of you on your own account is the straightforward way.</p>
+    <div class="note"><strong>The countdown.</strong> Get on a call, load the film, press play on three. Free and it works everywhere. It drifts over a long film, and every pause means another countdown.</div>
+    <div class="note"><strong>A sync extension.</strong> It keeps play, pause and skip in step for you. Nothing is captured, so nothing goes black, and each of you watches at full quality. Teleparty and Herae both work this way (<a href="teleparty-alternative.html">how they compare</a>).</div>
+    <p>One catch for any of these: the title has to be available to both of you. If you're in different countries, check that it shows up in both catalogues.</p>
+
+    <div class="cta-box">
+      <strong>Herae keeps the film in sync, with a video call beside it</strong>
+      <p style="margin:6px 0 0">It works on almost any site, including the smaller ones other watch-party tools can't see. Chrome on a computer. Your first two movie nights are free.</p>
+      <a class="btn btn-gold" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=black-screen" target="_blank" rel="noopener">Add to Chrome — free</a>
+    </div>
+
+    <p>More on the options: <a href="watch-movies-together-long-distance.html">how to watch movies together long distance</a>.</p>
+  </article>
+
+  <footer class="landing-footer">
+    <a class="footer-brand" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae" width="26" height="26"><span>Herae</span>
+    </a>
+    <nav class="footer-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="watch-movies-together-long-distance.html">Long-distance guide</a>
+      <a href="teleparty-alternative.html">Teleparty alternative</a>
+      <a href="discord-netflix-black-screen.html">Discord black screen</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
+  </footer>
+</body>
+</html>
