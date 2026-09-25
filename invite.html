@@ -69,6 +69,10 @@
     cursor: pointer; font-family: inherit; padding: 4px;
   }
   .invite-secondary:hover { color: var(--ink); text-decoration: underline; }
+  /* display:block above beats the [hidden] attribute; this puts it back. */
+  .invite-secondary[hidden] { display: none; }
+  .invite-phone-row { display: flex; gap: 8px; }
+  .invite-phone-row .invite-secondary { flex: 1; }
 
   .invite-note { font-size: 12px; color: var(--ink-faint); text-align: center; margin-top: 16px; line-height: 1.55; }
   .invite-legal { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -202,6 +206,20 @@
           <button class="invite-secondary" id="installedBtn" type="button">Already installed it? Check again</button>
         </div>
 
+        <!-- 3b. On a phone. Invite links mostly travel by WhatsApp, so they are
+             often opened on a phone, where no Chrome extension can be installed.
+             The install step was a dead end there ("Waiting for Herae…" forever).
+             This hands the link to their computer instead. -->
+        <div class="invite-panel" id="panelPhone">
+          <p class="invite-sub" id="phoneLead" style="margin-bottom:18px">Herae runs in Chrome on a computer, so this part happens on a laptop or desktop.</p>
+          <a class="btn btn-gold invite-cta" id="phoneEmail" href="#">Email me this link →</a>
+          <div class="invite-phone-row">
+            <button class="invite-secondary" id="phoneCopy" type="button">Copy link</button>
+            <button class="invite-secondary" id="phoneShare" type="button" hidden>Share…</button>
+          </div>
+          <p class="invite-note" id="phoneNote">Then open it on your computer. It takes about a minute from there.</p>
+        </div>
+
         <!-- 4. Guest join — the fast path for someone with no account. -->
         <div class="invite-panel" id="panelJoin">
           <!-- The button comes FIRST, and the name is optional and secondary.
@@ -247,7 +265,7 @@
     const el = (id) => document.getElementById(id);
     const panels = {
       loading: el('panelLoading'), bad: el('panelBad'), install: el('panelInstall'),
-      join: el('panelJoin'), done: el('panelDone'),
+      phone: el('panelPhone'), join: el('panelJoin'), done: el('panelDone'),
     };
 
     function show(name, loadingLabel) {
@@ -257,7 +275,7 @@
       // then get in. A progress bar with more steps than that would be
       // inventing work to look thorough.
       const steps = el('inviteSteps');
-      steps.hidden = name === 'bad' || name === 'loading';
+      steps.hidden = name === 'bad' || name === 'loading' || name === 'phone';
       el('dot1').className = 'invite-step-dot ' + (name === 'install' ? 'is-current' : 'is-done');
       el('dot2').className = 'invite-step-dot ' + (
         name === 'done' ? 'is-done' : name === 'join' ? 'is-current' : ''
@@ -487,6 +505,7 @@
       // No extension. Everyone needs it — signed in or not — so the install
       // step is the honest next screen either way, and the page keeps watching
       // for Herae to appear while they do it.
+      if (!detected && cannotRunExtensions()) { showPhone(preview); return; }
       if (!detected) { show('install'); waitForExtension(); return; }
 
       // A live guest pass for a different host can't redeem this link (the
@@ -508,6 +527,34 @@
       // Deliberately NOT focusing the name field any more — it is optional,
       // and a blinking cursor in a text box reads as "fill this in first".
       el('joinBtn').focus();
+    }
+
+    // Phones and tablets (Android, iPhone, iPad, and iPads that report
+    // themselves as a Mac) can't install Chrome extensions at all. ChromeOS
+    // can, so it is not in this list.
+    function cannotRunExtensions() {
+      const ua = navigator.userAgent || '';
+      if (navigator.userAgentData && navigator.userAgentData.mobile) return true;
+      if (/Android|iPhone|iPad|iPod|Windows Phone/i.test(ua)) return true;
+      return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+    }
+
+    function showPhone(preview) {
+      const who = (preview && preview.host) || 'They';
+      const link = location.href.split('#')[0];
+      el('phoneNote').textContent = `Then open it on your computer. ${who} will be waiting, and it takes about a minute from there.`;
+      const subject = `Watch with ${who} on Herae`;
+      const body = `Open this on your computer (in Chrome):\n\n${link}`;
+      el('phoneEmail').href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      el('phoneCopy').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(link); el('phoneCopy').textContent = 'Copied ✓'; }
+        catch (e) { window.prompt('Copy this link:', link); }
+      });
+      if (navigator.share) {
+        el('phoneShare').hidden = false;
+        el('phoneShare').addEventListener('click', () => { navigator.share({ title: subject, url: link }).catch(() => {}); });
+      }
+      show('phone');
     }
 
     // The install step's own loop. background.js reloads this tab the moment
