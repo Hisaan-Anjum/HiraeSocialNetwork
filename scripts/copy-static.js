@@ -112,6 +112,7 @@ const FILES = [
   'long-distance-movie-night-ideas.html',
   'things-to-do-on-facetime-long-distance.html',
   'long-distance-relationship-gifts.html',
+  'best-apps-for-long-distance-couples.html',
   'watch-disney-plus-together.html',
   'watch-prime-video-together.html',
   'refund_policy.html',
