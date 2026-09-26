@@ -58,6 +58,16 @@
   .up-current { text-align: center; background: rgba(160,107,255,0.12); border: 1px solid #a06bff44;
     border-radius: 12px; padding: 12px; margin-bottom: 6px; font-size: 13.5px; display: none; }
   .up-error { text-align: center; color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
+  /* Founding Couple: shown only while the server says the offer is open. */
+  .founding { margin-top: 22px; border: 1px solid rgba(245,185,66,.55); border-radius: 16px; padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(245,185,66,.10), rgba(160,107,255,.10)); }
+  .founding[hidden] { display: none; }
+  .founding-badge { display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+    color: #1a1206; background: #f5b942; padding: 3px 9px; border-radius: 999px; }
+  .founding-title { font-size: 20px; font-weight: 800; margin: 10px 0 4px; }
+  .founding-title .was { color: var(--ink-dim); font-weight: 600; font-size: 15px; text-decoration: line-through; margin-left: 6px; }
+  .founding-sub { color: var(--ink-dim); font-size: 13.5px; line-height: 1.55; margin-bottom: 14px; }
+  .founding .btn { width: 100%; padding: 13px; border-radius: 12px; font-weight: 800; }
 </style>
 
   <meta name="description" content="Upgrade your Herae plan.">
@@ -89,6 +99,13 @@
     </div>
 
     <div class="up-current" id="currentBox"></div>
+
+    <div class="founding" id="founding" hidden>
+      <span class="founding-badge" id="foundingBadge">Founding Couple</span>
+      <div class="founding-title">Herae Together for a whole year: <span id="foundingPrice">$49</span><span class="was">$129.99</span></div>
+      <div class="founding-sub">For both of you. Only for Herae's first 100 couples, until 31 October, and the price stays for as long as you keep your subscription.</div>
+      <button class="btn btn-primary" id="btnFounding" type="button">Become a Founding Couple</button>
+    </div>
 
     <div class="plan-grid">
       <div class="plan-card">
@@ -146,6 +163,9 @@
   function checkout(plan){
     const priceId = priceIdFor(plan);
     if (!priceId) { showError('That plan is not available right now.'); return; }
+    openCheckout(priceId);
+  }
+  function openCheckout(priceId){
     Paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
       customData: { username: auth.username },
@@ -167,12 +187,25 @@
       const id = cfg.prices[plan] && cfg.prices[plan][c];
       if (id) items.push({ priceId: id, quantity: 1 });
     }
+    if (cfg.founding && cfg.founding.open) items.push({ priceId: cfg.founding.priceId, quantity: 1 });
     if (!items.length) return;
     try {
       const preview = await Paddle.PricePreview({ items });
       for (const li of preview.data.details.lineItems) formatted[li.price.id] = li.formattedTotals.total;
     } catch (e) { /* checkout still shows the real price */ }
     renderPrices();
+    if (cfg.founding && formatted[cfg.founding.priceId]) el('foundingPrice').textContent = formatted[cfg.founding.priceId];
+  }
+
+  // Shown only while the server says the offer is open (a real cap and end
+  // date, see server/src/paddle.js), and not to anyone who already has
+  // unlimited access.
+  function renderFounding(){
+    const f = cfg && cfg.founding;
+    const hasAccess = status && status.unlimited;
+    if (!f || !f.open || hasAccess) { el('founding').hidden = true; return; }
+    el('foundingBadge').textContent = `Founding Couple · ${f.remaining} of ${f.cap} places left`;
+    el('founding').hidden = false;
   }
 
   function renderPlans(){
@@ -213,6 +246,7 @@
   });
   el('btnPlus').addEventListener('click', () => checkout('plus'));
   el('btnTogether').addEventListener('click', () => checkout('together'));
+  el('btnFounding').addEventListener('click', () => { if (cfg && cfg.founding && cfg.founding.open) openCheckout(cfg.founding.priceId); });
 
   (async () => {
     try { cfg = await apiRequest('/api/subscription/config'); }
@@ -222,6 +256,7 @@
     Paddle.Initialize({ token: cfg.clientToken, eventCallback: onPaddleEvent });
     try { status = await apiRequest('/api/subscription/status'); userEmail = status.email || null; } catch (e) {}
     renderPlans();
+    renderFounding();
     await loadPreview();
   })();
   </script>
