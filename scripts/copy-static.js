@@ -106,6 +106,8 @@ const FILES = [
   'teleparty-alternative.html',
   'discord-netflix-black-screen.html',
   'movies-to-watch-long-distance.html',
+  'watch-disney-plus-together.html',
+  'watch-prime-video-together.html',
   'refund_policy.html',
   'legal.css',
   // Also copied unhashed to dist root so index.html/admin.html's plain
