@@ -125,7 +125,7 @@ async function injectSubscriptionNav() {
     // "Upgrade" only when there IS something to upgrade to: free users, or an
     // OWN Plus plan (→ Together). Hidden for Together owners, and for anyone
     // already covered by someone else's Together.
-    const canUpgrade = !s || !s.unlimited || (s.plan === 'plus' && s.source === 'own');
+    const canUpgrade = !s || !s.unlimited || s.source === 'comp' || (s.plan === 'plus' && s.source === 'own');
     if (canUpgrade) nav.appendChild(link('upgrade.html', 'Upgrade'));
     nav.appendChild(link('billing.html', 'Billing'));
   }
@@ -804,3 +804,35 @@ function reorderRecommendations(ids, startIndex = 0) {
 function uploadRecommendationArtwork(id, artwork) {
   return apiRequest(`/api/admin/recommendations/${id}/artwork`, { method: 'POST', body: JSON.stringify(artwork) });
 }
+
+// ── A referral waiting to be claimed ─────────────────────────────────
+// ref.html (/r/<code>) remembers the code; most people then install the
+// extension and create their account THERE, so the claim happens on whichever
+// site page first sees them signed in. Cleared once the server has answered
+// for good (claimed, or refused for a reason that won't change).
+const REFERRAL_KEY = 'herae_ref';
+function pendingReferral() {
+  try {
+    const v = JSON.parse(localStorage.getItem(REFERRAL_KEY) || 'null');
+    return v && /^[0-9A-F]{7}$/.test(v.code) && Date.now() - v.at < 30 * 864e5 ? v : null;
+  } catch (e) { return null; }
+}
+async function claimPendingReferral() {
+  const ref = pendingReferral();
+  const auth = getAuth();
+  if (!ref || !auth || !auth.token) return null;
+  const base = (auth.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
+  try {
+    const r = await fetch(`${base}/api/referral/claim`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth.token}` },
+      body: JSON.stringify({ code: ref.code }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok || (r.status >= 400 && r.status < 500 && r.status !== 401 && r.status !== 429)) {
+      try { localStorage.removeItem(REFERRAL_KEY); } catch (e) { /* storage blocked */ }
+    }
+    return { status: r.status, ...data };
+  } catch (e) { return null; }
+}
+if (pendingReferral() && getAuth()) claimPendingReferral();

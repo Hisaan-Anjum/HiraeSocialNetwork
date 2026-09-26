@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You're invited to Herae</title>
+<meta name="description" content="Watch movies together when you're apart. Press play once and it plays for both of you, on almost any site, with a call built in.">
+<meta name="robots" content="noindex, follow">
+<meta property="og:title" content="You're invited to Herae">
+<meta property="og:description" content="Watch movies together when you're apart, and get an extra free movie night.">
+<meta property="og:image" content="https://app.herae.app/og-image.png">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="/style.css">
+<style>
+  .ref-wrap { max-width: 520px; margin: 0 auto; padding: 48px 16px 64px; }
+  .ref-logo { width: 56px; height: 56px; border-radius: 14px; display: block; margin: 0 auto 18px; }
+  .ref-title { font-size: 26px; font-weight: 800; text-align: center; line-height: 1.25; margin: 0 0 12px; }
+  .ref-sub { color: var(--ink-dim); font-size: 15px; line-height: 1.55; text-align: center; margin: 0 0 22px; }
+  .ref-gift { border: 1px solid rgba(203,184,255,0.35); background: rgba(124,92,255,0.12); border-radius: 14px;
+    padding: 16px 18px; font-size: 15px; line-height: 1.5; margin-bottom: 22px; }
+  .ref-gift b { color: #e3d8ff; }
+  .ref-steps { list-style: none; padding: 0; margin: 0 0 24px; counter-reset: s; }
+  .ref-steps li { counter-increment: s; display: flex; gap: 12px; align-items: flex-start; font-size: 14.5px; line-height: 1.5; margin-bottom: 12px; }
+  .ref-steps li::before { content: counter(s); flex: 0 0 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.08);
+    display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+  .ref-actions { display: flex; flex-direction: column; gap: 10px; }
+  .ref-actions .btn { width: 100%; text-align: center; }
+  .ref-msg { text-align: center; font-size: 14px; margin-top: 16px; line-height: 1.5; min-height: 1em; }
+  .ref-msg.ok { color: #86efac; }
+  .ref-msg.err { color: #fca5a5; }
+  .ref-foot { color: var(--ink-dim); font-size: 12.5px; text-align: center; margin-top: 28px; line-height: 1.5; }
+  .ref-foot a { color: #cbb8ff; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <!-- /r/<CODE>: one couple sharing Herae with another. The code is kept in
+       localStorage (api.js claims it on the first signed-in page), because the
+       new person usually signs up inside the extension, not on this page. -->
+  <div class="ref-wrap">
+    <img src="/logo.png" alt="Herae" class="ref-logo">
+    <h1 class="ref-title" id="title">You're invited to Herae</h1>
+    <p class="ref-sub">Watch movies together when you're apart. Press play once and it plays for both of you, on almost any site, with a video call built in. Every night you watch is saved as moments on your timeline.</p>
+
+    <div class="ref-gift" id="gift">
+      🎁 <b>Your gift:</b> an extra free movie night. You and your partner each get <b>three</b> free nights instead of two, however long the films run.
+    </div>
+
+    <div id="desktop">
+      <ol class="ref-steps">
+        <li>Add Herae to Chrome (it's free).</li>
+        <li>Create your account in Herae, then invite your partner from it.</li>
+        <li>Come back to this tab and press “I've signed up” to collect your night.</li>
+      </ol>
+      <div class="ref-actions">
+        <a class="btn btn-primary" id="install" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=referral" target="_blank" rel="noopener">Add Herae to Chrome</a>
+        <button class="btn btn-ghost" id="done" type="button">I've signed up</button>
+      </div>
+    </div>
+
+    <div id="phone" hidden>
+      <p class="ref-sub" style="margin-bottom:14px">Herae runs in Chrome on a computer. Send this link to yourself and open it there, and your extra night comes with it.</p>
+      <div class="ref-actions">
+        <button class="btn btn-primary" id="share" type="button">Send this link to myself</button>
+      </div>
+    </div>
+
+    <div class="ref-msg" id="msg"></div>
+    <div class="ref-foot">Already watching with Herae? <a href="/refer.html">Get your own link</a> and share it with another couple.</div>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/api.js"></script>
+  <script>
+  'use strict';
+  const el = (id) => document.getElementById(id);
+  const msg = (t, k) => { el('msg').textContent = t; el('msg').className = 'ref-msg ' + (k || ''); };
+  const code = (location.pathname.match(/^\/r\/([0-9A-Fa-f]{7})\/?$/) || [])[1]
+    || new URLSearchParams(location.search).get('code') || '';
+  const CODE = code.toUpperCase();
+
+  // Same device test as invite.html: phones and tablets can't run the extension.
+  const phone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (phone) { el('desktop').hidden = true; el('phone').hidden = false; }
+
+  function remember() {
+    try {
+      if (/^[0-9A-F]{7}$/.test(CODE)) localStorage.setItem('herae_ref', JSON.stringify({ code: CODE, at: Date.now() }));
+      if (!localStorage.getItem('herae_first_touch')) localStorage.setItem('herae_first_touch', 'utm:referral');
+    } catch (e) { /* storage blocked: the claim can still happen on this page */ }
+  }
+
+  function explain(r) {
+    if (!r) return msg('Could not reach Herae just now. Try again in a moment.', 'err');
+    if (r.ok && r.already) return msg('You’re all set: your extra night is already on your account. 💛', 'ok');
+    if (r.ok) return msg(`Done! Your extra free night is on your account. Invite your partner from Herae and they get one too. 💛`, 'ok');
+    return msg(r.error || 'That didn’t work. Try again in a moment.', 'err');
+  }
+
+  async function tryClaim() {
+    if (!getAuth()) return false;
+    remember();
+    explain(await claimPendingReferral());
+    return true;
+  }
+
+  (async () => {
+    if (!/^[0-9A-F]{7}$/.test(CODE)) { el('title').textContent = 'This invite link is not valid'; el('gift').hidden = true; return; }
+    remember();
+    try {
+      const base = (typeof getSavedServerUrl === 'function' ? getSavedServerUrl() : '').replace(/\/+$/, '');
+      const r = await fetch(`${base}/api/referral/${CODE}/preview`);
+      if (r.ok) {
+        const d = await r.json();
+        el('title').textContent = `${d.inviter} invited you to Herae`;
+        document.title = `${d.inviter} invited you to Herae`;
+      } else if (r.status === 404) {
+        el('title').textContent = 'This invite link is not valid';
+        el('gift').hidden = true;
+        try { localStorage.removeItem('herae_ref'); } catch (e) {}
+        return;
+      }
+    } catch (e) { /* the page still works without the name */ }
+    if (await tryClaim()) return;
+    // Signed in through the extension but the page loaded first: give it a moment.
+    whenExtensionMaybeSignsIn(() => tryClaim(), () => {});
+  })();
+
+  el('done').addEventListener('click', async () => {
+    if (await tryClaim()) return;
+    msg('Checking…');
+    whenExtensionMaybeSignsIn(() => tryClaim(), () => {
+      msg('Herae isn’t signed in on this browser yet. Create your account in Herae, then press this again.', 'err');
+    });
+  });
+
+  el('share').addEventListener('click', async () => {
+    const url = location.origin + '/r/' + CODE;
+    try {
+      if (navigator.share) { await navigator.share({ title: 'Herae', text: 'Open this on my computer', url }); return; }
+      await navigator.clipboard.writeText(url);
+      msg('Link copied. Open it in Chrome on your computer.', 'ok');
+    } catch (e) { /* share sheet dismissed */ }
+  });
+  </script>
+</body>
+</html>

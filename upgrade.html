@@ -202,7 +202,8 @@
   // unlimited access.
   function renderFounding(){
     const f = cfg && cfg.founding;
-    const hasAccess = status && status.unlimited;
+    // A free month (comp) is still someone who can buy: they keep seeing the offer.
+    const hasAccess = status && status.unlimited && status.source !== 'comp';
     if (!f || !f.open || hasAccess) { el('founding').hidden = true; return; }
     el('foundingBadge').textContent = `Founding Couple · ${f.remaining} of ${f.cap} places left`;
     el('founding').hidden = false;

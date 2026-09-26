@@ -97,6 +97,10 @@ const FILES = [
   'pricing.html',
   // Paddle's default payment link: signed-out, opens ?_ptxn= checkouts.
   'pay.html',
+  // Couples inviting couples: the landing a referral link opens (/r/<code>)
+  // and the signed-in "your link and progress" page.
+  'ref.html',
+  'refer.html',
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
   'teleparty-alternative.html',

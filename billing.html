@@ -126,6 +126,12 @@
         ? `${left} free welcome night${left === 1 ? '' : 's'} left — they don't count toward your hours.`
         : `${s.hoursUsed || 0} of ${s.hoursLimit || 4} free hours used this month.`;
       actions.appendChild(linkButton('See plans', 'upgrade.html', true));
+      actions.appendChild(linkButton('Invite couples, get a free month', 'refer.html', false));
+      return;
+    }
+    if (s.source === 'comp') {
+      planStatus.textContent = `A free month for inviting couples: unlimited until ${fmtDate(s.compUntil)}. 💛`;
+      actions.appendChild(linkButton('See plans', 'upgrade.html', false));
       return;
     }
     if (s.source === 'partner') {
