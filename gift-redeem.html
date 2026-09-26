@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A gift for you two — Herae</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="/style.css">
+<style>
+  .gr-wrap { max-width: 520px; margin: 0 auto; padding: 48px 16px 64px; text-align: center; }
+  .gr-logo { width: 56px; height: 56px; border-radius: 14px; display: block; margin: 0 auto 18px; }
+  .gr-title { font-size: 26px; font-weight: 800; line-height: 1.25; margin: 0 0 12px; }
+  .gr-sub { color: var(--ink-dim); font-size: 15px; line-height: 1.55; margin: 0 0 20px; }
+  .gr-note { border: 1px solid rgba(203,184,255,0.35); background: rgba(124,92,255,0.12); border-radius: 14px; padding: 16px 18px;
+    font-size: 15.5px; line-height: 1.55; margin: 0 0 22px; text-align: left; white-space: pre-wrap; }
+  .gr-note .by { display: block; margin-top: 8px; color: var(--ink-dim); font-size: 13px; }
+  .gr-actions { display: flex; flex-direction: column; gap: 10px; }
+  .gr-actions .btn { width: 100%; }
+  .gr-msg { font-size: 14px; margin-top: 16px; line-height: 1.5; min-height: 1em; }
+  .gr-msg.ok { color: #86efac; }
+  .gr-msg.err { color: #fca5a5; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <!-- /gift/<CODE>: a gifted year of Herae Together (server/src/gift.js). -->
+  <div class="gr-wrap">
+    <img src="/logo.png" alt="Herae" class="gr-logo">
+    <h1 class="gr-title" id="title">A gift for you two</h1>
+    <p class="gr-sub" id="sub">A year of Herae Together: unlimited movie nights for both of you. Press play once and it plays for both of you, with a video call built in.</p>
+    <div class="gr-note" id="note" hidden></div>
+
+    <div class="gr-actions" id="signedIn" hidden>
+      <button class="btn btn-primary" id="redeem" type="button">Start our year</button>
+    </div>
+    <div class="gr-actions" id="signedOut" hidden>
+      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=gift" target="_blank" rel="noopener">1. Add Herae to Chrome (free)</a>
+      <button class="btn btn-ghost" id="haveAccount" type="button">2. I've created my account</button>
+    </div>
+    <div class="gr-msg" id="msg"></div>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/api.js"></script>
+  <script>
+  'use strict';
+  const el = (id) => document.getElementById(id);
+  const msg = (t, k) => { el('msg').textContent = t; el('msg').className = 'gr-msg ' + (k || ''); };
+  const CODE = ((location.pathname.match(/^\/gift\/([A-Za-z0-9]{10})\/?$/) || [])[1] || '').toUpperCase();
+  const base = (typeof getSavedServerUrl === 'function' ? getSavedServerUrl() : '').replace(/\/+$/, '');
+  const fmt = (s) => { const d = new Date(s); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
+
+  function showActions() {
+    const signed = !!getAuth();
+    el('signedIn').hidden = !signed;
+    el('signedOut').hidden = signed;
+  }
+
+  async function doRedeem() {
+    msg('Starting your year…');
+    try {
+      const r = await apiRequest('/api/gift/redeem', { method: 'POST', body: JSON.stringify({ code: CODE }) });
+      el('signedIn').hidden = true;
+      if (r.already) return msg('This gift is already on your account. Enjoy the films. 💛', 'ok');
+      msg(`Done. Herae Together is on for you${r.partner ? ' and ' + r.partner : ''} until ${fmt(r.until)}. ${r.partner ? '' : 'Invite your partner from Herae and it covers them too.'} 💛`, 'ok');
+    } catch (e) { msg(e.message || 'That didn’t work. Try again in a moment.', 'err'); }
+  }
+
+  (async () => {
+    if (!CODE) { el('title').textContent = 'This gift link is not valid'; el('sub').hidden = true; return; }
+    try {
+      const r = await fetch(`${base}/api/gift/${CODE}/preview`);
+      if (!r.ok) { el('title').textContent = 'This gift link is not valid'; el('sub').hidden = true; return; }
+      const g = await r.json();
+      if (g.redeemed) { el('title').textContent = 'This gift has been opened'; el('sub').textContent = 'If it was yours, it’s already on your account.'; showActions(); el('signedOut').hidden = true; el('signedIn').hidden = true; return; }
+      el('title').textContent = g.toName ? `A gift for ${g.toName}` : 'A gift for you two';
+      if (g.message || g.fromName) {
+        el('note').hidden = false;
+        el('note').textContent = g.message || '';
+        if (g.fromName) { const by = document.createElement('span'); by.className = 'by'; by.textContent = '— ' + g.fromName; el('note').appendChild(by); }
+      }
+    } catch (e) { /* the page still works */ }
+    showActions();
+    if (!getAuth()) whenExtensionMaybeSignsIn(showActions, () => {});
+  })();
+
+  el('redeem').addEventListener('click', doRedeem);
+  el('haveAccount').addEventListener('click', () => {
+    if (getAuth()) { showActions(); return doRedeem(); }
+    msg('Checking…');
+    whenExtensionMaybeSignsIn(() => { showActions(); doRedeem(); }, () => msg('Herae isn’t signed in on this browser yet. Create your account in Herae, then press this again.', 'err'));
+  });
+  </script>
+</body>
+</html>

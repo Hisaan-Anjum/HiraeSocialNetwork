@@ -101,6 +101,9 @@ const FILES = [
   // and the signed-in "your link and progress" page.
   'ref.html',
   'refer.html',
+  // Gifts: buy "a year of movie nights" (gift.html) and open one (/gift/<code>).
+  'gift.html',
+  'gift-redeem.html',
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
   'teleparty-alternative.html',
