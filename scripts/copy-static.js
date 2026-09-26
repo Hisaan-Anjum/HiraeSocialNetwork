@@ -109,6 +109,7 @@ const FILES = [
   'teleparty-alternative.html',
   'discord-netflix-black-screen.html',
   'movies-to-watch-long-distance.html',
+  'long-distance-movie-night-ideas.html',
   'watch-disney-plus-together.html',
   'watch-prime-video-together.html',
   'refund_policy.html',
