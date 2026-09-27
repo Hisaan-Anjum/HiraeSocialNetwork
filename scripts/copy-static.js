@@ -77,6 +77,7 @@ const FILES = [
   // links, so they're copied through verbatim rather than Vite-processed.
   'privacy.html',
   'terms.html',
+  'program-terms.html',
   'cookies.html',
   'community.html',
   // The guides page and its renderer. help-content.js is NOT listed here —
