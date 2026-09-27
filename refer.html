@@ -51,6 +51,16 @@
       <p class="rf-sub" id="joined" style="margin-top:12px"></p>
     </div>
 
+    <div class="rf-card" id="aff" hidden>
+      <div class="rf-count">Your creator share</div>
+      <ul class="rf-list">
+        <li><span class="tick">💛</span><span>Earned so far: <b id="affEarned">$0.00</b> (<span id="affRate">30</span>% of what couples you invited paid)</span></li>
+        <li><span class="tick">⏳</span><span>Set aside for you, on its way: <b id="affHeld">$0.00</b><span id="affNext"></span></span></li>
+        <li><span class="tick">✅</span><span>Paid to you: <b id="affPaid">$0.00</b></span></li>
+      </ul>
+      <p class="rf-rules" style="margin-top:10px">Your share is credited the moment a couple pays. It's paid within 7 days of our payment provider paying us for it. <a href="/program-terms.html#part-b">Creator terms</a>.</p>
+    </div>
+
     <p class="rf-rules">How it counts: a couple counts once someone who signed up through your link watches a movie night of 45 minutes or more with their partner (not with you). Referral links are for new accounts. The free month is given once, and nothing is ever charged for it. <a href="/program-terms.html#part-c">Program terms</a>.</p>
   </div>
 
@@ -79,6 +89,15 @@
       ? `Herae Together is on for you two until ${fmt(d.compUntil)}. 💛`
       : waiting > 0 ? `${waiting} ${waiting === 1 ? 'person has' : 'people have'} signed up from your link and ${waiting === 1 ? 'hasn’t' : 'haven’t'} watched a full night yet.`
         : d.joined === 0 ? 'Nobody has used your link yet.' : '';
+    if (d.affiliate) {
+      const usd = (c) => '$' + (c / 100).toFixed(2);
+      el('aff').hidden = false;
+      el('affRate').textContent = d.affiliate.ratePct;
+      el('affEarned').textContent = usd(d.affiliate.earnedCents);
+      el('affHeld').textContent = usd(d.affiliate.heldCents + d.affiliate.owedNowCents);
+      el('affPaid').textContent = usd(d.affiliate.paidCents);
+      el('affNext').textContent = d.affiliate.nextPayableAt && d.affiliate.heldCents > 0 ? ` (next payable ${fmt(d.affiliate.nextPayableAt)})` : '';
+    }
     if (navigator.share) el('share').hidden = false;
   })();
 
