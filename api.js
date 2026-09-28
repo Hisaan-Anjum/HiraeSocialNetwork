@@ -317,6 +317,8 @@ const FIRST_TOUCH_KEY = 'herae_first_touch';
     if (localStorage.getItem(FIRST_TOUCH_KEY)) return;
     const utm = new URLSearchParams(location.search).get('utm_source');
     let tag = utm ? 'utm:' + utm : '';
+    // Instagram's and TikTok's in-app browsers usually send no referrer, so name the app from its user agent.
+    if (!tag) { const ua = navigator.userAgent; if (/Instagram/i.test(ua)) tag = 'app:instagram'; else if (/BytedanceWebview|musical_ly|TikTok/i.test(ua)) tag = 'app:tiktok'; else if (/FBAN|FBAV/i.test(ua)) tag = 'app:facebook'; }
     if (!tag && document.referrer) {
       const host = new URL(document.referrer).hostname.replace(/^www\./, '');
       if (host && !/(^|\.)herae\.app$/.test(host) && host !== location.hostname) tag = 'ref:' + host;

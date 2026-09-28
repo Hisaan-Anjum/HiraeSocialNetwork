@@ -72,7 +72,9 @@ document.querySelectorAll('[data-copy]').forEach((btn) => {
     (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth < 900);
   if (!phone) return;
   const params = new URLSearchParams(location.search);
-  const ref = (document.referrer.match(/instagram|tiktok|facebook|youtube|reddit|google/i) || [])[0];
+  const ua = navigator.userAgent;
+  const app = /Instagram/i.test(ua) ? 'instagram' : /BytedanceWebview|musical_ly|TikTok/i.test(ua) ? 'tiktok' : /FBAN|FBAV/i.test(ua) ? 'facebook' : null;
+  const ref = app || (document.referrer.match(/instagram|tiktok|facebook|youtube|reddit|google/i) || [])[0];
   const src = (params.get('utm_source') || params.get('src') || (ref ? ref.toLowerCase() : 'site')).replace(/[^a-z0-9_.-]/gi, '').slice(0, 40) || 'site';
   const share = 'https://herae.app/?utm_source=handoff_share&utm_campaign=' + encodeURIComponent(src);
   const box = () => {
