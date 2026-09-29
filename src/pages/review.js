@@ -16,6 +16,7 @@ import { attachPostActionHandlers, renderPostMenu, renderReviewBody } from '../c
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 import { mountSessionLink } from '../watchlist/sessionLink.js';
 import { mountAiMoments } from '../components/aiMoments.js';
+import { mountRatingAsk } from '../components/ratingAsk.js';
 
 const { requireAuth, getSessionDetail, postReview } = window;
 
@@ -173,6 +174,9 @@ async function loadSession() {
   // autocomplete while naming it, or a one-tap "was this …?" when the detected
   // title already matches something on the list. Entirely optional; the page
   // works exactly as before if they ignore it (or aren't contacts).
+  // After a real night (30+ min), ask once for a store rating (ratingAsk.js).
+  mountRatingAsk(document.getElementById('content'), detail);
+
   mountSessionLink({
     mount: document.getElementById('sessionLinkMount'),
     input: document.getElementById('sessionTitleInput'),
