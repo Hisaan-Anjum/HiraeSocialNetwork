@@ -2834,7 +2834,7 @@ body.cd-open { overflow: hidden; }
 
 /* One-time store-rating ask after a 30+ minute night (src/components/ratingAsk.js) */
 .rating-ask { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;
-  margin: 0 0 18px; padding: 16px 18px; border-radius: 14px; background: rgba(245,185,66,0.08);
+  margin: 26px auto 8px; max-width: 560px; padding: 16px 18px; border-radius: 14px; background: rgba(245,185,66,0.08);
   border: 1px solid rgba(245,185,66,0.35); }
 .rating-ask-text { flex: 1 1 280px; font-size: 14.5px; line-height: 1.5; }
 .rating-ask-text strong { display: block; margin-bottom: 2px; }

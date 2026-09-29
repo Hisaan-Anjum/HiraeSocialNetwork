@@ -2,7 +2,8 @@
 //
 // The store listing had 4 ratings (2026-09-29), which is thin proof for someone
 // deciding whether to install. The best moment to ask is right after a night
-// that worked, so this appears on the review page only when the night lasted
+// that worked, so this appears at the BOTTOM of the review page (below the film review, clearly about the
+// extension, not the film) only when the night lasted
 // 30+ minutes, and only once per browser.
 //
 // Store policy: everyone who reaches that point is asked the same way — no
@@ -24,15 +25,17 @@ export function mountRatingAsk(container, detail) {
   card.setAttribute('role', 'note');
   card.innerHTML = `
     <div class="rating-ask-text">
-      <strong>A whole film, together.</strong>
-      If Herae made tonight easier, a rating on the Chrome Web Store is how other couples find it.
+      <strong>Enjoying the Herae extension itself?</strong>
+      Separate from your film review above: a rating for Herae on the Chrome Web Store is how other couples find it.
     </div>
     <div class="rating-ask-actions">
-      <a class="btn btn-gold" href="${STORE_REVIEWS}" target="_blank" rel="noopener">Rate Herae</a>
+      <a class="btn btn-gold" href="${STORE_REVIEWS}" target="_blank" rel="noopener">Rate the extension</a>
       <button type="button" class="btn btn-ghost rating-ask-later">Not now</button>
     </div>`;
   const done = () => { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) { /* ignore */ } card.remove(); };
   card.querySelector('a').addEventListener('click', () => setTimeout(done, 300));
   card.querySelector('.rating-ask-later').addEventListener('click', done);
-  container.prepend(card);
+  // Below the film review, never above it: the page is for reviewing the FILM, and an app-rating card on top
+  // read as part of that (founder, 2026-09-29).
+  container.append(card);
 }

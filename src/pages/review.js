@@ -150,11 +150,11 @@ async function loadSession() {
         ${myReview ? `<button class="btn-inline btn-inline-danger" id="deleteMyReviewBtn">🗑️ Delete</button>` : ''}
       </div>
       <div class="field">
-        <label>Your rating</label>
+        <label>Your rating of the film</label>
         <div id="starPickerMount"></div>
       </div>
       <div class="field">
-        <textarea id="reviewText" placeholder="What did you think of tonight's watch?">${myReview ? escapeHtml(myReview.text) : ''}</textarea>
+        <textarea id="reviewText" placeholder="What did you think of the film?">${myReview ? escapeHtml(myReview.text) : ''}</textarea>
       </div>
       <div class="field">
         <label for="sessionTitleInput">Name this session <span style="font-weight:400;color:var(--ink-faint);text-transform:none;letter-spacing:0">(optional — you both see it)</span></label>
