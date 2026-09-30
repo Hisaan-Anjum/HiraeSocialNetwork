@@ -145,6 +145,8 @@
   <script src="api.js"></script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script>
+    // Revenue funnel: a signed-in person opened pricing (anonymous visits are not counted; see analytics.js).
+    try { if (typeof getAuth === "function" && getAuth() && typeof trackEvent === "function") trackEvent("pricing_viewed", { page: "pricing" }); } catch (e) { /* never block */ }
   'use strict';
   (async () => {
     // Logged-in visitors go straight to checkout; everyone else signs up first
