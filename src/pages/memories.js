@@ -21,6 +21,7 @@ import { renderAvatar } from '../components/avatar.js';
 import { mountAvatarControls } from '../components/avatarUpload.js';
 import { initSearch } from '../components/search.js';
 import { mountGetStarted } from '../components/getStarted.js';
+import { mountFoundVia } from '../components/foundVia.js';
 
 const {
   requireAuth, logout, getFeed, getSessionsMine, getRecommendations, getFeaturedRecommendation,
@@ -118,6 +119,8 @@ async function loadMyPanel() {
     mountAvatarControls(document.getElementById('feedAvatarWrap'), p.avatarUrl, () => {});
     // A brand-new account has nothing to remember yet; tell it how to get there.
     if (p.counts.sessions === 0) mountGetStarted(document.getElementById('getStarted'));
+    // New accounts: one tap on where they heard about Herae (signup can't see the link that brought them).
+    mountFoundVia(el.querySelector('header') || el.firstElementChild, p.joinedAt);
   } catch (e) {
     el.innerHTML = '';
   }

@@ -2839,3 +2839,11 @@ body.cd-open { overflow: hidden; }
 .rating-ask-text { flex: 1 1 280px; font-size: 14.5px; line-height: 1.5; }
 .rating-ask-text strong { display: block; margin-bottom: 2px; }
 .rating-ask-actions { display: flex; gap: 10px; }
+
+/* foundVia.js — one-tap "where did you hear about Herae?" */
+.found-via { margin: 14px 0 6px; padding: 14px 16px; border-radius: 14px; background: rgba(255, 200, 120, 0.08); border: 1px solid rgba(255, 200, 120, 0.25); }
+.found-via-q { font-size: 15px; margin-bottom: 10px; }
+.found-via-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.found-via-chip { border: 1px solid rgba(255, 255, 255, 0.18); background: transparent; color: inherit; border-radius: 999px; padding: 7px 13px; font: inherit; font-size: 14px; cursor: pointer; }
+.found-via-chip:hover, .found-via-chip:focus-visible { border-color: #f5b86b; }
+.found-via-skip { margin-top: 10px; background: none; border: 0; color: inherit; opacity: 0.6; font: inherit; font-size: 13px; cursor: pointer; padding: 0; }
