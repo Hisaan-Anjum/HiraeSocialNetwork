@@ -16,7 +16,9 @@ const HIDE_KEY = 'herae_get_started_hidden';
 
 // Same handshake invite.html and api.js use: the content script answers a
 // __heraePing with __heraeExtension. Silence within the window means no install.
-function detectExtension(timeoutMs = 700) {
+// The content script can attach a moment after the page loads, so ping a few times over two seconds; a single
+// 0.7 s ping told people who had just installed Herae to "Add Herae to Chrome" (journey test 2026-10-01).
+function detectExtension(timeoutMs = 2000) {
   return new Promise((resolve) => {
     let done = false;
     const onMsg = (e) => {
@@ -25,7 +27,8 @@ function detectExtension(timeoutMs = 700) {
     };
     const finish = (v) => { if (done) return; done = true; window.removeEventListener('message', onMsg); resolve(v); };
     window.addEventListener('message', onMsg);
-    try { window.postMessage({ __heraePing: true }, location.origin); } catch (e) { /* ignore */ }
+    const ping = () => { try { window.postMessage({ __heraePing: true }, location.origin); } catch (e) { /* ignore */ } };
+    ping(); setTimeout(ping, 400); setTimeout(ping, 900); setTimeout(ping, 1500);
     setTimeout(() => finish(false), timeoutMs);
   });
 }
@@ -67,18 +70,25 @@ export async function mountGetStarted(el) {
     : `<p class="gs-text">Herae runs inside Chrome, beside whatever you're watching. It takes about a minute.</p>
        <a class="btn btn-gold gs-cta" href="${STORE_URL}" target="_blank" rel="noopener">Add to Chrome — free</a>`;
 
+  // One tap to send it the way they already talk (2026-10-01: "even a non-tech user should be able to do it").
+  const shareText = invite ? `Watch a film with me? Open this on your laptop in Chrome, it's free and you don't need an account: ${invite.url}` : '';
   const inviteBody = invite
     ? `<p class="gs-text">Send them this link however you normally talk. They'll add Herae too, but they don't need an account.</p>
+       <div class="gs-share">
+         <a class="btn btn-gold gs-share-btn" href="https://wa.me/?text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener">Send on WhatsApp</a>
+         <a class="btn btn-ghost gs-share-btn" href="mailto:?subject=${encodeURIComponent('Movie night?')}&body=${encodeURIComponent(shareText)}">Email it</a>
+         <button type="button" class="btn btn-ghost gs-share-btn gs-native" hidden>Share…</button>
+       </div>
        <div class="gs-link-row">
          <code class="gs-link">${escapeHtml(invite.url)}</code>
-         <button type="button" class="btn btn-ghost gs-copy">Copy</button>
+         <button type="button" class="btn btn-ghost gs-copy">Copy link</button>
        </div>`
     : `<p class="gs-text">Open Herae from your Chrome toolbar and use <b>Invite</b> to get a link to send them.</p>`;
 
-  const watchBody = `<p class="gs-text">When you're both free, click the Herae icon in your Chrome toolbar
-       (it may be under the puzzle-piece icon) and press <b>Connect</b> next to their name. Then open a film on
-       the site you normally use. Play, pause and skipping stay in step for both of you, and you can video or
-       voice call without leaving the tab.</p>`;
+  const watchBody = `<p class="gs-text">When they open your link, Herae connects the two of you by itself. Then open a film on
+       Netflix, YouTube or whatever you normally use and press play: play, pause and skipping stay in step for both of
+       you, with a video call right there. (If it ever doesn't connect, click the Herae icon at the top right of Chrome,
+       it may be inside the puzzle-piece menu, and press <b>Connect</b> next to their name.)</p>`;
 
   el.innerHTML = `
     <section class="gs-card" aria-labelledby="gsHeading">
@@ -94,12 +104,17 @@ export async function mountGetStarted(el) {
     </section>`;
   el.hidden = false;
 
+  const native = el.querySelector('.gs-native');
+  if (native && navigator.share) {
+    native.hidden = false;
+    native.addEventListener('click', () => navigator.share({ text: shareText }).catch(() => {}));
+  }
   const copyBtn = el.querySelector('.gs-copy');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
       const ok = await copyText(invite.url);
       copyBtn.textContent = ok ? '✓ Copied' : 'Press Ctrl+C';
-      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1800);
+      setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 1800);
     });
   }
   el.querySelector('.gs-hide').addEventListener('click', () => {

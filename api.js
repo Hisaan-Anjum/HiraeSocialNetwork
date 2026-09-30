@@ -271,7 +271,8 @@ async function apiRequest(path, options = {}) {
   const timer = new AbortController();
   const deadline = setTimeout(() => timer.abort(), REQUEST_TIMEOUT_MS);
   try {
-    resp = await fetch(`${base}${path}`, { ...options, headers, signal: timer.signal });
+    const { __retried, ...init } = options; // __retried is ours (see the 401 branch), not a fetch option
+    resp = await fetch(`${base}${path}`, { ...init, headers, signal: timer.signal });
   } catch (e) {
     throw new Error(e && e.name === 'AbortError'
       ? 'The server took too long to answer. It may be restarting — try again in a moment.'
@@ -281,7 +282,25 @@ async function apiRequest(path, options = {}) {
   }
   const data = await resp.json().catch(() => ({}));
   if (resp.status === 401) {
-    clearAuth();
+    // ── Only a REJECTED session ends the session (2026-10-01) ─────────
+    // Right after signing up in the extension, the new account lands here and
+    // this page's first requests can leave before content.js has handed over
+    // the session — so they carry no token and come back 401. Treating that as
+    // "logged out" called clearAuth(), whose broadcast signs the EXTENSION out
+    // too: a brand-new account was logged out of everything two seconds after
+    // creating it, in 3 of 4 local runs. Now:
+    //   - no token on the request, or the token was replaced since: wait
+    //     briefly for the session to arrive and retry once with it;
+    //   - still nothing: go to the landing page WITHOUT broadcasting a logout
+    //     (there was no session here to end);
+    //   - the current token itself was rejected: that is a real expiry.
+    const sent = auth?.token || null;
+    if (!options.__retried) {
+      for (let i = 0; i < 10 && (!getAuth()?.token || getAuth()?.token === sent) && !sent; i++) await new Promise((r) => setTimeout(r, 200));
+      const now = getAuth()?.token || null;
+      if (now && now !== sent) return apiRequest(path, { ...options, __retried: true });
+    }
+    if (sent && getAuth()?.token === sent) clearAuth();
     window.location.href = '/index.html';
     throw new Error('Session expired — please log in again.');
   }

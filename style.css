@@ -2847,3 +2847,7 @@ body.cd-open { overflow: hidden; }
 .found-via-chip { border: 1px solid rgba(255, 255, 255, 0.18); background: transparent; color: inherit; border-radius: 999px; padding: 7px 13px; font: inherit; font-size: 14px; cursor: pointer; }
 .found-via-chip:hover, .found-via-chip:focus-visible { border-color: #f5b86b; }
 .found-via-skip { margin-top: 10px; background: none; border: 0; color: inherit; opacity: 0.6; font: inherit; font-size: 13px; cursor: pointer; padding: 0; }
+
+/* getStarted.js — one-tap ways to send the invite */
+.gs-share { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 8px; }
+.gs-share-btn { padding: 8px 14px; font-size: 14px; }

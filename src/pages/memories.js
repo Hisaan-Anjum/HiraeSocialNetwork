@@ -120,7 +120,8 @@ async function loadMyPanel() {
     // A brand-new account has nothing to remember yet; tell it how to get there.
     if (p.counts.sessions === 0) mountGetStarted(document.getElementById('getStarted'));
     // New accounts: one tap on where they heard about Herae (signup can't see the link that brought them).
-    mountFoundVia(el.querySelector('header') || el.firstElementChild, p.joinedAt);
+    // Below the first-night steps, never above them: the invite is the thing that matters on day one.
+    mountFoundVia((p.counts.sessions === 0 && document.getElementById('getStarted')) || el.querySelector('header') || el.firstElementChild, p.joinedAt);
   } catch (e) {
     el.innerHTML = '';
   }
