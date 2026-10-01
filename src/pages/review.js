@@ -17,6 +17,7 @@ import { registerSessionForPanel, momentViewerOpts } from '../components/momentP
 import { mountSessionLink } from '../watchlist/sessionLink.js';
 import { mountAiMoments } from '../components/aiMoments.js';
 import { mountRatingAsk } from '../components/ratingAsk.js';
+import { openShareSheet } from '../components/shareSheet.js';
 
 const { requireAuth, getSessionDetail, postReview } = window;
 
@@ -121,10 +122,23 @@ async function loadSession() {
       `).join('')}</div>`
     : `<div class="review-no-moments">No moments were captured this time — the review still counts 💜</div>`;
 
+  // The end of a night is when it feels best, so that is where sharing is
+  // offered (MOMENTS_LOOP.md): one moment, one tap. A video beats a photo.
+  const best = detail.moments.find((m) => m.mediaType === 'video' && m.videoUrl) || detail.moments[0] || null;
+  const shareNight = best ? `
+    <div class="review-share-night">
+      <div>
+        <div class="review-share-night-title">❤️ Share your night</div>
+        <div class="review-share-night-sub">Post your favourite moment to your Story or TikTok and tag ${others.length ? escapeHtml(others[0]) : 'your person'}. On a computer, "Send to my phone" puts it on your phone in a tap.</div>
+      </div>
+      <button class="btn btn-primary" id="shareNightBtn">Share a moment</button>
+    </div>` : '';
+
   contentEl.innerHTML = `
     ${detail.sessionTitle ? `<div class="review-session-title-banner">${escapeHtml(detail.sessionTitle)}</div>` : ''}
     ${title ? `<div class="review-content-banner">📺 ${escapeHtml(title)}</div>` : ''}
     ${momentsStrip}
+    ${shareNight}
     <div class="review-panel">
       <div class="review-section-title">Watched with ${others.length ? renderUserLinks(others) : escapeHtml(partnerName)}</div>
 
@@ -167,6 +181,8 @@ async function loadSession() {
       ${myReview ? `<div style="margin-top:14px">${renderReactionRow('review', myReview.id, myReview.likes, myReview.comments)}</div>` : ''}
     </div>
   `;
+
+  document.getElementById('shareNightBtn')?.addEventListener('click', () => openShareSheet(best));
 
   const picker = renderStarPicker(document.getElementById('starPickerMount'), myReview?.rating || 0, () => {});
 

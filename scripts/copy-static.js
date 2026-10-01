@@ -105,6 +105,10 @@ const FILES = [
   // Gifts: buy "a year of movie nights" (gift.html) and open one (/gift/<code>).
   'gift.html',
   'gift-redeem.html',
+  // The moments loop: /phone/<token> ("Send to my phone", server/src/phone-share.js)
+  // and the QR encoder the share sheet loads on demand (qrcode-generator 2.0.4, MIT).
+  'phone.html',
+  'qrcode-generator.js',
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
   'teleparty-alternative.html',

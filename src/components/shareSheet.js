@@ -15,9 +15,26 @@
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
-const { mediaUrl, momentPublicUrl, trackEvent } = window;
+const { mediaUrl, momentPublicUrl, trackEvent, myReferralCode, setMomentPrivacy, phoneShareLink, phoneShareEmail } = window;
 
 let openSheet = null;
+
+// The QR encoder is only needed when someone asks for "Send to my phone", so it
+// is fetched then rather than on every page (a plain global script; MIT).
+let qrLoading = null;
+function loadQrEncoder() {
+  if (window.qrcode) return Promise.resolve();
+  if (!qrLoading) {
+    qrLoading = new Promise((resolve) => {
+      const tag = document.createElement('script');
+      tag.src = '/qrcode-generator.js';
+      tag.onload = resolve;
+      tag.onerror = () => { qrLoading = null; resolve(); };
+      document.head.appendChild(tag);
+    });
+  }
+  return qrLoading;
+}
 
 // `moment` needs: id, mediaType, url (poster/photo), videoUrl (if video),
 // description (optional), privacy (optional — enables link-based sharing).
@@ -30,8 +47,19 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
   const isVideo = moment.mediaType === 'video' && moment.videoUrl;
   // A recap (or any synthetic post) can pass its own shareUrl since it has no
   // per-post page of its own; everything else links to post.html?id=…
-  const link = moment.shareUrl || momentPublicUrl(moment.id);
-  const isPublic = moment.privacy === 'public';
+  let link = moment.shareUrl || momentPublicUrl(moment.id);
+  // The sharer's referral code rides on the link (?r=CODE), so a couple who
+  // finds Herae through this moment is credited to the two people in it.
+  if (!moment.shareUrl && myReferralCode) {
+    myReferralCode().then((code) => { if (code) link = momentPublicUrl(moment.id, code); });
+  }
+  let isPublic = moment.privacy === 'public';
+  // A stored moment (not a client-rendered story/recap) can be sent to the
+  // phone and made viewable by link; `isMine` is the participant check the
+  // server repeats on both.
+  const stored = !moment.shareUrl && !moment.mediaExt && /^\d+$/.test(String(moment.id));
+  const canOpenUp = stored && moment.isMine && !isPublic && !linkOnly;
+  const onPhone = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
   const caption = moment.description
     ? `${moment.description} — on Herae.app`
     : 'A moment from Herae.app 💜';
@@ -44,16 +72,28 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
         <h2>❤️ Share ${linkOnly ? 'this night' : 'your Moment'}</h2>
         <button class="share-close" data-share="close" aria-label="Close">✕</button>
       </div>
-      ${isPublic ? '' : `<div class="share-note">This moment is <strong>${escapeHtml(moment.privacy || 'private')}</strong>. Links only open for people allowed to see it, so we'll share the media file directly where that's clearer.</div>`}
+      ${isPublic ? '' : `<div class="share-note" id="shareNote">This moment is <strong>${escapeHtml(moment.privacy || 'private')}</strong>, so its link only opens for people allowed to see it. Posting the photo or video itself works either way.
+        ${canOpenUp ? '<button class="btn btn-ghost share-open-up" data-share="open-up">Let anyone with the link see it</button>' : ''}</div>`}
       <div class="share-grid">
         ${linkOnly ? '' : `
         <button class="share-opt" data-share="instagram"><span class="share-ico">📸</span><span>Instagram</span></button>
+        <button class="share-opt" data-share="tiktok"><span class="share-ico">🎵</span><span>TikTok</span></button>
         <button class="share-opt" data-share="facebook"><span class="share-ico">📘</span><span>Facebook</span></button>`}
         <button class="share-opt" data-share="whatsapp"><span class="share-ico">💬</span><span>WhatsApp</span></button>
         <button class="share-opt" data-share="telegram"><span class="share-ico">✈️</span><span>Telegram</span></button>
         <button class="share-opt" data-share="copy"><span class="share-ico">📋</span><span>Copy Link</span></button>
         ${linkOnly ? '' : '<button class="share-opt" data-share="download"><span class="share-ico">⬇</span><span>Download</span></button>'}
       </div>
+      ${stored && !onPhone && phoneShareLink ? `
+      <button class="btn btn-primary share-phone-btn" data-share="phone">📱 Send to my phone — post it to your Story or TikTok</button>
+      <div class="share-phone" id="sharePhone" hidden>
+        <div class="share-phone-qr" id="sharePhoneQr" aria-label="QR code for your phone"></div>
+        <div class="share-phone-text">
+          <strong>Point your phone's camera at this.</strong>
+          <span>It opens your moment on your phone, ready to post to Instagram, TikTok or anywhere. The link works for 24 hours.</span>
+          <button class="btn btn-ghost" data-share="phone-email">Or email it to me</button>
+        </div>
+      </div>` : ''}
       <div class="share-status" id="shareStatus" aria-live="polite"></div>
     </div>`;
   document.body.appendChild(overlay);
@@ -112,7 +152,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
   // downloads" on phones.
   let readyFile = null;
   const platformBtns = overlay.querySelectorAll(
-    '.share-opt[data-share="instagram"],.share-opt[data-share="facebook"],.share-opt[data-share="whatsapp"],.share-opt[data-share="telegram"]'
+    '.share-opt[data-share="instagram"],.share-opt[data-share="tiktok"],.share-opt[data-share="facebook"],.share-opt[data-share="whatsapp"],.share-opt[data-share="telegram"]'
   );
   platformBtns.forEach((b) => { b.disabled = true; });
   setStatus('Preparing your media…');
@@ -263,6 +303,57 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
     if (action === 'close') { close(); return; }
     if (action === 'copy') { copyLink(); return; }
 
+    if (action === 'open-up') {
+      btn.disabled = true;
+      try {
+        await setMomentPrivacy(moment.id, 'public', 'share');
+        isPublic = true;
+        moment.privacy = 'public';
+        const note = overlay.querySelector('#shareNote');
+        if (note) note.innerHTML = 'Anyone with the link can now see this moment. You can make it private again from its ⋯ menu.';
+        setStatus('Done — the link now opens for anyone you send it to ✓', 'ok');
+      } catch (err) {
+        btn.disabled = false;
+        setStatus('Could not change who can see it. Try again.', 'bad');
+      }
+      return;
+    }
+
+    if (action === 'phone') {
+      const box = overlay.querySelector('#sharePhone');
+      if (!box.hidden) { box.hidden = true; return; }
+      btn.disabled = true;
+      try {
+        const [{ url }] = await Promise.all([phoneShareLink(moment.id), loadQrEncoder()]);
+        const qr = window.qrcode && window.qrcode(0, 'M');
+        if (qr) {
+          qr.addData(url); qr.make();
+          overlay.querySelector('#sharePhoneQr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+        } else {
+          overlay.querySelector('#sharePhoneQr').hidden = true;
+        }
+        box.hidden = false;
+        trackEvent && trackEvent('moment_shared', { platform: 'phone', method: 'qr' });
+      } catch (err) {
+        setStatus('Could not make a phone link right now. Try Download instead.', 'bad');
+      }
+      btn.disabled = false;
+      return;
+    }
+
+    if (action === 'phone-email') {
+      btn.disabled = true;
+      try {
+        await phoneShareEmail(moment.id);
+        setStatus('Sent — open the email on your phone ✓', 'ok');
+        trackEvent && trackEvent('moment_shared', { platform: 'phone', method: 'email' });
+      } catch (err) {
+        btn.disabled = false;
+        setStatus(err && err.message ? err.message : 'Could not send the email. Try again.', 'bad');
+      }
+      return;
+    }
+
     if (action === 'download') {
       const ok = await downloadMedia();
       setStatus(ok ? 'Saved to your downloads ✓' : 'Opened your moment in a new tab — right-click to save.', 'ok');
@@ -274,6 +365,13 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
       // desktop it's download + manual upload; on mobile the share sheet (1)
       // handles it into a real draft.
       await shareToPlatform('Instagram', 'https://www.instagram.com/', { pasteable: false });
+      return;
+    }
+    if (action === 'tiktok') {
+      // TikTok's web composer takes an upload but no link or paste: on a phone
+      // the share sheet hands it the file; on a computer, save it and open the
+      // upload page.
+      await shareToPlatform('TikTok', 'https://www.tiktok.com/upload', { pasteable: false });
       return;
     }
     if (action === 'facebook') {

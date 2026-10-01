@@ -465,11 +465,35 @@ function getPostsByUser(username, cursor) {
   return apiRequest(`/api/moments/by/${encodeURIComponent(username)}${qs}`);
 }
 
-function setMomentPrivacy(momentId, privacy) {
+// `via` is only for analytics ('share' when the share sheet asked for it).
+function setMomentPrivacy(momentId, privacy, via) {
   return apiRequest(`/api/moments/${momentId}/privacy`, {
     method: 'PATCH',
-    body: JSON.stringify({ privacy }),
+    body: JSON.stringify(via ? { privacy, via } : { privacy }),
   });
+}
+
+// "Send to my phone" (server/src/phone-share.js): a 24-hour link to a page
+// that hands this moment to the phone's own share sheet (Instagram, TikTok…).
+function phoneShareLink(momentId) {
+  return apiRequest('/api/phone-share', { method: 'POST', body: JSON.stringify({ momentId }) });
+}
+function phoneShareEmail(momentId) {
+  return apiRequest('/api/phone-share/email', { method: 'POST', body: JSON.stringify({ momentId }) });
+}
+
+// This account's referral code, fetched once per page. Shared moment links
+// carry it (?r=CODE) so a couple who finds Herae through a shared moment is
+// credited to the people who shared it (server/src/referral.js).
+let referralCodePromise = null;
+function myReferralCode() {
+  if (!getAuth()) return Promise.resolve(null);
+  if (!referralCodePromise) {
+    referralCodePromise = apiRequest('/api/referral/me')
+      .then((r) => (r && /^[0-9A-F]{7}$/.test(r.code) ? r.code : null))
+      .catch(() => null);
+  }
+  return referralCodePromise;
 }
 
 // ── Editing & deletion ───────────────────────────────────────────────
@@ -646,7 +670,7 @@ function momentImageUrl(relativeUrl) {
 // Telegram, a Facebook share, etc. A moment set to 'public' is viewable by
 // anyone with the link; a private/contacts one still opens here but the
 // server enforces who may actually see it (used by the Share flow).
-function momentPublicUrl(id) {
+function momentPublicUrl(id, ref) {
   const origin = location.protocol.startsWith('http')
     ? location.origin
     : ((getAuth()?.serverUrl || getSavedServerUrl()).replace(/\/+$/, ''));
@@ -655,7 +679,7 @@ function momentPublicUrl(id) {
   // pasted into WhatsApp or Discord previews as the memory itself rather than
   // as a generic Herae card. The old query-string form still works and is
   // still given real tags — every link already shared stays valid.
-  return `${origin}/post/${encodeURIComponent(id)}`;
+  return `${origin}/post/${encodeURIComponent(id)}${ref ? `?r=${ref}` : ''}`;
 }
 
 // ── Relationship Memory Engine ───────────────────────────────────────

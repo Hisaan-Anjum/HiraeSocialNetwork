@@ -350,8 +350,24 @@ a:hover { text-decoration: underline; }
   line-height: 1.55; margin-bottom: 16px;
 }
 .share-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
 }
+.share-open-up { display: block; margin-top: 8px; font-size: 12.5px; padding: 6px 12px; }
+.share-phone-btn { display: block; width: 100%; margin-top: 14px; font-size: 14px; }
+.share-phone { display: flex; gap: 16px; align-items: center; margin-top: 14px; padding: 14px;
+  border: 1px solid var(--border); border-radius: 14px; background: rgba(255,255,255,0.03); }
+.share-phone[hidden] { display: none; }
+.share-phone-qr { flex: 0 0 148px; width: 148px; height: 148px; background: #fff; border-radius: 10px; padding: 4px; }
+.share-phone-qr svg { width: 100%; height: 100%; display: block; }
+.share-phone-text { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ink-dim); line-height: 1.5; }
+.share-phone-text strong { color: var(--ink); font-size: 14px; }
+.share-phone-text .btn { align-self: flex-start; font-size: 12.5px; padding: 6px 12px; }
+.share-status.bad { color: #fca5a5; }
+.review-share-night { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  margin: 14px 16px 18px; padding: 16px; border-radius: 16px;
+  border: 1px solid rgba(139,92,246,0.45); background: rgba(139,92,246,0.10); }
+.review-share-night-title { font-weight: 800; font-size: 16px; margin-bottom: 4px; }
+.review-share-night-sub { color: var(--ink-dim); font-size: 13.5px; line-height: 1.5; max-width: 440px; }
 .share-opt {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   padding: 16px 8px; border-radius: 14px; cursor: pointer;

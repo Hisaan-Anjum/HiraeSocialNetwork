@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your moment — Herae</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="/style.css">
+<style>
+  .ph-wrap { max-width: 460px; margin: 0 auto; padding: 22px 16px 48px; }
+  .ph-logo { width: 40px; height: 40px; border-radius: 10px; display: block; margin: 0 auto 12px; }
+  .ph-title { font-size: 21px; font-weight: 800; text-align: center; margin: 0 0 14px; }
+  .ph-media { width: 100%; border-radius: 16px; display: block; background: #000; max-height: 62vh; object-fit: contain; }
+  .ph-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .ph-actions .btn { width: 100%; justify-content: center; text-align: center; font-size: 16px; padding: 14px; }
+  .ph-tip { color: var(--ink-dim); font-size: 13.5px; line-height: 1.55; text-align: center; margin-top: 14px; }
+  .ph-msg { text-align: center; font-size: 14px; margin-top: 12px; min-height: 1em; color: var(--ink-dim); }
+  .ph-msg.ok { color: #86efac; }
+  .ph-msg.bad { color: #fca5a5; }
+</style>
+</head>
+<body>
+  <!-- /phone/<token>: "Send to my phone" from a moment's share sheet
+       (server/src/phone-share.js). The token is a 24-hour link to ONE moment.
+       This page's only job is to hand that file to the phone's own share
+       sheet, where Instagram Stories, Reels and TikTok are one tap away. -->
+  <div class="ph-wrap">
+    <img src="/logo.png" alt="Herae" class="ph-logo">
+    <h1 class="ph-title" id="title">Your moment</h1>
+    <div id="media"><div class="spinner-text">Loading…</div></div>
+    <div class="ph-actions" id="actions" hidden>
+      <button class="btn btn-primary" id="share" disabled>Getting it ready…</button>
+      <a class="btn btn-ghost" id="save" download>Save to my phone</a>
+    </div>
+    <div class="ph-msg" id="msg" aria-live="polite"></div>
+    <p class="ph-tip" id="tip" hidden>Tap <b>Share</b>, then pick Instagram (Story or Reel), TikTok, WhatsApp or anywhere else. Tag your person 💜</p>
+  </div>
+<script>
+'use strict';
+(function () {
+  var token = (location.pathname.match(/^\/phone\/([^/?#]+)/) || [])[1] || '';
+  var msg = document.getElementById('msg');
+  var shareBtn = document.getElementById('share');
+  var saveLink = document.getElementById('save');
+  var file = null;
+  function say(text, kind) { msg.textContent = text || ''; msg.className = 'ph-msg' + (kind ? ' ' + kind : ''); }
+
+  fetch('/api/phone-share/' + encodeURIComponent(token))
+    .then(function (r) { return r.json().then(function (b) { if (!r.ok) throw new Error(b.error || 'This link has expired.'); return b; }); })
+    .then(function (m) {
+      var src = m.isVideo ? m.videoUrl : m.url;
+      var holder = document.getElementById('media');
+      holder.innerHTML = m.isVideo
+        ? '<video class="ph-media" controls playsinline muted loop autoplay></video>'
+        : '<img class="ph-media" alt="Your moment">';
+      var el = holder.firstChild;
+      if (m.isVideo) el.poster = m.url;
+      el.src = src;
+      if (m.description) document.getElementById('title').textContent = m.description;
+      var ext = m.isVideo ? (/\.mp4(?:$|\?)/i.test(src) ? 'mp4' : 'webm') : 'jpg';
+      var name = 'herae-moment-' + m.id + '.' + ext;
+      saveLink.href = src;
+      saveLink.setAttribute('download', name);
+      document.getElementById('actions').hidden = false;
+      document.getElementById('tip').hidden = false;
+      // The file is fetched BEFORE the button is enabled: navigator.share()
+      // only works straight from a tap, with no waiting in between.
+      return fetch(src).then(function (r) { return r.blob(); }).then(function (blob) {
+        file = new File([blob], name, { type: blob.type || (m.isVideo ? 'video/' + ext : 'image/jpeg') });
+        var can = navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
+        if (can) {
+          shareBtn.disabled = false;
+          shareBtn.textContent = 'Share to Instagram, TikTok…';
+        } else {
+          shareBtn.hidden = true;
+          document.getElementById('tip').hidden = true;
+          saveLink.className = 'btn btn-primary';
+          say('Save it, then post it from your Instagram or TikTok app.');
+        }
+      });
+    })
+    .catch(function (e) {
+      document.getElementById('media').innerHTML = '';
+      say(e && e.message ? e.message : 'This link has expired. Send it to your phone again from Herae.', 'bad');
+    });
+
+  shareBtn.addEventListener('click', function () {
+    if (!file) return;
+    navigator.share({ files: [file] })
+      .then(function () { say('Shared 💜', 'ok'); })
+      .catch(function (e) { if (!e || e.name !== 'AbortError') say('Sharing did not open. Use "Save to my phone" instead.', 'bad'); });
+  });
+})();
+</script>
+</body>
+</html>
