@@ -261,6 +261,19 @@
     </ul>
   </section>
 
+  <!-- ── The whole setup, shown (2026-10-01) ─────────────────────────────
+       A 40-second walkthrough: install, account, send the link, partner
+       presses Join, the film plays on both screens with the call. A plain
+       thumbnail until clicked, so the page stays light; the player loads
+       from youtube-nocookie only when someone asks for it. -->
+  <section class="setup-video" id="see-it">
+    <h2 class="section-heading">See the whole setup in 40 seconds.</h2>
+    <button type="button" class="sv-facade" data-id="q55sO5UzKT0" aria-label="Play the 40-second setup video">
+      <img src="https://i.ytimg.com/vi/q55sO5UzKT0/hqdefault.jpg" alt="Herae setup: two laptops playing the same film in sync with a video call" loading="lazy" width="480" height="360">
+      <span class="sv-play" aria-hidden="true">▶</span>
+    </button>
+  </section>
+
   <!-- ── The two things they have already tried ──────────────────────────
        Both failures are FELT rather than argued. Screen sharing is the one
        everybody has actually done; the second is the one nobody has ever
@@ -580,5 +593,14 @@
     })();
   </script>
   <script src="index.js"></script>
+<script>
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.sv-facade'); if (!b) return;
+  var f = document.createElement('iframe');
+  f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.id + '?autoplay=1&rel=0';
+  f.title = 'Herae setup in 40 seconds'; f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true;
+  f.className = 'sv-frame'; b.replaceWith(f);
+});
+</script>
 </body>
 </html>
