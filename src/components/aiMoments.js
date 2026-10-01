@@ -393,6 +393,9 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
   for (const m of moments) m.askCalibration = askIds.has(m.id);
 
   mountEl.innerHTML = panelHtml(moments, (listed && listed.otherEvenings) || []);
+  // The moments loop's first leak is here (MOMENTS_LOOP.md): moments found but
+  // never kept. Offered → kept → left on the page tells which.
+  if (window.trackEvent) window.trackEvent('ai_moments_offered', { count: moments.length });
 
   const act = (payload) => askExtension(
     { __heraeAiMomentAction: true, requestId: payload.requestId, ...payload },
@@ -500,7 +503,9 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
   // opposite of the calm this feature is supposed to feel like.
   const discardRest = () => {
     if (steppingAway) return;
-    if (!mountEl.querySelector('.aim-card')) return;
+    const left = mountEl.querySelectorAll('.aim-card:not(.aim-card-out)').length;
+    if (!left) return;
+    if (window.trackEvent) window.trackEvent('ai_moments_left', { count: left }, { keepalive: true });
     window.postMessage({
       __heraeAiMomentAction: true, action: 'discardRest',
       requestId: nextRequestId(), session: sessionId || null,
@@ -590,6 +595,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     }
     queuedKeeps.delete(id);
     statusEl.textContent = '✓ Kept';
+    if (window.trackEvent) window.trackEvent('ai_moment_kept', {});
     removeCard(card);
   }
 

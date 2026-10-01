@@ -809,11 +809,13 @@ function getAnalyticsUsers({ limit = 50, offset = 0, q = '' } = {}) {
 // Reports a client-only event (a share hand-off, a recap render) to the
 // first-party analytics log. Fire-and-forget: analytics must never affect the
 // action it measures, so this swallows every error and returns nothing.
-function trackEvent(name, props = {}) {
+// `keepalive` lets an event sent as the page goes away (pagehide) still arrive.
+function trackEvent(name, props = {}, { keepalive = false } = {}) {
   try {
     apiRequest('/api/analytics/event', {
       method: 'POST',
       body: JSON.stringify({ name, props }),
+      ...(keepalive ? { keepalive: true } : {}),
     }).catch(() => {});
   } catch (e) { /* never throws into the caller */ }
 }
