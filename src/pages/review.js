@@ -18,8 +18,9 @@ import { mountSessionLink } from '../watchlist/sessionLink.js';
 import { mountAiMoments } from '../components/aiMoments.js';
 import { mountRatingAsk } from '../components/ratingAsk.js';
 import { openShareSheet } from '../components/shareSheet.js';
+import { mountFoundVia } from '../components/foundVia.js';
 
-const { requireAuth, getSessionDetail, postReview } = window;
+const { requireAuth, getSessionDetail, postReview, getUserProfile } = window;
 
 const auth = requireAuth();
 
@@ -183,6 +184,16 @@ async function loadSession() {
   `;
 
   document.getElementById('shareNightBtn')?.addEventListener('click', () => openShareSheet(best));
+
+  // "Where did you first hear about Herae?" — the review page is where most new accounts actually land (it opens
+  // after their first night); on the feed alone, none of the first 8 answered in a day because none went there.
+  // foundVia.js shows it once per browser, to accounts under 14 days old.
+  if (getUserProfile) {
+    getUserProfile(auth.username).then((p) => {
+      const anchor = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
+      if (p && anchor) mountFoundVia(anchor, p.joinedAt);
+    }).catch(() => {});
+  }
 
   const picker = renderStarPicker(document.getElementById('starPickerMount'), myReview?.rating || 0, () => {});
 
