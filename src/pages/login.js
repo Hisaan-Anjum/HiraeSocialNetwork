@@ -44,7 +44,17 @@ if (getAuth()) {
 } else if (window.whenExtensionMaybeSignsIn) {
   // The extension may still be about to sign this page in (same race, seen
   // from here): if it does, nobody should be left looking at a login form.
-  window.whenExtensionMaybeSignsIn(leaveLoggedIn, () => {});
+  window.whenExtensionMaybeSignsIn(leaveLoggedIn, () => {
+    // Still nothing — but somebody sent here from a page the extension opened
+    // (a saved return address) may simply have a slow machine. Keep looking for
+    // a while; typing a password meanwhile works exactly as before.
+    if (!sessionStorage.getItem('moments_return_to')) return;
+    let tries = 0;
+    const t = setInterval(() => {
+      if (getAuth()) { clearInterval(t); leaveLoggedIn(); }
+      else if (++tries > 180) clearInterval(t);
+    }, 500);
+  });
 }
 
 serverUrlEl.value = getSavedServerUrl();

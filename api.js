@@ -179,7 +179,7 @@ else injectSubscriptionNav();
 const EXT_PROBE_MS = 1500;   // for the extension's content script to answer
 const EXT_AUTH_WAIT_MS = 5000; // …and then for it to finish writing the token
 
-function whenExtensionMaybeSignsIn(onAuth, onGiveUp) {
+function whenExtensionMaybeSignsIn(onAuth, onGiveUp, { probeMs = EXT_PROBE_MS, waitMs = EXT_AUTH_WAIT_MS } = {}) {
   let settled = false;
   let sawExtension = false;
   const finish = (fn) => { if (settled) return; settled = true; window.removeEventListener('message', onMsg); fn(); };
@@ -201,8 +201,8 @@ function whenExtensionMaybeSignsIn(onAuth, onGiveUp) {
     const waited = Date.now() - started;
     // No sign of an extension by the probe deadline: this is an ordinary
     // logged-out visitor and must not be made to wait for one.
-    if (!sawExtension && waited >= EXT_PROBE_MS) return finish(onGiveUp);
-    if (waited >= EXT_AUTH_WAIT_MS) return finish(onGiveUp);
+    if (!sawExtension && waited >= probeMs) return finish(onGiveUp);
+    if (waited >= waitMs) return finish(onGiveUp);
     setTimeout(tick, 50);
   };
   tick();
@@ -211,6 +211,10 @@ function whenExtensionMaybeSignsIn(onAuth, onGiveUp) {
 function requireAuth() {
   const auth = getAuth();
   if (auth) return auth;
+  // A review page with ?session= was opened BY the extension, at the busiest
+  // moment it has (wrapping up a night, putting clips together). It is there;
+  // it is just slow. Give it real time before calling this person logged out.
+  const openedByExtension = /\/review(\.html)?$/.test(location.pathname) && /[?&]session=/.test(location.search);
   whenExtensionMaybeSignsIn(
     // It arrived. Reload rather than continue: every page reads auth once, at
     // the top, and half of them have already given up by now.
@@ -219,6 +223,7 @@ function requireAuth() {
       sessionStorage.setItem('moments_return_to', location.pathname + location.search);
       window.location.href = '/login.html';
     },
+    openedByExtension ? { probeMs: 8000, waitMs: 12000 } : undefined,
   );
   return null;
 }
