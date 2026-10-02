@@ -13,6 +13,7 @@ import { renderUserLink, renderUserLinks } from '../components/userLink.js';
 import { renderAvatarLink } from '../components/avatar.js';
 import { attachPostActionHandlers, renderPostMenu, renderReviewBody } from '../components/postActions.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
+import { openShareSheet } from '../components/shareSheet.js';
 
 const { requireAuth, getAuth, whenExtensionMaybeSignsIn, logout, getMomentById, getReviewById } = window;
 
@@ -245,6 +246,9 @@ async function load() {
         content: moment.content, moments: [moment], reviews: moment.reviews || [],
       });
       contentEl.innerHTML = renderMomentCard(moment, { detail: true, showPrivacyControl: moment.isMine });
+      // ?share=1 — "Share" on a fresh photo-booth strip in the extension opens this page with the share sheet
+      // already up (Send to my phone, Instagram, TikTok…), so sharing is one tap from the moment it was taken.
+      if (moment.isMine && new URLSearchParams(location.search).get('share') === '1') openShareSheet(moment);
     }
   } catch (err) {
     contentEl.innerHTML = renderErrorState(escapeHtml(err.message));

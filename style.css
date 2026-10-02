@@ -2221,6 +2221,11 @@ html { scroll-behavior: smooth; }
 }
 .aim-head { margin-bottom: 16px; }
 .aim-heading { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+.aim-keep-all-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 12px; }
+.aim-keep-all { font-size: 14px; padding: 9px 16px; }
+.aim-auto { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); cursor: pointer; }
+.aim-auto span { color: var(--ink-faint); }
+.aim-auto input { width: 16px; height: 16px; accent-color: var(--purple); }
 .aim-sub { font-size: 13px; color: var(--ink-faint); line-height: 1.55; margin-top: 5px; max-width: 56ch; }
 .aim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
 

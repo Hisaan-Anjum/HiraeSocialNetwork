@@ -168,8 +168,16 @@ else injectSubscriptionNav();
 // Cost when no extension is installed: one ping and a short wait for a reply
 // that never comes. It is not a fixed delay on every logged-out visit — the
 // extension announces itself, and silence is answered quickly.
-const EXT_PROBE_MS = 350;    // long enough for a content script that IS there
-const EXT_AUTH_WAIT_MS = 2000; // …and then for it to finish writing the token
+// 350 ms was "long enough for a content script that IS there" on an idle
+// machine. At the end of a film it is not: the extension opens the review page
+// while it is still wrapping up the night, the content script lands late, and
+// the page concluded "logged out" first — measured 2026-10-02, the review
+// bounced through login to the FEED on one side or the other in most test
+// nights (docs/autonomous-ops/MOMENTS_FUN.md). That is every new couple's
+// first review. A logged-out visitor now waits 1.5 s for the login page; a
+// couple gets their night.
+const EXT_PROBE_MS = 1500;   // for the extension's content script to answer
+const EXT_AUTH_WAIT_MS = 5000; // …and then for it to finish writing the token
 
 function whenExtensionMaybeSignsIn(onAuth, onGiveUp) {
   let settled = false;

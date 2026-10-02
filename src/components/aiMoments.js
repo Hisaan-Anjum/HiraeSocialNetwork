@@ -319,17 +319,31 @@ function otherNightsHtml(others) {
     </div>`;
 }
 
+// "Keep them for me after every night" — one decision, made once, on this
+// browser. Until 2026-10-02 every moment needed its own Keep and everything
+// else was deleted when the page closed; nobody outside the founder's family
+// kept one in seven weeks (docs/autonomous-ops/MOMENTS_FUN.md). Kept moments
+// are private to the two people in them unless somebody changes that.
+const AUTO_KEEP_KEY = 'herae_auto_keep';
+function autoKeepOn() { try { return localStorage.getItem(AUTO_KEEP_KEY) === '1'; } catch (e) { return false; } }
+function setAutoKeep(on) { try { on ? localStorage.setItem(AUTO_KEEP_KEY, '1') : localStorage.removeItem(AUTO_KEEP_KEY); } catch (e) { /* ignore */ } }
+
 function panelHtml(moments, others) {
   const finishing = moments.filter((m) => stateOf(m) === 'finishing').length;
   return `
     <div class="aim-panel" id="aiMomentsPanel">
       <div class="aim-head">
         <div>
-          <div class="aim-heading">Herae kept ${moments.length === 1 ? 'a moment' : `${moments.length} moments`} from tonight</div>
+          <div class="aim-heading">Herae caught ${moments.length === 1 ? 'a moment' : `${moments.length} moments`} from tonight 💜</div>
           <div class="aim-sub">
             Found on your computer, and still only on your computer.
             <strong>Tap any moment to see it full screen.</strong>
-            Keep the ones you want — everything else is deleted when you leave this page.
+            Keep the ones you want. Nothing is lost if you leave: the rest wait on this computer for a while, then delete themselves.
+          </div>
+          <div class="aim-keep-all-row">
+            <button type="button" class="btn btn-gold aim-keep-all">💾 Keep ${moments.length === 1 ? 'it' : `all ${moments.length}`}</button>
+            <label class="aim-auto"><input type="checkbox" class="aim-auto-box"${autoKeepOn() ? ' checked' : ''}>
+              Keep them for me after every night <span>(private: only the two of you see them)</span></label>
           </div>
           <div class="aim-sub aim-finishing-note" ${finishing ? '' : 'hidden'} role="status" aria-live="polite">
             ${finishingNote(finishing)}
@@ -497,19 +511,17 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     if (e.target.closest('[data-aim-other]')) steppingAway = true;
   }, true);
 
-  // Everything that is still on the page when it goes away is dropped. A
-  // pagehide handler rather than a button: leaving IS the decision, and
-  // asking somebody to confirm that they meant to not keep something is the
-  // opposite of the calm this feature is supposed to feel like.
+  // Leaving the page used to DELETE everything not yet kept ("leaving IS the
+  // decision"). In practice leaving was not a decision at all — people closed
+  // the tab, and seven weeks of evenings were deleted unseen. Now nothing is
+  // dropped here: unkept moments stay in the extension (it prunes them by age,
+  // moment-store.js) and are offered again as "other nights still waiting".
+  // The count is still reported, so the keep step stays measurable.
   const discardRest = () => {
     if (steppingAway) return;
     const left = mountEl.querySelectorAll('.aim-card:not(.aim-card-out)').length;
     if (!left) return;
     if (window.trackEvent) window.trackEvent('ai_moments_left', { count: left }, { keepalive: true });
-    window.postMessage({
-      __heraeAiMomentAction: true, action: 'discardRest',
-      requestId: nextRequestId(), session: sessionId || null,
-    }, window.location.origin);
   };
   window.addEventListener('pagehide', discardRest);
 
@@ -925,6 +937,39 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     const card = thumb.closest('.aim-card');
     if (card) openGallery(card.dataset.aimId);
   });
+
+  // ── Keep all, and "keep them for me after every night" ───────────────
+  // One at a time: each keep is an upload, and the extension holds the ones
+  // whose clip is still being put together (keepMoment's `pending` path).
+  let keepingAll = false;
+  async function keepAll() {
+    if (keepingAll) return;
+    keepingAll = true;
+    const btn = mountEl.querySelector('.aim-keep-all');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+    const ids = [...mountEl.querySelectorAll('.aim-card:not(.aim-card-out)')].map((c) => c.dataset.aimId);
+    for (const id of ids) {
+      const c = cardFor(id);
+      if (!c || c.querySelector('.aim-keep')?.disabled) continue;
+      await keepMoment(id);
+    }
+    keepingAll = false;
+    const still = mountEl.querySelectorAll('.aim-card:not(.aim-card-out)').length;
+    if (btn) { btn.textContent = still ? 'Saving the rest as they finish…' : '✓ All kept'; }
+  }
+  mountEl.addEventListener('click', (e) => {
+    if (e.target.closest('.aim-keep-all')) keepAll();
+  });
+  mountEl.addEventListener('change', (e) => {
+    const box = e.target.closest('.aim-auto-box');
+    if (!box) return;
+    setAutoKeep(box.checked);
+    if (window.trackEvent) window.trackEvent('ai_auto_keep', { on: box.checked });
+    if (box.checked) keepAll();
+  });
+  // Chosen on an earlier night: do it without being asked. A short pause so
+  // the page is seen first and the cards visibly move into the memories.
+  if (autoKeepOn()) setTimeout(keepAll, 1500);
 
   mountEl.addEventListener('click', async (e) => {
     const card = e.target.closest('.aim-card');

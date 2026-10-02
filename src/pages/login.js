@@ -25,12 +25,26 @@ if (inviteParam) window.savePendingInvite(inviteParam);
 // Already logged in? Redeem anything pending BEFORE leaving, or arriving here
 // with a session and a fresh invite would silently drop it on the way to the
 // feed.
-if (getAuth()) {
+// …and go back to where they were headed. This used to send everyone to the
+// feed, which is how a review page that lost the sign-in race (api.js
+// requireAuth) turned into "the review never opened": the extension's login
+// arrived a moment later, this branch ran, and the night they were sent to
+// review was replaced by the feed.
+function leaveLoggedIn() {
   redeemPendingInvite().then((r) => {
+    const returnTo = sessionStorage.getItem('moments_return_to');
+    sessionStorage.removeItem('moments_return_to');
     window.location.href = r && r.username && !r.self
       ? `user.html?u=${encodeURIComponent(r.username)}`
-      : 'memories.html';
+      : (returnTo || 'memories.html');
   });
+}
+if (getAuth()) {
+  leaveLoggedIn();
+} else if (window.whenExtensionMaybeSignsIn) {
+  // The extension may still be about to sign this page in (same race, seen
+  // from here): if it does, nobody should be left looking at a login form.
+  window.whenExtensionMaybeSignsIn(leaveLoggedIn, () => {});
 }
 
 serverUrlEl.value = getSavedServerUrl();
