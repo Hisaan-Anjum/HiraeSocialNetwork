@@ -19,6 +19,7 @@ import { mountAiMoments } from '../components/aiMoments.js';
 import { mountRatingAsk } from '../components/ratingAsk.js';
 import { openShareSheet } from '../components/shareSheet.js';
 import { mountFoundVia } from '../components/foundVia.js';
+import { mountPlanNext } from '../components/planNext.js';
 
 const { requireAuth, getSessionDetail, postReview, getUserProfile } = window;
 
@@ -184,6 +185,13 @@ async function loadSession() {
   `;
 
   document.getElementById('shareNightBtn')?.addEventListener('click', () => openShareSheet(best));
+
+  // The next night, planned before they say goodnight (PMF.md 2026-10-03: the second night is the funnel's biggest
+  // leak). Below the share card, above the review.
+  if (others.length) {
+    const anchor = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
+    mountPlanNext(anchor, { partner: others[0], startedAt: detail.startedAt || null, via: 'review' }).catch(() => {});
+  }
 
   // "Where did you first hear about Herae?" — the review page is where most new accounts actually land (it opens
   // after their first night); on the feed alone, none of the first 8 answered in a day because none went there.

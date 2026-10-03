@@ -22,6 +22,7 @@ import { mountAvatarControls } from '../components/avatarUpload.js';
 import { initSearch } from '../components/search.js';
 import { mountGetStarted } from '../components/getStarted.js';
 import { mountFoundVia } from '../components/foundVia.js';
+import { mountPlanNext } from '../components/planNext.js';
 
 const {
   requireAuth, logout, getFeed, getSessionsMine, getRecommendations, getFeaturedRecommendation,
@@ -122,6 +123,15 @@ async function loadMyPanel() {
     // New accounts: one tap on where they heard about Herae (signup can't see the link that brought them).
     // Below the first-night steps, never above them: the invite is the thing that matters on day one.
     mountFoundVia((p.counts.sessions === 0 && document.getElementById('getStarted')) || el.querySelector('header') || el.firstElementChild, p.joinedAt);
+    // ?plan=1 — from the "movie night #2?" email (server/src/night-plans.js): plan with the person they last watched with.
+    if (new URLSearchParams(location.search).get('plan') === '1' && window.getSessionsMine) {
+      window.getSessionsMine().then((r) => {
+        const last = r && r.sessions && r.sessions[0];
+        const partner = last && (last.participants || []).find((u) => u !== p.username);
+        if (partner) mountPlanNext(el.querySelector('header') || el.firstElementChild, { partner, startedAt: last.startedAt || null, via: 'email' })
+          .then((card) => card && card.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+      }).catch(() => {});
+    }
   } catch (e) {
     el.innerHTML = '';
   }
