@@ -109,6 +109,8 @@ const FILES = [
   // and the QR encoder the share sheet loads on demand (qrcode-generator 2.0.4, MIT).
   'phone.html',
   'qrcode-generator.js',
+  // Channel attribution carried to the store link (src-tag.js header).
+  'src-tag.js',
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
   'teleparty-alternative.html',
