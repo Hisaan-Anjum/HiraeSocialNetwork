@@ -23,7 +23,7 @@ function sameTime(startedAt) {
   return { h: s.getHours() + (m === 60 ? 1 : 0), m: m === 60 ? 0 : m };
 }
 
-export async function mountPlanNext(anchor, { partner, startedAt, via = 'review' } = {}) {
+export async function mountPlanNext(anchor, { partner, startedAt, via = 'review', shareLink = '' } = {}) {
   if (!anchor || !partner || !apiRequest) return null;
   const card = document.createElement('div');
   card.className = 'plan-next';
@@ -32,24 +32,55 @@ export async function mountPlanNext(anchor, { partner, startedAt, via = 'review'
   let existing = null;
   try { existing = (await apiRequest(`/api/night-plans/next?partner=${encodeURIComponent(partner)}`)).plan; } catch (e) { /* show the planner */ }
 
+  // Before a first night (via 'first', from the first-night card): no "same time" to repeat yet, so offer tonight
+  // (or tomorrow, once it's late) at 9 pm and the coming Saturday at 8 pm — "we haven't had a free evening" was a
+  // top answer (CUSTOMER_TALKS.md); picking the evening in advance is the fix.
+  const first = via === 'first';
   const { h, m } = sameTime(startedAt);
-  const options = [
-    { label: 'Same time tomorrow', when: at(1, h, m) },
-    { label: 'Same time next week', when: at(7, h, m) },
-  ];
+  const sat = (6 - new Date().getDay() + 7) % 7 || 7;
+  const options = first
+    ? [
+      new Date().getHours() < 20 ? { label: 'Tonight', when: at(0, 21, 0) } : { label: 'Tomorrow night', when: at(1, 21, 0) },
+      { label: 'This Saturday', when: at(sat, 20, 0) },
+    ]
+    : [
+      { label: 'Same time tomorrow', when: at(1, h, m) },
+      { label: 'Same time next week', when: at(7, h, m) },
+    ];
+  const which = first ? 'first' : 'next';
 
-  function renderPlanned(when) {
+  // partnerEmailed=false: they joined as a guest (no account, no email) or turned these emails off — say so, and hand
+  // the planner a one-tap way to tell them, instead of promising an invite that never arrives (2026-10-04).
+  function renderPlanned(when, partnerEmailed = true) {
+    const shareText = `Movie night ${fmt(when)} (my time)? 🍿${shareLink ? ` Open this on your computer in Chrome when it's time: ${shareLink}` : ''}`;
     card.innerHTML = `
-      <div class="plan-next-title">📅 Next movie night: ${escapeHtml(fmt(when))}</div>
-      <div class="plan-next-sub">It's in both your inboxes as a calendar invite, in each of your own time zones, and you'll both get a reminder an hour before.</div>
+      <div class="plan-next-title">📅 ${first ? 'First' : 'Next'} movie night: ${escapeHtml(fmt(when))}</div>
+      <div class="plan-next-sub">${partnerEmailed
+    ? "It's in both your inboxes as a calendar invite, in each of your own time zones, and you'll both get a reminder an hour before."
+    : `It's in your inbox as a calendar invite, with a reminder an hour before. ${escapeHtml(partner)} doesn't get Herae emails, so send them the time:`}</div>
+      ${partnerEmailed ? '' : `<div class="plan-next-row plan-next-tell">
+        <a class="btn btn-gold" href="https://wa.me/?text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <button type="button" class="btn btn-ghost plan-next-copy">Copy message</button>
+      </div>`}
       <button type="button" class="btn btn-ghost plan-next-change">Change</button>`;
+    const copy = card.querySelector('.plan-next-copy');
+    if (copy) {
+      copy.addEventListener('click', async () => {
+        let ok = false;
+        try { await navigator.clipboard.writeText(shareText); ok = true; } catch (e) { /* insecure context */ }
+        copy.textContent = ok ? '✓ Copied' : 'Copy failed';
+        setTimeout(() => { copy.textContent = 'Copy message'; }, 1800);
+      });
+    }
     card.querySelector('.plan-next-change').addEventListener('click', renderPicker);
   }
 
   function renderPicker() {
     card.innerHTML = `
-      <div class="plan-next-title">📅 Plan your next movie night with ${escapeHtml(partner)}</div>
-      <div class="plan-next-sub">Couples who keep it going pick the next night before they say goodnight. It goes on both your calendars, in each of your time zones.</div>
+      <div class="plan-next-title">📅 Plan your ${which} movie night with ${escapeHtml(partner)}</div>
+      <div class="plan-next-sub">${first
+    ? 'Pick the evening now so it actually happens. It goes on your calendar with a reminder an hour before, and we\'ll make sure they get it too.'
+    : 'Couples who keep it going pick the next night before they say goodnight. It goes on both your calendars, in each of your time zones.'}</div>
       <div class="plan-next-row">
         ${options.map((o, i) => `<button type="button" class="btn btn-primary plan-next-opt" data-i="${i}">${escapeHtml(o.label)}<span>${escapeHtml(fmt(o.when))}</span></button>`).join('')}
         <label class="plan-next-pick">Or pick a time <input type="datetime-local" class="plan-next-input"></label>
@@ -66,7 +97,11 @@ export async function mountPlanNext(anchor, { partner, startedAt, via = 'review'
           method: 'POST',
           body: JSON.stringify({ partner, at: when.toISOString(), tz: Intl.DateTimeFormat().resolvedOptions().timeZone, via }),
         });
-        renderPlanned(new Date(r.at));
+        const emailed = !(r.sent && r.sent.partner && r.sent.partner !== 'sent');
+        if (!emailed && !shareLink && window.getMyInvite) {
+          try { shareLink = ((await window.getMyInvite()) || {}).url || ''; } catch (e) { /* the time alone still helps */ }
+        }
+        renderPlanned(new Date(r.at), emailed);
       } catch (e) {
         btn.disabled = false; msg.textContent = (e && e.message) || 'Could not save it. Try again.';
       }

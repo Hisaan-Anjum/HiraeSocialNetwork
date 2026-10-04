@@ -10,6 +10,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { mountPlanNext } from './planNext.js';
 
 const STORE_URL = 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=get_started';
 const HIDE_KEY = 'herae_get_started_hidden';
@@ -96,7 +97,8 @@ export async function mountGetStarted(el) {
   const watchBody = `<p class="gs-text">When they open your link, Herae connects the two of you by itself. Then open a film on
        Netflix, YouTube or whatever you normally use and press play: play, pause and skipping stay in step for both of
        you, with a video call right there. (If it ever doesn't connect, click the Herae icon at the top right of Chrome,
-       it may be inside the puzzle-piece menu, and press <b>Connect</b> next to their name.)</p>`;
+       it may be inside the puzzle-piece menu, and press <b>Connect</b> next to their name.)</p>
+       <div class="gs-plan-anchor"></div>`;
 
   el.innerHTML = `
     <section class="gs-card" aria-labelledby="gsHeading">
@@ -124,6 +126,15 @@ export async function mountGetStarted(el) {
       copyBtn.textContent = ok ? '✓ Copied' : 'Press Ctrl+C';
       setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 1800);
     });
+  }
+  // Connected but no night yet → pick the evening now (PMF.md 2026-10-05: "we haven't had a free evening yet").
+  // Same card as after a night, in its first-night mode; best-effort, the steps above work without it.
+  const planAnchor = el.querySelector('.gs-plan-anchor');
+  if (planAnchor && window.getContacts) {
+    window.getContacts().then((r) => {
+      const partner = ((r && r.contacts) || [])[0];
+      if (partner && partner.username) mountPlanNext(planAnchor, { partner: partner.username, via: 'first', shareLink: invite && invite.url });
+    }).catch(() => {});
   }
   // "Let Herae email them" (server/src/partner-invite-email.js, PMF.md 2026-10-04): the inviter stops being the
   // middleman — Herae sends the three steps, plus one reminder a day later if they haven't joined.
