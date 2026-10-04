@@ -82,7 +82,15 @@ export async function mountGetStarted(el) {
        <div class="gs-link-row">
          <code class="gs-link">${escapeHtml(invite.url)}</code>
          <button type="button" class="btn btn-ghost gs-copy">Copy link</button>
-       </div>`
+       </div>
+       <form class="gs-email" novalidate>
+         <label class="gs-email-label" for="gsEmail">Or let Herae email them the setup</label>
+         <div class="gs-email-row">
+           <input id="gsEmail" class="gs-email-input" type="email" inputmode="email" autocomplete="off" placeholder="their email address" maxlength="254">
+           <button type="submit" class="btn btn-ghost gs-email-send">Send</button>
+         </div>
+         <div class="gs-email-msg" aria-live="polite"></div>
+       </form>`
     : `<p class="gs-text">Open Herae from your Chrome toolbar and use <b>Invite</b> to get a link to send them.</p>`;
 
   const watchBody = `<p class="gs-text">When they open your link, Herae connects the two of you by itself. Then open a film on
@@ -115,6 +123,28 @@ export async function mountGetStarted(el) {
       const ok = await copyText(invite.url);
       copyBtn.textContent = ok ? '✓ Copied' : 'Press Ctrl+C';
       setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 1800);
+    });
+  }
+  // "Let Herae email them" (server/src/partner-invite-email.js, PMF.md 2026-10-04): the inviter stops being the
+  // middleman — Herae sends the three steps, plus one reminder a day later if they haven't joined.
+  const emailForm = el.querySelector('.gs-email');
+  if (emailForm) {
+    emailForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const input = emailForm.querySelector('.gs-email-input');
+      const btn = emailForm.querySelector('.gs-email-send');
+      const msg = emailForm.querySelector('.gs-email-msg');
+      const addr = input.value.trim();
+      if (!addr) { msg.textContent = 'Type their email address first.'; input.focus(); return; }
+      btn.disabled = true; msg.textContent = 'Sending…';
+      try {
+        await window.apiRequest('/api/invite/email', { method: 'POST', body: JSON.stringify({ email: addr }) });
+        msg.textContent = `Sent. ${addr} will get the three steps from Herae, and one reminder tomorrow if they haven't joined yet.`;
+        input.value = '';
+      } catch (e) {
+        msg.textContent = (e && e.message) || 'Could not send it. Try again, or send them your link above.';
+      }
+      btn.disabled = false;
     });
   }
   el.querySelector('.gs-hide').addEventListener('click', () => {
