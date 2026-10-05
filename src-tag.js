@@ -17,11 +17,14 @@
         var host = new URL(document.referrer).hostname.replace(/^www\./, '');
         if (host && !/(^|\.)herae\.app$/.test(host) && host !== location.hostname) tag = 'ref:' + host;
       }
-      if (tag) localStorage.setItem(KEY, clean(tag));
+      if (tag) {
+        localStorage.setItem(KEY, clean(tag));
+        if (/(^|\.)herae\.app$/.test(location.hostname)) document.cookie = 'herae_ft=' + encodeURIComponent(clean(tag)) + '; domain=.herae.app; path=/; max-age=' + (90 * 86400) + '; secure; samesite=lax';
+      }
     }
   } catch (e) { /* storage blocked, or an odd referrer */ }
   var label = '';
-  try { label = (localStorage.getItem(KEY) || '').replace(/^utm:/, '').replace(':', '-'); } catch (e) { /* none */ }
+  try { label = (localStorage.getItem(KEY) || decodeURIComponent((document.cookie.match(/(?:^|; )herae_ft=([^;]+)/) || [])[1] || '')).replace(/^utm:/, '').replace(':', '-'); } catch (e) { /* none */ }
   if (!label) return;
   function tagLink(a) {
     try {

@@ -60,6 +60,7 @@ function setAuthHintCookie(on) {
 
 function setAuth(auth) {
   localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+  setTimeout(() => { try { reportFirstTouch(); } catch (e) { /* defined below */ } }, 1500);
   localStorage.setItem(SERVER_URL_KEY, auth.serverUrl);
   setAuthHintCookie(true);
   broadcastAuthChange(auth);
@@ -356,12 +357,33 @@ const FIRST_TOUCH_KEY = 'herae_first_touch';
       const host = new URL(document.referrer).hostname.replace(/^www\./, '');
       if (host && !/(^|\.)herae\.app$/.test(host) && host !== location.hostname) tag = 'ref:' + host;
     }
-    if (tag) localStorage.setItem(FIRST_TOUCH_KEY, tag.toLowerCase().replace(/[^a-z0-9_.:-]/g, '').slice(0, 60));
+    if (tag) { tag = tag.toLowerCase().replace(/[^a-z0-9_.:-]/g, '').slice(0, 60); localStorage.setItem(FIRST_TOUCH_KEY, tag); setFirstTouchCookie(tag); }
   } catch (e) { /* storage blocked, or an odd referrer */ }
 })();
-function signupSourceTag() {
-  try { return localStorage.getItem(FIRST_TOUCH_KEY) || 'site'; } catch (e) { return 'site'; }
+// The landing page lives on herae.app and the app on app.herae.app: localStorage doesn't cross, so the first touch is
+// mirrored into a .herae.app cookie (a label, nothing identifying) — the ad test (2026-10-06) needs ad vs organic to
+// survive "tap the ad on the phone → install on the laptop → sign up inside the extension → land on the app".
+function setFirstTouchCookie(tag) {
+  if (!/(^|\.)herae\.app$/.test(location.hostname)) return;
+  document.cookie = `herae_ft=${encodeURIComponent(tag)}; domain=.herae.app; path=/; max-age=${90 * 86400}; secure; samesite=lax`;
 }
+function firstTouchTag() {
+  try { const l = localStorage.getItem(FIRST_TOUCH_KEY); if (l) return l; } catch (e) { /* blocked */ }
+  const m = document.cookie.match(/(?:^|; )herae_ft=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+function signupSourceTag() {
+  return firstTouchTag() || 'site';
+}
+// Once per browser after sign-in: tell the server which channel first brought this person (event first_touch).
+function reportFirstTouch() {
+  try {
+    if (!(getAuth() || {}).token || localStorage.getItem('herae_ft_reported')) return;
+    localStorage.setItem('herae_ft_reported', '1');
+    trackEvent('first_touch', { tag: (firstTouchTag() || 'none').slice(0, 40) });
+  } catch (e) { /* best-effort */ }
+}
+setTimeout(reportFirstTouch, 1500);
 
 // ── Invite links ──────────────────────────────────────────────────────
 // A code parked by invite.html, redeemed the moment an account exists. Stored in
