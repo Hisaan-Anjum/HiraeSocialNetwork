@@ -111,6 +111,8 @@ const FILES = [
   'qrcode-generator.js',
   // Channel attribution carried to the store link (src-tag.js header).
   'src-tag.js',
+  // /get — ad and bio landing (get.html header).
+  'get.html',
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
   'teleparty-alternative.html',

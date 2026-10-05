@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get Herae</title>
+<meta name="description" content="Watch movies together from anywhere, in sync, with a video call beside the film. Free Chrome extension.">
+<style>
+  :root { --bg: #0d0b12; --card: #1a1524; --ink: #f3f0f8; --dim: #a79fc0; --gold: #f5b942; --purple: #8b5cf6; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  main { max-width: 440px; margin: 0 auto; padding: 28px 18px 40px; text-align: center; }
+  .logo { width: 56px; height: 56px; border-radius: 14px; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 16px 0 8px; }
+  p { color: var(--dim); font-size: 16px; line-height: 1.5; margin: 0 0 18px; }
+  img.shot { width: 100%; border-radius: 16px; border: 2px solid var(--purple); margin: 18px 0 0; }
+  form { display: flex; flex-direction: column; gap: 10px; }
+  input { font: inherit; font-size: 17px; padding: 14px 14px; border-radius: 12px; border: 1px solid rgba(167,139,250,.35); background: var(--card); color: var(--ink); }
+  button, a.btn { font: inherit; font-size: 17px; font-weight: 800; padding: 15px; border-radius: 12px; border: 0; background: var(--gold); color: #1a1205; text-decoration: none; display: block; cursor: pointer; }
+  .ghost { background: transparent !important; color: var(--ink) !important; border: 1px solid rgba(255,255,255,.18) !important; font-weight: 700 !important; }
+  .note { font-size: 13px; color: var(--dim); margin-top: 10px; min-height: 1.2em; }
+  .done { font-size: 18px; color: var(--ink); font-weight: 700; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<!-- /get — the ad / bio landing (STRATEGY_LOOP.md, ad test 2026-10-06). On a laptop it goes straight to the Chrome Web
+     Store with the visitor's channel on the link; on a phone (where most taps happen and the store can't install
+     extensions) it's one screen: email yourself the link for tonight on your laptop. -->
+<main>
+  <img class="logo" src="/logo.png" alt="Herae" onerror="this.hidden=true">
+  <div id="phone" hidden>
+    <h1>Herae runs on your laptop</h1>
+    <p>Get the link by email and open it on your laptop tonight. One click to add it to Chrome, and you're watching together in a minute.</p>
+    <form id="f" novalidate>
+      <input type="email" id="email" placeholder="your email" autocomplete="email" inputmode="email" aria-label="Your email" required>
+      <button type="submit" id="send">Email me the link</button>
+    </form>
+    <button type="button" class="ghost" id="share" style="margin-top:10px" hidden>Or send it to yourself</button>
+    <p class="note" id="note" role="status">One email with the link. Nothing else.</p>
+    <img class="shot" src="/og-image.png" alt="A movie playing in sync with a video call beside it" onerror="this.hidden=true">
+  </div>
+  <div id="desk" hidden>
+    <h1>Taking you to the Chrome Web Store…</h1>
+    <p>Press <b>Add to Chrome</b>. It's free.</p>
+    <a class="btn" id="go" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn">Add Herae to Chrome</a>
+  </div>
+</main>
+<script>
+(function () {
+  var KEY = 'herae_first_touch';
+  var clean = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9_.:-]/g, '').slice(0, 60); };
+  var q = new URLSearchParams(location.search);
+  var ua = navigator.userAgent;
+  var tag = '';
+  try { tag = localStorage.getItem(KEY) || ''; } catch (e) { /* blocked */ }
+  if (!tag) { var m = document.cookie.match(/(?:^|; )herae_ft=([^;]+)/); if (m) tag = decodeURIComponent(m[1]); }
+  if (!tag) {
+    if (q.get('utm_source')) tag = 'utm:' + q.get('utm_source') + (q.get('utm_campaign') ? '.' + q.get('utm_campaign') : '');
+    else if (/Instagram/i.test(ua)) tag = 'app:instagram'; else if (/BytedanceWebview|musical_ly|TikTok/i.test(ua)) tag = 'app:tiktok'; else if (/FBAN|FBAV/i.test(ua)) tag = 'app:facebook';
+    tag = clean(tag);
+    if (tag) {
+      try { localStorage.setItem(KEY, tag); } catch (e) { /* blocked */ }
+      if (/(^|\.)herae\.app$/.test(location.hostname)) document.cookie = 'herae_ft=' + encodeURIComponent(tag) + '; domain=.herae.app; path=/; max-age=' + (90 * 86400) + '; secure; samesite=lax';
+    }
+  }
+  var label = (tag || 'get').replace(/^utm:/, '').replace(':', '-').slice(0, 40);
+  var store = 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=' + encodeURIComponent(label) + '&utm_campaign=get';
+  var phone = /Mobi|Android|iPhone|iPad|iPod/i.test(ua) || (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth < 900);
+  if (!phone) {
+    document.getElementById('desk').hidden = false;
+    document.getElementById('go').href = store;
+    setTimeout(function () { location.replace(store); }, 600);
+    return;
+  }
+  document.getElementById('phone').hidden = false;
+  var note = document.getElementById('note');
+  var src = label.replace(/[^a-z0-9_.-]/gi, '').slice(0, 40) || 'get';
+  document.getElementById('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = document.getElementById('email'), btn = document.getElementById('send'), v = input.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v)) { note.textContent = 'That email doesn’t look right.'; input.focus(); return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    fetch('/api/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, src: src }) })
+      .then(function (r) { if (!r.ok) throw new Error('x'); document.getElementById('f').outerHTML = '<p class="done">Sent ✓ Open it on your laptop tonight.</p>'; note.textContent = ''; })
+      .catch(function () { btn.disabled = false; btn.textContent = 'Email me the link'; note.textContent = 'Couldn’t send it. Try again in a moment.'; });
+  });
+  if (navigator.share) {
+    var sb = document.getElementById('share'); sb.hidden = false;
+    sb.addEventListener('click', function () {
+      navigator.share({ text: 'Herae, for my laptop: https://herae.app/get?utm_source=handoff_share&utm_campaign=' + encodeURIComponent(src) }).then(function () { fetch('/api/handoff/shared', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ src: src }) }); }).catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
