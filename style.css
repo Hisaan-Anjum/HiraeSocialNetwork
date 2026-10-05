@@ -2893,3 +2893,10 @@ body.cd-open { overflow: hidden; }
 .plan-next-input { padding: 7px 9px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--ink); color-scheme: dark; }
 .plan-next-msg { min-height: 1em; margin-top: 8px; font-size: 13px; color: #fca5a5; }
 .plan-next-change { margin-top: 4px; font-size: 12.5px; padding: 6px 12px; }
+
+/* ── Rate Herae after a real night (src/components/rateHerae.js) ── */
+.rate-herae { margin: 14px 16px 18px; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: rgba(139,92,246,0.08); }
+.rate-herae-title { font-weight: 800; font-size: 16px; margin-bottom: 4px; }
+.rate-herae-sub { color: var(--ink-dim); font-size: 13.5px; line-height: 1.5; margin-bottom: 12px; max-width: 520px; }
+.rate-herae-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.rate-herae-later { background: none; border: 0; color: var(--ink-faint); font: inherit; font-size: 13px; cursor: pointer; padding: 6px; }

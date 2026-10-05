@@ -20,6 +20,7 @@ import { mountRatingAsk } from '../components/ratingAsk.js';
 import { openShareSheet } from '../components/shareSheet.js';
 import { mountFoundVia } from '../components/foundVia.js';
 import { mountPlanNext } from '../components/planNext.js';
+import { mountRateHerae } from '../components/rateHerae.js';
 
 const { requireAuth, getSessionDetail, postReview, getUserProfile } = window;
 
@@ -192,6 +193,9 @@ async function loadSession() {
     const anchor = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
     mountPlanNext(anchor, { partner: others[0], startedAt: detail.startedAt || null, via: 'review' }).catch(() => {});
   }
+
+  // After a real night: one ask for a store rating (rateHerae.js) — ratings drive the store's search ranking.
+  mountRateHerae(contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments'), { durationMs: detail.durationMs });
 
   // "Where did you first hear about Herae?" — the review page is where most new accounts actually land (it opens
   // after their first night); on the feed alone, none of the first 8 answered in a day because none went there.
