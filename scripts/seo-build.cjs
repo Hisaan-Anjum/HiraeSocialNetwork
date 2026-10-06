@@ -62,6 +62,9 @@ const freshDates = {};
 function gitDate(file) {
   if (gitWorks) {
     try {
+      // Edited but not committed yet (the normal order: build, then commit) → it changes today.
+      const dirty = execFileSync('git', ['status', '--porcelain', '--', file], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+      if (dirty) { const d = new Date().toISOString(); freshDates[file] = d; return d; }
       const out = execFileSync('git', ['log', '-1', '--format=%cI', '--', file], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
       if (out) { freshDates[file] = out; return out; }
       // Uncommitted new file: today.
