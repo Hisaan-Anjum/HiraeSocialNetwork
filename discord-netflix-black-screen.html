@@ -17,7 +17,7 @@
 <meta property="og:description" content="It's DRM, not your settings. Why the hardware-acceleration trick isn't a good fix, and how to watch together without screen sharing.">
 <meta property="og:image" content="https://herae.app/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<!-- Written 2026-09-26. Deliberately does not give step-by-step instructions
+<!-- Updated 2026-10-06 (see-each-other section, from r/LDR research docs/REDDIT_OPPORTUNITIES.md). Written 2026-09-26. Deliberately does not give step-by-step instructions
      for defeating a service's content protection (the "disable hardware
      acceleration" trick); it explains it and why we don't recommend it. -->
 <script type="application/ld+json">
@@ -29,6 +29,8 @@
      "acceptedAnswer": {"@type": "Answer", "text": "Netflix protects its video with DRM. When Discord (or Meet, Zoom, WhatsApp) tries to capture the window, the browser hands it a black frame instead of the film. Your settings aren't broken; the protection is working as designed."}},
     {"@type": "Question", "name": "Does turning off hardware acceleration fix the Discord Netflix black screen?",
      "acceptedAnswer": {"@type": "Answer", "text": "Sometimes, but it works by getting around the service's content protection, which Netflix's terms ask members not to do. It can stop working with any update, it moves video decoding onto your processor, and the other person still gets a compressed copy of your screen."}},
+    {"@type": "Question", "name": "Can we see each other while we watch a movie together?",
+     "acceptedAnswer": {"@type": "Answer", "text": "With a screen share the film usually fills the window, so seeing each other means juggling windows, and on Netflix the share is black anyway. Teleparty includes text chat for free, and its video chat needs Premium. Herae, a free Chrome extension, keeps each person's own player in sync and puts a small video call window beside the film on the free plan."}},
     {"@type": "Question", "name": "How can we watch Netflix together without screen sharing?",
      "acceptedAnswer": {"@type": "Answer", "text": "Each person plays the film on their own account and something keeps the two players in sync: a countdown on a call, or a sync extension such as Teleparty or Herae. Nothing is captured, so nothing goes black. The title has to be available in both countries."}}
   ]
@@ -89,6 +91,9 @@
     <div class="note"><strong>The countdown.</strong> Get on a call, load the film, press play on three. Free and it works everywhere. It drifts over a long film, and every pause means another countdown.</div>
     <div class="note"><strong>A sync extension.</strong> It keeps play, pause and skip in step for you. Nothing is captured, so nothing goes black, and each of you watches at full quality. Teleparty and Herae both work this way (<a href="teleparty-alternative.html">how they compare</a>).</div>
     <p>One catch for any of these: the title has to be available to both of you. If you're in different countries, check that it shows up in both catalogues.</p>
+
+    <h2>Can you see each other while you watch?</h2>
+    <p>This is the other complaint people have about the screen-share route: the film fills the window, so seeing your person means juggling windows (and on Netflix the share is black anyway). Teleparty's free plan has text chat; its video chat needs Premium. Herae keeps each of your players in sync and puts a small video call window right beside the film, on the free plan, so you can watch the film and each other at the same time. More on how that works: <a href="watch-any-website-together.html">watch any website together</a>.</p>
 
     <div class="cta-box">
       <strong>Herae keeps the film in sync, with a video call beside it</strong>
