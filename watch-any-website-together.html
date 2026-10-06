@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Watch Any Website Together, in Sync — Herae</title>
+<meta name="description" content="Watch any website together with someone far away: how Herae keeps any video player in sync (including embedded players), what it can't do, and how to set it up in a minute.">
+<link rel="canonical" href="https://herae.app/watch-any-website-together.html">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="landing.css">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Herae">
+<meta property="og:url" content="https://herae.app/watch-any-website-together.html">
+<meta property="og:title" content="Watch any website together, in sync">
+<meta property="og:description" content="How Herae keeps any video player in step between two browsers, including embedded players, and what it can't do.">
+<meta property="og:image" content="https://herae.app/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Written 2026-10-06 from the sync engine itself (content.js, prime-clock.js) and our own soak test
+     (docs/autonomous-ops/MOMENTS_FUN.md, 2026-10-02). Re-check the code before changing any technical claim. -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can you watch any website together?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, if the site plays its video in an ordinary HTML5 video player in Chrome, which nearly every video site does. Herae, a free Chrome extension, works from the player on the page rather than a list of supported services, so it covers the big streaming services, smaller sites and video embedded inside other pages. Each person opens the same page and plays from their own account; Herae keeps play, pause and seek in step."}}, {"@type": "Question", "name": "Does Herae share my screen?", "acceptedAnswer": {"@type": "Answer", "text": "No. Herae never sends the picture. Each person plays their own copy of the video at full quality, and Herae only sends play, pause and seek between the two browsers. That is also why Netflix and Prime Video don't go black the way they do over a Discord or video-call screen share."}}, {"@type": "Question", "name": "Does each person need an account on the streaming site?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Herae doesn't provide, host or stream any video, so each person needs their own access to the site and the title. A partner can join a Herae session from an invite link without making a Herae account."}}, {"@type": "Question", "name": "Does Herae work with video embedded in another page?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Herae runs separately inside every frame of the page, including third-party embedded players, so a video inside an embed is visible to it and can be synced like any other."}}, {"@type": "Question", "name": "Does Herae work on phones?", "acceptedAnswer": {"@type": "Answer", "text": "No. Herae is a Chrome extension for desktop and laptop computers (Windows, macOS, Linux, ChromeOS). It doesn't run on phones, tablets or smart TVs."}}]}</script>
+<style>
+  .guide { max-width: 720px; margin: 0 auto; padding: 36px 20px 70px; line-height: 1.65; font-size: 16px; }
+  .guide h1 { font-size: 32px; line-height: 1.2; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 14px; }
+  .guide h2 { font-size: 22px; font-weight: 800; margin: 40px 0 10px; letter-spacing: -.01em; }
+  .guide h3 { font-size: 17px; font-weight: 700; margin: 24px 0 6px; }
+  .guide p, .guide li { color: var(--ink); }
+  .guide p { margin: 0 0 12px; }
+  .guide .lede { color: var(--ink-dim); font-size: 17px; }
+  .guide ul { padding-left: 20px; }
+  .guide li { margin: 6px 0; }
+  .guide .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  .guide table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14.5px; }
+  .guide th, .guide td { border-bottom: 1px solid var(--border); padding: 9px 10px; text-align: left; vertical-align: top; }
+  .guide th { color: var(--ink-dim); font-weight: 700; font-size: 13px; }
+  .pick { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,.03); margin: 14px 0; font-size: 15px; }
+  .cta-box { border: 1px solid rgba(139,92,246,.45); background: rgba(139,92,246,.08); border-radius: 16px; padding: 20px; margin: 34px 0 10px; }
+  .cta-box .btn { margin-top: 10px; }
+  .guide .fine { color: var(--ink-faint); font-size: 13.5px; }
+</style>
+
+</head>
+<body>
+  <div class="hero-topbar">
+    <a class="brand-link" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae" width="30" height="30"><span>Herae</span>
+    </a>
+    <nav class="topnav-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="index.html#why">Why Herae</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="gift.html">Give it as a gift</a>
+    </nav>
+    <div class="topbar-ctas">
+      <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=teleparty-alt" class="btn btn-gold" target="_blank" rel="noopener">Add to Chrome — free</a>
+    </div>
+  </div>
+
+  <article class="guide">
+    <p class="eyebrow">Guide · written 6 October 2026</p>
+    <h1>Watch any website together, in sync</h1>
+    <p class="lede">You can watch almost any website together with someone far away if both of you open the same page in Chrome and something keeps the two video players in step. Herae is a free Chrome extension that does exactly that: one of you presses play, pause or skips, and the other person's player does the same at the same moment, with a video call beside the film. It works from the video player on the page, not from a list of supported services, so it also covers smaller sites and players embedded inside other pages.</p>
+
+    <h2>How Herae keeps two players in sync</h2>
+    <p>Herae doesn't share a screen and doesn't send any video. Each person loads the page and plays from their own account at full quality. What travels between the two browsers is only the state of the player: playing or paused, the position in the video, and the speed. When one person acts, the other person's player is moved to match.</p>
+    <p>A few details make that work on sites nobody wrote special support for:</p>
+    <ul>
+      <li><b>It runs inside every frame of the page.</b> Many sites put their player inside an embedded frame from another domain. Herae runs a separate copy of its sync engine in every frame, including those embeds, so the video inside them is just as reachable as one on the main page.</li>
+      <li><b>It picks the right video.</b> Pages often have several: the film, trailers in a sidebar, a muted preview on hover. Herae syncs one main video per page: a fullscreen video if there is one, otherwise the largest one on screen, and it sticks with that choice so a hover preview can't take over.</li>
+      <li><b>Only a real person takes control.</b> A video that starts by itself when a page loads doesn't override what the other person is watching; a real click or key press does.</li>
+      <li><b>Order, not clocks.</b> Two computers rarely agree on the exact time. Herae orders actions by sequence rather than by wall-clock time, so a pause followed quickly by a seek arrives in the right order even when the two computers' clocks disagree.</li>
+      <li><b>Ads inside the film.</b> Prime Video plays some ads inside the film's own player. Herae follows the film's position rather than the raw player time there, so the two of you meet at the same moment of the film after the ads.</li>
+    </ul>
+    <p>In our own test (two browsers, a 20-minute film, a video call running the whole time), the two players stayed within 0.6 seconds of each other for 17 minutes, with no dropped connection. That is one test on our setup, not a promise for every network, but it is how it behaves when the connection is healthy.</p>
+
+    <h2>What it covers, and what it can't do</h2>
+    <ul>
+      <li><b>Covers:</b> the major streaming services (see <a href="watch-prime-video-together.html">Prime Video</a> and <a href="watch-disney-plus-together.html">Disney+</a>), YouTube, smaller video sites, and video embedded in other pages, as long as the site plays its video in Chrome's normal HTML5 player.</li>
+      <li><b>Can't:</b> run on phones, tablets or smart TVs (Herae is a Chrome extension for computers); provide the video (each of you needs your own access to the site); or make a title available in a country where the service doesn't offer it.</li>
+      <li><b>Screen sharing is the thing it replaces.</b> Sharing a protected service over Discord or a video call usually shows the other person a black screen. <a href="discord-netflix-black-screen.html">Why that happens, and what works instead</a>.</li>
+    </ul>
+
+    <h2>Set it up in a minute</h2>
+    <ol>
+      <li>Add Herae to Chrome on your computer (free).</li>
+      <li>Send your person your invite link; they add Herae too, and can join without making an account.</li>
+      <li>Both open the same page, one of you presses play. Turn on the video call if you want to see each other.</li>
+    </ol>
+
+    <h2>Questions people ask</h2>
+    <h3>Can you watch any website together?</h3>
+    <p>Yes, if the site plays its video in an ordinary HTML5 video player in Chrome, which nearly every video site does. Herae, a free Chrome extension, works from the player on the page rather than a list of supported services, so it covers the big streaming services, smaller sites and video embedded inside other pages. Each person opens the same page and plays from their own account; Herae keeps play, pause and seek in step.</p>
+    <h3>Does Herae share my screen?</h3>
+    <p>No. Herae never sends the picture. Each person plays their own copy of the video at full quality, and Herae only sends play, pause and seek between the two browsers. That is also why Netflix and Prime Video don't go black the way they do over a Discord or video-call screen share.</p>
+    <h3>Does each person need an account on the streaming site?</h3>
+    <p>Yes. Herae doesn't provide, host or stream any video, so each person needs their own access to the site and the title. A partner can join a Herae session from an invite link without making a Herae account.</p>
+    <h3>Does Herae work with video embedded in another page?</h3>
+    <p>Yes. Herae runs separately inside every frame of the page, including third-party embedded players, so a video inside an embed is visible to it and can be synced like any other.</p>
+    <h3>Does Herae work on phones?</h3>
+    <p>No. Herae is a Chrome extension for desktop and laptop computers (Windows, macOS, Linux, ChromeOS). It doesn't run on phones, tablets or smart TVs.</p>
+    
+    <h2>Related guides</h2>
+    <ul>
+      <li><a href="watch-movies-together-long-distance.html">How to watch movies together long distance</a></li>
+      <li><a href="teleparty-alternative.html">How Herae compares with Teleparty</a></li>
+      <li><a href="about.html">About Herae</a></li>
+    </ul>
+
+    <div class="cta-box">
+      <b>Watch any site together tonight.</b> Herae is free, and your person can join from your link without an account.
+      <a class="btn btn-gold" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=guide-any-site" rel="noopener">Add Herae to Chrome</a>
+    </div>
+  </article>
+
+  <footer class="landing-footer">
+    <a class="footer-brand" href="index.html" aria-label="Herae — home">
+      <img src="logo.png" alt="Herae" width="26" height="26"><span>Herae</span>
+    </a>
+    <nav class="footer-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="about.html">About</a>
+      <a href="watch-movies-together-long-distance.html">Long-distance guide</a>
+      <a href="watch-any-website-together.html">Watch any site together</a>
+      <a href="teleparty-alternative.html">Teleparty alternative</a>
+      <a href="discord-netflix-black-screen.html">Discord black screen</a>
+      <a href="movies-to-watch-long-distance.html">Movies for long distance</a>
+      <a href="long-distance-movie-night-ideas.html">Movie night ideas</a>
+      <a href="things-to-do-on-facetime-long-distance.html">Things to do on FaceTime</a>
+      <a href="long-distance-relationship-gifts.html">Long-distance gifts</a>
+      <a href="best-apps-for-long-distance-couples.html">Apps for long distance</a>
+      <a href="watch-disney-plus-together.html">Disney+ together</a>
+      <a href="watch-prime-video-together.html">Prime Video together</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
+  </footer>
+<script src="/src-tag.js" defer></script>
+</body>
+</html>

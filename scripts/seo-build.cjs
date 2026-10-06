@@ -22,6 +22,7 @@ const BASE = 'https://herae.app';
 const PUBLIC = [
   ['index.html', null],
   ['watch-movies-together-long-distance.html', 'Guides'],
+  ['watch-any-website-together.html', 'Guides'],
   ['teleparty-alternative.html', 'Guides'],
   ['best-apps-for-long-distance-couples.html', 'Guides'],
   ['discord-netflix-black-screen.html', 'Guides'],
