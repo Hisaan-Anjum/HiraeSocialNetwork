@@ -163,8 +163,9 @@ for (const [file, section] of PUBLIC) {
 // site-help.js clears that element on load and shows the interactive version, so people see no difference.
 (function prerenderHelp() {
   const helpFile = path.join(DIST, 'help.html');
-  const dataFile = path.join(ROOT, '..', 'help-content.js');
-  if (!fs.existsSync(helpFile) || !fs.existsSync(dataFile)) return;
+  const dataFile = path.join(DIST, 'help-content.js'); // copy-static put it there (extension repo or vendored copy)
+  if (!fs.existsSync(helpFile)) return;
+  if (!fs.existsSync(dataFile)) { errors.push('help.html: dist/help-content.js missing, cannot pre-render the articles'); return; }
   const sandbox = { self: {} };
   new Function('self', fs.readFileSync(dataFile, 'utf8'))(sandbox.self);
   const topics = sandbox.self.HERAE_HELP || [];
