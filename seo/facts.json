@@ -1,0 +1,44 @@
+{
+  "_note": "Canonical Herae facts (docs/HERAE_GEO_IMPLEMENTATION_LOG.md). Every metadata/schema/llms.txt string is generated from this file by scripts/seo-build.js. Change a fact HERE, never in page templates. Verified 2026-10-06 against the repo, pricing.html, the Chrome Web Store listing and the live product.",
+  "name": "Herae",
+  "url": "https://herae.app/",
+  "logo": "https://herae.app/logo.png",
+  "image": "https://herae.app/og-image.png",
+  "category": "Watch-together (watch party) Chrome extension",
+  "oneLiner": "Herae is a free Chrome extension that lets two people watch movies and videos together from different places, in sync, with a video call beside the film.",
+  "short": "Watch movies together long distance: one person presses play and the film starts on both screens at the same moment, on Netflix, Prime Video, Disney+, YouTube and almost any other site, with voice and video calling built in.",
+  "long": "Herae keeps two browsers on the same frame of the same video. Each person plays from their own account and their own full-quality stream; only play, pause and seek events travel between them, so nothing is screen-shared and protected services such as Netflix do not show a black screen. Herae works from the page's video player itself rather than a fixed list of supported services, so it covers the major streaming services, smaller sites and embedded players. Voice and video calls are peer-to-peer, there is a live chat over the page, and Herae can keep the moments both people reacted to (detected on-device, nothing sent for analysis) as a shared timeline of the night. Partners can join from an invite link without making an account.",
+  "features": [
+    "Synchronized playback (play, pause, seek) on almost any website with an HTML5 video player, including embedded players",
+    "Each person streams from their own account at full quality; nothing is screen-shared",
+    "Peer-to-peer voice and video calls in a floating window beside the film",
+    "Live chat over the page",
+    "AI Moments: reactions detected on-device and offered at the end of the night to keep",
+    "A shared timeline of nights, moments and reviews",
+    "Invite link: a partner can join without creating an account",
+    "Plan the next movie night with calendar invites and a reminder"
+  ],
+  "audience": "Long-distance couples first; also friends and family who watch together from different places",
+  "platforms": "Google Chrome on desktop and laptop computers (Windows, macOS, Linux, ChromeOS)",
+  "limitations": [
+    "Desktop Chrome only: Herae does not run on phones, tablets or smart TVs",
+    "Each person needs their own access to the streaming service; Herae does not provide, host or stream any video",
+    "Herae cannot make a title available in a country where the streaming service does not offer it"
+  ],
+  "pricing": {
+    "free": "Free: the first two movie nights are unlimited, then 4 hours of synced watching a month; voice, video and chat included",
+    "plus": {"name": "Herae Plus", "price": "8.99", "currency": "USD", "period": "month", "what": "Unlimited synced watching and calls for one account"},
+    "together": {"name": "Herae Together", "price": "12.99", "currency": "USD", "period": "month", "what": "Unlimited, for you and one person you choose"}
+  },
+  "privacy": "Calls are peer-to-peer; face detection for AI Moments runs inside the browser and no video or image is sent anywhere for analysis; Herae reads the play/pause state and position of the video on the page being synced, plus its title and address, and not form fields, passwords or browsing history.",
+  "chromeWebStore": "https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn",
+  "sameAs": [
+    "https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn",
+    "https://www.instagram.com/heraeapp/",
+    "https://www.tiktok.com/@herae.app",
+    "https://www.youtube.com/@HeraeApp",
+    "https://www.pinterest.com/heraeapp/"
+  ],
+  "support": "support@herae.app",
+  "privacyContact": "privacy@herae.app"
+}

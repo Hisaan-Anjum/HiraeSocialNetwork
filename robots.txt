@@ -5,9 +5,15 @@
 # crawl budget across a small site, and several of them would look like thin
 # duplicate content to a crawler.
 #
-# AI crawlers are ALLOWED deliberately. Herae's buyers increasingly ask an
-# assistant "how do long-distance couples watch movies together", and being
-# absent from that answer costs more than the bandwidth. See Ch 23.
+# Search and AI crawlers are ALLOWED deliberately — verified 2026-10-06 against each company's own
+# documentation (docs/AI_SEARCH_RESEARCH.md). Herae's buyers ask assistants "how do long-distance couples
+# watch movies together"; being absent from those answers costs far more than the bandwidth.
+#   Search / answers:  Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User, Claude-SearchBot, Claude-User,
+#                      PerplexityBot, Perplexity-User, Applebot, meta-webindexer
+#   Training:          GPTBot, ClaudeBot, Applebot-Extended, meta-externalagent, CCBot — allowed too (a small
+#                      product wants future models to know it exists). Google-Extended is allowed on purpose:
+#                      it also governs Gemini grounding, so blocking it would hide Herae from Gemini answers.
+# One "User-agent: *" group on purpose: a named group would replace these Disallow rules for that bot.
 
 User-agent: *
 Allow: /
