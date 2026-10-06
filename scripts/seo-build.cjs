@@ -158,6 +158,36 @@ for (const [file, section] of PUBLIC) {
   fs.writeFileSync(p, html);
 }
 
+// help.html: the 25 Help Center articles are rendered by site-help.js in the browser, so crawlers that don't run
+// JavaScript (most AI crawlers) saw 123 words. Write the same articles into the empty article element as plain HTML;
+// site-help.js clears that element on load and shows the interactive version, so people see no difference.
+(function prerenderHelp() {
+  const helpFile = path.join(DIST, 'help.html');
+  const dataFile = path.join(ROOT, '..', 'help-content.js');
+  if (!fs.existsSync(helpFile) || !fs.existsSync(dataFile)) return;
+  const sandbox = { self: {} };
+  new Function('self', fs.readFileSync(dataFile, 'utf8'))(sandbox.self);
+  const topics = sandbox.self.HERAE_HELP || [];
+  const h = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const parts = [];
+  for (const t of topics) {
+    parts.push(`<section id="${h(t.id)}"><h2>${h(t.title)}</h2>`);
+    if (t.purpose) parts.push(`<p>${h(t.purpose)}</p>`);
+    if (Array.isArray(t.steps) && t.steps.length) parts.push('<ol>' + t.steps.map((x) => `<li><b>${h(x.title)}.</b> ${h(x.body)}</li>`).join('') + '</ol>');
+    if (Array.isArray(t.how) && t.how.length) parts.push('<h3>How it works</h3><ul>' + t.how.map((x) => `<li>${h(x)}</li>`).join('') + '</ul>');
+    if (Array.isArray(t.issues) && t.issues.length) parts.push('<h3>If something is off</h3><ul>' + t.issues.map((x) => `<li><b>${h(x[0])}.</b> ${h(x[1])}</li>`).join('') + '</ul>');
+    if (Array.isArray(t.tips) && t.tips.length) parts.push('<h3>Tips</h3><ul>' + t.tips.map((x) => `<li>${h(x)}</li>`).join('') + '</ul>');
+    if (Array.isArray(t.best) && t.best.length) parts.push('<h3>Best practice</h3><ul>' + t.best.map((x) => `<li>${h(x)}</li>`).join('') + '</ul>');
+    parts.push('</section>');
+  }
+  let html = fs.readFileSync(helpFile, 'utf8');
+  const empty = '<article id="shArticle" class="sh-article" tabindex="-1"></article>';
+  if (!html.includes(empty)) { errors.push('help.html: article element changed — update the pre-render in seo-build.cjs'); return; }
+  html = html.replace(empty, `<article id="shArticle" class="sh-article" tabindex="-1">${parts.join('\n')}</article>`);
+  fs.writeFileSync(helpFile, html);
+  console.log(`seo-build: help.html pre-rendered (${topics.length} articles)`);
+})();
+
 // noindex everything that isn't public.
 const publicSet = new Set(PUBLIC.map(([f]) => f));
 let noindexed = 0;
