@@ -12,7 +12,20 @@ export async function mountWatchLink(anchor) {
   if (!anchor || !window.getContacts) return null;
   let contacts = [];
   try { contacts = ((await window.getContacts()) || {}).contacts || []; } catch (e) { return null; }
-  if (!contacts.length) return null;
+  if (!contacts.length) {
+    // No partner connected yet: the box still appears (people look for it), but its first step is the invite.
+    let invite = null; try { invite = window.getMyInvite ? await window.getMyInvite() : null; } catch (e) { /* none */ }
+    const b = document.createElement('section'); b.className = 'watch-link';
+    b.innerHTML = `
+      <div class="watch-link-title">🍿 Watch something together</div>
+      <div class="watch-link-sub">First, send your partner your link. They add Herae (free, no account needed) and you're connected. Then you can paste any movie link here and Herae opens it for both of you, in sync, with your call beside it.</div>
+      ${invite && invite.url ? `<div class="watch-link-row"><input type="text" class="watch-link-url" readonly value="${escapeHtml(invite.url)}" aria-label="Your invite link"><button type="button" class="btn btn-gold watch-link-copy">Copy link</button></div>` : ''}
+      <div class="watch-link-note" role="status"></div>`;
+    anchor.after(b);
+    const c = b.querySelector('.watch-link-copy');
+    if (c) c.addEventListener('click', async () => { let ok = false; try { await navigator.clipboard.writeText(invite.url); ok = true; } catch (e) { /* insecure */ } c.textContent = ok ? '✓ Copied' : 'Select and copy'; setTimeout(() => { c.textContent = 'Copy link'; }, 1800); });
+    return b;
+  }
   const track = (result) => { try { window.trackEvent && window.trackEvent('watch_link_start', { result }); } catch (e) { /* best-effort */ } };
   const box = document.createElement('section');
   box.className = 'watch-link';
