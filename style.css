@@ -2900,3 +2900,12 @@ body.cd-open { overflow: hidden; }
 .rate-herae-sub { color: var(--ink-dim); font-size: 13.5px; line-height: 1.5; margin-bottom: 12px; max-width: 520px; }
 .rate-herae-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .rate-herae-later { background: none; border: 0; color: var(--ink-faint); font: inherit; font-size: 13px; cursor: pointer; padding: 6px; }
+
+/* ── Watch something together now (src/components/watchLink.js) ── */
+.watch-link { margin: 14px 16px 18px; padding: 16px; border-radius: 16px; border: 1px solid rgba(139,92,246,.45); background: rgba(139,92,246,.08); }
+.watch-link-title { font-weight: 800; font-size: 16px; margin-bottom: 4px; }
+.watch-link-sub { color: var(--ink-dim); font-size: 13.5px; line-height: 1.5; margin-bottom: 12px; max-width: 620px; }
+.watch-link-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.watch-link-url { flex: 1 1 280px; min-width: 0; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--ink); font: inherit; }
+.watch-link-who { padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--ink); font: inherit; }
+.watch-link-note { margin-top: 8px; font-size: 13px; color: var(--ink-dim); min-height: 1em; }
