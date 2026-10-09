@@ -148,8 +148,9 @@ for (const [file, section] of PUBLIC) {
           '@type': 'BreadcrumbList', '@id': `${url(file)}#breadcrumb`,
           itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Herae', item: `${BASE}/` },
-            ...(section ? [{ '@type': 'ListItem', position: 2, name: section }] : []),
-            { '@type': 'ListItem', position: section ? 3 : 2, name: title ? title.replace(/\s+[—|–-]\s+Herae\s*$/, '').trim() : file, item: url(file) },
+            // Two levels only: the "Guides"/"Policies" sections have no page of their own, and Google rejects a
+            // breadcrumb item without a URL (Search Console 2026-10-10: Missing field "item").
+            { '@type': 'ListItem', position: 2, name: title ? title.replace(/\s+[—|–-]\s+Herae\s*$/, '').trim() : file, item: url(file) },
           ],
         },
       ],
