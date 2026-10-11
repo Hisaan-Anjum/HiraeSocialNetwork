@@ -66,9 +66,16 @@ export async function mountGetStarted(el) {
   ]);
   const invited = !!(invite && invite.invitedCount > 0);
 
+  // On a phone the store can't install anything: say so, and src-tag.js turns the button into "send it to my laptop"
+  // (2026-10-11: 8 of 10 site sign-ups never used the extension).
+  const onPhone = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth < 900);
   const installBody = hasExtension
     ? `<p class="gs-text">Herae is installed in this browser.</p>`
-    : `<p class="gs-text">Herae runs inside Chrome, beside whatever you're watching. It takes about a minute.</p>
+    : onPhone
+      ? `<p class="gs-text">Your account is ready. Herae runs in Chrome on a computer, so send yourself the link and add it on your laptop. It takes a minute.</p>
+       <a class="btn btn-gold gs-cta" href="${STORE_URL}" target="_blank" rel="noopener">Send it to my laptop</a>`
+      : `<p class="gs-text">Herae runs inside Chrome, beside whatever you're watching. It takes about a minute.</p>
        <a class="btn btn-gold gs-cta" href="${STORE_URL}" target="_blank" rel="noopener">Add to Chrome — free</a>`;
 
   // One tap to send it the way they already talk (2026-10-01: "even a non-tech user should be able to do it").
