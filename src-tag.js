@@ -54,6 +54,11 @@
   var SEL = 'a[href*="chromewebstore.google.com/detail/"]';
   var page = (location.pathname.split('/').pop() || 'home').replace(/\.html$/, '').replace(/[^a-z0-9_-]/gi, '').slice(0, 30) || 'home';
   var src = 'phone-' + page;
+  // On a partner's invite (/invite/<CODE>) the email must carry THAT invite: a bare install link lost it across the
+  // phone→laptop hop and the partner installed connected to nobody (2026-10-11). The server sends /invite/<CODE>.
+  var inviteMatch = location.pathname.match(/^\/invite\/([0-9A-F]{7})\/?$/i);
+  var invite = inviteMatch ? inviteMatch[1].toUpperCase() : null;
+  if (invite) src = 'phone-invite';
   function relabel() {
     document.querySelectorAll(SEL).forEach(function (a) {
       if (a.dataset.handoff) return;
@@ -70,7 +75,9 @@
     sheet.innerHTML =
       '<div style="width:100%;max-width:480px;background:#17171d;color:#f5f5f7;border-radius:20px 20px 0 0;padding:22px 18px 26px;box-shadow:0 -12px 40px rgba(0,0,0,.5)">' +
       '<p style="font-weight:700;font-size:18px;margin:0 0 6px">Herae runs in Chrome on a computer</p>' +
-      '<p style="font-size:15px;color:#a8a8b3;margin:0 0 16px;line-height:1.5">Send yourself the link and add it on your laptop tonight. It takes a minute.</p>' +
+      '<p style="font-size:15px;color:#a8a8b3;margin:0 0 16px;line-height:1.5">' + (invite
+        ? 'Send yourself this invite and open it on your laptop. It adds Herae and connects the two of you.'
+        : 'Send yourself the link and add it on your laptop tonight. It takes a minute.') + '</p>' +
       '<form novalidate style="display:flex;flex-direction:column;gap:10px">' +
       '<input type="email" placeholder="your email" autocomplete="email" inputmode="email" aria-label="Your email" required style="font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:inherit">' +
       '<button type="submit" style="font:inherit;font-weight:700;font-size:16px;padding:13px;border-radius:12px;border:0;background:linear-gradient(135deg,#f5b942,#e0901a);color:#1a1205">Email me the link</button></form>' +
@@ -85,14 +92,14 @@
       var v = input.value.trim(), btn = form.querySelector('button');
       if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v)) { note.textContent = 'That email doesn’t look right.'; input.focus(); return; }
       btn.disabled = true; btn.textContent = 'Sending…';
-      fetch('/api/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, src: src }) })
+      fetch('/api/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, src: src, invite: invite }) })
         .then(function (r) { if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.error || 'Something went wrong'); }); })
         .then(function () { form.outerHTML = '<p style="font-weight:700;font-size:16px;margin:4px 0">Sent ✓ Check your inbox on your laptop.</p>'; note.textContent = 'If it’s not there in a minute, look in Promotions or spam.'; })
         .catch(function (err) { btn.disabled = false; btn.textContent = 'Email me the link'; note.textContent = err.message; });
     });
     var sb = sheet.querySelector('[data-share]');
     if (sb) sb.addEventListener('click', function () {
-      navigator.share({ title: 'Herae', text: 'Herae: watch films together in sync, with the call beside it. Set up on my laptop:', url: 'https://herae.app/?utm_source=handoff_share&utm_campaign=' + encodeURIComponent(src) })
+      navigator.share({ title: 'Herae', text: 'Herae: watch films together in sync, with the call beside it. Set up on my laptop:', url: invite ? location.origin + '/invite/' + invite : 'https://herae.app/?utm_source=handoff_share&utm_campaign=' + encodeURIComponent(src) })
         .then(function () { fetch('/api/handoff/shared', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ src: src }) }).catch(function () {}); })
         .catch(function () { /* the share sheet was closed */ });
     });
