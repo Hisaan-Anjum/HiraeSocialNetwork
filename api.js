@@ -85,6 +85,19 @@ function broadcastAuthChange(auth) {
   try { window.postMessage({ __heraeAuth: true, auth: auth || null }, window.location.origin); } catch (e) { /* non-browser env */ }
 }
 
+// The broadcast above only fires at the moment someone signs in or out, and the usual order on the site is the
+// opposite: sign up here, THEN add Herae to Chrome. The extension arrived after the only broadcast, so it never
+// learned the account, and its welcome page told someone who had just made one to "Create your free account"
+// (2026-10-14: most site sign-ups never used the extension). So whenever the extension says hello signed out, hand it
+// the session this page already has. Never over a different account it is already signed in to.
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('message', (e) => {
+    if (e.source !== window || !e.data || e.data.__heraeExtension !== true || e.data.signedInAs) return;
+    const auth = getAuth();
+    if (auth && auth.token && auth.username) broadcastAuthChange(auth);
+  });
+}
+
 // ── Subscription nav tabs + current-plan pill ────────────────────────
 // Adds "Upgrade" and "Billing" links to the top nav, plus a small pill showing
 // the current plan, on every page that has the nav — so plans, billing and
