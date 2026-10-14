@@ -19,6 +19,11 @@
   --border: rgba(167, 139, 250, 0.18);
 }
 
+/* The site is dark-only, but a <select>'s open list is drawn by the browser: white by default, so our light text
+   vanished in it (founder 2026-10-14, the watch-link names). Dark lists everywhere, with an explicit fallback. */
+select { color-scheme: dark; }
+select option { background: var(--bg-1); color: var(--ink); }
+
 html, body {
   min-height: 100%;
   background:
