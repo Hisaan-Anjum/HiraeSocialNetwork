@@ -612,9 +612,10 @@ a:hover { text-decoration: underline; }
 .contact-arrow { color: var(--ink-faint); font-size: 18px; }
 
 .review-no-moments {
-  text-align: center; color: var(--ink-faint); font-size: 13px;
-  font-style: italic; padding: 18px 0 26px;
+  text-align: center; color: var(--ink); font-size: 16px; font-weight: 600;
+  padding: 18px 0 26px;
 }
+.review-no-moments-tip { display: inline-block; margin-top: 4px; font-size: 13px; font-style: normal; color: var(--ink-faint); }
 
 .login-back {
   display: block; text-align: center; margin-bottom: 18px;

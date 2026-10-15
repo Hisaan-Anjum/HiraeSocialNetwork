@@ -123,7 +123,10 @@ async function loadSession() {
     ? `<div class="review-moment-strip">${detail.moments.map((m) => `
         <div class="review-moment-strip-item">${renderMediaTile(m, { className: 'review-strip-media' })}</div>
       `).join('')}</div>`
-    : `<div class="review-no-moments">No moments were captured this time — the review still counts 💜</div>`;
+    // Nothing saved yet is the usual case (AI Moments is off unless turned on; its finds wait in the extension panel
+    // above until kept). "No moments were captured" contradicted that panel and ended a good night on a shrug, so the
+    // night itself is the memory here (2026-10-15).
+    : `<div class="review-no-moments">🍿 ${detail.durationMs >= 60000 ? `${Math.round(detail.durationMs / 60000)} minutes together` : `Your night with ${escapeHtml(partnerName)}`}${title ? ` · ${escapeHtml(title)}` : ''}<br><span class="review-no-moments-tip">Next time, tap 📸 during the call for a photo strip of you two.</span></div>`;
 
   // The end of a night is when it feels best, so that is where sharing is
   // offered (MOMENTS_LOOP.md): one moment, one tap. A video beats a photo.
