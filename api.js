@@ -120,10 +120,23 @@ function ensureSubStyles() {
   document.head.appendChild(st);
 }
 
+// The person's own time zone, so emails and alerts show THEIR local time (server/src/auth.js POST /api/me/tz).
+// Once a day per browser, or as soon as it changes (travel).
+function reportTimeZone() {
+  let tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return; }
+  const key = 'herae_tz_sent', mark = `${tz}|${new Date().toDateString()}`;
+  try { if (!tz || localStorage.getItem(key) === mark) return; } catch (e) { /* no storage: send anyway */ }
+  apiRequest('/api/me/tz', { method: 'POST', body: JSON.stringify({ tz }) })
+    .then(() => { try { localStorage.setItem(key, mark); } catch (e) { /* fine */ } })
+    .catch(() => { /* next page load tries again */ });
+}
+
 async function injectSubscriptionNav() {
   if (typeof getAuth === 'function' && !getAuth()) return; // signed-in only
   ensureSubStyles();
   const page = location.pathname.replace(/^.*\//, '');
+  reportTimeZone();
   let s = null;
   try { s = await apiRequest('/api/subscription/status'); } catch (e) { /* leave null */ }
 

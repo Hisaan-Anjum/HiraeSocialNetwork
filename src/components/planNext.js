@@ -107,6 +107,11 @@ export async function mountPlanNext(anchor, { partner, startedAt, via = 'review'
       }
     };
     card.querySelectorAll('.plan-next-opt').forEach((b) => b.addEventListener('click', () => save(options[Number(b.dataset.i)].when, b)));
+    // In this person's local time (datetime-local has no zone); starts at the same time tomorrow (founder 2026-10-16).
+    const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    input.min = local(new Date(Date.now() + 10 * 60000));
+    input.value = local(new Date(Date.now() + 24 * 3600000));
+    saveBtn.hidden = false;
     input.addEventListener('change', () => { saveBtn.hidden = !input.value; });
     saveBtn.addEventListener('click', () => { const d = new Date(input.value); if (!Number.isNaN(d.getTime())) save(d, saveBtn); });
   }

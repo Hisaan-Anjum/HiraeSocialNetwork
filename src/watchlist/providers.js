@@ -40,6 +40,8 @@ export function hasWatchLinks(movie) {
 export function openWatchPicker(movie, { onPick }) {
   const links = (movie.watchLinks || []).filter((l) => l && l.url);
   if (!links.length) return null;
+  // One service: nothing to choose, so "Watch now" goes straight there (2026-10-16 — every step is a place to stop).
+  if (links.length === 1) { onPick(links[0]); return null; }
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay wp-overlay';
