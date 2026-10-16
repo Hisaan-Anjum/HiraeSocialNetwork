@@ -200,8 +200,9 @@ async function loadSession() {
   // After a proper night (30+ min), the one place a couple who loved it sees what keeps it going (PRICING_2026-10.md
   // item 6): one quiet line, no countdown, nothing for paying couples. A granted month says until when.
   if (detail.durationMs >= 30 * 60000 && window.apiRequest) {
-    window.apiRequest('/api/subscription/status').then((s) => {
-      const at = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
+    // After the plan card when there is one: the next night comes before the price.
+    Promise.all([window.apiRequest('/api/subscription/status'), new Promise((r) => setTimeout(r, 1500))]).then(([s]) => {
+      const at = contentEl.querySelector('.plan-next') || contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
       if (!s || !at || (s.unlimited && s.source !== 'comp')) return;
       const line = document.createElement('div');
       line.className = 'review-plan-line';
