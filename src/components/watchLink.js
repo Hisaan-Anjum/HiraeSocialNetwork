@@ -59,7 +59,10 @@ export async function mountWatchLink(anchor) {
     if (r.busy) { track('busy'); note.textContent = 'You\'re already in a movie night with someone else. Finish it first, then try again.'; return; }
     if (r.error) { track('error'); note.textContent = 'That didn\'t start: ' + r.error; return; }
     track('ok');
-    note.textContent = `Opened. ${who} gets your invite; when they join, Herae takes them to the same page.`;
+    // Already watching together: it's on both screens now — "gets your invite" was wrong there (ui-start-paths U3).
+    note.textContent = r.switched
+      ? `It's on both your screens now. Press play when you're both ready.`
+      : `Opened. ${who} gets your invite; when they join, Herae takes them to the same page.`;
   });
   return box;
 }
