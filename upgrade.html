@@ -102,7 +102,7 @@
 
     <div class="founding" id="founding" hidden>
       <span class="founding-badge" id="foundingBadge">Founding Couple</span>
-      <div class="founding-title">Herae Together for a whole year: <span id="foundingPrice">$49</span><span class="was">$129.99</span></div>
+      <div class="founding-title">Herae Together for a whole year: <span id="foundingPrice">$29</span><span class="was" id="foundingWas">$49</span></div>
       <div class="founding-sub">For both of you. Only for Herae's first 100 couples, until 31 October, and the price stays for as long as you keep your subscription.</div>
       <button class="btn btn-primary" id="btnFounding" type="button">Become a Founding Couple</button>
     </div>
@@ -195,6 +195,9 @@
     } catch (e) { /* checkout still shows the real price */ }
     renderPrices();
     if (cfg.founding && formatted[cfg.founding.priceId]) el('foundingPrice').textContent = formatted[cfg.founding.priceId];
+    // "was" = this visitor's own yearly Together price (regional prices differ), never a fixed USD figure.
+    const yr = cfg.prices.together && formatted[cfg.prices.together.year];
+    if (yr) el('foundingWas').textContent = yr;
   }
 
   // Shown only while the server says the offer is open (a real cap and end

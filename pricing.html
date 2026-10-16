@@ -74,7 +74,7 @@
 
     <!-- Founding Couple: only while the server says the offer is open. -->
     <div class="founding-note" id="foundingNote" hidden>
-      <b>Founding Couple:</b> Herae Together for a whole year, <b>$49</b> for both of you (normally $129.99).
+      <b>Founding Couple:</b> Herae Together for a whole year, <b id="foundingPrice">$29</b> for both of you (normally <span id="foundingWas">$49</span>).
       Only for the first 100 couples, until 31 October, and the price stays while you keep it.
       <span id="foundingLeft"></span> <a data-cta-paid href="signup.html">Claim a place →</a>
     </div>
@@ -98,7 +98,7 @@
       <div class="price-card">
         <div class="price-name">Herae Plus</div>
         <div class="price-for">For friends, family &amp; individuals</div>
-        <div><span class="price-amount" id="pricePlus">$8.99</span> <span class="price-cycle">/month</span></div>
+        <div><span class="price-amount" id="pricePlus">$4.99</span> <span class="price-cycle">/month</span></div>
         <div class="price-annual">annual billing available</div>
         <ul class="price-feats">
           <li>Unlimited synced watching &amp; calls</li>
@@ -112,7 +112,7 @@
         <div class="price-badge">Most loved</div>
         <div class="price-name">Herae Together</div>
         <div class="price-for">One subscription for both of you</div>
-        <div><span class="price-amount" id="priceTogether">$12.99</span> <span class="price-cycle">/month</span></div>
+        <div><span class="price-amount" id="priceTogether">$6.99</span> <span class="price-cycle">/month</span></div>
         <div class="price-annual">annual billing available</div>
         <ul class="price-feats">
           <li>Everything in Plus, for two people</li>
@@ -167,13 +167,16 @@
         Paddle.Environment.set(cfg.environment);
         Paddle.Initialize({ token: cfg.clientToken });
         const plusId = cfg.prices.plus.month, togId = cfg.prices.together.month;
-        const items = [plusId, togId].filter(Boolean).map((priceId) => ({ priceId, quantity: 1 }));
+        const yearId = cfg.prices.together.year, fId = cfg.founding && cfg.founding.open && cfg.founding.priceId;
+        const items = [plusId, togId, yearId, fId].filter(Boolean).map((priceId) => ({ priceId, quantity: 1 }));
         if (items.length) {
           const preview = await Paddle.PricePreview({ items });
           const by = {};
           for (const li of preview.data.details.lineItems) by[li.price.id] = li.formattedTotals.total;
           if (by[plusId]) document.getElementById('pricePlus').textContent = by[plusId];
           if (by[togId]) document.getElementById('priceTogether').textContent = by[togId];
+          // The founding note in this visitor's own prices (regional prices differ).
+          if (fId && by[fId] && by[yearId]) { document.getElementById('foundingPrice').textContent = by[fId]; document.getElementById('foundingWas').textContent = by[yearId]; }
         }
       }
     } catch (e) { /* keep the fallback prices */ }

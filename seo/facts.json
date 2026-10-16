@@ -27,8 +27,8 @@
   ],
   "pricing": {
     "free": "Free: the first two movie nights are unlimited, then 4 hours of synced watching a month; voice, video and chat included",
-    "plus": {"name": "Herae Plus", "price": "8.99", "currency": "USD", "period": "month", "what": "Unlimited synced watching and calls for one account"},
-    "together": {"name": "Herae Together", "price": "12.99", "currency": "USD", "period": "month", "what": "Unlimited, for you and one person you choose"}
+    "plus": {"name": "Herae Plus", "price": "4.99", "currency": "USD", "period": "month", "what": "Unlimited synced watching and calls for one account"},
+    "together": {"name": "Herae Together", "price": "6.99", "currency": "USD", "period": "month", "what": "Unlimited, for you and one person you choose"}
   },
   "privacy": "Calls are peer-to-peer; face detection for AI Moments runs inside the browser and no video or image is sent anywhere for analysis; Herae reads the play/pause state and position of the video on the page being synced, plus its title and address, and not form fields, passwords or browsing history.",
   "chromeWebStore": "https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn",
