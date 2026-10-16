@@ -197,6 +197,21 @@ async function loadSession() {
     mountPlanNext(anchor, { partner: others[0], startedAt: detail.startedAt || null, via: 'review' }).catch(() => {});
   }
 
+  // After a proper night (30+ min), the one place a couple who loved it sees what keeps it going (PRICING_2026-10.md
+  // item 6): one quiet line, no countdown, nothing for paying couples. A granted month says until when.
+  if (detail.durationMs >= 30 * 60000 && window.apiRequest) {
+    window.apiRequest('/api/subscription/status').then((s) => {
+      const at = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
+      if (!s || !at || (s.unlimited && s.source !== 'comp')) return;
+      const line = document.createElement('div');
+      line.className = 'review-plan-line';
+      line.innerHTML = s.unlimited
+        ? (s.compUntil ? `💛 Herae Together is on for you until ${escapeHtml(new Date(s.compUntil).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }))}: every night unlimited.` : '')
+        : 'Every night unlimited for both of you: Herae Together, $6.99 a month (less in many countries). <a href="upgrade.html">See your price</a>';
+      if (line.innerHTML) at.insertAdjacentElement('afterend', line);
+    }).catch(() => {});
+  }
+
   // After a real night: one ask for a store rating (rateHerae.js) — ratings drive the store's search ranking.
   mountRateHerae(contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments'), { durationMs: detail.durationMs });
 

@@ -615,6 +615,8 @@ a:hover { text-decoration: underline; }
   text-align: center; color: var(--ink); font-size: 16px; font-weight: 600;
   padding: 18px 0 26px;
 }
+.review-plan-line { margin: 12px auto 0; max-width: 560px; text-align: center; font-size: 13.5px; color: var(--ink-dim); }
+.review-plan-line a { color: var(--gold, #f5b942); font-weight: 700; }
 .review-no-moments-tip { display: inline-block; margin-top: 4px; font-size: 13px; font-style: normal; color: var(--ink-faint); }
 
 .login-back {
