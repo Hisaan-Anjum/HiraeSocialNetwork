@@ -406,7 +406,9 @@ function reportFirstTouch() {
   try {
     if (!(getAuth() || {}).token || localStorage.getItem('herae_ft_reported')) return;
     localStorage.setItem('herae_ft_reported', '1');
-    trackEvent('first_touch', { tag: (firstTouchTag() || 'none').slice(0, 40) });
+    // device: was this person on a phone (where Herae can't be installed) or a computer? Site sign-ups that never reach
+    // the extension are the funnel's biggest leak, and this is what tells "on a phone" from "didn't install" (10-17).
+    trackEvent('first_touch', { tag: (firstTouchTag() || 'none').slice(0, 40), device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'phone' : 'computer' });
   } catch (e) { /* best-effort */ }
 }
 setTimeout(reportFirstTouch, 1500);
