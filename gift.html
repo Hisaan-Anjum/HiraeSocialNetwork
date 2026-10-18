@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Gift for a Long-Distance Couple: A Year of Movie Nights — Herae</title>
-<meta name="description" content="Give a long-distance couple a year of movie nights together: Herae Together, unlimited synced movie nights for two with a video call built in. $59 once, nothing renews.">
+<meta name="description" content="Give a long-distance couple a year of movie nights together: Herae Together, unlimited synced movie nights for two with a video call built in. $49 once, nothing renews.">
 <link rel="canonical" href="https://herae.app/gift.html">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="style.css">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Give a year of movie nights together">
-<meta property="og:description" content="A gift for a long-distance couple: a year of Herae Together. $59 once, nothing renews.">
+<meta property="og:description" content="A gift for a long-distance couple: a year of Herae Together. $49 once, nothing renews.">
 <meta property="og:image" content="https://herae.app/og-image.png">
 <style>
   .g-wrap { max-width: 560px; margin: 0 auto; padding: 44px 16px 64px; }
@@ -51,7 +51,7 @@
     </div>
 
     <div class="g-card" id="buyCard">
-      <div class="g-price">$59 <small>once · a year for two</small></div>
+      <div class="g-price"><span id="giftPrice">$49</span> <small>once · a year for two</small></div>
       <label class="g-field">From (your name, optional)<input id="fromName" maxlength="60" autocomplete="name"></label>
       <label class="g-field">For (their name or names, optional)<input id="toName" maxlength="60"></label>
       <label class="g-field">A message they'll see when they open it (optional)<textarea id="message" maxlength="400"></textarea></label>
@@ -109,6 +109,9 @@
       if (!pc.configured || !gc.open || !gc.priceId) { el('buy').disabled = true; say('Gifts aren’t available right now. Please check back soon.', 'err'); return; }
       Paddle.Environment.set(pc.environment);
       Paddle.Initialize({ token: pc.clientToken, eventCallback: onPaddleEvent });
+      // This visitor's own price (regional prices differ), so the page never shows more than checkout charges.
+      Paddle.PricePreview({ items: [{ priceId: gc.priceId, quantity: 1 }] })
+        .then((p) => { const t = p.data.details.lineItems[0].formattedTotals.total; if (t) el('giftPrice').textContent = t; }).catch(() => {});
     } catch (e) { el('buy').disabled = true; say('Couldn’t load checkout. Refresh to try again.', 'err'); }
   })();
 
