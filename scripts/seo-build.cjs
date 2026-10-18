@@ -27,6 +27,7 @@ const PUBLIC = [
   ['best-apps-for-long-distance-couples.html', 'Guides'],
   ['discord-netflix-black-screen.html', 'Guides'],
   ['watch-prime-video-together.html', 'Guides'],
+  ['watch-netflix-together.html', 'Guides'],
   ['watch-disney-plus-together.html', 'Guides'],
   ['long-distance-movie-night-ideas.html', 'Guides'],
   ['movies-to-watch-long-distance.html', 'Guides'],

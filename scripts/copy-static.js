@@ -130,6 +130,7 @@ const FILES = [
   'best-apps-for-long-distance-couples.html',
   'watch-disney-plus-together.html',
   'watch-prime-video-together.html',
+  'watch-netflix-together.html',
   'refund_policy.html',
   'legal.css',
   // Also copied unhashed to dist root so index.html/admin.html's plain
