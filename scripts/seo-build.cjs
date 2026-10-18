@@ -28,6 +28,7 @@ const PUBLIC = [
   ['discord-netflix-black-screen.html', 'Guides'],
   ['watch-prime-video-together.html', 'Guides'],
   ['watch-netflix-together.html', 'Guides'],
+  ['watch-youtube-together.html', 'Guides'],
   ['watch-disney-plus-together.html', 'Guides'],
   ['long-distance-movie-night-ideas.html', 'Guides'],
   ['movies-to-watch-long-distance.html', 'Guides'],
