@@ -121,15 +121,20 @@ export async function mountGetStarted(el) {
     </section>`;
   el.hidden = false;
 
+  // Copying or sharing the link was the one step in activation with no instrument at all, so four straight days of
+  // "nobody connected" could not be read as "they never tried" or "they tried and their person never arrived" (10-21).
+  const sent = (via) => { try { window.trackEvent && window.trackEvent('partner_invite_sent', { via }); } catch (e) { /* never block */ } };
+
   const native = el.querySelector('.gs-native');
   if (native && navigator.share) {
     native.hidden = false;
-    native.addEventListener('click', () => navigator.share({ text: shareText }).catch(() => {}));
+    native.addEventListener('click', () => { sent('share'); navigator.share({ text: shareText }).catch(() => {}); });
   }
   const copyBtn = el.querySelector('.gs-copy');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
       const ok = await copyText(invite.url);
+      if (ok) sent('copy');
       copyBtn.textContent = ok ? '✓ Copied' : 'Press Ctrl+C';
       setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 1800);
     });
