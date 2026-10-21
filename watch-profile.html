@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your watch profile & privacy — Herae</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="h2.css">
+<style>
+  body { margin: 0; }
+  .wp-intro { margin: var(--h-2) 0 var(--h-6); }
+  fieldset { border: 0; padding: 0; margin: 0 0 var(--h-5); }
+  legend { font-weight: 600; font-size: var(--h-size-sm); margin-bottom: var(--h-2); padding: 0; }
+  .wp-add { display: flex; gap: var(--h-2); margin-top: var(--h-2); }
+  .wp-add .hi { flex: 1; }
+  .wp-radios label { display: flex; gap: var(--h-3); align-items: flex-start; padding: var(--h-2) 0; cursor: pointer; }
+  .wp-radios input { margin-top: 4px; accent-color: var(--h-accent); width: 18px; height: 18px; }
+  .wp-save { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--h-bg) 30%); padding: var(--h-6) 0 var(--h-4); display: flex; gap: var(--h-3); align-items: center; }
+  .wp-status { font-size: var(--h-size-sm); color: var(--h-text-2); }
+  .wp-chip-x { margin-left: var(--h-1); opacity: .7; }
+</style>
+</head>
+<body class="h2">
+  <header class="h-topbar">
+    <a class="h-brand" href="memories.html">Herae</a>
+    <a class="hb hb-quiet" href="memories.html">Back to Herae</a>
+  </header>
+  <main class="h-page" id="main">
+    <h1>Your watch profile</h1>
+    <p class="muted wp-intro">Optional, and private unless you turn discovery on. It helps Herae suggest films, parties and,
+      if you want, people with similar taste. You can skip any of it.</p>
+    <div id="loading" class="h-skeleton" style="height:240px" aria-hidden="true"></div>
+
+    <form id="form" hidden novalidate>
+      <section class="h-section" aria-labelledby="s-taste">
+        <h2 id="s-taste">What you like to watch</h2>
+        <fieldset><legend>Genres</legend><div class="h-chips" id="genres"></div></fieldset>
+        <fieldset><legend>Films and series you love</legend>
+          <div class="h-chips" id="titles"></div>
+          <div class="wp-add"><label class="sr-only" for="titleIn">Add a film or series</label>
+            <input class="hi" id="titleIn" maxlength="60" placeholder="e.g. Past Lives"><button type="button" class="hb hb-secondary" id="titleAdd">Add</button></div>
+        </fieldset>
+        <fieldset><legend>Creators and channels</legend>
+          <div class="h-chips" id="creators"></div>
+          <div class="wp-add"><label class="sr-only" for="creatorIn">Add a creator</label>
+            <input class="hi" id="creatorIn" maxlength="60" placeholder="e.g. a YouTube channel"><button type="button" class="hb hb-secondary" id="creatorAdd">Add</button></div>
+        </fieldset>
+        <fieldset><legend>Languages you watch in</legend>
+          <div class="h-chips" id="languages"></div>
+          <div class="wp-add"><label class="sr-only" for="langIn">Add a language</label>
+            <input class="hi" id="langIn" maxlength="30" placeholder="e.g. Hindi"><button type="button" class="hb hb-secondary" id="langAdd">Add</button></div>
+        </fieldset>
+      </section>
+
+      <section class="h-section" aria-labelledby="s-style">
+        <h2 id="s-style">How you like to watch</h2>
+        <fieldset><legend>When you're usually free</legend><div class="h-chips" id="availability"></div></fieldset>
+        <fieldset><legend>Who with</legend><div class="h-chips" id="formats"></div></fieldset>
+        <fieldset><legend>You as a viewer <span class="faint">(up to 5)</span></legend><div class="h-chips" id="traits"></div></fieldset>
+        <label class="h-label" for="bio">A line about you <span class="faint">(optional)</span></label>
+        <textarea class="hi" id="bio" maxlength="280" placeholder="What makes a good movie night for you?"></textarea>
+      </section>
+
+      <section class="h-section" aria-labelledby="s-disc">
+        <h2 id="s-disc">Discovery</h2>
+        <div class="h-switch">
+          <label for="discoverable"><strong>Let people with similar taste find me</strong><br>
+            <span class="muted">Off by default. When on, others who are also discoverable can see your taste (not your
+              watchlist, memories or friends) and say they'd like to watch together. Nobody can message you until you
+              both say yes.</span></label>
+          <input type="checkbox" id="discoverable" role="switch">
+        </div>
+        <fieldset class="wp-radios" id="scopeSet"><legend>Show me</legend>
+          <label><input type="radio" name="scope" value="everyone"> <span>Everyone<br><span class="faint">People of any gender who are discoverable.</span></span></label>
+          <label><input type="radio" name="scope" value="same_gender"> <span>Only people of my own gender<br><span class="faint">Needs you to choose how you describe yourself below. Only used for this filter.</span></span></label>
+          <label><input type="radio" name="scope" value="groups_only"> <span>No one-to-one matches, only group watch parties</span></label>
+        </fieldset>
+        <div id="genderWrap" hidden>
+          <label class="h-label" for="gender">How you describe yourself</label>
+          <select class="hi" id="gender"><option value="">Prefer not to say</option><option value="woman">Woman</option><option value="man">Man</option><option value="nonbinary">Non-binary</option></select>
+          <p class="h-help">Optional unless you pick "only people of my own gender". Never shown on your profile.</p>
+        </div>
+      </section>
+
+      <section class="h-section" aria-labelledby="s-priv">
+        <h2 id="s-priv">Privacy</h2>
+        <fieldset class="wp-radios"><legend>Who can see your friends list</legend>
+          <label><input type="radio" name="fvis" value="only_me"> <span>Only me</span></label>
+          <label><input type="radio" name="fvis" value="friends"> <span>My friends</span></label>
+          <label><input type="radio" name="fvis" value="everyone"> <span>Everyone who can see my profile</span></label>
+        </fieldset>
+        <div class="h-switch">
+          <label for="showOnline"><strong>Show when I'm online in discovery and parties</strong><br><span class="muted">Off by default.
+            Your friends always see when you're online on Herae, so either of you can start a night.</span></label>
+          <input type="checkbox" id="showOnline" role="switch">
+        </div>
+      </section>
+
+      <div class="wp-save">
+        <button type="submit" class="hb hb-primary" id="save">Save</button>
+        <span class="wp-status" id="status" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <section class="h-section" aria-labelledby="s-blocks" id="blocksSec" hidden>
+      <h2 id="s-blocks">Blocked accounts</h2>
+      <p class="muted">Blocked people can't find you, add you, invite you or join you. They aren't told.</p>
+      <ul class="h-list" id="blocks"></ul>
+      <form class="wp-add" id="blockForm"><label class="sr-only" for="blockIn">Username to block</label>
+        <input class="hi" id="blockIn" maxlength="64" placeholder="username" autocomplete="off"><button class="hb hb-danger" type="submit">Block</button></form>
+    </section>
+  </main>
+
+  <dialog class="h-dialog" id="adultDlg" aria-labelledby="adultTitle">
+    <h2 id="adultTitle">Before you turn on discovery</h2>
+    <p class="muted" style="margin:var(--h-3) 0">Discovery can connect you with people you don't know yet. It's for adults only.</p>
+    <label class="h-row" style="margin:var(--h-4) 0"><input type="checkbox" id="adultChk" style="width:20px;height:20px;accent-color:var(--h-accent)"> <span>I'm 18 or older</span></label>
+    <div class="h-row" style="justify-content:flex-end">
+      <button type="button" class="hb hb-quiet" id="adultCancel">Not now</button>
+      <button type="button" class="hb hb-primary" id="adultOk" disabled>Turn on</button>
+    </div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+  requireAuth();
+  (async () => {
+    const $ = (id) => document.getElementById(id);
+    const GENRES = ['Drama', 'Comedy', 'Romance', 'Thriller', 'Horror', 'Sci-fi', 'Fantasy', 'Action', 'Animation', 'Anime',
+      'Documentary', 'Crime', 'Mystery', 'K-drama', 'Bollywood', 'Reality', 'Sitcom', 'Musical'];
+    const LABEL = { weekday_evenings: 'Weekday evenings', weekend_days: 'Weekend days', weekend_evenings: 'Weekend evenings',
+      late_nights: 'Late nights', flexible: 'Flexible', one_to_one: 'One person', small_group: 'A few friends', big_party: 'A big watch party',
+      quiet_watcher: 'Quiet watcher', commentator: 'Running commentary', rewatcher: 'Rewatcher', binger: 'Binger',
+      one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films',
+      snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
+    let state, options, dirty = false;
+    const say = (t) => { $('status').textContent = t; };
+    function chips(el, values, selected, max, key) {
+      el.innerHTML = '';
+      for (const v of values) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'h-chip';
+        b.textContent = LABEL[v] || v; b.setAttribute('aria-pressed', String(selected.includes(v)));
+        b.onclick = () => { const on = state[key].includes(v);
+          if (!on && max && state[key].length >= max) { say(`Up to ${max}.`); return; }
+          state[key] = on ? state[key].filter((x) => x !== v) : [...state[key], v]; b.setAttribute('aria-pressed', String(!on)); dirty = true; };
+        el.append(b);
+      }
+    }
+    function removable(el, key) {
+      el.innerHTML = '';
+      for (const v of state[key]) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'h-chip'; b.setAttribute('aria-pressed', 'true');
+        b.innerHTML = ''; b.append(v); const x = document.createElement('span'); x.className = 'wp-chip-x'; x.setAttribute('aria-hidden', 'true'); x.textContent = '×'; b.append(x);
+        b.setAttribute('aria-label', `Remove ${v}`);
+        b.onclick = () => { state[key] = state[key].filter((y) => y !== v); dirty = true; removable(el, key); };
+        el.append(b);
+      }
+    }
+    function adder(input, btn, el, key, max) {
+      const add = () => { const v = input.value.trim().replace(/\s+/g, ' '); if (!v) return;
+        if (state[key].includes(v)) { input.value = ''; return; }
+        if (state[key].length >= max) { say(`Up to ${max}.`); return; }
+        state[key] = [...state[key], v]; input.value = ''; dirty = true; removable(el, key); };
+      btn.onclick = add; input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+    }
+    function render() {
+      chips($('genres'), [...new Set([...GENRES, ...state.genres])], state.genres, 12, 'genres');
+      removable($('titles'), 'favorite_titles'); removable($('creators'), 'creators'); removable($('languages'), 'languages');
+      chips($('availability'), options.availability, state.availability, 0, 'availability');
+      chips($('formats'), options.formats, state.session_formats, 0, 'session_formats');
+      chips($('traits'), options.traits, state.traits, 5, 'traits');
+      $('bio').value = state.bio || '';
+      $('discoverable').checked = !!state.discoverable;
+      document.querySelector(`input[name=scope][value=${state.discovery_scope}]`).checked = true;
+      document.querySelector(`input[name=fvis][value=${state.friends_list_visibility}]`).checked = true;
+      $('gender').value = state.gender || ''; $('genderWrap').hidden = state.discovery_scope !== 'same_gender' && !state.gender;
+      $('showOnline').checked = !!state.show_online;
+    }
+    try {
+      const r = await apiRequest('/api/profile/watch'); state = r.profile; options = r.options;
+    } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
+    $('loading').hidden = true; $('form').hidden = false; $('blocksSec').hidden = false; render();
+    adder($('titleIn'), $('titleAdd'), $('titles'), 'favorite_titles', 10);
+    adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
+    adder($('langIn'), $('langAdd'), $('languages'), 'languages', 6);
+    $('bio').oninput = () => { state.bio = $('bio').value; dirty = true; };
+    document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; $('genderWrap').hidden = r.value !== 'same_gender' && !state.gender; dirty = true; });
+    document.querySelectorAll('input[name=fvis]').forEach((r) => r.onchange = () => { state.friends_list_visibility = r.value; dirty = true; });
+    $('gender').onchange = () => { state.gender = $('gender').value || null; dirty = true; };
+    $('showOnline').onchange = () => { state.show_online = $('showOnline').checked ? 1 : 0; dirty = true; };
+    // Turning discovery on asks for the 18+ declaration once; turning it off is immediate.
+    let confirmAdult = false;
+    $('discoverable').onchange = () => {
+      if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; return; }
+      if (state.adult_confirmed_at) { state.discoverable = 1; dirty = true; return; }
+      $('discoverable').checked = false; $('adultChk').checked = false; $('adultOk').disabled = true; $('adultDlg').showModal();
+    };
+    $('adultChk').onchange = () => { $('adultOk').disabled = !$('adultChk').checked; };
+    $('adultCancel').onclick = () => $('adultDlg').close();
+    $('adultOk').onclick = () => { confirmAdult = true; state.discoverable = 1; $('discoverable').checked = true; dirty = true; $('adultDlg').close(); $('discoverable').focus(); };
+    $('form').onsubmit = async (e) => {
+      e.preventDefault(); $('save').setAttribute('aria-busy', 'true'); say('Saving…');
+      try {
+        const body = { genres: state.genres, favorite_titles: state.favorite_titles, creators: state.creators, languages: state.languages,
+          availability: state.availability, session_formats: state.session_formats, traits: state.traits, bio: state.bio,
+          discovery_scope: state.discovery_scope, gender: state.gender, friends_list_visibility: state.friends_list_visibility,
+          show_online: !!state.show_online, discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
+        const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
+        state = r.profile; confirmAdult = false; dirty = false; render(); say('Saved.');
+      } catch (err) { say(err.message || 'Could not save. Try again.'); }
+      $('save').removeAttribute('aria-busy');
+    };
+    window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+    // Blocked accounts
+    async function loadBlocks() {
+      const ul = $('blocks'); ul.innerHTML = '';
+      const { blocks } = await apiRequest('/api/safety/blocks');
+      if (!blocks.length) { const li = document.createElement('li'); li.className = 'muted'; li.textContent = 'You haven’t blocked anyone.'; ul.append(li); return; }
+      for (const b of blocks) {
+        const li = document.createElement('li');
+        const av = document.createElement('span'); av.className = 'h-avatar'; av.setAttribute('aria-hidden', 'true'); av.textContent = b.username[0].toUpperCase();
+        const name = document.createElement('span'); name.style.flex = '1'; name.textContent = b.username;
+        const un = document.createElement('button'); un.type = 'button'; un.className = 'hb hb-secondary'; un.textContent = 'Unblock';
+        un.setAttribute('aria-label', `Unblock ${b.username}`);
+        un.onclick = async () => { await apiRequest(`/api/safety/blocks/${encodeURIComponent(b.username)}`, { method: 'DELETE' }); say(`${b.username} unblocked. You aren't friends again until one of you adds the other.`); loadBlocks(); };
+        li.append(av, name, un); ul.append(li);
+      }
+    }
+    $('blockForm').onsubmit = async (e) => {
+      e.preventDefault(); const u = $('blockIn').value.trim().toLowerCase(); if (!u) return;
+      try { await apiRequest('/api/safety/blocks', { method: 'POST', body: JSON.stringify({ username: u }) }); $('blockIn').value = ''; say(`${u} is blocked.`); loadBlocks(); }
+      catch (err) { say(err.message || 'Could not block.'); }
+    };
+    loadBlocks().catch(() => {});
+  })();
+  </script>
+</body>
+</html>

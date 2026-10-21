@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>People — Herae</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="h2.css">
+<style>
+  body { margin: 0; min-height: 100dvh; }
+  .s-tabs { display: flex; gap: var(--h-1); padding: 0 var(--h-4); border-bottom: 1px solid var(--h-line); position: sticky; top: 0; background: var(--h-bg); z-index: 5; }
+  .s-tab { position: relative; min-height: var(--h-tap); padding: 0 var(--h-4); background: none; border: 0; color: var(--h-text-2); font: 600 var(--h-size-sm) var(--h-font-body); cursor: pointer; border-bottom: 2px solid transparent; }
+  .s-tab[aria-selected="true"] { color: var(--h-text); border-bottom-color: var(--h-accent); }
+  .s-badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--h-coral); color: #1b0d09; font-size: 11px; line-height: 18px; text-align: center; }
+  @media (max-width: 640px) {
+    .s-tabs { position: fixed; bottom: 0; top: auto; left: 0; right: 0; justify-content: space-around; border-top: 1px solid var(--h-line); border-bottom: 0; padding: 0 0 env(safe-area-inset-bottom); }
+    .s-tab { flex: 1; padding: 0; border-bottom: 0; border-top: 2px solid transparent; }
+    .s-tab[aria-selected="true"] { border-top-color: var(--h-accent); }
+    main.h-page { padding-bottom: 96px; }
+  }
+  /* deck */
+  .d-card { position: relative; touch-action: pan-y; user-select: none; transition: transform var(--h-med) var(--h-ease); }
+  .d-card.dragging { transition: none; }
+  .d-head { display: flex; gap: var(--h-3); align-items: center; margin-bottom: var(--h-3); }
+  .d-head .h-avatar { width: 56px; height: 56px; font-size: 22px; }
+  .d-why { list-style: none; margin: 0 0 var(--h-4); padding: 0; }
+  .d-why li { color: var(--h-coral); font-weight: 600; font-size: var(--h-size-sm); padding: 2px 0; }
+  .d-meta dt { font-size: var(--h-size-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--h-text-3); margin-top: var(--h-3); }
+  .d-meta dd { margin: 2px 0 0; }
+  .d-actions { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--h-3); margin-top: var(--h-5); align-items: center; }
+  .d-actions .hb { width: 100%; }
+  .d-hint { text-align: center; font-size: var(--h-size-xs); color: var(--h-text-3); margin-top: var(--h-3); }
+  .d-more { position: absolute; top: var(--h-3); right: var(--h-3); }
+  /* chat */
+  .c-thread { display: flex; flex-direction: column; gap: var(--h-2); padding: var(--h-3) 0; min-height: 40vh; }
+  .c-msg { max-width: 78%; padding: var(--h-2) var(--h-3); border-radius: var(--h-r-md); background: var(--h-surface-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .c-msg.mine { align-self: flex-end; background: var(--h-surface-3); }
+  .c-msg.failed { outline: 1px solid var(--h-danger); }
+  .c-msg time { display: block; font-size: 11px; color: var(--h-text-3); margin-top: 2px; }
+  .c-compose { position: sticky; bottom: 0; display: flex; gap: var(--h-2); padding: var(--h-3) 0; background: var(--h-bg); }
+  @media (max-width: 640px) { .c-compose { bottom: 56px; } }
+  .c-compose .hi { flex: 1; min-height: var(--h-tap); }
+  .c-starters { display: flex; flex-wrap: wrap; gap: var(--h-2); margin: var(--h-2) 0; }
+  .row-main { flex: 1; min-width: 0; }
+  .row-main .sub { font-size: var(--h-size-sm); color: var(--h-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .new-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--h-coral); flex: none; }
+  menu.h-menu { position: absolute; right: 0; top: 100%; margin: 4px 0 0; padding: var(--h-1); list-style: none; background: var(--h-surface-2); border: 1px solid var(--h-line-strong); border-radius: var(--h-r-md); z-index: 10; min-width: 180px; }
+  menu.h-menu button { display: block; width: 100%; text-align: left; min-height: 40px; padding: 0 var(--h-3); background: none; border: 0; color: var(--h-text); font: var(--h-size-sm) var(--h-font-body); cursor: pointer; border-radius: var(--h-r-sm); }
+  menu.h-menu button:hover, menu.h-menu button:focus-visible { background: var(--h-surface-3); }
+  menu.h-menu button.danger { color: var(--h-danger); }
+  .rel { position: relative; }
+</style>
+</head>
+<body class="h2">
+  <header class="h-topbar">
+    <a class="h-brand" href="memories.html">Herae</a>
+    <a class="hb hb-quiet" href="watch-profile.html">Profile &amp; privacy</a>
+  </header>
+  <nav class="s-tabs" role="tablist" aria-label="People">
+    <button class="s-tab" role="tab" id="t-discover" aria-controls="v-discover" data-tab="discover">Discover</button>
+    <button class="s-tab" role="tab" id="t-matches" aria-controls="v-matches" data-tab="matches">Matches<span class="s-badge" id="b-matches" hidden></span></button>
+    <button class="s-tab" role="tab" id="t-chats" aria-controls="v-chats" data-tab="chats">Chats<span class="s-badge" id="b-chats" hidden></span></button>
+    <button class="s-tab" role="tab" id="t-friends" aria-controls="v-friends" data-tab="friends">Friends<span class="s-badge" id="b-friends" hidden></span></button>
+  </nav>
+  <main class="h-page" id="main">
+    <section id="v-discover" role="tabpanel" aria-labelledby="t-discover" hidden></section>
+    <section id="v-matches" role="tabpanel" aria-labelledby="t-matches" hidden></section>
+    <section id="v-chats" role="tabpanel" aria-labelledby="t-chats" hidden></section>
+    <section id="v-friends" role="tabpanel" aria-labelledby="t-friends" hidden></section>
+  </main>
+  <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+
+  <dialog class="h-dialog" id="dlg" aria-labelledby="dlgTitle">
+    <h2 id="dlgTitle"></h2>
+    <div id="dlgBody" style="margin:var(--h-3) 0 var(--h-5)"></div>
+    <div class="h-row" style="justify-content:flex-end" id="dlgActions"></div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+  requireAuth();
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    const el = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e[k] = v; else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v); }
+      for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+      return e; };
+    const me = (getAuth() || {}).username;
+    const announce = (t) => { $('live').textContent = ''; setTimeout(() => { $('live').textContent = t; }, 30); };
+    let toastTimer;
+    const toast = (t) => { document.querySelectorAll('.h-toast').forEach((x) => x.remove()); const x = el('div', { class: 'h-toast', role: 'status' }, t); document.body.append(x); clearTimeout(toastTimer); toastTimer = setTimeout(() => x.remove(), 3500); };
+    const avatar = (p) => p.avatarUrl ? el('span', { class: 'h-avatar' }, el('img', { src: p.avatarUrl, alt: '' })) : el('span', { class: 'h-avatar', 'aria-hidden': 'true' }, (p.name || p.username || '?')[0].toUpperCase());
+    const LABEL = { weekday_evenings: 'Weekday evenings', weekend_days: 'Weekend days', weekend_evenings: 'Weekend evenings', late_nights: 'Late nights', flexible: 'Flexible',
+      one_to_one: 'One-to-one', small_group: 'A few friends', big_party: 'Big parties', quiet_watcher: 'Quiet watcher', commentator: 'Running commentary', rewatcher: 'Rewatcher',
+      binger: 'Binger', one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films', snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
+    const L = (xs) => (xs || []).map((x) => LABEL[x] || x).join(', ');
+    const when = (s) => { const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('Z') ? '' : 'Z')); return isNaN(d) ? '' : d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' }); };
+
+    function dialog(title, body, actions) {
+      $('dlgTitle').textContent = title; const b = $('dlgBody'); b.innerHTML = ''; b.append(...[].concat(body));
+      const a = $('dlgActions'); a.innerHTML = '';
+      return new Promise((resolve) => {
+        for (const [label, cls, val] of actions) a.append(el('button', { type: 'button', class: `hb ${cls}`, onclick: () => { $('dlg').close(); resolve(val); } }, label));
+        $('dlg').onclose = () => resolve(null); $('dlg').showModal();
+      });
+    }
+    // Report and block, reachable from every person surface.
+    async function reportPerson(username, type = 'user', id = null) {
+      const reasons = [['harassment', 'Harassment or bullying'], ['spam', 'Spam or scam'], ['impersonation', 'Pretending to be someone'], ['privacy', 'Shared private information'], ['threat', 'Threats or violence'], ['inappropriate', 'Inappropriate content'], ['other', 'Something else']];
+      const sel = el('select', { class: 'hi', id: 'rsn', 'aria-label': 'Reason' }, ...reasons.map(([v, t]) => el('option', { value: v }, t)));
+      const det = el('textarea', { class: 'hi', id: 'rdet', maxlength: '1000', placeholder: 'Anything that helps (optional)', 'aria-label': 'Details' });
+      const blockToo = el('input', { type: 'checkbox', id: 'rblk', checked: true, style: 'width:20px;height:20px;accent-color:var(--h-accent)' });
+      const ok = await dialog(`Report ${username}`, [el('div', { class: 'h-stack' }, sel, det, el('label', { class: 'h-row' }, blockToo, el('span', {}, `Also block ${username}`)), el('p', { class: 'h-help' }, 'Reports are reviewed by the Herae team. We don’t tell them who reported.'))], [['Cancel', 'hb-quiet', false], ['Send report', 'hb-danger', true]]);
+      if (!ok) return false;
+      try {
+        await apiRequest('/api/safety/reports', { method: 'POST', body: JSON.stringify({ username, type, id, reason: sel.value, details: det.value }) });
+        if (blockToo.checked) await apiRequest('/api/safety/blocks', { method: 'POST', body: JSON.stringify({ username }) });
+        toast(blockToo.checked ? `Reported and blocked ${username}.` : 'Report sent. Thank you.'); return true;
+      } catch (e) { toast(e.message || 'Could not send the report.'); return false; }
+    }
+    async function blockPerson(username) {
+      const ok = await dialog(`Block ${username}?`, el('p', { class: 'muted' }, 'They won’t be able to find you, message you, add you or invite you, and any friendship or match ends. They aren’t told.'), [['Cancel', 'hb-quiet', false], ['Block', 'hb-danger', true]]);
+      if (!ok) return false;
+      try { await apiRequest('/api/safety/blocks', { method: 'POST', body: JSON.stringify({ username }) }); toast(`${username} is blocked.`); return true; }
+      catch (e) { toast(e.message || 'Could not block.'); return false; }
+    }
+    function moreMenu(items) {
+      const wrap = el('div', { class: 'rel' }); const btn = el('button', { type: 'button', class: 'hb hb-quiet', 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'aria-label': 'More actions' }, '⋯');
+      let menu = null;
+      const close = () => { if (menu) { menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false'); } };
+      btn.onclick = () => { if (menu) return close(); menu = el('menu', { class: 'h-menu', role: 'menu' }, ...items.map(([label, fn, danger]) => el('li', { role: 'none' }, el('button', { type: 'button', role: 'menuitem', class: danger ? 'danger' : '', onclick: () => { close(); fn(); } }, label))));
+        wrap.append(menu); btn.setAttribute('aria-expanded', 'true'); menu.querySelector('button').focus(); };
+      wrap.onkeydown = (e) => { if (e.key === 'Escape') { close(); btn.focus(); } };
+      document.addEventListener('click', (e) => { if (menu && !wrap.contains(e.target)) close(); });
+      wrap.append(btn); return wrap;
+    }
+
+    // ── Tabs (hash routing keeps the back button and deep links working) ──
+    const views = { discover: renderDiscover, matches: renderMatches, chats: renderChats, friends: renderFriends };
+    function route() {
+      const [tab, arg] = (location.hash.slice(1) || 'discover').split('/');
+      const name = views[tab] ? tab : 'discover';
+      for (const t of Object.keys(views)) { $(`v-${t}`).hidden = t !== name; $(`t-${t}`).setAttribute('aria-selected', String(t === name)); $(`t-${t}`).tabIndex = t === name ? 0 : -1; }
+      views[name](arg);
+    }
+    document.querySelectorAll('.s-tab').forEach((b) => { b.onclick = () => { location.hash = b.dataset.tab; }; });
+    document.querySelector('.s-tabs').onkeydown = (e) => { const tabs = [...document.querySelectorAll('.s-tab')]; const i = tabs.indexOf(document.activeElement);
+      if (i < 0) return; if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); n.click(); } };
+    window.addEventListener('hashchange', route);
+
+    // ── Discover ──
+    let deck = [];
+    async function renderDiscover() {
+      const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
+      let r; try { r = await apiRequest('/api/discover/deck'); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      deck = r.cards; v.innerHTML = '';
+      if (r.reason === 'not_discoverable') {
+        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
+          el('p', {}, 'Discovery is off for you. Turn it on in your watch profile to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'),
+          el('a', { class: 'hb hb-primary', href: 'watch-profile.html' }, 'Set up discovery')));
+        return;
+      }
+      if (r.reason === 'groups_only') {
+        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Group watch parties only'),
+          el('p', {}, 'You chose not to be matched one-to-one. Watch parties are coming to Herae next; until then you can change this in your profile.'),
+          el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Change discovery settings')));
+        return;
+      }
+      showCard();
+    }
+    function showCard() {
+      const v = $('v-discover'); v.innerHTML = '';
+      const c = deck[0];
+      if (!c) {
+        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'You’ve seen everyone for now'),
+          el('p', {}, 'Herae is new, so there aren’t many people here yet. Come back in a day or two, add more films and genres to your profile so we can find better matches, or bring someone you already know.'),
+          el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' },
+            el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Add to my profile'),
+            el('a', { class: 'hb hb-primary', href: 'memories.html' }, 'Invite someone I know')),
+          el('button', { type: 'button', class: 'hb hb-quiet', onclick: undo }, 'Undo last skip')));
+        return;
+      }
+      const dl = el('dl', { class: 'd-meta' });
+      const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
+      add('Loves', (c.favoriteTitles || []).join(', ')); add('Genres', (c.genres || []).join(', ')); add('Creators', (c.creators || []).join(', '));
+      add('Watches in', (c.languages || []).join(', ')); add('Usually free', L(c.availability)); add('Likes watching', L(c.formats)); add('As a viewer', L(c.traits));
+      const card = el('article', { class: 'h-card d-card', tabindex: '0', 'aria-label': `${c.name}. ${(c.why || []).join('. ')}` },
+        el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
+        el('div', { class: 'd-head' }, avatar(c), el('div', {}, el('h2', {}, c.name))),
+        c.why && c.why.length ? el('ul', { class: 'd-why', 'aria-label': 'Why you’re seeing this' }, ...c.why.map((w) => el('li', {}, w))) : null,
+        c.bio ? el('p', {}, c.bio) : null, dl,
+        el('div', { class: 'd-actions' },
+          el('button', { type: 'button', class: 'hb hb-secondary', onclick: skip }, 'Skip'),
+          el('button', { type: 'button', class: 'hb hb-quiet', onclick: undo, 'aria-label': 'Undo last skip' }, '↶'),
+          el('button', { type: 'button', class: 'hb hb-primary', onclick: interested }, 'Watch together?')),
+        el('p', { class: 'd-hint' }, 'Keyboard: ← skip · → watch together · U undo. They only find out if you both say yes.'));
+      v.append(card); dragify(card); card.focus({ preventScroll: true });
+    }
+    function next() { deck.shift(); showCard(); }
+    async function skip() { const c = deck[0]; if (!c) return; next(); announce(`Skipped ${c.name}`); apiRequest('/api/discover/skip', { method: 'POST', body: JSON.stringify({ username: c.username }) }).catch(() => {}); }
+    async function undo() { try { const r = await apiRequest('/api/discover/skip/undo', { method: 'POST' }); if (r.username) { toast('Brought back the last person you skipped.'); renderDiscover(); } else toast('Nothing to undo.'); } catch (e) { toast('Could not undo.'); } }
+    async function interested() {
+      const c = deck[0]; if (!c) return;
+      try {
+        const r = await apiRequest('/api/discover/interest', { method: 'POST', body: JSON.stringify({ username: c.username }) });
+        next();
+        if (r.matched) {
+          const go = await dialog('It’s a match', el('p', {}, `You and ${c.name} both want to watch together. Say hi when you’re ready — there’s no rush.`), [['Keep browsing', 'hb-quiet', false], ['Open chat', 'hb-primary', true]]);
+          refreshBadges(); if (go) location.hash = `chats/${r.conversationId}`;
+        } else announce(`You’d like to watch with ${c.name}. They’ll only know if they feel the same.`);
+      } catch (e) { toast(e.message || 'Could not send.'); next(); }
+    }
+    // Optional drag; buttons and keys do the same (WCAG 2.5.7).
+    function dragify(card) {
+      let x0 = null, dx = 0;
+      card.onpointerdown = (e) => { if (e.target.closest('button,a,menu')) return; x0 = e.clientX; dx = 0; card.classList.add('dragging'); card.setPointerCapture(e.pointerId); };
+      card.onpointermove = (e) => { if (x0 === null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`; };
+      card.onpointerup = () => { if (x0 === null) return; card.classList.remove('dragging'); x0 = null; card.style.transform = '';
+        if (dx > 110) interested(); else if (dx < -110) skip(); };
+      card.onkeydown = (e) => { if (e.target !== card) return; if (e.key === 'ArrowRight') { e.preventDefault(); interested(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); skip(); } else if (e.key.toLowerCase() === 'u') undo(); };
+    }
+
+    // ── Matches ──
+    async function renderMatches() {
+      const v = $('v-matches'); v.innerHTML = ''; v.append(el('h1', {}, 'Matches'));
+      let r; try { r = await apiRequest('/api/discover/matches'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      if (!r.matches.length) { v.append(el('p', { class: 'h-empty' }, 'No matches yet. When you and someone in Discover both want to watch together, they’ll show up here.')); return; }
+      const ul = el('ul', { class: 'h-list' });
+      for (const m of r.matches) {
+        ul.append(el('li', {}, m.isNew ? el('span', { class: 'new-dot', title: 'New match' }, el('span', { class: 'sr-only' }, 'New')) : null, avatar(m.person),
+          el('div', { class: 'row-main' }, el('strong', {}, m.person.name), el('div', { class: 'sub' }, (m.person.why || [])[0] || (m.person.genres || []).join(', '))),
+          el('a', { class: 'hb hb-secondary', href: `#chats/${m.conversationId}` }, m.isNew ? 'Say hi' : 'Chat')));
+      }
+      v.append(ul);
+    }
+
+    // ── Chats ──
+    let pollTimer = null;
+    async function renderChats(id) {
+      clearInterval(pollTimer);
+      if (id) return renderThread(Number(id));
+      const v = $('v-chats'); v.innerHTML = ''; v.append(el('h1', {}, 'Chats'));
+      let r; try { r = await apiRequest('/api/chats'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      if (!r.conversations.length) { v.append(el('p', { class: 'h-empty' }, 'No conversations yet. You can chat with your friends and your matches.')); return; }
+      const ul = el('ul', { class: 'h-list' });
+      for (const c of r.conversations) {
+        const preview = c.last ? (c.last.kind === 'text' ? `${c.last.sender === me ? 'You: ' : ''}${c.last.body}` : 'Watch suggestion') : (c.relation === 'match' ? 'New match — say hi' : 'Start a conversation');
+        ul.append(el('li', {}, avatar(c.with), el('div', { class: 'row-main' }, el('strong', {}, c.with.name), el('div', { class: 'sub' }, preview)),
+          c.unread ? el('span', { class: 's-badge' }, String(c.unread), el('span', { class: 'sr-only' }, ' unread')) : null,
+          el('a', { class: 'hb hb-quiet', href: `#chats/${c.id}`, 'aria-label': `Open chat with ${c.with.name}` }, 'Open')));
+      }
+      v.append(ul);
+      pollTimer = setInterval(() => { if (location.hash === '#chats') renderChats(); }, 15000);
+    }
+    async function renderThread(id) {
+      const v = $('v-chats'); v.innerHTML = '';
+      let page; try { page = await apiRequest(`/api/chats/${id}/messages`); } catch (e) { v.append(el('p', { class: 'h-empty' }, 'This conversation isn’t available.'), el('a', { class: 'hb hb-secondary', href: '#chats' }, 'Back to chats')); return; }
+      const other = page.with;
+      const thread = el('div', { class: 'c-thread', role: 'log', 'aria-label': `Conversation with ${other}` });
+      let oldest = null, newest = 0;
+      const msgEl = (m, pending) => el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}${pending === 'failed' ? ' failed' : ''}`, 'data-id': m.id || '' },
+        m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : when(m.createdAt)));
+      const addPage = (msgs, prepend) => { const nodes = msgs.slice().reverse().map((m) => msgEl(m));
+        if (prepend) thread.prepend(...nodes); else thread.append(...nodes);
+        for (const m of msgs) { if (!oldest || m.id < oldest) oldest = m.id; if (m.id > newest) newest = m.id; } };
+      addPage(page.messages, false);
+      const older = el('button', { type: 'button', class: 'hb hb-quiet', hidden: !page.hasMore, onclick: async () => {
+        const p = await apiRequest(`/api/chats/${id}/messages?before=${oldest}`); addPage(p.messages, true); older.hidden = !p.hasMore; } }, 'Show older messages');
+      const head = el('div', { class: 'h-row', style: 'justify-content:space-between' },
+        el('a', { class: 'hb hb-quiet', href: '#chats', 'aria-label': 'Back to chats' }, '← Chats'), el('h1', { style: 'font-size:var(--h-size-xl)' }, other),
+        moreMenu([['Add as friend', () => addFriend(other)], ...(page.relation === 'match' ? [['Unmatch', () => unmatchWith(other)]] : []),
+          ['Report', () => reportPerson(other, 'user')], ['Block', async () => { if (await blockPerson(other)) location.hash = 'chats'; }, true]]));
+      v.append(head, older, thread);
+      if (!page.messages.length && page.relation === 'match') {
+        v.append(el('p', { class: 'muted' }, 'You matched. A few ways to start (optional):'),
+          el('div', { class: 'c-starters' }, ...['Hi! What have you been watching lately?', 'What’s a film you could watch again and again?', 'When are you usually free to watch something?'].map((t) =>
+            el('button', { type: 'button', class: 'h-chip', onclick: () => { input.value = t; input.focus(); } }, t))));
+      }
+      const input = el('textarea', { class: 'hi', rows: '1', maxlength: '2000', placeholder: page.canSend ? 'Message' : 'You can’t message this person any more', disabled: !page.canSend, 'aria-label': 'Message' });
+      const send = el('button', { type: 'submit', class: 'hb hb-primary', disabled: !page.canSend }, 'Send');
+      const form = el('form', { class: 'c-compose' }, input, send);
+      v.append(form);
+      thread.lastElementChild && thread.lastElementChild.scrollIntoView({ block: 'end' });
+      const markRead = () => { if (newest) apiRequest(`/api/chats/${id}/read`, { method: 'POST', body: JSON.stringify({ lastId: newest }) }).then(refreshBadges).catch(() => {}); };
+      markRead();
+      async function deliver(body, node, clientId) {
+        try { const r = await apiRequest(`/api/chats/${id}/messages`, { method: 'POST', body: JSON.stringify({ body, clientId }) });
+          node.replaceWith(msgEl(r.message)); newest = Math.max(newest, r.message.id); markRead();
+        } catch (e) { const failed = msgEl({ sender: me, body }, 'failed'); failed.tabIndex = 0; failed.setAttribute('role', 'button');
+          failed.onclick = () => { const again = msgEl({ sender: me, body }, 'sending'); failed.replaceWith(again); deliver(body, again, clientId); };
+          node.replaceWith(failed); toast(e.message || 'Not sent.'); if (e.message && /can’t|can't/.test(e.message)) { input.disabled = true; send.disabled = true; } }
+      }
+      form.onsubmit = (e) => { e.preventDefault(); const body = input.value.trim(); if (!body) return; input.value = '';
+        const clientId = 'c' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+        const node = msgEl({ sender: me, body }, 'sending'); thread.append(node); node.scrollIntoView({ block: 'end' }); deliver(body, node, clientId); };
+      input.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } };
+      // shortcut: polls every 8 s while the thread is open; switch to a site WebSocket when the site gets one.
+      pollTimer = setInterval(async () => { if (location.hash !== `#chats/${id}`) return clearInterval(pollTimer);
+        const p = await apiRequest(`/api/chats/${id}/messages`).catch(() => null); if (!p) return;
+        const fresh = p.messages.filter((m) => m.id > newest && m.sender !== me);
+        if (fresh.length) { addPage(fresh, false); thread.lastElementChild.scrollIntoView({ block: 'end' }); announce(`New message from ${other}`); markRead(); }
+        if (!p.canSend && !input.disabled) { input.disabled = true; send.disabled = true; input.placeholder = 'You can’t message this person any more'; } }, 8000);
+    }
+    async function unmatchWith(other) {
+      const ok = await dialog(`Unmatch ${other}?`, el('p', { class: 'muted' }, 'You won’t be able to message each other or match again through Discover. The messages so far stay visible to each of you. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Unmatch', 'hb-danger', true]]);
+      if (!ok) return;
+      const r = await apiRequest('/api/discover/matches'); const m = r.matches.find((x) => x.person.username === other);
+      if (m) await apiRequest(`/api/discover/matches/${m.id}/unmatch`, { method: 'POST' });
+      toast(`You unmatched ${other}.`); location.hash = 'matches';
+    }
+
+    // ── Friends (the existing contacts system) ──
+    async function addFriend(username) {
+      try { await apiRequest('/api/contacts/requests', { method: 'POST', body: JSON.stringify({ username }) }); toast(`Friend request sent to ${username}.`); }
+      catch (e) { toast(/already/i.test(e.message || '') ? e.message : (e.message || 'Could not send the request.')); }
+    }
+    async function renderFriends() {
+      const v = $('v-friends'); v.innerHTML = ''; v.append(el('h1', {}, 'Friends'));
+      let r; try { r = await apiRequest('/api/contacts'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      const addForm = el('form', { class: 'h-row', style: 'margin:var(--h-3) 0 var(--h-5)' },
+        el('label', { class: 'sr-only', for: 'addIn' }, 'Username'), el('input', { class: 'hi', id: 'addIn', placeholder: 'Add a friend by username', autocomplete: 'off', maxlength: '64' }),
+        el('button', { type: 'submit', class: 'hb hb-primary' }, 'Add'));
+      addForm.onsubmit = async (e) => { e.preventDefault(); const u = $('addIn').value.trim().toLowerCase(); if (!u) return; await addFriend(u); renderFriends(); };
+      v.append(addForm);
+      const section = (title, rows, render) => { if (!rows.length) return; v.append(el('h2', { style: 'margin-top:var(--h-5)' }, title)); const ul = el('ul', { class: 'h-list' }); rows.forEach((x) => ul.append(render(x))); v.append(ul); };
+      section(`Requests for you (${r.incoming.length})`, r.incoming, (x) => el('li', {}, avatar(x), el('div', { class: 'row-main' }, el('strong', {}, x.username)),
+        el('button', { type: 'button', class: 'hb hb-primary', onclick: async () => { await apiRequest(`/api/contacts/${x.id}/accept`, { method: 'POST' }); toast(`You and ${x.username} are friends.`); renderFriends(); refreshBadges(); } }, 'Accept'),
+        el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { await apiRequest(`/api/contacts/${x.id}`, { method: 'DELETE' }); renderFriends(); refreshBadges(); } }, 'Decline')));
+      section('Your friends', r.contacts, (x) => el('li', {}, avatar(x), el('div', { class: 'row-main' }, el('strong', {}, x.username), el('div', { class: 'sub' }, x.online ? 'Online now' : '')),
+        el('button', { type: 'button', class: 'hb hb-secondary', onclick: async () => { const c = await apiRequest(`/api/chats/with/${encodeURIComponent(x.username)}`, { method: 'POST' }); location.hash = `chats/${c.id}`; } }, 'Message'),
+        moreMenu([['Remove friend', async () => {
+          const ok = await dialog(`Remove ${x.username} as a friend?`, el('p', { class: 'muted' }, 'You won’t see each other in Friends and can’t message each other unless you’re also matched. Your memories together stay. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Remove', 'hb-danger', true]]);
+          if (ok) { await apiRequest(`/api/contacts/${x.id}`, { method: 'DELETE' }); toast(`${x.username} removed.`); renderFriends(); } }],
+          ['Report', () => reportPerson(x.username)], ['Block', async () => { if (await blockPerson(x.username)) renderFriends(); }, true]])));
+      section('Waiting for them', r.outgoing, (x) => el('li', {}, avatar(x), el('div', { class: 'row-main' }, el('strong', {}, x.username), el('div', { class: 'sub' }, 'Request pending')),
+        el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { await apiRequest(`/api/contacts/${x.id}`, { method: 'DELETE' }); renderFriends(); } }, 'Cancel')));
+      if (!r.contacts.length && !r.incoming.length && !r.outgoing.length) v.append(el('p', { class: 'h-empty' }, 'No friends on Herae yet. Add someone by username, or become friends with a match from their chat.'));
+    }
+
+    async function refreshBadges() {
+      try {
+        const [c, f, m] = await Promise.all([apiRequest('/api/chats'), apiRequest('/api/contacts'), apiRequest('/api/discover/matches').catch(() => ({ matches: [] }))]);
+        const set = (id, n) => { $(id).hidden = !n; $(id).textContent = n || ''; };
+        set('b-chats', c.conversations.reduce((s, x) => s + (x.unread || 0), 0)); set('b-friends', f.incoming.length); set('b-matches', m.matches.filter((x) => x.isNew).length);
+      } catch (e) { /* badges are a convenience */ }
+    }
+    route(); refreshBadges();
+  })();
+  </script>
+</body>
+</html>

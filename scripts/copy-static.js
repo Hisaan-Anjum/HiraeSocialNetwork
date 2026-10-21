@@ -144,6 +144,11 @@ const FILES = [
   // ones Vite doesn't process, like index.html), so it's copied through
   // verbatim rather than hashed as a build asset.
   'logo.png',
+  // Herae 2.0 design system (docs/herae-2/DESIGN-SYSTEM.md) and its self-hosted display font.
+  'h2.css',
+  'watch-profile.html',
+  'social.html',
+  'fonts/fraunces-latin.woff2',
 ];
 
 if (!fs.existsSync(DIST)) {
@@ -157,6 +162,7 @@ for (const f of FILES) {
     console.warn(`warning: ${f} not found — skipping.`);
     continue;
   }
+  fs.mkdirSync(path.dirname(path.join(DIST, f)), { recursive: true });
   fs.copyFileSync(src, path.join(DIST, f));
 }
 
