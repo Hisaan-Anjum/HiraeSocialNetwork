@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>People — Herae</title>
 <meta name="robots" content="noindex">
+<meta name="herae-memories-site" content="1">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="h2.css">
 <style>
@@ -50,6 +51,12 @@
   menu.h-menu button:hover, menu.h-menu button:focus-visible { background: var(--h-surface-3); }
   menu.h-menu button.danger { color: var(--h-danger); }
   .rel { position: relative; }
+  .p-card { align-self: stretch; border: 1px solid var(--h-line-strong); border-radius: var(--h-r-lg); padding: var(--h-4); background: var(--h-surface); }
+  .p-card .p-title { font-family: var(--h-font-display); font-size: var(--h-size-lg); }
+  .p-card .p-meta { font-size: var(--h-size-sm); color: var(--h-text-2); margin: var(--h-1) 0 var(--h-3); }
+  .p-state { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: var(--h-r-pill); border: 1px solid var(--h-line-strong); }
+  .p-state.accepted { color: var(--h-ok); border-color: currentColor; }
+  .c-sys { align-self: center; font-size: var(--h-size-xs); color: var(--h-text-3); }
 </style>
 </head>
 <body class="h2">
@@ -260,8 +267,53 @@
       const other = page.with;
       const thread = el('div', { class: 'c-thread', role: 'log', 'aria-label': `Conversation with ${other}` });
       let oldest = null, newest = 0;
-      const msgEl = (m, pending) => el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}${pending === 'failed' ? ' failed' : ''}`, 'data-id': m.id || '' },
-        m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : when(m.createdAt)));
+      let proposals = new Map();
+      const loadProposals = async () => { const r = await apiRequest(`/api/chats/${id}/proposals`).catch(() => ({ proposals: [] })); proposals = new Map(r.proposals.map((p) => [p.id, p])); };
+      await loadProposals();
+      const msgEl = (m, pending) => {
+        if (m.kind === 'proposal') return proposalCard(proposals.get(m.refId), m);
+        if (m.kind === 'system') return el('div', { class: 'c-sys', 'data-id': m.id }, `${m.sender === me ? 'You' : other} ${m.body === 'accepted' ? 'accepted the watch suggestion' : 'declined the watch suggestion'} · ${when(m.createdAt)}`);
+        return el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}${pending === 'failed' ? ' failed' : ''}`, 'data-id': m.id || '' },
+          m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : when(m.createdAt)));
+      };
+      const STATE = { pending: 'Waiting for an answer', accepted: 'Accepted', declined: 'Declined', cancelled: 'Cancelled', expired: 'Expired', completed: 'Done' };
+      function proposalCard(p, m) {
+        if (!p) return el('div', { class: 'c-sys', 'data-id': m.id }, 'A watch suggestion');
+        const card = el('div', { class: 'p-card', 'data-id': m.id, role: 'group', 'aria-label': `Watch suggestion: ${p.title || p.url}` });
+        const host = p.url ? (() => { try { return new URL(p.url).hostname.replace(/^www\./, ''); } catch (e) { return ''; } })() : '';
+        card.append(el('div', { class: 'h-row', style: 'justify-content:space-between' },
+            el('span', { class: 'faint', style: 'font-size:var(--h-size-xs)' }, p.mine ? 'You suggested a watch' : `${other} suggested a watch`),
+            el('span', { class: `p-state ${p.state}` }, STATE[p.state] || p.state)),
+          el('div', { class: 'p-title' }, p.title || host || 'Something to watch'),
+          el('div', { class: 'p-meta' }, [host, p.mode === 'scheduled' ? when(p.startAt) : 'Now', p.note].filter(Boolean).join(' · ')));
+        const row = el('div', { class: 'h-row', style: 'flex-wrap:wrap' });
+        const act = async (verb) => { try { const r = await apiRequest(`/api/proposals/${p.id}/${verb}`, { method: 'POST' }); proposals.set(p.id, r.proposal); card.replaceWith(proposalCard(r.proposal, m)); }
+          catch (e) { toast(e.message || 'Could not do that.'); await loadProposals(); card.replaceWith(proposalCard(proposals.get(p.id), m)); } };
+        if (p.state === 'pending' && !p.mine) row.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => act('accept') }, 'Accept'), el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('decline') }, 'Decline'));
+        if (p.state === 'pending' && p.mine) row.append(el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('cancel') }, 'Cancel suggestion'));
+        if (p.state === 'accepted') row.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => startWatching(p) }, 'Start watching'),
+          ...(p.mine ? [el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('cancel') }, 'Call it off')] : []));
+        if (row.childNodes.length) card.append(row);
+        return card;
+      }
+      // The web app owns the agreement; the extension owns playback. Same hand-off the watchlist uses.
+      async function startWatching(p) {
+        const ack = await new Promise((resolve) => {
+          let done = false; const finish = (v) => { if (!done) { done = true; window.removeEventListener('message', on); resolve(v); } };
+          function on(e) { if (e.source === window && e.data && e.data.__heraeStartSessionAck === true) finish({ handled: true, error: e.data.error, busy: e.data.busy }); }
+          window.addEventListener('message', on);
+          window.postMessage({ __heraeStartSession: true, target: other, url: p.url || '', title: p.title || '' }, location.origin);
+          setTimeout(() => finish({ handled: false }), 1200);
+        });
+        if (!ack.handled) {
+          const go = await dialog('Herae needs to be in Chrome on this computer', el('p', { class: 'muted' }, 'Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free), sign in with this account, then press Start watching again.'),
+            [['Not now', 'hb-quiet', false], ['Add Herae to Chrome', 'hb-primary', true]]);
+          if (go) window.open('https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=suggest_watch', '_blank', 'noopener');
+          return;
+        }
+        if (ack.error) { toast(ack.error); return; }
+        toast(`Inviting ${other}… Herae is opening ${p.title || 'the film'} for both of you.`);
+      }
       const addPage = (msgs, prepend) => { const nodes = msgs.slice().reverse().map((m) => msgEl(m));
         if (prepend) thread.prepend(...nodes); else thread.append(...nodes);
         for (const m of msgs) { if (!oldest || m.id < oldest) oldest = m.id; if (m.id > newest) newest = m.id; } };
@@ -280,8 +332,27 @@
       }
       const input = el('textarea', { class: 'hi', rows: '1', maxlength: '2000', placeholder: page.canSend ? 'Message' : 'You can’t message this person any more', disabled: !page.canSend, 'aria-label': 'Message' });
       const send = el('button', { type: 'submit', class: 'hb hb-primary', disabled: !page.canSend }, 'Send');
+      const suggest = el('button', { type: 'button', class: 'hb hb-secondary', disabled: !page.canSend, onclick: suggestWatch }, 'Suggest a watch');
       const form = el('form', { class: 'c-compose' }, input, send);
-      v.append(form);
+      v.append(el('div', { class: 'h-row', style: 'margin-top:var(--h-3)' }, suggest), form);
+      async function suggestWatch() {
+        const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'e.g. Past Lives' });
+        const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'https://… (optional)' });
+        const nowR = el('input', { type: 'radio', name: 'sgWhen', value: 'now', checked: true });
+        const laterR = el('input', { type: 'radio', name: 'sgWhen', value: 'later' });
+        const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
+        const ok = await dialog(`Suggest a watch to ${other}`, [el('div', { class: 'h-stack' },
+          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u,
+          el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
+            el('label', { class: 'h-row' }, nowR, ' Now'), el('label', { class: 'h-row' }, laterR, ' At a time'), dt),
+          el('p', { class: 'h-help' }, `Nothing starts until ${other} accepts.`))], [['Cancel', 'hb-quiet', false], ['Send suggestion', 'hb-primary', true]]);
+        if (!ok) return;
+        try {
+          await apiRequest(`/api/chats/${id}/proposals`, { method: 'POST', body: JSON.stringify({ title: t.value, url: u.value || null, when: laterR.checked ? new Date(dt.value).toISOString() : 'now' }) });
+          renderThread(id);
+        } catch (e) { toast(e.message || 'Could not send the suggestion.'); }
+      }
       thread.lastElementChild && thread.lastElementChild.scrollIntoView({ block: 'end' });
       const markRead = () => { if (newest) apiRequest(`/api/chats/${id}/read`, { method: 'POST', body: JSON.stringify({ lastId: newest }) }).then(refreshBadges).catch(() => {}); };
       markRead();
