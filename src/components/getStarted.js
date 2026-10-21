@@ -74,7 +74,8 @@ export async function mountGetStarted(el) {
     ? `<p class="gs-text">Herae is installed in this browser.</p>`
     : onPhone
       ? `<p class="gs-text">Your account is ready. Herae runs in Chrome on a computer, so send yourself the link and add it on your laptop. It takes a minute.</p>
-       <a class="btn btn-gold gs-cta" href="${STORE_URL}" target="_blank" rel="noopener">Send it to my laptop</a>`
+       <a class="btn btn-gold gs-cta" href="${STORE_URL}" target="_blank" rel="noopener"
+          data-handoff-email="${escapeHtml((invite && invite.email) || '')}">Send it to my laptop</a>`
       : `<p class="gs-text">Herae runs inside Chrome, beside whatever you're watching. It takes about a minute.</p>
        <a class="btn btn-gold gs-cta" href="${STORE_URL}" target="_blank" rel="noopener">Add to Chrome — free</a>`;
 

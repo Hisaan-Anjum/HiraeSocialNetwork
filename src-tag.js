@@ -67,8 +67,8 @@
     });
   }
   var sheet = null;
-  function open() {
-    if (sheet) { sheet.style.display = 'flex'; return; }
+  function open(known) {
+    if (sheet) { sheet.style.display = 'flex'; if (known) sheet.querySelector('input').value = known; return; }
     sheet = document.createElement('div');
     sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Send Herae to your laptop');
     sheet.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);font-family:inherit';
@@ -103,6 +103,9 @@
         .then(function () { fetch('/api/handoff/shared', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ src: src }) }).catch(function () {}); })
         .catch(function () { /* the share sheet was closed */ });
     });
+    // Signed in (the memories page's first step passes it): their own address, so the one way forward from a phone
+    // is a single tap instead of typing an email Herae already has.
+    if (known) input.value = known;
     setTimeout(function () { try { input.focus(); } catch (e) { /* fine */ } }, 50);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', relabel); else relabel();
@@ -110,6 +113,6 @@
   document.addEventListener('click', function (ev) {
     var a = ev.target.closest && ev.target.closest(SEL);
     if (!a) return;
-    ev.preventDefault(); ev.stopPropagation(); relabel(); open();
+    ev.preventDefault(); ev.stopPropagation(); relabel(); open(a.dataset.handoffEmail || '');
   }, true);
 })();
