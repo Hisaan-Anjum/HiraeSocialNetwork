@@ -635,6 +635,9 @@ document.addEventListener('click', function (e) {
   var f = document.createElement('iframe');
   f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.id + '?autoplay=1&rel=0';
   f.title = 'Herae setup in 40 seconds'; f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true;
+  // The site sends Referrer-Policy: no-referrer, and YouTube's player refuses to play an embed with no referrer
+  // ("Error 153"). This one frame gets the site's origin only — never the page path.
+  f.referrerPolicy = 'strict-origin-when-cross-origin';
   f.className = 'sv-frame'; b.replaceWith(f);
 });
 </script>

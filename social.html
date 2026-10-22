@@ -372,7 +372,7 @@
           try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discovery_scope: 'everyone' }) }); toast('Showing everyone now. Change it any time in your profile.'); renderDiscover(); }
           catch (e) { toast(e.message || 'Could not change it.'); } } }, `Show me everyone (${widen} more ${widen === 1 ? 'person' : 'people'})`) : null;
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'You’re in — we’ll find them for you'),
-          el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll email you a link straight to their card. Nothing to keep checking.'),
+          el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll notify you — here in 🔔, by email and on your desktop — with a link straight to their card. Nothing to keep checking.'),
           el('p', { class: 'muted' }, 'More films and genres on your profile means more people fit.'),
           el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' }, widenBtn,
             el('a', { class: `hb ${widenBtn ? 'hb-secondary' : 'hb-primary'}`, href: '#parties' }, 'Find a watch party'),
@@ -727,7 +727,7 @@
 
     // ── Parties (private by default; the invite link is #parties/<id>/<token>, a hash, so it never reaches server logs) ──
     const partyRow = (p) => el('li', { class: 'tap-row', onclick: rowGo(`parties/${p.id}`) }, el('div', { class: 'row-main' }, el('strong', {}, p.title),
-        el('div', { class: 'sub' }, [`${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
+        el('div', { class: 'sub' }, [p.filmTitle ? `🎬 ${p.filmTitle}` : '', `${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
           p.startsAt ? when(p.startsAt) : '', p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
       el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));
     async function renderParties(id, token) {
@@ -740,13 +740,17 @@
       if (mine.parties.length) { const ul = el('ul', { class: 'h-list' }); mine.parties.forEach((p) => ul.append(partyRow(p))); v.append(ul); }
       else v.append(el('p', { class: 'muted' }, 'None yet. Start one and send the invite link to the people you want there. New parties are private.'));
       v.append(el('h2', { style: 'margin-top:var(--h-6, 32px)' }, 'Public parties'));
+      const search = el('input', { class: 'hi', type: 'search', id: 'ptSearch', placeholder: 'Search by film or party name', 'aria-label': 'Search public watch parties', maxlength: '80', style: 'margin:0 0 var(--h-3)' });
       const list = el('ul', { class: 'h-list' }); const more = el('button', { type: 'button', class: 'hb hb-secondary', hidden: true }, 'Show more');
-      v.append(list, more);
+      v.append(search, list, more);
+      let q = ''; let searchTimer;
+      search.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { q = search.value.trim(); list.innerHTML = ''; page(); }, 250); };
       const page = async (before) => {
-        const r = await apiRequest(`/api/parties/directory${before ? `?before=${before}` : ''}`).catch(() => ({ parties: [] }));
+        const qs = [before ? `before=${before}` : '', q ? `q=${encodeURIComponent(q)}` : ''].filter(Boolean).join('&');
+        const r = await apiRequest(`/api/parties/directory${qs ? `?${qs}` : ''}`).catch(() => ({ parties: [] }));
         if (r.reason === 'adult_required') { list.replaceWith(el('p', { class: 'muted' }, 'Public parties are for adults. Confirm you’re 18 or over in ', el('a', { href: 'watch-profile.html' }, 'your watch profile'), ' to see them.')); return; }
         r.parties.forEach((p) => list.append(partyRow(p)));
-        if (!before && !r.parties.length) list.append(el('li', { class: 'muted' }, 'No public parties right now.'));
+        if (!before && !r.parties.length) list.append(el('li', { class: 'muted' }, q ? `No open public party for “${q}” right now. Start one — people who want it can find it.` : 'No public parties right now.'));
         more.hidden = !r.next; more.onclick = () => page(r.next);
       };
       await page();
@@ -762,6 +766,7 @@
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between' }, back,
         p.role === 'owner' ? null : moreMenu([['Report this party', () => reportPerson(p.owner, 'party', String(p.id))], ['Block the host', async () => { if (await blockPerson(p.owner)) location.hash = 'parties'; }, true]])));
       v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private', p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · ')));
+      if (p.filmTitle || p.filmUrl) v.append(el('p', { class: 'p-film' }, '🎬 ', p.filmTitle || 'The film', p.filmUrl ? el('a', { href: p.filmUrl, target: '_blank', rel: 'noopener noreferrer', style: 'margin-left:8px' }, 'Open it ↗') : null));
       if (p.description) v.append(el('p', {}, p.description));
       const actions = el('div', { class: 'h-row', style: 'flex-wrap:wrap;margin:var(--h-4) 0' }); v.append(actions);
       if (!inside) {
@@ -843,7 +848,9 @@
     async function editParty(p = null) {
       const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
       const t = el('input', { class: 'hi', id: 'ptTitle', maxlength: '80', placeholder: 'e.g. Friday horror night', value: p ? p.title : '' });
-      const d = el('textarea', { class: 'hi', id: 'ptDesc', maxlength: '500', placeholder: 'What you’re watching, the vibe (optional)' }); if (p && p.description) d.value = p.description;
+      const d = el('textarea', { class: 'hi', id: 'ptDesc', maxlength: '500', placeholder: 'The vibe (optional)' }); if (p && p.description) d.value = p.description;
+      const ft = el('input', { class: 'hi', id: 'ptFilm', maxlength: '120', placeholder: 'e.g. Past Lives', value: p && p.filmTitle ? p.filmTitle : '' });
+      const fu = el('input', { class: 'hi', id: 'ptLink', type: 'url', maxlength: '500', placeholder: 'https://… (optional — a Netflix, Prime or YouTube link)', value: p && p.filmUrl ? p.filmUrl : '' });
       const cap = el('input', { class: 'hi', id: 'ptCap', type: 'number', min: '2', max: '50', value: p ? p.capacity : 8 });
       const at = el('input', { class: 'hi', id: 'ptAt', type: 'datetime-local', value: p && p.startsAt ? local(new Date(p.startsAt.replace(' ', 'T') + 'Z')) : '' });
       const radio = (name, value, label, checked) => el('label', { class: 'h-row' }, el('input', { type: 'radio', name, value, checked }), ` ${label}`);
@@ -855,7 +862,8 @@
       vis.onchange = () => { adm.hidden = vis.querySelector('input:checked').value !== 'public'; };
       const rotate = p ? el('label', { class: 'h-row' }, el('input', { type: 'checkbox', id: 'ptRot', style: 'width:20px;height:20px;accent-color:var(--h-accent)' }), ' Make a new invite link (the old one stops working)') : null;
       const ok = await dialog(p ? 'Party settings' : 'Start a watch party', [el('div', { class: 'h-stack' },
-        el('label', { class: 'h-label', for: 'ptTitle' }, 'Name'), t, el('label', { class: 'h-label', for: 'ptDesc' }, 'About (optional)'), d,
+        el('label', { class: 'h-label', for: 'ptTitle' }, 'Name'), t, el('label', { class: 'h-label', for: 'ptFilm' }, 'What you’re watching'), ft,
+        el('label', { class: 'h-label', for: 'ptLink' }, 'Watch link (optional)'), fu, el('label', { class: 'h-label', for: 'ptDesc' }, 'About (optional)'), d,
         el('label', { class: 'h-label', for: 'ptAt' }, 'When (optional)'), at, el('label', { class: 'h-label', for: 'ptCap' }, 'How many people, you included'), cap, vis, adm, rotate)],
         p ? [['End party', 'hb-danger', 'end'], ['Cancel', 'hb-quiet', false], ['Save', 'hb-primary', true]] : [['Cancel', 'hb-quiet', false], ['Create', 'hb-primary', true]]);
       if (!ok) return;
@@ -864,7 +872,7 @@
           try { await apiRequest(`/api/parties/${p.id}/end`, { method: 'POST' }); toast('Party ended.'); location.hash = 'parties'; } catch (e) { toast(e.message || 'Could not end the party.'); } }
         return;
       }
-      const body = { title: t.value, description: d.value, capacity: Number(cap.value), starts_at: at.value ? new Date(at.value).toISOString() : null,
+      const body = { title: t.value, description: d.value, film_title: ft.value, film_url: fu.value.trim(), film_source: fu.value.trim() ? 'url' : 'title', capacity: Number(cap.value), starts_at: at.value ? new Date(at.value).toISOString() : null,
         visibility: vis.querySelector('input:checked').value, admission: adm.querySelector('input:checked').value };
       if (rotate && rotate.querySelector('input').checked) body.rotate_link = true;
       try {

@@ -94,13 +94,14 @@
     btn.onclick = () => {
       if (menu) return close();
       menu = document.createElement('ul'); menu.className = 'an-menu'; menu.setAttribute('role', 'menu');
-      menu.innerHTML = `<li class="an-who" role="none"><b>${me}</b>Signed in</li>
+      menu.innerHTML = `<li class="an-who" role="none"><b></b>Signed in</li>
         <li role="none"><a role="menuitem" href="user.html?u=${encodeURIComponent(me)}">Your page</a></li>
         <li role="none"><a role="menuitem" href="watch-profile.html">Watch profile &amp; privacy</a></li>
         <li role="none"><a role="menuitem" href="billing.html">Plan &amp; billing</a></li>
         <li role="none"><a role="menuitem" href="refer.html">Invite friends</a></li>
         <li role="none"><a role="menuitem" href="help.html">Help</a></li>
         <li role="none"><button role="menuitem" type="button" data-logout>Log out</button></li>`;
+      menu.querySelector('.an-who b').textContent = me;   // text, never markup
       menu.querySelector('[data-logout]').onclick = () => (typeof logout === 'function' ? logout() : (localStorage.removeItem('moments_auth'), location.href = 'index.html'));
       top.append(menu); btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a').focus();
     };
@@ -112,27 +113,29 @@
     connectBanner();
   }
   // "Connect fast" (founder 2026-10-22): until someone has a person to watch with, every app page shows the ONE next
-  // step for where they are. Dismissing hides it for this visit only; it comes back next time until they're connected.
+  // step for where they are. Dismissing hides it for an hour; it is always there for everyone (founder 10-22: persistent).
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
     const MSG = {
       no_profile: ['Find someone to watch with tonight — set up your profile in 2 minutes.', 'Set up', 'watch-profile.html'],
       discovery_off: ['Turn on Discover to meet people who love the same films.', 'Turn it on', 'watch-profile.html'],
       browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
-        : ['You’re in Discover. We’ll email you when someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
+        : ['You’re in Discover. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
       say_hi: [`You have ${st.unchatted === 1 ? 'a match' : st.unchatted + ' matches'} waiting for a hello.`, 'Say hi', 'social.html#matches'],
       matched: ['Ready to watch? Suggest a film to your match.', 'Open chats', 'social.html#chats'],
+      // Persistent (founder 10-22): even someone with a partner always has one tap to more people to watch with.
+      connected: ['Find someone new to watch with — people who love the same films are in Discover.', 'Find someone', 'social.html#discover'],
     }[st.step];
     if (!MSG) return;
     const [text, cta, href] = MSG; const key = `hz-connect-${st.step}`;
-    try { if (sessionStorage.getItem(key)) return; } catch (e) { /* storage blocked: still show */ }
+    try { if (Date.now() - Number(localStorage.getItem(key) || 0) < 3600e3) return; } catch (e) { /* storage blocked: still show */ }   // "hide" lasts an hour, then it's back
     const [hPath, hTab] = href.split('#'); const curTab = (location.hash.slice(1) || (hPath === 'social.html' ? 'discover' : '')).split('/')[0];
     if (location.pathname.endsWith(hPath) && (!hTab || curTab === hTab)) return;   // already there (#discover/<someone> is still Discover)
     const bar = document.createElement('div'); bar.className = 'an-connect'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
     bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
     bar.querySelector('span').textContent = text; const a = bar.querySelector('a'); a.textContent = cta; a.href = href;
     const track = (action) => { if (typeof trackEvent === 'function') trackEvent('connect_nudge', { step: st.step, action }); };
-    bar.querySelector('button').onclick = () => { try { sessionStorage.setItem(key, '1'); } catch (e) { /* fine */ } bar.remove(); track('hide'); };
+    bar.querySelector('button').onclick = () => { try { localStorage.setItem(key, String(Date.now())); } catch (e) { /* fine */ } bar.remove(); track('hide'); };
     a.onclick = () => track('open');
     document.querySelector('.an-top').after(bar);
     track('shown');
