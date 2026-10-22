@@ -109,6 +109,26 @@
     const L = (xs) => (xs || []).map((x) => LABEL[x] || x).join(', ');
     const when = (s) => { const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('Z') ? '' : 'Z')); return isNaN(d) ? '' : d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' }); };
 
+    // The extension hand-off (content.js __heraeStartSession). Resolves { handled:false } when no extension answers.
+    const handOff = (payload) => new Promise((resolve) => {
+      let done = false; const finish = (v) => { if (!done) { done = true; window.removeEventListener('message', on); resolve(v); } };
+      function on(e) { if (e.source === window && e.data && e.data.__heraeStartSessionAck === true) finish({ handled: true, error: e.data.error, busy: e.data.busy }); }
+      window.addEventListener('message', on);
+      window.postMessage({ __heraeStartSession: true, url: '', title: '', ...payload }, location.origin);
+      setTimeout(() => finish({ handled: false }), 1200);
+    });
+    // Which extension version is here (null = none). Party hand-offs need 2.7.27+; older ones would send an invite instead.
+    const extVersion = new Promise((resolve) => {
+      const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(String(e.data.version || '0')); } };
+      window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(null), 1500);
+    });
+    const atLeast = (v, min) => { const a = v.split('.').map(Number); const b = min.split('.').map(Number);
+      for (let i = 0; i < 3; i++) if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0); return true; };
+    async function needExtension(why) {
+      const go = await dialog('Herae needs to be in Chrome on this computer', el('p', { class: 'muted' }, why), [['Not now', 'hb-quiet', false], ['Add Herae to Chrome', 'hb-primary', true]]);
+      if (go) window.open('https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=social', '_blank', 'noopener');
+    }
+
     function dialog(title, body, actions) {
       $('dlgTitle').textContent = title; const b = $('dlgBody'); b.innerHTML = ''; b.append(...[].concat(body));
       const a = $('dlgActions'); a.innerHTML = '';
@@ -302,19 +322,8 @@
       }
       // The web app owns the agreement; the extension owns playback. Same hand-off the watchlist uses.
       async function startWatching(p) {
-        const ack = await new Promise((resolve) => {
-          let done = false; const finish = (v) => { if (!done) { done = true; window.removeEventListener('message', on); resolve(v); } };
-          function on(e) { if (e.source === window && e.data && e.data.__heraeStartSessionAck === true) finish({ handled: true, error: e.data.error, busy: e.data.busy }); }
-          window.addEventListener('message', on);
-          window.postMessage({ __heraeStartSession: true, target: other, url: p.url || '', title: p.title || '' }, location.origin);
-          setTimeout(() => finish({ handled: false }), 1200);
-        });
-        if (!ack.handled) {
-          const go = await dialog('Herae needs to be in Chrome on this computer', el('p', { class: 'muted' }, 'Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free), sign in with this account, then press Start watching again.'),
-            [['Not now', 'hb-quiet', false], ['Add Herae to Chrome', 'hb-primary', true]]);
-          if (go) window.open('https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=suggest_watch', '_blank', 'noopener');
-          return;
-        }
+        const ack = await handOff({ target: other, url: p.url || '', title: p.title || '' });
+        if (!ack.handled) return needExtension('Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free), sign in with this account, then press Start watching again.');
         if (ack.error) { toast(ack.error); return; }
         toast(`Inviting ${other}… Herae is opening ${p.title || 'the film'} for both of you.`);
       }
@@ -464,6 +473,17 @@
             act('/requests', { note: note.value, token }, 'Request sent.'); } }, 'Ask to join'));
         return;
       }
+      // Live watch: a member asks to join the host's watch (the host approves); the host invites members one by one.
+      const partyHandOff = async (payload, okText) => {
+        const v = await extVersion;
+        if (!v) return needExtension('Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free) and sign in with this account.');
+        if (payload.mode && !atLeast(v, '2.7.27')) return toast('This needs the newest Herae (2.7.27), which is on its way to the Chrome Web Store. Chrome updates it by itself within a day or so.');
+        const ack = await handOff(payload);
+        if (!ack.handled) return needExtension('Herae didn’t answer. Make sure it’s added to Chrome and you’re signed in with this account.');
+        toast(ack.error || okText);
+      };
+      if (p.role !== 'owner' && p.hostWatching) actions.prepend(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => partyHandOff({ target: p.owner, mode: 'join' }, `Asked ${p.owner} to let you in. When they do, Herae asks you to confirm — keep its window open.`) }, 'Join the watch'));
+      if (p.role !== 'owner' && !p.hostWatching) actions.append(el('span', { class: 'muted', style: 'font-size:var(--h-size-sm)' }, `${p.owner} hasn’t started watching yet.`));
       if (p.role !== 'owner') actions.append(el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => {
         if (await dialog(`Leave ${p.title}?`, el('p', { class: 'muted' }, 'You can come back with the invite link while there’s room.'), [['Stay', 'hb-quiet', false], ['Leave', 'hb-danger', true]])) { await act('/leave'); location.hash = 'parties'; } } }, 'Leave party'));
       if (mod) {
@@ -485,6 +505,9 @@
       p.memberList.forEach((m) => {
         const items = [];
         if (m.username !== me) {
+          if (p.role === 'owner') items.push(p.hostWatching
+            ? ['Add to my watch', () => partyHandOff({ target: m.username, mode: 'add', title: p.title }, `Invited ${m.username} into your watch.`)]
+            : ['Start watching with them', () => partyHandOff({ target: m.username, title: p.title }, `Inviting ${m.username}… Herae is opening for you.`)]);
           if (p.role === 'owner' && m.role !== 'owner') items.push([m.role === 'moderator' ? 'Remove as moderator' : 'Make moderator', () => act(`/moderators/${m.username}`, { moderator: m.role !== 'moderator' })]);
           if (mod && m.role !== 'owner' && (p.role === 'owner' || m.role === 'member')) items.push([`Remove from party`, async () => {
             if (await dialog(`Remove ${m.username}?`, el('p', { class: 'muted' }, 'They leave the party and can’t come back with the link or by asking.'), [['Cancel', 'hb-quiet', false], ['Remove', 'hb-danger', true]])) act(`/members/${m.username}/remove`, null, `${m.username} removed.`); }, true]);
