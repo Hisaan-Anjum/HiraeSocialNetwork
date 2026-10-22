@@ -48,9 +48,14 @@
   .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: #E2E8F0; font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
   .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: #1E293B; outline: none; }
   .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: #EC4899; color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
+  .an-connect { position: sticky; top: 60px; z-index: 45; display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
+    background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 600 14px/1.35 var(--font-sans, system-ui); }
+  .an-connect span { flex: 1; }
+  .an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
   .an-bottom { display: none; }
   @media (max-width: 760px) {
-    .an-links { display: none; } .an-top { height: 56px; }
+    .an-links { display: none; } .an-top { height: 56px; } .an-connect { top: 56px; font-size: 13px; padding: 8px 12px; }
     .an-bottom { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
       background: rgba(15, 23, 42, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(148, 163, 184, .16); }
     .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #94A3B8; font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
@@ -96,6 +101,32 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu) { close(); btn.focus(); } });
     mark(); window.addEventListener('hashchange', () => { mark(); });
     badges(); setInterval(badges, 60000);
+    connectBanner();
+  }
+  // "Connect fast" (founder 2026-10-22): until someone has a person to watch with, every app page shows the ONE next
+  // step for where they are. Dismissing hides it for this visit only; it comes back next time until they're connected.
+  async function connectBanner() {
+    let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
+    const MSG = {
+      no_profile: ['Find someone to watch with tonight — set up your profile in 2 minutes.', 'Set up', 'watch-profile.html'],
+      discovery_off: ['Turn on Discover to meet people who love the same films.', 'Turn it on', 'watch-profile.html'],
+      browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
+        : ['You’re in Discover. We’ll email you when someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
+      say_hi: [`You have ${st.unchatted === 1 ? 'a match' : st.unchatted + ' matches'} waiting for a hello.`, 'Say hi', 'social.html#matches'],
+      matched: ['Ready to watch? Suggest a film to your match.', 'Open chats', 'social.html#chats'],
+    }[st.step];
+    if (!MSG) return;
+    const [text, cta, href] = MSG; const key = `hz-connect-${st.step}`;
+    try { if (sessionStorage.getItem(key)) return; } catch (e) { /* storage blocked: still show */ }
+    if (location.pathname.endsWith(href.split('#')[0]) && (!href.includes('#') || location.hash === '#' + href.split('#')[1])) return;   // already there
+    const bar = document.createElement('div'); bar.className = 'an-connect'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
+    bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
+    bar.querySelector('span').textContent = text; const a = bar.querySelector('a'); a.textContent = cta; a.href = href;
+    const track = (action) => { if (typeof trackEvent === 'function') trackEvent('connect_nudge', { step: st.step, action }); };
+    bar.querySelector('button').onclick = () => { try { sessionStorage.setItem(key, '1'); } catch (e) { /* fine */ } bar.remove(); track('hide'); };
+    a.onclick = () => track('open');
+    document.querySelector('.an-top').after(bar);
+    track('shown');
   }
   function mark() {
     refresh();
