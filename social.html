@@ -14,6 +14,8 @@
   .s-tab { position: relative; min-height: var(--h-tap); padding: 0 var(--h-4); background: none; border: 0; color: var(--h-text-2); font: 600 var(--h-size-sm) var(--h-font-body); cursor: pointer; border-bottom: 2px solid transparent; }
   .s-tab[aria-selected="true"] { color: var(--h-text); border-bottom-color: var(--h-accent); }
   .s-badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--h-coral); color: #1b0d09; font-size: 11px; line-height: 18px; text-align: center; }
+  .s-badge[hidden] { display: none; }
+  .s-tab { white-space: nowrap; }
   @media (max-width: 640px) {
     .s-tabs { position: fixed; bottom: 0; top: auto; left: 0; right: 0; justify-content: space-around; border-top: 1px solid var(--h-line); border-bottom: 0; padding: 0 0 env(safe-area-inset-bottom); }
     .s-tab { flex: 1; padding: 0; border-bottom: 0; border-top: 2px solid transparent; }
@@ -69,12 +71,14 @@
     <button class="s-tab" role="tab" id="t-matches" aria-controls="v-matches" data-tab="matches">Matches<span class="s-badge" id="b-matches" hidden></span></button>
     <button class="s-tab" role="tab" id="t-chats" aria-controls="v-chats" data-tab="chats">Chats<span class="s-badge" id="b-chats" hidden></span></button>
     <button class="s-tab" role="tab" id="t-friends" aria-controls="v-friends" data-tab="friends">Friends<span class="s-badge" id="b-friends" hidden></span></button>
+    <button class="s-tab" role="tab" id="t-parties" aria-controls="v-parties" data-tab="parties">Parties</button>
   </nav>
   <main class="h-page" id="main">
     <section id="v-discover" role="tabpanel" aria-labelledby="t-discover" hidden></section>
     <section id="v-matches" role="tabpanel" aria-labelledby="t-matches" hidden></section>
     <section id="v-chats" role="tabpanel" aria-labelledby="t-chats" hidden></section>
     <section id="v-friends" role="tabpanel" aria-labelledby="t-friends" hidden></section>
+    <section id="v-parties" role="tabpanel" aria-labelledby="t-parties" hidden></section>
   </main>
   <div id="live" class="sr-only" role="status" aria-live="polite"></div>
 
@@ -145,12 +149,12 @@
     }
 
     // ── Tabs (hash routing keeps the back button and deep links working) ──
-    const views = { discover: renderDiscover, matches: renderMatches, chats: renderChats, friends: renderFriends };
+    const views = { discover: renderDiscover, matches: renderMatches, chats: renderChats, friends: renderFriends, parties: renderParties };
     function route() {
-      const [tab, arg] = (location.hash.slice(1) || 'discover').split('/');
+      const [tab, ...args] = (location.hash.slice(1) || 'discover').split('/');
       const name = views[tab] ? tab : 'discover';
       for (const t of Object.keys(views)) { $(`v-${t}`).hidden = t !== name; $(`t-${t}`).setAttribute('aria-selected', String(t === name)); $(`t-${t}`).tabIndex = t === name ? 0 : -1; }
-      views[name](arg);
+      views[name](...args);
     }
     document.querySelectorAll('.s-tab').forEach((b) => { b.onclick = () => { location.hash = b.dataset.tab; }; });
     document.querySelector('.s-tabs').onkeydown = (e) => { const tabs = [...document.querySelectorAll('.s-tab')]; const i = tabs.indexOf(document.activeElement);
@@ -408,6 +412,121 @@
       section('Waiting for them', r.outgoing, (x) => el('li', {}, avatar(x), el('div', { class: 'row-main' }, el('strong', {}, x.username), el('div', { class: 'sub' }, 'Request pending')),
         el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { await apiRequest(`/api/contacts/${x.id}`, { method: 'DELETE' }); renderFriends(); } }, 'Cancel')));
       if (!r.contacts.length && !r.incoming.length && !r.outgoing.length) v.append(el('p', { class: 'h-empty' }, 'No friends on Herae yet. Add someone by username, or become friends with a match from their chat.'));
+    }
+
+    // ── Parties (private by default; the invite link is #parties/<id>/<token>, a hash, so it never reaches server logs) ──
+    const partyRow = (p) => el('li', {}, el('div', { class: 'row-main' }, el('strong', {}, p.title),
+        el('div', { class: 'sub' }, [`${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
+          p.startsAt ? when(p.startsAt) : '', p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
+      el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));
+    async function renderParties(id, token) {
+      if (id) return renderParty(Number(id), token);
+      const v = $('v-parties'); v.innerHTML = '';
+      v.append(el('div', { class: 'h-row', style: 'justify-content:space-between;flex-wrap:wrap' }, el('h1', {}, 'Watch parties'),
+        el('button', { type: 'button', class: 'hb hb-primary', onclick: () => editParty() }, 'Start a party')));
+      let mine; try { mine = await apiRequest('/api/parties/mine'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      v.append(el('h2', { style: 'margin-top:var(--h-5)' }, 'Your parties'));
+      if (mine.parties.length) { const ul = el('ul', { class: 'h-list' }); mine.parties.forEach((p) => ul.append(partyRow(p))); v.append(ul); }
+      else v.append(el('p', { class: 'muted' }, 'None yet. Start one and send the invite link to the people you want there. New parties are private.'));
+      v.append(el('h2', { style: 'margin-top:var(--h-6, 32px)' }, 'Public parties'));
+      const list = el('ul', { class: 'h-list' }); const more = el('button', { type: 'button', class: 'hb hb-secondary', hidden: true }, 'Show more');
+      v.append(list, more);
+      const page = async (before) => {
+        const r = await apiRequest(`/api/parties/directory${before ? `?before=${before}` : ''}`).catch(() => ({ parties: [] }));
+        if (r.reason === 'adult_required') { list.replaceWith(el('p', { class: 'muted' }, 'Public parties are for adults. Confirm you’re 18 or over in ', el('a', { href: 'watch-profile.html' }, 'your watch profile'), ' to see them.')); return; }
+        r.parties.forEach((p) => list.append(partyRow(p)));
+        if (!before && !r.parties.length) list.append(el('li', { class: 'muted' }, 'No public parties right now.'));
+        more.hidden = !r.next; more.onclick = () => page(r.next);
+      };
+      await page();
+    }
+    async function renderParty(id, token) {
+      const v = $('v-parties'); v.innerHTML = '';
+      const back = el('a', { class: 'hb hb-quiet', href: '#parties' }, '← Parties');
+      let p; try { p = (await apiRequest(`/api/parties/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`)).party; }
+      catch (e) { v.append(back, el('p', { class: 'h-empty' }, 'This party isn’t available. The link may have changed, or it has ended.')); return; }
+      const act = async (path, body, done) => { try { await apiRequest(`/api/parties/${id}${path}`, { method: 'POST', body: JSON.stringify(body || {}) }); if (done) toast(done); renderParty(id, token); }
+        catch (e) { toast(e.message || 'Could not do that.'); renderParty(id, token); } };
+      const mod = p.access === 'moderator'; const inside = mod || p.access === 'member';
+      v.append(el('div', { class: 'h-row', style: 'justify-content:space-between' }, back,
+        p.role === 'owner' ? null : moreMenu([['Report this party', () => reportPerson(p.owner, 'party', String(p.id))], ['Block the host', async () => { if (await blockPerson(p.owner)) location.hash = 'parties'; }, true]])));
+      v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private', p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · ')));
+      if (p.description) v.append(el('p', {}, p.description));
+      const actions = el('div', { class: 'h-row', style: 'flex-wrap:wrap;margin:var(--h-4) 0' }); v.append(actions);
+      if (!inside) {
+        const full = p.members >= p.capacity;
+        if (p.myRequest && p.myRequest.state === 'pending') actions.append(el('span', { class: 'p-state' }, 'Request sent'), el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('/requests/withdraw', null, 'Request withdrawn.') }, 'Withdraw'));
+        else if (full) actions.append(el('p', { class: 'muted' }, 'This party is full.'));
+        else if (p.access === 'invited' || p.admission === 'open') actions.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => act('/join', { token }, `You joined ${p.title}.`).then(() => { location.hash = `parties/${id}`; }) }, 'Join'));
+        else actions.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: async () => {
+          const note = el('textarea', { class: 'hi', id: 'pjNote', maxlength: '300', placeholder: 'Say hi, or why you’d like to come (optional)' });
+          if (await dialog(`Ask to join ${p.title}`, [el('div', { class: 'h-stack' }, el('label', { class: 'sr-only', for: 'pjNote' }, 'Note'), note, el('p', { class: 'h-help' }, `${p.owner} sees your username and this note.`))], [['Cancel', 'hb-quiet', false], ['Send request', 'hb-primary', true]]))
+            act('/requests', { note: note.value, token }, 'Request sent.'); } }, 'Ask to join'));
+        return;
+      }
+      if (p.role !== 'owner') actions.append(el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => {
+        if (await dialog(`Leave ${p.title}?`, el('p', { class: 'muted' }, 'You can come back with the invite link while there’s room.'), [['Stay', 'hb-quiet', false], ['Leave', 'hb-danger', true]])) { await act('/leave'); location.hash = 'parties'; } } }, 'Leave party'));
+      if (mod) {
+        const link = `${location.origin}${location.pathname}#parties/${p.id}/${p.inviteToken}`;
+        actions.prepend(el('button', { type: 'button', class: 'hb hb-primary', onclick: async () => { try { await navigator.clipboard.writeText(link); toast('Invite link copied. Anyone with it can join while there’s room.'); } catch (e) { prompt('Copy the invite link:', link); } } }, 'Copy invite link'));
+        if (p.requests.length) {
+          v.append(el('h2', {}, `Asking to join (${p.requests.length})`));
+          const ul = el('ul', { class: 'h-list' });
+          p.requests.forEach((q) => ul.append(el('li', {}, el('div', { class: 'row-main' }, el('strong', {}, q.username), q.note ? el('div', { class: 'sub' }, q.note) : null),
+            el('button', { type: 'button', class: 'hb hb-primary', onclick: () => act(`/requests/${q.id}/approve`, null, `${q.username} is in.`) }, 'Let in'),
+            el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act(`/requests/${q.id}/reject`) }, 'Decline'))));
+          v.append(ul);
+        }
+      }
+      if (p.role === 'owner') actions.append(el('button', { type: 'button', class: 'hb hb-secondary', onclick: () => editParty(p) }, 'Settings'));
+      v.append(el('h2', { style: 'margin-top:var(--h-5)' }, 'Who’s in'));
+      const ul = el('ul', { class: 'h-list' });
+      const ROLE = { owner: 'Host', moderator: 'Moderator', member: '' };
+      p.memberList.forEach((m) => {
+        const items = [];
+        if (m.username !== me) {
+          if (p.role === 'owner' && m.role !== 'owner') items.push([m.role === 'moderator' ? 'Remove as moderator' : 'Make moderator', () => act(`/moderators/${m.username}`, { moderator: m.role !== 'moderator' })]);
+          if (mod && m.role !== 'owner' && (p.role === 'owner' || m.role === 'member')) items.push([`Remove from party`, async () => {
+            if (await dialog(`Remove ${m.username}?`, el('p', { class: 'muted' }, 'They leave the party and can’t come back with the link or by asking.'), [['Cancel', 'hb-quiet', false], ['Remove', 'hb-danger', true]])) act(`/members/${m.username}/remove`, null, `${m.username} removed.`); }, true]);
+          items.push(['Report', () => reportPerson(m.username)], ['Block', async () => { if (await blockPerson(m.username)) renderParty(id, token); }, true]);
+        }
+        ul.append(el('li', {}, el('div', { class: 'row-main' }, el('strong', {}, m.username), ROLE[m.role] ? el('div', { class: 'sub' }, ROLE[m.role]) : null), items.length ? moreMenu(items) : null));
+      });
+      v.append(ul);
+    }
+    // Create (no argument) or edit (owner) a party.
+    async function editParty(p = null) {
+      const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      const t = el('input', { class: 'hi', id: 'ptTitle', maxlength: '80', placeholder: 'e.g. Friday horror night', value: p ? p.title : '' });
+      const d = el('textarea', { class: 'hi', id: 'ptDesc', maxlength: '500', placeholder: 'What you’re watching, the vibe (optional)' }); if (p && p.description) d.value = p.description;
+      const cap = el('input', { class: 'hi', id: 'ptCap', type: 'number', min: '2', max: '50', value: p ? p.capacity : 8 });
+      const at = el('input', { class: 'hi', id: 'ptAt', type: 'datetime-local', value: p && p.startsAt ? local(new Date(p.startsAt.replace(' ', 'T') + 'Z')) : '' });
+      const radio = (name, value, label, checked) => el('label', { class: 'h-row' }, el('input', { type: 'radio', name, value, checked }), ` ${label}`);
+      const pub = p ? p.visibility === 'public' : false; const open = p ? p.admission === 'open' : false;
+      const adm = el('fieldset', { style: 'border:0;padding:0', hidden: !pub }, el('legend', { class: 'h-label' }, 'Who gets in'),
+        radio('ptAdm', 'request', 'People ask, you let them in', !open), radio('ptAdm', 'open', 'Anyone 18+ can join', open));
+      const vis = el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'Who can find it'),
+        radio('ptVis', 'private', 'Only people with the invite link', !pub), radio('ptVis', 'public', 'Listed in public parties (18+)', pub));
+      vis.onchange = () => { adm.hidden = vis.querySelector('input:checked').value !== 'public'; };
+      const rotate = p ? el('label', { class: 'h-row' }, el('input', { type: 'checkbox', id: 'ptRot', style: 'width:20px;height:20px;accent-color:var(--h-accent)' }), ' Make a new invite link (the old one stops working)') : null;
+      const ok = await dialog(p ? 'Party settings' : 'Start a watch party', [el('div', { class: 'h-stack' },
+        el('label', { class: 'h-label', for: 'ptTitle' }, 'Name'), t, el('label', { class: 'h-label', for: 'ptDesc' }, 'About (optional)'), d,
+        el('label', { class: 'h-label', for: 'ptAt' }, 'When (optional)'), at, el('label', { class: 'h-label', for: 'ptCap' }, 'How many people, you included'), cap, vis, adm, rotate)],
+        p ? [['End party', 'hb-danger', 'end'], ['Cancel', 'hb-quiet', false], ['Save', 'hb-primary', true]] : [['Cancel', 'hb-quiet', false], ['Create', 'hb-primary', true]]);
+      if (!ok) return;
+      if (ok === 'end') {
+        if (await dialog(`End ${p.title}?`, el('p', { class: 'muted' }, 'Everyone loses access and the invite link stops working. This can’t be undone.'), [['Keep it', 'hb-quiet', false], ['End party', 'hb-danger', true]])) {
+          try { await apiRequest(`/api/parties/${p.id}/end`, { method: 'POST' }); toast('Party ended.'); location.hash = 'parties'; } catch (e) { toast(e.message || 'Could not end the party.'); } }
+        return;
+      }
+      const body = { title: t.value, description: d.value, capacity: Number(cap.value), starts_at: at.value ? new Date(at.value).toISOString() : null,
+        visibility: vis.querySelector('input:checked').value, admission: adm.querySelector('input:checked').value };
+      if (rotate && rotate.querySelector('input').checked) body.rotate_link = true;
+      try {
+        const r = await apiRequest(p ? `/api/parties/${p.id}` : '/api/parties', { method: p ? 'PATCH' : 'POST', body: JSON.stringify(body) });
+        toast(p ? 'Saved.' : 'Party created. Copy the invite link to bring people in.');
+        if (p) renderParty(p.id); else location.hash = `parties/${r.party.id}`;
+      } catch (e) { toast(e.message || 'Could not save.'); }
     }
 
     async function refreshBadges() {
