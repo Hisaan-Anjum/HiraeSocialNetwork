@@ -483,6 +483,8 @@ function getMyInvite() {
 async function loginWithGoogle(accessToken, serverUrl, username) {
   const base = (serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
   const body = { access_token: accessToken, source: signupSourceTag() };
+  // The sign-up page's "who do you want to watch with?" answer — only recorded if this creates the account.
+  try { const m = sessionStorage.getItem('herae_signup_mode'); if (m) body.mode = m; } catch (e) { /* storage blocked */ }
   if (username) body.username = username;
   let resp;
   try {

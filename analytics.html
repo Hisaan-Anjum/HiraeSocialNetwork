@@ -372,7 +372,10 @@
             <div class="card"><h3 style="font-size:14px;margin-bottom:12px">"Connect fast" banner · last 30 days</h3>${nd.length
               ? nd.map(([k, v]) => `<div class="stat-line"><span class="sl-label">${esc(STEP[k] || k)}</span><span class="sl-value">${fmt(v.shown)} shown · ${fmt(v.open)} opened (${v.shown ? Math.round((v.open / v.shown) * 100) : 0}%)</span></div>`).join('')
               : '<div class="sl-label">Not shown to anyone yet.</div>'}</div>
-          </div>`);
+          </div>
+          <div class="card" style="margin-top:14px"><h3 style="font-size:14px;margin-bottom:12px">Sign-up choice · last 30 days (private = only people I invite · public = also meet new people)</h3>${(cn.signup_choice || []).length
+            ? cn.signup_choice.map((m) => `<div class="stat-line"><span class="sl-label">${esc(m.mode)} · ${fmt(m.accounts)}</span><span class="sl-value">${fmt(m.profile)} profile · ${fmt(m.discoverable)} in Discover · ${fmt(m.connected)} connected · ${fmt(m.neither)} used neither</span></div>`).join('')
+            : '<div class="sl-label">No sign-ups yet.</div>'}</div>`);
         const bd = cn.buddies;
         out.push(`<div class="an-section-title">Watch buddies</div>
           <div class="an-grid cols-4">
@@ -387,7 +390,7 @@
               <div class="stat-line"><span class="sl-label">Discoverable profiles</span><span class="sl-value">${fmt(fu.discoverable)}</span></div>
             </div>
             <div class="card">
-              <div class="stat-line"><span class="sl-label">"New people" emails (30 days)</span><span class="sl-value">${fmt(bd.buddies_emails_30d)}</span></div>
+              <div class="stat-line"><span class="sl-label">"New people" emails (30 days)</span><span class="sl-value">${fmt(bd.buddies_emails_30d)} sent · ${fmt(bd.buddies_email_opens_30d)} opened Discover</span></div>
               <div class="stat-line"><span class="sl-label">Right-swipes that became a match</span><span class="sl-value">${bd.interests ? Math.round((bd.interests_matched / bd.interests) * 100) : 0}%</span></div>
             </div>
           </div>`);

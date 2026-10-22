@@ -14,6 +14,7 @@
     parties: '<rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M10 9.5l4.5 2.5-4.5 2.5z"/>',
     me: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   };
   const svg = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
   let page, hash;   // re-read on every check: social.html changes tab by hash without reloading
@@ -41,7 +42,11 @@
   .an-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
   .an-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #CBD5E1; background: none; border: 0; cursor: pointer; text-decoration: none; }
   .an-icon:hover { background: rgba(148, 163, 184, .12); color: #F8FAFC; } .an-icon svg { width: 20px; height: 20px; }
-  .an-avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: #fff; background: linear-gradient(135deg, #4F46E5, #7C3AED 55%, #DB2777); border: 0; cursor: pointer; }
+  .an-menu-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; font: 600 14px var(--font-sans, inherit); cursor: pointer; }
+  .an-menu-btn svg { width: 20px; height: 20px; }
+  .an-menu-btn:hover, .an-menu-btn[aria-expanded="true"] { background: rgba(255,255,255,.14); }
+  .an-menu-btn:focus-visible { outline: 2px solid #A78BFA; outline-offset: 2px; }
+  @media (max-width: 640px) { .an-menu-btn { width: 40px; padding: 0; justify-content: center; } .an-menu-btn span { display: none; } }
   .an-menu { position: absolute; right: max(16px, calc((100vw - 1120px) / 2)); top: 56px; min-width: 220px; padding: 6px; border-radius: 14px; background: #111827; border: 1px solid #334155;
     box-shadow: 0 18px 48px rgba(2, 6, 23, .55); list-style: none; margin: 0; z-index: 60; }
   .an-menu .an-who { padding: 10px 12px 8px; color: #94A3B8; font-size: 12.5px; border-bottom: 1px solid #1E293B; margin-bottom: 4px; } .an-menu .an-who b { display: block; color: #F8FAFC; font-size: 14px; }
@@ -75,14 +80,14 @@
     top.innerHTML = `<a class="an-brand" href="memories.html" aria-label="herae — home"><img src="herae-logo-on-dark.svg" alt="herae"></a>
       <nav class="an-links" aria-label="Main">${TOP.map(([t, h, i]) => `<a href="${h}" data-key="${i}">${svg(i)}<span>${t}</span></a>`).join('')}</nav>
       <div class="an-right"><a class="an-icon" href="search.html" aria-label="Search" data-search>${svg('search')}</a>
-        <button class="an-avatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu">${(me || '?')[0].toUpperCase()}</button></div>`;
+        <button class="an-menu-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Menu">${svg('menu')}<span>Menu</span></button></div>`;
     const bottom = document.createElement('nav'); bottom.className = 'an-bottom'; bottom.setAttribute('aria-label', 'Main');
     bottom.innerHTML = BOTTOM.map(([t, h, i]) => `<a href="${h}" data-key="${i}">${svg(i)}<span>${t}</span></a>`).join('');
     document.body.prepend(top); document.body.append(bottom); document.body.classList.add('has-app-nav');
     // search: pages with their own search overlay keep it
     top.querySelector('[data-search]').onclick = (e) => { const own = document.getElementById('searchTrigger'); if (own) { e.preventDefault(); own.click(); } };
     // account menu
-    const btn = top.querySelector('.an-avatar'); let menu = null;
+    const btn = top.querySelector('.an-menu-btn'); let menu = null;
     const close = () => { if (menu) { menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false'); } };
     btn.onclick = () => {
       if (menu) return close();
@@ -97,7 +102,8 @@
       menu.querySelector('[data-logout]').onclick = () => (typeof logout === 'function' ? logout() : (localStorage.removeItem('moments_auth'), location.href = 'index.html'));
       top.append(menu); btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a').focus();
     };
-    document.addEventListener('click', (e) => { if (menu && !menu.contains(e.target) && e.target !== btn) close(); });
+    // btn.contains: a tap on the ☰ icon inside the button is still the button
+    document.addEventListener('click', (e) => { if (menu && !menu.contains(e.target) && !btn.contains(e.target)) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu) { close(); btn.focus(); } });
     mark(); window.addEventListener('hashchange', () => { mark(); });
     badges(); setInterval(badges, 60000);
@@ -118,7 +124,8 @@
     if (!MSG) return;
     const [text, cta, href] = MSG; const key = `hz-connect-${st.step}`;
     try { if (sessionStorage.getItem(key)) return; } catch (e) { /* storage blocked: still show */ }
-    if (location.pathname.endsWith(href.split('#')[0]) && (!href.includes('#') || location.hash === '#' + href.split('#')[1])) return;   // already there
+    const [hPath, hTab] = href.split('#'); const curTab = (location.hash.slice(1) || (hPath === 'social.html' ? 'discover' : '')).split('/')[0];
+    if (location.pathname.endsWith(hPath) && (!hTab || curTab === hTab)) return;   // already there (#discover/<someone> is still Discover)
     const bar = document.createElement('div'); bar.className = 'an-connect'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
     bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
     bar.querySelector('span').textContent = text; const a = bar.querySelector('a'); a.textContent = cta; a.href = href;

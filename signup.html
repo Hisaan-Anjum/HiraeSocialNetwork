@@ -27,6 +27,15 @@
   .signup-legal a { color: var(--brand-primary-soft); }
   .signup-alt { font-size: 12.5px; color: var(--ink-faint); margin-top: 16px; text-align: center; }
   .login-legal { opacity: 0.9; }
+  /* "Who do you want to watch with?" — private by default; public sends them into the profile wizard (founder 10-22). */
+  .mode-pick { border: 0; margin: 0 0 18px; padding: 0; text-align: left; }
+  .mode-pick legend { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+  .mode-opt { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1.5px solid rgba(255,255,255,0.12); border-radius: 14px; cursor: pointer; margin-bottom: 8px; transition: border-color .15s, background .15s; }
+  .mode-opt:has(input:checked) { border-color: #818CF8; background: rgba(99,102,241,0.14); }
+  .mode-opt:has(input:focus-visible) { outline: 2px solid #A78BFA; outline-offset: 2px; }
+  .mode-opt input { margin-top: 3px; accent-color: #6366F1; flex: none; }
+  .mode-opt b { display: block; font-size: 14px; color: var(--ink); }
+  .mode-opt small { display: block; font-size: 12px; line-height: 1.5; color: var(--ink-faint); margin-top: 3px; }
 </style>
 
   <link rel="canonical" href="https://herae.app/signup.html">
@@ -49,6 +58,14 @@
       <img src="herae-symbol.svg" alt="Herae" class="login-logo">
       <div class="login-title">Create your Herae account</div>
       <div class="login-sub">Free — and it takes less than a minute.</div>
+
+      <fieldset class="mode-pick" id="modePick">
+        <legend>Who do you want to watch with?</legend>
+        <label class="mode-opt"><input type="radio" name="mode" value="private" checked>
+          <span><b>🔒 Just people I invite</b><small>Private. Only someone you send your link to can find you — your partner or friends you already have.</small></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="public">
+          <span><b>🌍 Also meet new people</b><small>Public. We’ll match you with people who love the same films and shows, and you can join watch parties. You choose what’s shown, and nobody can message you unless you both say yes. 18+.</small></span></label>
+      </fieldset>
 
       <!-- Above the form on purpose: Google sign-up is one click versus three
            fields, and /api/google creates the account itself, so it's a complete
@@ -127,6 +144,14 @@
     var emailStatus = document.getElementById('emailStatus');
     var pwFill = document.getElementById('pwFill');
     var pwHint = document.getElementById('pwHint');
+
+    // Private unless they pick public. Kept in sessionStorage so the Google path (api.js loginWithGoogle) sends it too.
+    function mode() { var c = document.querySelector('input[name=mode]:checked'); return c ? c.value : 'private'; }
+    function rememberMode() { try { sessionStorage.setItem('herae_signup_mode', mode()); } catch (e) { /* storage blocked */ } }
+    document.querySelectorAll('input[name=mode]').forEach(function (r) { r.addEventListener('change', rememberMode); });
+    rememberMode();
+    // Public → straight into the 3-step profile wizard, which ends in Discover. Private → home, where the invite lives.
+    function landing() { return mode() === 'public' ? 'watch-profile.html?start=public' : 'memories.html'; }
 
     // An invite can arrive as ?invite=CODE as well as in localStorage, because
     // localStorage is per-origin and doesn't survive a herae.app →
@@ -234,6 +259,7 @@
           // Set only after the person has been shown a suggested correction
           // and chosen to keep what they typed — see the emailTypo branch.
           confirmEmail: emailConfirmed === email,
+          mode: mode(),
           source: window.signupSourceTag ? window.signupSourceTag() : 'site',
         }),
       })
@@ -287,7 +313,7 @@
           // the reserved seat right after a brand-new account is created.
           var returnTo = sessionStorage.getItem('moments_return_to');
           sessionStorage.removeItem('moments_return_to');
-          window.location.href = returnTo || 'memories.html';
+          window.location.href = returnTo || landing();
         })
         .catch(function (err) {
           errorText.textContent = err.message || 'Could not reach the server. Check the address and that it is running.';
@@ -319,7 +345,7 @@
               return window.redeemPendingInvite().then(function () {
                 var returnTo = sessionStorage.getItem('moments_return_to');
                 sessionStorage.removeItem('moments_return_to');
-                window.location.href = returnTo || 'memories.html';
+                window.location.href = returnTo || landing();
               });
             })
             .catch(function (err) { errorText.textContent = err.message; });

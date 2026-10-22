@@ -22,27 +22,126 @@
     /* phones: the global bottom bar is the main nav; these become a row of pills under the header */
     .s-tabs { top: 56px; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--h-line); }
     .s-tabs::-webkit-scrollbar { display: none; }
-    .s-tab { min-height: 36px; padding: 0 14px; border: 1px solid var(--h-line-strong); border-radius: 999px; }
+    .s-tabs { gap: 6px; padding: 10px 12px; }
+    .s-tab { min-height: 36px; padding: 0 12px; border: 1px solid var(--h-line-strong); border-radius: 999px; font-size: 14px; }
     .s-tab[aria-selected="true"] { background: #F8FAFC; color: #0F172A; border-color: #F8FAFC; }
     main.h-page { padding-bottom: 96px; }
   }
   /* deck */
   #v-discover { overflow-x: clip; }   /* a card mid-swipe must not make the page scroll sideways */
-  .d-card { position: relative; touch-action: pan-y; user-select: none; transition: transform var(--h-med) var(--h-ease); }
+  /* ── Discover: one tall card at a time, Tinder-style (founder 10-22: "beautiful, elegant, modern, addictive") ── */
+  .dz { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-top: 4px; }
+  .dz-stack { position: relative; height: clamp(440px, calc(100dvh - 290px), 700px); }
+  @media (max-width: 640px) { .dz { gap: 14px; } .dz-stack { height: max(400px, calc(100dvh - 56px - 57px - 64px - 86px - 40px)); } }
+  .d-card { position: absolute; inset: 0; border-radius: 26px; overflow: hidden; background: #0B1022; color: #fff;
+    box-shadow: 0 24px 60px -12px rgba(2, 6, 23, .7), 0 0 0 1px rgba(255, 255, 255, .07);
+    touch-action: pan-y; user-select: none; -webkit-user-select: none; outline: none;
+    transition: transform .32s cubic-bezier(.2, .8, .2, 1), opacity .32s ease; will-change: transform; }
+  .d-card:focus-visible { box-shadow: 0 24px 60px -12px rgba(2, 6, 23, .7), 0 0 0 3px #A78BFA; }
   .d-card.dragging { transition: none; }
-  .d-stamp { position: absolute; top: var(--h-5); padding: 4px 12px; border: 2px solid currentColor; border-radius: var(--h-r-md, 8px); font: 700 var(--h-size-md) var(--h-font-body); opacity: 0; pointer-events: none; z-index: 2; }
-  .d-stamp.yes { left: var(--h-5); color: #A5B4FC; transform: rotate(-8deg); }
-  .d-stamp.no { right: var(--h-5); color: var(--h-text-2); transform: rotate(8deg); }
-  .d-head { display: flex; gap: var(--h-3); align-items: center; margin-bottom: var(--h-3); }
-  .d-head .h-avatar { width: 56px; height: 56px; font-size: 22px; }
-  .d-why { list-style: none; margin: 0 0 var(--h-4); padding: 0; }
-  .d-why li { color: var(--h-coral); font-weight: 600; font-size: var(--h-size-sm); padding: 2px 0; }
-  .d-meta dt { font-size: var(--h-size-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--h-text-3); margin-top: var(--h-3); }
-  .d-meta dd { margin: 2px 0 0; }
-  .d-actions { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--h-3); margin-top: var(--h-5); align-items: center; }
-  .d-actions .hb { width: 100%; }
-  .d-hint { text-align: center; font-size: var(--h-size-xs); color: var(--h-text-3); margin-top: var(--h-3); }
-  .d-more { position: absolute; top: var(--h-3); right: var(--h-3); }
+  .d-card.behind { transform: scale(.94) translateY(16px); opacity: .5; pointer-events: none; }
+  .d-card.enter { animation: dIn .34s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes dIn { from { transform: scale(.94) translateY(16px); opacity: .5; } }
+  .d-media { position: absolute; inset: 0; cursor: pointer; }
+  .d-media img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
+  .d-bars { position: absolute; left: 12px; right: 12px; top: 10px; display: flex; gap: 4px; z-index: 2; }
+  .d-bars i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .35); }
+  .d-bars i.on { background: #fff; box-shadow: 0 0 6px rgba(255, 255, 255, .5); }
+  /* no visible photo: an aurora in the brand colours, their initial, and their films set like a poster */
+  .d-art { position: absolute; inset: 0; overflow: hidden;
+    background: radial-gradient(110% 70% at 0% 0%, rgba(99, 102, 241, .95), transparent 62%),
+      radial-gradient(90% 60% at 100% 22%, rgba(236, 72, 153, .8), transparent 60%),
+      radial-gradient(90% 60% at 30% 70%, rgba(167, 139, 250, .55), transparent 62%), #0F172A; }
+  .d-reel { position: absolute; left: -20%; right: -20%; top: 6%; display: flex; flex-direction: column; gap: 4px; transform: rotate(-9deg);
+    font: 800 34px/1 var(--h-font-display); letter-spacing: -.01em; text-transform: uppercase; white-space: nowrap; color: #fff; opacity: .13; }
+  .d-initial { position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%); width: 148px; height: 148px; border-radius: 50%;
+    display: grid; place-items: center; font: 800 68px/1 var(--h-font-display); color: #fff;
+    background: rgba(255, 255, 255, .14); border: 1.5px solid rgba(255, 255, 255, .35); box-shadow: 0 20px 50px rgba(15, 23, 42, .35), inset 0 1px 0 rgba(255, 255, 255, .35); }
+  .d-shade { position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(2, 6, 23, .45) 0%, rgba(2, 6, 23, 0) 16%, rgba(2, 6, 23, 0) 42%, rgba(2, 6, 23, .72) 70%, rgba(2, 6, 23, .96) 100%); }
+  .d-more { position: absolute; top: 20px; right: 12px; z-index: 3; }
+  .d-more > .rel > .hb { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; border: 0; color: #fff; font-size: 18px; line-height: 1;
+    background: rgba(15, 23, 42, .38); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .d-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 0 20px 22px; }
+  .d-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .d-badge { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 5px 11px 5px 9px; border-radius: 999px;
+    font: 700 12.5px/1.2 var(--h-font-body); letter-spacing: .005em; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: rgba(30, 41, 59, .72); border: 1px solid rgba(255, 255, 255, .16); }
+  .d-badge.hot { background: linear-gradient(135deg, #6366F1, #A78BFA 55%, #EC4899); border-color: transparent; box-shadow: 0 6px 18px -4px rgba(236, 72, 153, .55); }
+  .d-badge svg { width: 14px; height: 14px; flex: none; }
+  .d-name { display: flex; align-items: flex-end; gap: 12px; }
+  .d-card h2 { flex: 1; min-width: 0; margin: 0; font: 800 34px/1.02 var(--h-font-display); letter-spacing: -.025em; color: #fff;
+    text-shadow: 0 2px 18px rgba(2, 6, 23, .5); overflow-wrap: anywhere; }
+  .d-infob { flex: none; width: 38px; height: 38px; margin-bottom: 1px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .14);
+    color: #fff; display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .d-infob svg { width: 18px; height: 18px; }
+  .d-infob:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .d-sub { display: flex; align-items: center; gap: 6px; margin-top: 6px; font: 600 13px/1.3 var(--h-font-body); color: rgba(255, 255, 255, .78); }
+  .d-sub svg { width: 15px; height: 15px; flex: none; }
+  .d-bio { margin: 10px 0 0; font: 500 15px/1.45 var(--h-font-body); color: rgba(255, 255, 255, .94);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .d-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; max-height: 64px; overflow: hidden; }
+  .d-chip { padding: 5px 12px; border-radius: 999px; font: 600 12.5px/1.3 var(--h-font-body); color: #fff; white-space: nowrap;
+    background: rgba(15, 23, 42, .55); border: 1px solid rgba(255, 255, 255, .22); }
+  .d-stamp { position: absolute; top: 46px; z-index: 4; padding: 6px 14px 5px; border: 4px solid currentColor; border-radius: 14px;
+    font: 900 32px/1 var(--h-font-display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; background: rgba(2, 6, 23, .18); }
+  .d-stamp.yes { left: 22px; color: #4ADE80; transform: rotate(-14deg); }
+  .d-stamp.no { right: 22px; color: #FB7185; transform: rotate(14deg); }
+  .dz-actions { display: flex; justify-content: center; align-items: center; gap: 20px; }
+  .dz-btn { width: 54px; height: 54px; flex: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; padding: 0;
+    border: 1px solid rgba(255, 255, 255, .09); background: linear-gradient(180deg, #172036, #0F172A); box-shadow: 0 10px 24px -6px rgba(2, 6, 23, .8), inset 0 1px 0 rgba(255, 255, 255, .06);
+    transition: transform .14s ease, box-shadow .2s ease; -webkit-tap-highlight-color: transparent; }
+  .dz-btn svg { width: 24px; height: 24px; }
+  .dz-btn.lg { width: 70px; height: 70px; } .dz-btn.lg svg { width: 32px; height: 32px; }
+  .dz-btn.undo { color: #FBBF24; } .dz-btn.info { color: #60A5FA; } .dz-btn.no { color: #FB7185; }
+  .dz-btn.yes { color: #fff; border: 0; background: linear-gradient(135deg, #6366F1, #A78BFA 52%, #EC4899); box-shadow: 0 14px 30px -8px rgba(236, 72, 153, .6), inset 0 1px 0 rgba(255, 255, 255, .3); }
+  .dz-btn:active { transform: scale(.88); }
+  .dz-btn:focus-visible { outline: 3px solid #A78BFA; outline-offset: 3px; }
+  @media (hover: hover) { .dz-btn:hover { transform: translateY(-2px) scale(1.05); } .dz-btn.no:hover { box-shadow: 0 12px 28px -6px rgba(251, 113, 133, .5); } }
+  /* first time only: how it works, over the card; any tap starts */
+  .dz-coach { position: absolute; inset: 0; z-index: 6; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 28px;
+    text-align: center; color: #fff; background: rgba(2, 6, 23, .78); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); cursor: pointer; }
+  .dz-coach b { font: 800 22px/1.2 var(--h-font-display); }
+  .dz-coach .cr { display: flex; gap: 22px; font: 600 14px/1.3 var(--h-font-body); }
+  .dz-coach .cr span { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .dz-coach .cr i { font-style: normal; font-size: 28px; }
+  .dz-coach small { font-size: 13px; color: rgba(255, 255, 255, .72); max-width: 260px; line-height: 1.45; }
+  /* the match moment */
+  .mt { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden;
+    background: radial-gradient(80% 60% at 50% 30%, rgba(99, 102, 241, .55), transparent 70%), radial-gradient(60% 50% at 80% 90%, rgba(236, 72, 153, .45), transparent 70%), rgba(2, 6, 23, .97);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); animation: mtIn .35s ease; }
+  @keyframes mtIn { from { opacity: 0; } }
+  .mt-in { position: relative; z-index: 1; width: min(400px, 100% - 40px); text-align: center; color: #fff; }
+  .mt-kicker { margin: 0 0 6px; font: 700 12px/1 var(--h-font-body); letter-spacing: .18em; text-transform: uppercase; color: rgba(255, 255, 255, .7); }
+  .mt h2 { margin: 0; font: 900 italic 54px/1.02 var(--h-font-display); letter-spacing: -.03em; transform: rotate(-3deg);
+    background: linear-gradient(135deg, #C7D2FE, #F0ABFC 50%, #F9A8D4); -webkit-background-clip: text; background-clip: text; color: transparent; animation: mtPop .5s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes mtPop { from { transform: rotate(-3deg) scale(.6); opacity: 0; } }
+  .mt-pair { display: flex; justify-content: center; align-items: center; margin: 30px 0 22px; }
+  .mt-pair .h-avatar { width: 112px; height: 112px; font-size: 42px; border: 4px solid #fff; box-shadow: 0 18px 40px rgba(2, 6, 23, .6); }
+  .mt-pair .h-avatar:first-child { transform: rotate(-6deg); } .mt-pair .h-avatar:last-child { transform: rotate(6deg); margin-left: -18px; }
+  .mt-heart { position: relative; z-index: 1; width: 44px; height: 44px; margin: 0 -14px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, #6366F1, #EC4899); box-shadow: 0 8px 24px rgba(236, 72, 153, .6); animation: mtBeat 1.2s ease-in-out infinite; }
+  .mt-heart svg { width: 22px; height: 22px; }
+  @keyframes mtBeat { 50% { transform: scale(1.14); } }
+  .mt-in > p { margin: 0 0 26px; font: 500 16px/1.5 var(--h-font-body); color: rgba(255, 255, 255, .86); }
+  .mt-actions { display: flex; flex-direction: column; gap: 10px; }
+  .mt-actions .hb { width: 100%; min-height: 52px; font-size: 16px; border-radius: 999px; }
+  .mt-actions .hb-primary { background: linear-gradient(135deg, #6366F1, #A78BFA 52%, #EC4899); border: 0; color: #fff; }
+  .mt-fx { position: absolute; inset: 0; pointer-events: none; }
+  .mt-fx i { position: absolute; top: -16px; width: 8px; height: 14px; border-radius: 2px; animation: mtFall linear forwards; }
+  @keyframes mtFall { to { transform: translate3d(var(--dx), 110vh, 0) rotate(720deg); } }
+  @media (prefers-reduced-motion: reduce) { .d-card, .dz-btn { transition: none; } .d-card.enter, .mt, .mt h2, .mt-heart { animation: none; } .mt-fx { display: none; } }
+  .d-meta { margin: 0; } .d-meta dt { font: 700 11.5px/1.2 var(--h-font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--h-text-3); margin-top: 14px; }
+  .d-meta dt:first-child { margin-top: 0; } .d-meta dd { margin: 4px 0 0; font-size: 15px; line-height: 1.45; }
+  .d-page { display: inline-block; margin-top: 16px; font-weight: 700; }
+  /* Matches: new matches as a row of faces, then the list */
+  .mx-new { display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 16px; scrollbar-width: none; }
+  .mx-new::-webkit-scrollbar { display: none; }
+  .mx-new a { flex: none; width: 84px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: var(--h-text); font: 600 13px var(--h-font-body); }
+  .mx-new a span:last-child { max-width: 84px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mx-new .h-avatar { width: 76px; height: 76px; font-size: 28px; padding: 3px; box-sizing: border-box;
+    background: linear-gradient(#0F172A, #0F172A) padding-box, linear-gradient(135deg, #6366F1, #A78BFA 52%, #EC4899) border-box; border: 3px solid transparent; }
+  .mx-h { font: 700 13px var(--h-font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--h-text-3); margin: 14px 0 10px; }
   /* chat — a messenger: compact header, bubbles, one slim composer row */
   .c-view { display: flex; flex-direction: column; min-height: calc(100dvh - 140px); }
   .c-head { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: var(--h-3); padding: var(--h-2) 0; background: var(--h-bg); border-bottom: 1px solid var(--h-line); }
@@ -59,12 +158,6 @@
   .c-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--h-3); padding: var(--h-6) 0; }
   .c-empty .h-avatar { width: 72px; height: 72px; font-size: 28px; }
   .h-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
-  .d-photo { position: relative; margin: calc(-1 * var(--h-5)) calc(-1 * var(--h-5)) var(--h-4); aspect-ratio: 4 / 5; max-height: 62vh; overflow: hidden; border-radius: var(--h-r-lg) var(--h-r-lg) 0 0; background: var(--h-surface-2); cursor: pointer; }
-  .d-photo img { width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
-  .d-bars { position: absolute; left: 10px; right: 10px; top: 10px; display: flex; gap: 4px; }
-  .d-bars i { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.4); } .d-bars i.on { background: #fff; }
-  .d-page { display: block; margin-top: 6px; font-size: var(--h-size-sm); font-weight: 600; }
-  .d-photos { display: inline-block; margin-top: 4px; font-size: var(--h-size-xs); font-weight: 600; color: var(--h-text-2); padding: 3px 10px; border-radius: 999px; background: var(--h-surface-2); }
   .ph-strip { display: grid; grid-auto-flow: column; grid-auto-columns: min(78vw, 360px); gap: var(--h-3); overflow-x: auto; scroll-snap-type: x mandatory; }
   .ph-strip img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--h-r-lg); scroll-snap-align: start; }
   .c-empty h2 { font-size: var(--h-size-lg); margin: 0; } .c-empty p { margin: 0; color: var(--h-text-3); font-size: var(--h-size-sm); }
@@ -79,6 +172,7 @@
   /* inside a conversation on a phone the bottom tabs give their space to the chat */
   @media (max-width: 640px) { body.in-thread .s-tabs { display: none; } body.in-thread .c-view { min-height: calc(100dvh - 72px); } }
   .row-main { flex: 1; min-width: 0; }
+  .row-main strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tap-row { cursor: pointer; }
   .row-main .sub { font-size: var(--h-size-sm); color: var(--h-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .new-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--h-coral); flex: none; }
@@ -241,9 +335,12 @@
 
     // ── Discover ──
     let deck = [];
-    async function renderDiscover() {
+    // #discover/<username>: a "new people" email about this person — their card comes first (if they're still in my deck).
+    let emailOpenSent = false;
+    async function renderDiscover(first) {
+      if (!emailOpenSent && /[?&]utm_medium=buddies\b/.test(location.search)) { emailOpenSent = true; trackEvent('buddies_email_open', { named: !!first }); }
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
-      let r; try { r = await apiRequest('/api/discover/deck'); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       deck = r.cards; v.innerHTML = '';
       if (r.reason === 'not_discoverable') {
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
@@ -264,83 +361,177 @@
       const v = $('v-discover'); v.innerHTML = '';
       const c = deck[0];
       if (!c) {
-        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'You’ve seen everyone for now'),
-          el('p', {}, 'Herae is new, so there aren’t many people here yet. Come back in a day or two, add more films and genres to your profile so we can find better matches, or bring someone you already know.'),
+        // Cold start (founder 10-22): never a dead end. They're on the list; the email comes to them; meanwhile two real
+        // things to do now — a party (many people, so it works with few), or bring someone they already know.
+        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'You’re in — we’ll find them for you'),
+          el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll email you a link straight to their card. Nothing to keep checking.'),
+          el('p', { class: 'muted' }, 'More films and genres on your profile means more people fit.'),
           el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' },
-            el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Add to my profile'),
-            el('a', { class: 'hb hb-primary', href: 'memories.html' }, 'Invite someone I know')),
+            el('a', { class: 'hb hb-primary', href: '#parties' }, 'Find a watch party'),
+            el('a', { class: 'hb hb-secondary', href: 'contacts.html' }, 'Invite someone I know'),
+            el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Add to my profile')),
           el('button', { type: 'button', class: 'hb hb-quiet', onclick: undo }, 'Undo last skip')));
         return;
       }
-      const dl = el('dl', { class: 'd-meta' });
-      const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
-      add('Loves', (c.favoriteTitles || []).join(', ')); add('Genres', (c.genres || []).join(', ')); add('Creators', (c.creators || []).join(', '));
-      add('Watches in', (c.languages || []).join(', ')); add('Usually free', L(c.availability)); add('Likes watching', L(c.formats)); add('As a viewer', L(c.traits));
-      const card = el('article', { class: 'h-card d-card', tabindex: '0', 'aria-label': `${c.name}. ${(c.why || []).join('. ')}` },
-        el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
-        cardPhotos(c),
-        el('div', { class: 'd-head' }, c.photos && c.photos.length ? null : avatar(c), el('div', {}, el('h2', {}, c.name),
-          (() => { const hidden = (c.photoCount || 0) - ((c.photos || []).length); return hidden > 0 ? el('span', { class: 'd-photos' }, `📷 ${(c.photos || []).length ? '+' : ''}${hidden} photo${hidden === 1 ? '' : 's'} · after you match`) : null; })(),
-          c.pageLink ? el('a', { class: 'd-page', href: `user.html?u=${encodeURIComponent(c.username)}` }, 'See their Herae page →') : null)),
-        c.why && c.why.length ? el('ul', { class: 'd-why', 'aria-label': 'Why you’re seeing this' }, ...c.why.map((w) => el('li', {}, w))) : null,
-        c.bio ? el('p', {}, c.bio) : null, dl,
-        el('div', { class: 'd-actions' },
-          el('button', { type: 'button', class: 'hb hb-secondary', onclick: skip }, 'Skip'),
-          el('button', { type: 'button', class: 'hb hb-quiet', onclick: undo, 'aria-label': 'Undo last skip' }, '↶'),
-          el('button', { type: 'button', class: 'hb hb-primary', onclick: interested }, 'Watch together?')),
-        el('p', { class: 'd-hint' }, 'Swipe right to watch together, left to skip (or ← → and U to undo). They only find out if you both say yes.'));
-      v.append(card); dragify(card); card.focus({ preventScroll: true });
+      const stack = el('div', { class: 'dz-stack' });
+      if (deck[1]) stack.append(cardEl(deck[1], true));   // the next card waits underneath (and its photo preloads)
+      const card = cardEl(c, false); stack.append(card);
+      const actions = el('div', { class: 'dz-actions' },
+        iconBtn('undo', 'Undo last skip', ICON.undo, undo), iconBtn('no lg', 'Skip', ICON.no, () => decide(-1)),
+        iconBtn('yes lg', 'Watch together?', ICON.heart, () => decide(1)), iconBtn('info', `More about ${c.name}`, ICON.up, () => details(c)));
+      v.append(el('div', { class: 'dz' }, stack, actions));
+      let coached = true; try { coached = !!localStorage.getItem('hz_swipe_coach'); } catch (e) { /* storage blocked: no coach */ }
+      if (!coached) {
+        const coach = el('div', { class: 'dz-coach', role: 'note', onclick: () => coach.remove() },
+          el('b', {}, 'Who would you watch with?'),
+          el('div', { class: 'cr' }, el('span', {}, el('i', {}, '👈'), 'Skip'), el('span', {}, el('i', {}, '👉'), 'Watch together')),
+          el('small', {}, 'They only find out if you both say yes. Tap anywhere to start.'));
+        stack.append(coach); try { localStorage.setItem('hz_swipe_coach', '1'); } catch (e) { /* fine */ }
+      }
+      dragify(card); if (viaKeys) card.focus({ preventScroll: true });   // keyboard users keep their place; a tap never draws a focus ring
     }
-    // Tinder-style photo carousel: only the photos this viewer may see; tap the left/right half to move (a drag still swipes).
-    function cardPhotos(c) {
-      if (!c.photos || !c.photos.length) return null;
+    let viaKeys = false;
+    const ICON = {
+      undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+      no: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      heart: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.4-4.5-9.6-9.1C.9 8.4 3 4.4 6.9 4.4c2.1 0 3.7 1.1 5.1 2.9 1.4-1.8 3-2.9 5.1-2.9 3.9 0 6 4 4.5 7.5C19.4 16.5 12 21 12 21z"/></svg>',
+      up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',
+      film: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>',
+      spark: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2z"/></svg>',
+      lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    };
+    const svgEl = (markup) => { const t = document.createElement('template'); t.innerHTML = markup; return t.content.firstChild; };   // our own constants only
+    const iconBtn = (cls, label, icon, onclick) => el('button', { type: 'button', class: `dz-btn ${cls}`, 'aria-label': label, title: label, onclick }, svgEl(icon));
+    // One card. `behind`: the quiet copy under the top card — no controls, hidden from assistive tech.
+    function cardEl(c, behind) {
+      const why = c.why || [];
+      const badges = why.slice(0, 2).map((w, i) => el('span', { class: `d-badge${i ? '' : ' hot'}` }, svgEl(/^You both love/.test(w) ? ICON.film : ICON.spark), w));
+      const hidden = (c.photoCount || 0) - (c.photos || []).length;
+      const chips = [...(c.genres || []).slice(0, 3), ...(c.languages || []).slice(0, 1), ...(c.formats || []).slice(0, 1).map((x) => LABEL[x] || x)];
+      const card = el('article', behind ? { class: 'd-card behind', 'aria-hidden': 'true' } : { class: 'd-card enter', tabindex: '0', 'aria-label': `${c.name}. ${why.join('. ')}` },
+        cardMedia(c), el('div', { class: 'd-shade' }),
+        behind ? null : el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
+        el('div', { class: 'd-info' },
+          badges.length ? el('div', { class: 'd-badges' }, ...badges) : null,
+          el('div', { class: 'd-name' }, el('h2', {}, c.name),
+            behind ? null : el('button', { type: 'button', class: 'd-infob', 'aria-label': `More about ${c.name}`, onclick: () => details(c) }, svgEl(ICON.up))),
+          hidden > 0 ? el('div', { class: 'd-sub' }, svgEl(ICON.lock), `${hidden} more photo${hidden === 1 ? '' : 's'} after you match`) : null,
+          c.bio ? el('p', { class: 'd-bio' }, c.bio) : null,
+          chips.length ? el('div', { class: 'd-chips' }, ...chips.map((t) => el('span', { class: 'd-chip' }, t))) : null));
+      return card;
+    }
+    // Photos the viewer may see, tap left/right half to move; otherwise their initial over their films, poster-style.
+    function cardMedia(c) {
+      if (!c.photos || !c.photos.length) {
+        const words = [...(c.favoriteTitles || []), ...(c.genres || [])]; const line = words.length ? words.join(' · ') + ' · ' : 'Herae · ';
+        return el('div', { class: 'd-art', 'aria-hidden': 'true' }, el('div', { class: 'd-reel' }, ...[0, 1, 2, 3, 4].map((k) => el('span', {}, line.repeat(4).slice(k * 7)))),
+          el('div', { class: 'd-initial' }, (c.name || '?').trim()[0].toUpperCase()));
+      }
       let i = 0; const img = el('img', { alt: `${c.name}, photo 1 of ${c.photos.length}` });
-      const bars = el('div', { class: 'd-bars', 'aria-hidden': 'true' }, ...c.photos.map(() => el('i')));
-      const box = el('div', { class: 'd-photo' }, img, bars);
-      const show = async () => { img.alt = `${c.name}, photo ${i + 1} of ${c.photos.length}`; [...bars.children].forEach((b, k) => b.classList.toggle('on', k === i));
+      const bars = c.photos.length > 1 ? el('div', { class: 'd-bars', 'aria-hidden': 'true' }, ...c.photos.map(() => el('i'))) : null;
+      const box = el('div', { class: 'd-media' }, img, bars);
+      const show = async () => { img.alt = `${c.name}, photo ${i + 1} of ${c.photos.length}`; if (bars) [...bars.children].forEach((b, k) => b.classList.toggle('on', k === i));
         const src = c.photos[i].src || (c.photos[i].src = await apiImage(c.photos[i].url)); if (src) img.src = src; };
       box.photoStep = (dir) => { const n = Math.max(0, Math.min(c.photos.length - 1, i + dir)); if (n !== i) { i = n; show(); } };
-      show(); c.photos.slice(1).forEach((p) => apiImage(p.url).then((src) => { p.src = src; }));   // preload the rest
+      show(); c.photos.slice(1).forEach((p) => { if (!p.src) apiImage(p.url).then((src) => { p.src = src; }); });   // preload the rest
       return box;
     }
+    // Everything on their profile, for the ˄ button.
+    function details(c) {
+      const dl = el('dl', { class: 'd-meta' });
+      const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
+      add('Why you’re seeing them', (c.why || []).join(' · ')); add('About', c.bio);
+      add('Loves', (c.favoriteTitles || []).join(', ')); add('Genres', (c.genres || []).join(', ')); add('Creators', (c.creators || []).join(', '));
+      add('Watches in', (c.languages || []).join(', ')); add('Usually free', L(c.availability)); add('Likes watching', L(c.formats)); add('As a viewer', L(c.traits));
+      dialog(c.name, [dl, c.pageLink ? el('a', { class: 'd-page', href: `user.html?u=${encodeURIComponent(c.username)}` }, 'See their Herae page →') : null].filter(Boolean),
+        [['Skip', 'hb-quiet', -1], ['Watch together?', 'hb-primary', 1]]).then((v) => { if ((v === 1 || v === -1) && deck[0] === c) decide(v); });
+    }
     function next() { deck.shift(); showCard(); }
+    // The card leaves the way it was sent, then the next one rises (buttons, keys and swipes all come through here).
+    let deciding = false;
+    async function decide(dir) {
+      if (deciding || !deck[0]) return; deciding = true;
+      const card = document.querySelector('.d-card:not(.behind)');
+      if (card && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const st = card.querySelector(dir > 0 ? '.d-stamp.yes' : '.d-stamp.no'); if (st) st.style.opacity = 1;
+        card.classList.remove('dragging'); card.style.transition = 'transform .3s cubic-bezier(.4, 0, 1, 1), opacity .3s';
+        card.style.transform = `translateX(${dir * 140}%) rotate(${dir * 18}deg)`; card.style.opacity = '0';
+        await new Promise((r) => setTimeout(r, 240));
+      }
+      deciding = false;
+      if (dir > 0) interested(); else skip();
+    }
     async function skip() { const c = deck[0]; if (!c) return; next(); announce(`Skipped ${c.name}`); apiRequest('/api/discover/skip', { method: 'POST', body: JSON.stringify({ username: c.username }) }).catch(() => {}); }
     async function undo() { try { const r = await apiRequest('/api/discover/skip/undo', { method: 'POST' }); if (r.username) { toast('Brought back the last person you skipped.'); renderDiscover(); } else toast('Nothing to undo.'); } catch (e) { toast('Could not undo.'); } }
     async function interested() {
-      const c = deck[0]; if (!c) return;
+      const c = deck[0]; if (!c) return; next();   // optimistic: the next card is already up while this sends
       try {
         const r = await apiRequest('/api/discover/interest', { method: 'POST', body: JSON.stringify({ username: c.username }) });
-        next();
-        if (r.matched) {
-          const go = await dialog('It’s a match', el('p', {}, `You and ${c.name} both want to watch together. Say hi when you’re ready — there’s no rush.`), [['Keep browsing', 'hb-quiet', false], ['Open chat', 'hb-primary', true]]);
-          refreshBadges(); if (go) location.hash = `chats/${r.conversationId}`;
-        } else { announce(`You’d like to watch with ${c.name}. They’ll only know if they feel the same.`); toast(`Sent. ${c.name} only finds out if they say yes too.`); }
-      } catch (e) { toast(e.message || 'Could not send.'); next(); }
+        if (r.matched) { refreshBadges(); matchMoment(c, r.conversationId); return; }
+        announce(`You’d like to watch with ${c.name}. They’ll only know if they feel the same.`);
+        let n = 0; try { n = Number(localStorage.getItem('hz_yes_tips') || 0); localStorage.setItem('hz_yes_tips', String(n + 1)); } catch (e) { /* fine */ }
+        if (n < 2) toast(`Sent. ${c.name} only finds out if they say yes too.`);   // taught twice, then out of the way
+      } catch (e) { toast(e.message || 'Could not send.'); }
+    }
+    // "It's a match!" — both faces, a heartbeat, confetti; one tap to say hi.
+    function matchMoment(c, conversationId) {
+      try { if (navigator.vibrate) navigator.vibrate([30, 60, 40]); } catch (e) { /* not supported */ }
+      const mine = el('span', { class: 'h-avatar', 'aria-hidden': 'true' }, (me || '?')[0].toUpperCase());
+      // My face: my main photo, else the first letter of the name on my card (not my username).
+      apiRequest('/api/profile/watch').then((r) => { const n = ((r.profile || {}).display_name || '').trim(); if (n && !mine.querySelector('img')) mine.textContent = n[0].toUpperCase(); }).catch(() => {});
+      apiRequest('/api/photos/mine').then(async (r) => { const ph = (r.photos || [])[0]; const src = ph && await apiImage(ph.url); if (src) { mine.textContent = ''; mine.append(el('img', { src, alt: '' })); } }).catch(() => {});
+      const fx = el('div', { class: 'mt-fx', 'aria-hidden': 'true' });
+      const COLORS = ['#6366F1', '#A78BFA', '#EC4899', '#F9A8D4', '#C7D2FE', '#FBBF24'];
+      for (let k = 0; k < 44; k++) { const bit = el('i'); bit.style.cssText = `left:${Math.random() * 100}%;background:${COLORS[k % COLORS.length]};--dx:${(Math.random() - .5) * 160}px;animation-duration:${1.8 + Math.random() * 1.6}s;animation-delay:${Math.random() * .5}s`; fx.append(bit); }
+      const returnTo = document.activeElement;
+      const close = () => { o.remove(); document.removeEventListener('keydown', onKey); if (returnTo && returnTo.focus) returnTo.focus(); };
+      const onKey = (e) => { if (e.key === 'Escape') close(); };
+      const hi = el('button', { type: 'button', class: 'hb hb-primary', onclick: () => { close(); location.hash = `chats/${conversationId}`; } }, 'Say hi 👋');
+      const o = el('div', { class: 'mt', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'mtTitle' }, fx,
+        el('div', { class: 'mt-in' }, el('p', { class: 'mt-kicker' }, 'Watch buddies'), el('h2', { id: 'mtTitle' }, 'It’s a match!'),
+          el('div', { class: 'mt-pair' }, mine, el('span', { class: 'mt-heart', 'aria-hidden': 'true' }, svgEl(ICON.heart)), photoAvatar(c.username, c)),
+          el('p', {}, `You and ${c.name} both want to watch together. Say hi and pick a film.`),
+          el('div', { class: 'mt-actions' }, hi, el('button', { type: 'button', class: 'hb hb-quiet', onclick: close }, 'Keep swiping'))));
+      document.body.append(o); document.addEventListener('keydown', onKey); hi.focus();
+      announce(`It’s a match with ${c.name}.`);
     }
     // Optional drag; buttons and keys do the same (WCAG 2.5.7).
     function dragify(card) {
       let x0 = null, dx = 0;
       let downOn = null;   // where the press started: pointer capture makes the release report the card itself
-      card.onpointerdown = (e) => { if (e.target.closest('button,a,menu')) return; downOn = e.target; x0 = e.clientX; dx = 0; card.classList.add('dragging'); card.setPointerCapture(e.pointerId); };
+      card.onpointerdown = (e) => { viaKeys = false; if (e.target.closest('button,a,menu')) return; downOn = e.target; x0 = e.clientX; dx = 0; card.classList.add('dragging'); card.setPointerCapture(e.pointerId); };
       // What letting go will do, shown while dragging (Tinder-style), so a swipe is never a surprise.
-      const yes = el('span', { class: 'd-stamp yes', 'aria-hidden': 'true' }, 'Watch together?'); const no = el('span', { class: 'd-stamp no', 'aria-hidden': 'true' }, 'Skip');
+      const yes = el('span', { class: 'd-stamp yes', 'aria-hidden': 'true' }, 'Watch'); const no = el('span', { class: 'd-stamp no', 'aria-hidden': 'true' }, 'Skip');
       card.append(yes, no);
       const stamp = (d) => { yes.style.opacity = Math.max(0, Math.min(1, d / 110)); no.style.opacity = Math.max(0, Math.min(1, -d / 110)); };
-      card.onpointermove = (e) => { if (x0 === null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`; stamp(dx); };
-      card.onpointerup = (e) => { if (x0 === null) return; card.classList.remove('dragging'); x0 = null; card.style.transform = ''; stamp(0);
-        const ph = downOn && downOn.closest && downOn.closest('.d-photo');
-        if (ph && Math.abs(dx) < 8) { const r = ph.getBoundingClientRect(); ph.photoStep(e.clientX < r.left + r.width / 2 ? -1 : 1); return; }   // a tap, not a swipe
-        if (dx > 110) interested(); else if (dx < -110) skip(); };
+      card.onpointermove = (e) => { if (x0 === null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 22}deg)`; stamp(dx); };
+      card.onpointerup = (e) => { if (x0 === null) return; x0 = null;
+        const ph = downOn && downOn.closest && downOn.closest('.d-media');
+        if (Math.abs(dx) > 110) { decide(dx > 0 ? 1 : -1); return; }   // flies on from where the finger let go
+        card.classList.remove('dragging'); card.style.transform = ''; stamp(0);
+        if (ph && Math.abs(dx) < 8) { const r = ph.getBoundingClientRect(); ph.photoStep(e.clientX < r.left + r.width / 2 ? -1 : 1); } };   // a tap, not a swipe
       // The browser took the gesture (e.g. it became a scroll): put the card back, decide nothing.
       card.onpointercancel = () => { x0 = null; dx = 0; card.classList.remove('dragging'); card.style.transform = ''; stamp(0); };
-      card.onkeydown = (e) => { if (e.target !== card) return; if (e.key === 'ArrowRight') { e.preventDefault(); interested(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); skip(); } else if (e.key.toLowerCase() === 'u') undo(); };
+      card.onkeydown = (e) => { if (e.target !== card) return; viaKeys = true; if (e.key === 'ArrowRight') { e.preventDefault(); decide(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); decide(-1); } else if (e.key.toLowerCase() === 'u') undo(); };
     }
 
     // ── Matches ──
     async function renderMatches() {
       const v = $('v-matches'); v.innerHTML = ''; v.append(el('h1', {}, 'Matches'));
       let r; try { r = await apiRequest('/api/discover/matches'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
-      if (!r.matches.length) { v.append(el('p', { class: 'h-empty' }, 'No matches yet. When you and someone in Discover both want to watch together, they’ll show up here.')); return; }
+      if (!r.matches.length) {
+        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Your matches land here'),
+          el('p', {}, 'When you and someone in Discover both want to watch together, you’ll see them here and can say hi.'),
+          el('a', { class: 'hb hb-primary', href: '#discover' }, 'Go to Discover')));
+        return;
+      }
+      // New ones first, as faces (one tap = say hi); then everyone, as a list.
+      const fresh = r.matches.filter((m) => m.isNew);
+      if (fresh.length) {
+        v.append(el('p', { class: 'mx-h' }, 'New matches'),
+          el('div', { class: 'mx-new' }, ...fresh.map((m) => el('a', { href: `#chats/${m.conversationId}`, 'aria-label': `Say hi to ${m.person.name}` }, photoAvatar(m.person.username, m.person), el('span', {}, m.person.name)))));
+      }
+      v.append(el('p', { class: 'mx-h' }, 'All matches'));
       const ul = el('ul', { class: 'h-list' });
       for (const m of r.matches) {
         ul.append(el('li', { class: 'tap-row', onclick: rowGo(`chats/${m.conversationId}`) }, m.isNew ? el('span', { class: 'new-dot', title: 'New match' }, el('span', { class: 'sr-only' }, 'New')) : null, photoAvatar(m.person.username, m.person),

@@ -240,6 +240,9 @@
 
       $('showOnline').checked = !!state.show_online;
     }
+    // Chose "Also meet new people" at sign-up (?start=public): Finish turns discovery on (asking the 18+ question once)
+    // unless they switch it off on step 3 or decline the 18+ question — then it is a normal private save.
+    const wantPublic = new URLSearchParams(location.search).get('start') === 'public';
     try {
       const r = await apiRequest('/api/profile/watch'); state = r.profile; options = r.options; firstTime = !state.exists;
     } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
@@ -264,18 +267,22 @@
     $('showOnline').onchange = () => { state.show_online = $('showOnline').checked ? 1 : 0; dirty = true; };
     // Turning discovery on asks for the 18+ declaration once; turning it off is immediate.
     let confirmAdult = false;
+    let choseOff = false;
     $('discoverable').onchange = () => {
-      if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; return; }
+      if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; choseOff = true; return; }
       if (!state.gender) { $('discoverable').checked = false; say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return; }
       if (!state.genres.length && !state.favorite_titles.length) { $('discoverable').checked = false; say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); $('genres').querySelector('button').focus(); return; }
       if (state.adult_confirmed_at) { state.discoverable = 1; dirty = true; return; }
       $('discoverable').checked = false; $('adultChk').checked = false; $('adultOk').disabled = true; $('adultDlg').showModal();
     };
     $('adultChk').onchange = () => { $('adultOk').disabled = !$('adultChk').checked; };
-    $('adultCancel').onclick = () => $('adultDlg').close();
-    $('adultOk').onclick = () => { confirmAdult = true; state.discoverable = 1; $('discoverable').checked = true; dirty = true; $('adultDlg').close(); $('discoverable').focus(); };
+    $('adultCancel').onclick = () => { $('adultDlg').close(); choseOff = true; };
+    $('adultOk').onclick = () => { confirmAdult = true; state.discoverable = 1; $('discoverable').checked = true; dirty = true; $('adultDlg').close(); $('discoverable').focus();
+      if (wantPublic && firstTime) $('form').requestSubmit(); };
     $('form').onsubmit = async (e) => {
-      e.preventDefault(); pendingAdds.forEach((add) => add()); $('save').setAttribute('aria-busy', 'true'); say('Saving…');
+      e.preventDefault(); pendingAdds.forEach((add) => add());
+      if (wantPublic && firstTime && !state.discoverable && !choseOff) { $('discoverable').checked = true; $('discoverable').onchange(); if (!state.discoverable) return; }
+      $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, creators: state.creators, languages: state.languages,
           availability: state.availability, session_formats: state.session_formats, traits: state.traits, bio: state.bio,
@@ -318,7 +325,7 @@
     // ── Guided first time: three short steps; afterwards the same sections on one page ──
     function setWizard(on) {
       $('form').classList.toggle('wizard', on); $('steps').hidden = !on; $('meter').hidden = on;
-      $('intro').textContent = on ? 'Three quick steps. Private until you turn discovery on.' : 'Private until you turn discovery on. Change anything, any time.';
+      $('intro').textContent = on ? (wantPublic ? 'You chose to meet new people. Three quick steps, then you’ll see who’s here.' : 'Three quick steps. Private until you turn discovery on.') : 'Private until you turn discovery on. Change anything, any time.';
       showStep(on ? 1 : 0);
     }
     function showStep(n) {
@@ -330,9 +337,10 @@
       if (wiz) window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     $('next').onclick = () => {
+      pendingAdds.forEach((add) => add());   // a film typed but not yet added counts for "pick at least one"
       if (step === 1 && !state.gender) { say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
       if (step === 2 && !state.genres.length && !state.favorite_titles.length) { say('Pick at least one genre or add a film, so people can see what you like.'); return; }
-      pendingAdds.forEach((add) => add()); say(''); showStep(step + 1);
+      say(''); showStep(step + 1);
     };
     $('back').onclick = () => showStep(step - 1);
 
