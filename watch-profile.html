@@ -22,6 +22,29 @@
   .wp-save { pointer-events: none; position: sticky; bottom: 0; background: linear-gradient(transparent, var(--h-bg) 30%); padding: var(--h-6) 0 var(--h-4); display: flex; gap: var(--h-3); align-items: center; }
   .wp-status { font-size: var(--h-size-sm); color: var(--h-text-2); }
   .wp-chip-x { margin-left: var(--h-1); opacity: .7; }
+  .wp-steps { display: flex; gap: var(--h-2); list-style: none; padding: 0; margin: 0 0 var(--h-5); counter-reset: s; }
+  .wp-steps li { flex: 1; counter-increment: s; font-size: var(--h-size-sm); font-weight: 600; color: var(--h-text-3); padding-top: 8px; border-top: 3px solid var(--h-line-strong); }
+  .wp-steps li::before { content: counter(s) " · "; }
+  .wp-steps li.on { color: var(--h-text); border-top-color: var(--h-accent); }
+  .wp-steps li.done { color: var(--h-text-2); border-top-color: #818CF8; }
+  .wp-meter { display: flex; align-items: center; gap: var(--h-3); margin: 0 0 var(--h-5); font-size: var(--h-size-sm); color: var(--h-text-2); }
+  .wp-meter-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--h-surface-2); overflow: hidden; }
+  .wp-meter-bar i { display: block; height: 100%; width: 0; background: var(--brand-gradient); transition: width var(--h-med) var(--h-ease); }
+  .wp-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--h-2); margin-bottom: var(--h-2); }
+  .wp-ph { position: relative; aspect-ratio: 4 / 5; border-radius: var(--h-r-lg); overflow: hidden; background: var(--h-surface-2); border: 1.5px dashed var(--h-line-strong); }
+  .wp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wp-ph.filled { border-style: solid; border-color: transparent; }
+  .wp-ph .add { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: none; color: var(--h-text-2); font-size: 30px; cursor: pointer; }
+  .wp-ph .rm { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(15,23,42,.8); color: #fff; font-size: 15px; cursor: pointer; }
+  .wp-ph .pv { position: absolute; right: 6px; bottom: 6px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; border: 0; background: rgba(15,23,42,.85); color: #fff; cursor: pointer; }
+  .wp-ph .main { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(15,23,42,.8); color: #fff; }
+  .wp-ph .mk { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; border: 0; background: rgba(15,23,42,.8); color: #fff; cursor: pointer; }
+  .wp-more { margin: var(--h-4) 0; border-top: 1px solid var(--h-line); padding-top: var(--h-3); }
+  .wp-more summary { cursor: pointer; font-weight: 600; padding: var(--h-2) 0; min-height: 32px; }
+  .wizard .wp-step:not(.cur) { display: none; }
+  .crop-stage { position: relative; width: min(78vw, 320px); aspect-ratio: 4 / 5; margin: 0 auto; overflow: hidden; border-radius: var(--h-r-lg); background: #000; touch-action: none; cursor: grab; }
+  .crop-stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; user-select: none; -webkit-user-drag: none; max-width: none; }
+  .crop-zoom { width: 100%; margin-top: var(--h-4); accent-color: var(--h-accent); }
 </style>
 </head>
 <body class="h2">
@@ -31,90 +54,100 @@
   </header>
   <main class="h-page" id="main">
     <h1>Your watch profile</h1>
-    <p class="muted wp-intro">Optional, and private unless you turn discovery on. It helps Herae suggest films, parties and,
-      if you want, people with similar taste. You can skip any of it.</p>
+    <p class="muted wp-intro" id="intro">Three quick steps. Private until you turn discovery on.</p>
+    <div class="wp-meter" id="meter" hidden><div class="wp-meter-bar"><i id="meterFill"></i></div><span id="meterText"></span></div>
+    <ol class="wp-steps" id="steps" hidden><li data-s="1">You</li><li data-s="2">Your taste</li><li data-s="3">Go live</li></ol>
     <div id="loading" class="h-skeleton" style="height:240px" aria-hidden="true"></div>
 
     <form id="form" hidden novalidate>
-      <section class="h-section" aria-labelledby="s-taste">
-        <h2 id="s-taste">What you like to watch</h2>
+      <section class="h-section wp-step" data-step="1" aria-labelledby="s-you">
+        <h2 id="s-you">You</h2>
+        <div class="wp-photos" id="photos" aria-label="Your photos"></div>
+        <p class="h-help" id="photoHelp">Up to 6. Your first photo is your main one. Only people you choose can see them — set that in step 3.</p>
         <label class="h-label" for="dname">Name on your card</label>
         <input class="hi" id="dname" maxlength="40" autocomplete="given-name" placeholder="Your first name or a nickname">
-        <p class="h-help">Only shown if you turn discovery on. Leave it empty to show your username.</p>
-        <fieldset><legend>Genres</legend><div class="h-chips" id="genres"></div></fieldset>
+        <fieldset style="margin-top:var(--h-5)"><legend>I am <span class="faint">(needed for “show me”; not shown on your card)</span></legend>
+          <div class="h-chips" id="genderChips" role="radiogroup" aria-label="Your gender"></div></fieldset>
+      </section>
+
+      <section class="h-section wp-step" data-step="2" aria-labelledby="s-taste">
+        <h2 id="s-taste">Your taste</h2>
+        <fieldset><legend>Genres <span class="faint">(tap a few)</span></legend><div class="h-chips" id="genres"></div></fieldset>
         <fieldset><legend>Films and series you love</legend>
           <div class="h-chips" id="titles"></div>
           <div class="wp-add"><label class="sr-only" for="titleIn">Add a film or series</label>
             <input class="hi" id="titleIn" maxlength="60" placeholder="e.g. Past Lives"><button type="button" class="hb hb-secondary" id="titleAdd">Add</button></div>
-        </fieldset>
-        <fieldset><legend>Creators and channels</legend>
-          <div class="h-chips" id="creators"></div>
-          <div class="wp-add"><label class="sr-only" for="creatorIn">Add a creator</label>
-            <input class="hi" id="creatorIn" maxlength="60" placeholder="e.g. a YouTube channel"><button type="button" class="hb hb-secondary" id="creatorAdd">Add</button></div>
         </fieldset>
         <fieldset><legend>Languages you watch in</legend>
           <div class="h-chips" id="languages"></div>
           <div class="wp-add"><label class="sr-only" for="langIn">Add a language</label>
             <input class="hi" id="langIn" maxlength="30" placeholder="e.g. Hindi"><button type="button" class="hb hb-secondary" id="langAdd">Add</button></div>
         </fieldset>
+        <details class="wp-more"><summary>Add more about you <span class="faint">(optional)</span></summary>
+          <fieldset><legend>When you're usually free</legend><div class="h-chips" id="availability"></div></fieldset>
+          <fieldset><legend>Who with</legend><div class="h-chips" id="formats"></div></fieldset>
+          <fieldset><legend>You as a viewer <span class="faint">(up to 5)</span></legend><div class="h-chips" id="traits"></div></fieldset>
+          <fieldset><legend>Creators and channels</legend>
+            <div class="h-chips" id="creators"></div>
+            <div class="wp-add"><label class="sr-only" for="creatorIn">Add a creator</label>
+              <input class="hi" id="creatorIn" maxlength="60" placeholder="e.g. a YouTube channel"><button type="button" class="hb hb-secondary" id="creatorAdd">Add</button></div>
+          </fieldset>
+          <label class="h-label" for="bio">A line about you</label>
+          <textarea class="hi" id="bio" maxlength="280" placeholder="What makes a good movie night for you?"></textarea>
+        </details>
       </section>
 
-      <section class="h-section" aria-labelledby="s-style">
-        <h2 id="s-style">How you like to watch</h2>
-        <fieldset><legend>When you're usually free</legend><div class="h-chips" id="availability"></div></fieldset>
-        <fieldset><legend>Who with</legend><div class="h-chips" id="formats"></div></fieldset>
-        <fieldset><legend>You as a viewer <span class="faint">(up to 5)</span></legend><div class="h-chips" id="traits"></div></fieldset>
-        <label class="h-label" for="bio">A line about you <span class="faint">(optional)</span></label>
-        <textarea class="hi" id="bio" maxlength="280" placeholder="What makes a good movie night for you?"></textarea>
-      </section>
-
-      <section class="h-section" aria-labelledby="s-disc">
-        <h2 id="s-disc">Discovery</h2>
+      <section class="h-section wp-step" data-step="3" aria-labelledby="s-disc">
+        <h2 id="s-disc">Go live</h2>
         <div class="h-switch">
           <label for="discoverable"><strong>Let people with similar taste find me</strong><br>
-            <span class="muted">Off by default. When on, others who are also discoverable can see your taste (not your
-              watchlist, memories or friends) and say they'd like to watch together. Nobody can message you until you
-              both say yes. We'll email you, at most every few days, when someone new who shares your taste turns this on.</span></label>
+            <span class="muted">Others who are also discoverable can see your taste and say they'd like to watch together.
+              Nobody can message you until you both say yes. We'll email you, at most every few days, when someone new who shares your taste turns this on.</span></label>
           <input type="checkbox" id="discoverable" role="switch">
         </div>
-        <fieldset class="wp-radios" id="scopeSet"><legend>Show me</legend>
-          <label><input type="radio" name="scope" value="everyone"> <span>Everyone<br><span class="faint">People of any gender who are discoverable.</span></span></label>
-          <label><input type="radio" name="scope" value="same_gender"> <span>Only people of my own gender<br><span class="faint">Needs you to choose how you describe yourself below. Only used for this filter.</span></span></label>
-          <label><input type="radio" name="scope" value="groups_only"> <span>No one-to-one matches, only group watch parties</span></label>
+        <fieldset class="wp-radios" id="showMeSet"><legend>Show me</legend>
+          <label><input type="radio" name="scope" value="everyone"> <span>No preference</span></label>
+          <label><input type="radio" name="scope" value="men"> <span>Men</span></label>
+          <label><input type="radio" name="scope" value="women"> <span>Women</span></label>
         </fieldset>
-        <div id="genderWrap" hidden>
-          <label class="h-label" for="gender">How you describe yourself</label>
-          <select class="hi" id="gender"><option value="">Prefer not to say</option><option value="woman">Woman</option><option value="man">Man</option><option value="nonbinary">Non-binary</option></select>
-          <p class="h-help">Optional unless you pick "only people of my own gender". Never shown on your profile.</p>
-        </div>
-      </section>
-
-      <section class="h-section" aria-labelledby="s-priv">
-        <h2 id="s-priv">Privacy</h2>
-        <fieldset class="wp-radios"><legend>Who can see your friends list</legend>
-          <label><input type="radio" name="fvis" value="only_me"> <span>Only me</span></label>
-          <label><input type="radio" name="fvis" value="friends"> <span>My friends</span></label>
-          <label><input type="radio" name="fvis" value="everyone"> <span>Everyone who can see my profile</span></label>
+        <fieldset class="wp-radios" id="photoVisSet"><legend>Who can see my photos <span class="faint">(you can also set each photo in step 1)</span></legend>
+          <label><input type="radio" name="pvis" value="public"> <span>Everyone in Discover<br><span class="faint">Signed-in adults who are also looking. Never the open web.</span></span></label>
+          <label><input type="radio" name="pvis" value="matches"> <span>Only people I match with<br><span class="faint">Recommended. Strangers in Discover see "photos after you match".</span></span></label>
+          <label><input type="radio" name="pvis" value="matches_friends"> <span>My matches and my friends</span></label>
+          <label><input type="radio" name="pvis" value="approved"> <span>Only people I allow, one by one<br><span class="faint">Allow someone from your chat with them (⋯ → Show my photos).</span></span></label>
         </fieldset>
-        <div class="h-switch">
-          <label for="showOnline"><strong>Show when I'm online in discovery and parties</strong><br><span class="muted">Off by default.
-            Your friends always see when you're online on Herae, so either of you can start a night.</span></label>
-          <input type="checkbox" id="showOnline" role="switch">
-        </div>
+        <details class="wp-more"><summary>Who I see, and privacy</summary>
+          <fieldset class="wp-radios" id="scopeSet"><legend>One-to-one or groups</legend>
+            <label><input type="radio" name="scope" value="groups_only"> <span>No one-to-one matches, only group watch parties</span></label>
+          </fieldset>
+          <fieldset class="wp-radios"><legend>Who can see your friends list</legend>
+            <label><input type="radio" name="fvis" value="only_me"> <span>Only me</span></label>
+            <label><input type="radio" name="fvis" value="friends"> <span>My friends</span></label>
+            <label><input type="radio" name="fvis" value="everyone"> <span>Everyone who can see my profile</span></label>
+          </fieldset>
+          <div class="h-switch">
+            <label for="showOnline"><strong>Show when I'm online in discovery and parties</strong><br><span class="muted">Off by default.
+              Your friends always see when you're online on Herae, so either of you can start a night.</span></label>
+            <input type="checkbox" id="showOnline" role="switch">
+          </div>
+        </details>
       </section>
 
       <div class="wp-save">
+        <button type="button" class="hb hb-quiet" id="back" hidden>Back</button>
+        <button type="button" class="hb hb-primary" id="next" hidden>Next</button>
         <button type="submit" class="hb hb-primary" id="save">Save</button>
         <span class="wp-status" id="status" role="status" aria-live="polite"></span>
       </div>
     </form>
 
     <section class="h-section" aria-labelledby="s-blocks" id="blocksSec" hidden>
-      <h2 id="s-blocks">Blocked accounts</h2>
+      <details class="wp-more"><summary id="s-blocks">Blocked accounts</summary>
       <p class="muted">Blocked people can't find you, add you, invite you or join you. They aren't told.</p>
       <ul class="h-list" id="blocks"></ul>
       <form class="wp-add" id="blockForm"><label class="sr-only" for="blockIn">Username to block</label>
         <input class="hi" id="blockIn" maxlength="64" placeholder="username" autocomplete="off"><button class="hb hb-danger" type="submit">Block</button></form>
+      </details>
     </section>
   </main>
 
@@ -127,6 +160,17 @@
       <button type="button" class="hb hb-primary" id="adultOk" disabled>Turn on</button>
     </div>
   </dialog>
+  <dialog class="h-dialog" id="cropDlg" aria-labelledby="cropTitle">
+    <h2 id="cropTitle">Position your photo</h2>
+    <p class="muted" style="margin:var(--h-2) 0 var(--h-4);font-size:var(--h-size-sm)">Drag to move, slide to zoom.</p>
+    <div class="crop-stage" id="cropStage"><img id="cropImg" alt="Photo being cropped"></div>
+    <label class="sr-only" for="cropZoom">Zoom</label><input type="range" class="crop-zoom" id="cropZoom" min="1" max="3" step="0.01" value="1">
+    <div class="h-row" style="justify-content:flex-end;margin-top:var(--h-4)">
+      <button type="button" class="hb hb-quiet" id="cropCancel">Cancel</button>
+      <button type="button" class="hb hb-primary" id="cropUse">Use photo</button>
+    </div>
+  </dialog>
+  <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp" hidden>
 
   <script src="config.js"></script>
   <script src="api.js"></script>
@@ -141,7 +185,8 @@
       quiet_watcher: 'Quiet watcher', commentator: 'Running commentary', rewatcher: 'Rewatcher', binger: 'Binger',
       one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films',
       snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
-    let state, options, dirty = false;
+    let state, options, dirty = false, firstTime = false;
+    let photos = [], pendingVis = null, step = 1;
     const say = (t) => { $('status').textContent = t; };
     function chips(el, values, selected, max, key) {
       el.innerHTML = '';
@@ -181,28 +226,38 @@
       chips($('traits'), options.traits, state.traits, 5, 'traits');
       $('bio').value = state.bio || ''; $('dname').value = state.display_name || '';
       $('discoverable').checked = !!state.discoverable;
-      document.querySelector(`input[name=scope][value=${state.discovery_scope}]`).checked = true;
+      const sc = document.querySelector(`input[name=scope][value=${state.discovery_scope}]`) || document.querySelector('input[name=scope][value=everyone]'); sc.checked = true;
+      renderGender();
       document.querySelector(`input[name=fvis][value=${state.friends_list_visibility}]`).checked = true;
-      $('gender').value = state.gender || ''; $('genderWrap').hidden = state.discovery_scope !== 'same_gender' && !state.gender;
+
       $('showOnline').checked = !!state.show_online;
     }
     try {
-      const r = await apiRequest('/api/profile/watch'); state = r.profile; options = r.options;
+      const r = await apiRequest('/api/profile/watch'); state = r.profile; options = r.options; firstTime = !state.exists;
     } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
     $('loading').hidden = true; $('form').hidden = false; $('blocksSec').hidden = false; render();
+    setWizard(firstTime); loadPhotos(); meter();
     adder($('titleIn'), $('titleAdd'), $('titles'), 'favorite_titles', 10);
     adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
     adder($('langIn'), $('langAdd'), $('languages'), 'languages', 6);
     $('bio').oninput = () => { state.bio = $('bio').value; dirty = true; };
     $('dname').oninput = () => { state.display_name = $('dname').value; dirty = true; };
-    document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; $('genderWrap').hidden = r.value !== 'same_gender' && !state.gender; dirty = true; });
+    document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; dirty = true; });
     document.querySelectorAll('input[name=fvis]').forEach((r) => r.onchange = () => { state.friends_list_visibility = r.value; dirty = true; });
-    $('gender').onchange = () => { state.gender = $('gender').value || null; dirty = true; };
+    function renderGender() {
+      const g = $('genderChips'); g.innerHTML = '';
+      for (const [v, label] of [['woman', 'Woman'], ['man', 'Man'], ['nonbinary', 'Non-binary']]) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'h-chip'; b.textContent = label; b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', String(state.gender === v)); b.setAttribute('aria-pressed', String(state.gender === v));
+        b.onclick = () => { state.gender = v; dirty = true; renderGender(); meter(); }; g.append(b);
+      }
+    }
     $('showOnline').onchange = () => { state.show_online = $('showOnline').checked ? 1 : 0; dirty = true; };
     // Turning discovery on asks for the 18+ declaration once; turning it off is immediate.
     let confirmAdult = false;
     $('discoverable').onchange = () => {
       if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; return; }
+      if (!state.gender) { $('discoverable').checked = false; say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return; }
       if (!state.genres.length && !state.favorite_titles.length) { $('discoverable').checked = false; say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); $('genres').querySelector('button').focus(); return; }
       if (state.adult_confirmed_at) { state.discoverable = 1; dirty = true; return; }
       $('discoverable').checked = false; $('adultChk').checked = false; $('adultOk').disabled = true; $('adultDlg').showModal();
@@ -219,6 +274,10 @@
           show_online: !!state.show_online, discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
         const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
         state = r.profile; confirmAdult = false; dirty = false; render(); say('Saved.');
+        if (pendingVis) { apiRequest('/api/photos/visibility', { method: 'PUT', body: JSON.stringify({ visibility: pendingVis }) }).catch(() => {}); pendingVis = null; }
+        if (firstTime && state.discoverable) { location.href = 'social.html#discover'; return; }   // the quickest path: straight to people
+        if (firstTime) { firstTime = false; setWizard(false); }
+        meter();
         // The next step, right where the person is looking: discovery on → go and see who's here.
         if (state.discoverable) { const a = document.createElement('a'); a.className = 'hb hb-primary'; a.href = 'social.html#discover'; a.textContent = 'See who’s here →'; $('status').append(' ', a); }
       } catch (err) { say(err.message || 'Could not save. Try again.'); }
@@ -246,6 +305,128 @@
       catch (err) { say(err.message || 'Could not block.'); }
     };
     loadBlocks().catch(() => {});
+
+    // ── Guided first time: three short steps; afterwards the same sections on one page ──
+    function setWizard(on) {
+      $('form').classList.toggle('wizard', on); $('steps').hidden = !on; $('meter').hidden = on;
+      $('intro').textContent = on ? 'Three quick steps. Private until you turn discovery on.' : 'Private until you turn discovery on. Change anything, any time.';
+      showStep(on ? 1 : 0);
+    }
+    function showStep(n) {
+      step = n; const wiz = $('form').classList.contains('wizard');
+      document.querySelectorAll('.wp-step').forEach((sec) => sec.classList.toggle('cur', +sec.dataset.step === n));
+      document.querySelectorAll('#steps li').forEach((li) => { li.classList.toggle('on', +li.dataset.s === n); li.classList.toggle('done', +li.dataset.s < n); });
+      $('back').hidden = !wiz || n <= 1; $('next').hidden = !wiz || n >= 3; $('save').hidden = wiz && n < 3;
+      $('save').textContent = wiz ? 'Finish' : 'Save';
+      if (wiz) window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    $('next').onclick = () => {
+      if (step === 1 && !state.gender) { say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
+      if (step === 2 && !state.genres.length && !state.favorite_titles.length) { say('Pick at least one genre or add a film, so people can see what you like.'); return; }
+      pendingAdds.forEach((add) => add()); say(''); showStep(step + 1);
+    };
+    $('back').onclick = () => showStep(step - 1);
+
+    // ── Completeness: what one more step would add ──
+    function meter() {
+      const parts = [[photos.length > 0, 25, 'Add a photo so your matches can see you'], [!!(state.display_name || '').trim(), 5, 'Add the name on your card'], [!!state.gender, 5, 'Choose “I am”'],
+        [state.genres.length >= 3, 20, 'Pick a few more genres'], [state.favorite_titles.length > 0, 20, 'Add a film you love'],
+        [state.languages.length > 0, 10, 'Add a language you watch in'], [!!state.discoverable, 15, 'Turn on discovery to meet people']];
+      const pct = parts.reduce((t, [ok, w]) => t + (ok ? w : 0), 0); const next = parts.find(([ok]) => !ok);
+      $('meterFill').style.width = pct + '%'; $('meterText').textContent = pct >= 100 ? 'Profile complete' : `${pct}% · ${next[2]}`;
+    }
+
+    // ── Photos: up to 6, cropped 4:5 here, private on the server ──
+    async function loadPhotos() {
+      let r; try { r = await apiRequest('/api/photos/mine'); } catch (e) { return; }
+      const urls = await Promise.all(r.photos.map((p) => apiImage(p.url)));
+      photos = r.photos.map((p, i) => ({ ...p, src: urls[i] })); renderPhotos();
+      const v = document.querySelector(`input[name=pvis][value=${r.visibility}]`); if (v) v.checked = true;
+      meter();
+    }
+    function renderPhotos() {
+      const g = $('photos'); g.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const p = photos[i]; const cell = document.createElement('div'); cell.className = 'wp-ph' + (p ? ' filled' : '');
+        if (p) {
+          const img = document.createElement('img'); img.src = p.src; img.alt = i === 0 ? 'Your main photo' : `Photo ${i + 1}`; cell.append(img);
+          const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'rm'; rm.textContent = '✕'; rm.setAttribute('aria-label', `Remove photo ${i + 1}`);
+          rm.onclick = async () => { await apiRequest(`/api/photos/mine/${p.id}`, { method: 'DELETE' }); photos.splice(i, 1); renderPhotos(); meter(); };
+          cell.append(rm);
+          const pv = document.createElement('button'); pv.type = 'button'; pv.className = 'pv';
+          pv.textContent = p.visibility ? PV_SHORT[p.visibility] : '◐ Default'; pv.setAttribute('aria-label', `Who can see photo ${i + 1}: ${p.visibility ? PV_LONG[p.visibility] : 'my general setting'}. Change`);
+          pv.onclick = () => photoPrivacy(p, i); cell.append(pv);
+          if (i === 0) { const b = document.createElement('span'); b.className = 'main'; b.textContent = 'Main'; cell.append(b); }
+          else { const mk = document.createElement('button'); mk.type = 'button'; mk.className = 'mk'; mk.textContent = 'Make main';
+            mk.onclick = async () => { photos.unshift(photos.splice(i, 1)[0]); renderPhotos(); await apiRequest('/api/photos/mine/order', { method: 'PUT', body: JSON.stringify({ ids: photos.map((x) => x.id) }) }).catch(() => {}); };
+            cell.append(mk); }
+        } else {
+          const add = document.createElement('button'); add.type = 'button'; add.className = 'add'; add.textContent = '+';
+          add.setAttribute('aria-label', i === 0 ? 'Add your main photo' : 'Add a photo'); add.onclick = () => $('photoFile').click(); cell.append(add);
+        }
+        g.append(cell);
+      }
+    }
+    const PV_SHORT = { public: '🌐 Everyone', matches: '🔒 Matches', matches_friends: '🔒 Friends', approved: '🔒 Allowed' };
+    const PV_LONG = { public: 'everyone in Discover', matches: 'only my matches', matches_friends: 'my matches and friends', approved: 'only people I allow' };
+    async function photoPrivacy(p, i) {
+      const dlg = document.createElement('dialog'); dlg.className = 'h-dialog'; document.body.append(dlg);
+      const opts = [['', 'My general setting', 'What you chose in step 3'], ['public', 'Everyone in Discover', 'Shown on your card to adults who are also looking'], ['matches', 'Only my matches', ''], ['matches_friends', 'My matches and friends', ''], ['approved', 'Only people I allow', 'Allow someone from your chat with them']];
+      dlg.innerHTML = `<h2>Who can see photo ${i + 1}</h2><div class="wp-radios" style="margin:var(--h-3) 0"></div><div class="h-row" style="justify-content:flex-end"><button type="button" class="hb hb-quiet">Cancel</button><button type="button" class="hb hb-primary">Save</button></div>`;
+      const box = dlg.querySelector('.wp-radios');
+      for (const [v, t, sub] of opts) { const l = document.createElement('label'); l.innerHTML = `<input type="radio" name="pv1" value="${v}"> <span>${t}${sub ? `<br><span class="faint">${sub}</span>` : ''}</span>`; if ((p.visibility || '') === v) l.querySelector('input').checked = true; box.append(l); }
+      const [cancel, save] = dlg.querySelectorAll('.h-row button');
+      cancel.onclick = () => dlg.close(); dlg.onclose = () => dlg.remove();
+      save.onclick = async () => { const v = (box.querySelector('input:checked') || {}).value || null;
+        try { await apiRequest(`/api/photos/mine/${p.id}/visibility`, { method: 'PUT', body: JSON.stringify({ visibility: v || null }) }); p.visibility = v || null; renderPhotos(); say('Photo privacy saved.'); }
+        catch (e) { say(e.message || 'Could not save that.'); } dlg.close(); };
+      dlg.showModal();
+    }
+    $('photoFile').onchange = async () => {
+      const f = $('photoFile').files[0]; $('photoFile').value = ''; if (!f) return;
+      const dataUrl = await cropPhoto(f); if (!dataUrl) return;
+      say('Uploading photo…');
+      try { const r = await apiRequest('/api/photos/mine', { method: 'POST', body: JSON.stringify({ image: dataUrl, width: 1080, height: 1350 }) });
+        const fresh = r.photos.find((p) => !photos.some((q) => q.id === p.id));
+        if (fresh) photos.push({ ...fresh, src: dataUrl }); renderPhotos(); meter(); say('Photo added.'); }
+      catch (e) { say(e.message || 'Could not add that photo.'); }
+    };
+    document.querySelectorAll('input[name=pvis]').forEach((r) => r.onchange = async () => {
+      if (!state.exists) { pendingVis = r.value; return; }   // saved with the profile
+      try { await apiRequest('/api/photos/visibility', { method: 'PUT', body: JSON.stringify({ visibility: r.value }) }); say('Photo privacy saved.'); }
+      catch (e) { say(e.message || 'Could not save that.'); }
+    });
+
+    // The cropper: 4:5 frame, drag to pan, slider (or wheel) to zoom; output 1080×1350 JPEG, re-compressed if large.
+    function cropPhoto(file) {
+      return new Promise((resolve) => {
+        const url = URL.createObjectURL(file); const img = $('cropImg'); const stage = $('cropStage'); const zoom = $('cropZoom');
+        let W, H, base, x = 0, y = 0, z = 1, drag = null;
+        const clamp = () => { const s = base * z; x = Math.min(0, Math.max(W - img.naturalWidth * s, x)); y = Math.min(0, Math.max(H - img.naturalHeight * s, y)); };
+        const draw = () => { clamp(); img.style.transform = `translate(${x}px, ${y}px) scale(${base * z})`; };
+        img.onload = () => { W = stage.clientWidth; H = stage.clientHeight; base = Math.max(W / img.naturalWidth, H / img.naturalHeight); z = 1; zoom.value = 1;
+          x = (W - img.naturalWidth * base) / 2; y = (H - img.naturalHeight * base) / 2; draw(); };
+        img.onerror = () => { done(null); say('That file doesn’t look like a photo.'); };
+        stage.onpointerdown = (e) => { drag = { px: e.clientX, py: e.clientY, x, y }; stage.setPointerCapture(e.pointerId); };
+        stage.onpointermove = (e) => { if (!drag) return; x = drag.x + e.clientX - drag.px; y = drag.y + e.clientY - drag.py; draw(); };
+        stage.onpointerup = stage.onpointercancel = () => { drag = null; };
+        const zoomTo = (nz) => { const cx = W / 2, cy = H / 2; const k = nz / z; x = cx - (cx - x) * k; y = cy - (cy - y) * k; z = nz; draw(); };
+        zoom.oninput = () => zoomTo(+zoom.value);
+        stage.onwheel = (e) => { e.preventDefault(); const nz = Math.min(3, Math.max(1, z * (e.deltaY < 0 ? 1.08 : 0.93))); zoom.value = nz; zoomTo(nz); };
+        const done = (v) => { $('cropDlg').close(); URL.revokeObjectURL(url); resolve(v); };
+        $('cropCancel').onclick = () => done(null);
+        $('cropDlg').onclose = () => resolve(null);
+        $('cropUse').onclick = () => {
+          const c = document.createElement('canvas'); c.width = 1080; c.height = 1350; const k = 1080 / W;
+          const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, x * k, y * k, img.naturalWidth * base * z * k, img.naturalHeight * base * z * k);
+          let q = 0.86, out = c.toDataURL('image/jpeg', q);
+          while (out.length > 1900000 && q > 0.5) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+          done(out);
+        };
+        img.src = url; $('cropDlg').showModal();
+      });
+    }
   })();
   </script>
 </body>

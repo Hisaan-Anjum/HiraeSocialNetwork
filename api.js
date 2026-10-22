@@ -292,6 +292,15 @@ function cameFromThisSite() {
 // enough that nobody sits in front of a spinner wondering.
 const REQUEST_TIMEOUT_MS = 20_000;
 
+// A private image (e.g. a buddy photo) needs the sign-in header, which an <img src> can't send: fetch it and hand back
+// an in-memory URL. Resolves null when the viewer isn't allowed (404) or anything fails.
+async function apiImage(path) {
+  const auth = getAuth(); if (!auth?.token) return null;
+  const base = (auth.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
+  try { const r = await fetch(`${base}${path}`, { headers: { Authorization: `Bearer ${auth.token}` } }); return r.ok ? URL.createObjectURL(await r.blob()) : null; }
+  catch (e) { return null; }
+}
+
 async function apiRequest(path, options = {}) {
   const auth = getAuth();
   const base = (auth?.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
