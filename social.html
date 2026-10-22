@@ -41,16 +41,32 @@
   .d-actions .hb { width: 100%; }
   .d-hint { text-align: center; font-size: var(--h-size-xs); color: var(--h-text-3); margin-top: var(--h-3); }
   .d-more { position: absolute; top: var(--h-3); right: var(--h-3); }
-  /* chat */
-  .c-thread { display: flex; flex-direction: column; gap: var(--h-2); padding: var(--h-3) 0; min-height: 40vh; }
-  .c-msg { max-width: 78%; padding: var(--h-2) var(--h-3); border-radius: var(--h-r-md); background: var(--h-surface-2); white-space: pre-wrap; overflow-wrap: anywhere; }
-  .c-msg.mine { align-self: flex-end; background: var(--h-surface-3); }
-  .c-msg.failed { outline: 1px solid var(--h-danger); }
-  .c-msg time { display: block; font-size: 11px; color: var(--h-text-3); margin-top: 2px; }
-  .c-compose { position: sticky; bottom: 0; display: flex; gap: var(--h-2); padding: var(--h-3) 0; background: var(--h-bg); }
-  @media (max-width: 640px) { .c-compose { bottom: 56px; } }
-  .c-compose .hi { flex: 1; min-height: var(--h-tap); }
-  .c-starters { display: flex; flex-wrap: wrap; gap: var(--h-2); margin: var(--h-2) 0; }
+  /* chat — a messenger: compact header, bubbles, one slim composer row */
+  .c-view { display: flex; flex-direction: column; min-height: calc(100dvh - 140px); }
+  .c-head { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: var(--h-3); padding: var(--h-2) 0; background: var(--h-bg); border-bottom: 1px solid var(--h-line); }
+  .c-head .c-back { width: 40px; height: 40px; min-height: 40px; padding: 0; border-radius: 50%; font-size: 20px; }
+  .c-head .h-avatar { width: 40px; height: 40px; font-size: 16px; }
+  .c-who { flex: 1; min-width: 0; } .c-who b { display: block; font-size: var(--h-size-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-who span { font-size: var(--h-size-xs); color: var(--h-text-3); }
+  .c-thread { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: var(--h-4) 0; }
+  .c-msg { max-width: min(78%, 520px); padding: 9px 14px 7px; border-radius: 20px; border-bottom-left-radius: 6px; background: var(--h-surface-2); color: var(--h-text); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.4; }
+  .c-msg.mine { align-self: flex-end; background: #4F46E5; color: #fff; border-radius: 20px; border-bottom-right-radius: 6px; }
+  .c-msg.failed { outline: 2px solid var(--h-danger); }
+  .c-msg time { display: block; font-size: 11px; opacity: .7; margin-top: 2px; text-align: right; }
+  .c-sys { align-self: center; font-size: var(--h-size-xs); color: var(--h-text-3); padding: 4px 10px; }
+  .c-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--h-3); padding: var(--h-6) 0; }
+  .c-empty .h-avatar { width: 72px; height: 72px; font-size: 28px; }
+  .c-empty h2 { font-size: var(--h-size-lg); margin: 0; } .c-empty p { margin: 0; color: var(--h-text-3); font-size: var(--h-size-sm); }
+  .c-starters { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--h-2); }
+  .c-compose { position: sticky; bottom: 0; display: flex; align-items: flex-end; gap: var(--h-2); padding: var(--h-2) 0 calc(var(--h-2) + env(safe-area-inset-bottom)); background: var(--h-bg); border-top: 1px solid var(--h-line); }
+  .c-compose textarea { flex: 1; min-height: 44px; max-height: 128px; resize: none; padding: 11px 16px; border-radius: 22px; background: var(--h-surface-2); border: 1px solid var(--h-line-strong); color: var(--h-text); font: var(--h-size-md)/1.35 var(--h-font-body); box-sizing: border-box; }
+  .c-compose textarea:focus-visible { outline: none; border-color: var(--h-focus); }
+  .c-ico { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 1px solid var(--h-line-strong); background: var(--h-surface-2); color: var(--h-text); font-size: 19px; cursor: pointer; display: grid; place-items: center; }
+  .c-ico.send { background: #4F46E5; border-color: #4F46E5; color: #fff; }
+  .c-ico:disabled { opacity: .45; cursor: default; }
+  .c-ico svg { width: 20px; height: 20px; }
+  /* inside a conversation on a phone the bottom tabs give their space to the chat */
+  @media (max-width: 640px) { body.in-thread .s-tabs { display: none; } body.in-thread .c-view { min-height: calc(100dvh - 72px); } }
   .row-main { flex: 1; min-width: 0; }
   .tap-row { cursor: pointer; }
   .row-main .sub { font-size: var(--h-size-sm); color: var(--h-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -138,6 +154,9 @@
       if (go) window.open('https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=social', '_blank', 'noopener');
     }
 
+    // Today's messages show just the time; older ones the date too.
+    const msgTime = (s) => { const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('Z') ? '' : 'Z')); if (isNaN(d)) return '';
+      return d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : when(s); };
     function dialog(title, body, actions) {
       $('dlgTitle').textContent = title; const b = $('dlgBody'); b.innerHTML = ''; b.append(...[].concat(body));
       const a = $('dlgActions'); a.innerHTML = '';
@@ -183,6 +202,7 @@
       const [tab, ...args] = (location.hash.slice(1) || 'discover').split('/');
       const name = views[tab] ? tab : 'discover';
       for (const t of Object.keys(views)) { $(`v-${t}`).hidden = t !== name; $(`t-${t}`).setAttribute('aria-selected', String(t === name)); $(`t-${t}`).tabIndex = t === name ? 0 : -1; }
+      document.body.classList.toggle('in-thread', name === 'chats' && !!args[0]);
       views[name](...args);
     }
     document.querySelectorAll('.s-tab').forEach((b) => { b.onclick = () => { location.hash = b.dataset.tab; }; });
@@ -288,7 +308,7 @@
     async function renderChats(id) {
       clearInterval(pollTimer);
       if (id) return renderThread(Number(id));
-      const v = $('v-chats'); v.innerHTML = ''; v.append(el('h1', {}, 'Chats'));
+      const v = $('v-chats'); v.innerHTML = ''; v.classList.remove('c-view'); v.append(el('h1', {}, 'Chats'));
       let r; try { r = await apiRequest('/api/chats'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       if (!r.conversations.length) { v.append(el('p', { class: 'h-empty' }, 'No conversations yet. You can chat with your friends and your matches.')); return; }
       const ul = el('ul', { class: 'h-list' });
@@ -315,7 +335,7 @@
         if (m.kind === 'proposal') return proposalCard(proposals.get(m.refId), m);
         if (m.kind === 'system') return el('div', { class: 'c-sys', 'data-id': m.id }, `${m.sender === me ? 'You' : otherName} ${m.body === 'accepted' ? 'accepted the watch suggestion' : 'declined the watch suggestion'} · ${when(m.createdAt)}`);
         return el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}${pending === 'failed' ? ' failed' : ''}`, 'data-id': m.id || '' },
-          m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : when(m.createdAt)));
+          m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : msgTime(m.createdAt)));
       };
       const STATE = { pending: 'Waiting for an answer', accepted: 'Accepted', declined: 'Declined', cancelled: 'Cancelled', expired: 'Expired', completed: 'Done' };
       function proposalCard(p, m) {
@@ -350,21 +370,29 @@
       addPage(page.messages, false);
       const older = el('button', { type: 'button', class: 'hb hb-quiet', hidden: !page.hasMore, onclick: async () => {
         const p = await apiRequest(`/api/chats/${id}/messages?before=${oldest}`); addPage(p.messages, true); older.hidden = !p.hasMore; } }, 'Show older messages');
-      const head = el('div', { class: 'h-row', style: 'justify-content:space-between' },
-        el('a', { class: 'hb hb-quiet', href: '#chats', 'aria-label': 'Back to chats' }, '← Chats'), el('h1', { style: 'font-size:var(--h-size-xl)' }, page.withName || other),
+      v.classList.add('c-view');
+      const head = el('div', { class: 'c-head' },
+        el('a', { class: 'hb hb-quiet c-back', href: '#chats', 'aria-label': 'Back to chats' }, '←'), avatar({ name: otherName, avatarUrl: page.withAvatar }),
+        el('div', { class: 'c-who' }, el('h1', { class: 'sr-only' }, `Chat with ${otherName}`), el('b', { 'aria-hidden': 'true' }, otherName), el('span', {}, page.relation === 'match' ? 'Match' : page.relation === 'friends' ? 'Friend' : '')),
         moreMenu([['Add as friend', () => addFriend(other)], ...(page.relation === 'match' ? [['Unmatch', () => unmatchWith(other, otherName)]] : []),
           ['Report', () => reportPerson(other, 'user')], ['Block', async () => { if (await blockPerson(other)) location.hash = 'chats'; }, true]]));
       v.append(head, older, thread);
-      if (!page.messages.length && page.relation === 'match') {
-        v.append(el('p', { class: 'muted c-starters' }, 'You matched. A few ways to start (optional):'),
+      if (!page.messages.length) {
+        thread.hidden = true;
+        v.append(el('div', { class: 'c-empty c-starters' }, avatar({ name: otherName, avatarUrl: page.withAvatar }),
+          el('h2', {}, page.relation === 'match' ? `You and ${otherName} matched` : `Say hi to ${otherName}`),
+          el('p', {}, 'Tap one to start, or write your own.'),
           el('div', { class: 'c-starters' }, ...['Hi! What have you been watching lately?', 'What’s a film you could watch again and again?', 'When are you usually free to watch something?'].map((t) =>
-            el('button', { type: 'button', class: 'h-chip', onclick: () => { input.value = t; input.focus(); } }, t))));
+            el('button', { type: 'button', class: 'h-chip', onclick: () => { input.value = t; grow(); input.focus(); } }, t)))));
       }
-      const input = el('textarea', { class: 'hi', rows: '1', maxlength: '2000', placeholder: page.canSend ? 'Message' : 'You can’t message this person any more', disabled: !page.canSend, 'aria-label': 'Message' });
-      const send = el('button', { type: 'submit', class: 'hb hb-primary', disabled: !page.canSend }, 'Send');
-      const suggest = el('button', { type: 'button', class: 'hb hb-secondary', disabled: !page.canSend, onclick: suggestWatch }, 'Suggest a watch');
-      const form = el('form', { class: 'c-compose' }, input, send);
-      v.append(el('div', { class: 'h-row', style: 'margin-top:var(--h-3)' }, suggest), form);
+      const input = el('textarea', { rows: '1', maxlength: '2000', placeholder: page.canSend ? 'Message' : 'You can’t message this person any more', disabled: !page.canSend, 'aria-label': 'Message' });
+      const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight + 2, 128) + 'px'; };
+      input.oninput = grow;
+      const SEND_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
+      const send = el('button', { type: 'submit', class: 'c-ico send', disabled: !page.canSend, 'aria-label': 'Send' }); send.innerHTML = SEND_SVG;
+      const suggest = el('button', { type: 'button', class: 'c-ico', disabled: !page.canSend, onclick: suggestWatch, 'aria-label': 'Suggest a watch', title: 'Suggest a watch' }, '🎬');
+      const form = el('form', { class: 'c-compose' }, suggest, input, send);
+      v.append(form);
       async function suggestWatch() {
         const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'e.g. Past Lives' });
         const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'https://… (optional)' });
@@ -397,13 +425,14 @@
       }
       form.onsubmit = (e) => { e.preventDefault(); const body = input.value.trim(); if (!body) return; input.value = '';
         const clientId = 'c' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+        thread.hidden = false; grow();
         const node = msgEl({ sender: me, body }, 'sending'); thread.append(node); node.scrollIntoView({ block: 'end' }); deliver(body, node, clientId); };
       input.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } };
       // shortcut: polls every 8 s while the thread is open; switch to a site WebSocket when the site gets one.
       pollTimer = setInterval(async () => { if (location.hash !== `#chats/${id}`) return clearInterval(pollTimer);
         const p = await apiRequest(`/api/chats/${id}/messages`).catch(() => null); if (!p) return;
         const fresh = p.messages.filter((m) => m.id > newest && m.sender !== me);
-        if (fresh.length) { addPage(fresh, false); thread.lastElementChild.scrollIntoView({ block: 'end' }); announce(`New message from ${otherName}`); markRead(); }
+        if (fresh.length) { thread.hidden = false; v.querySelectorAll('.c-starters').forEach((x) => x.remove()); addPage(fresh, false); thread.lastElementChild.scrollIntoView({ block: 'end' }); announce(`New message from ${otherName}`); markRead(); }
         if (!p.canSend && !input.disabled) { input.disabled = true; send.disabled = true; input.placeholder = 'You can’t message this person any more'; } }, 8000);
     }
     async function unmatchWith(other, name = other) {
