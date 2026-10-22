@@ -152,6 +152,8 @@ const FILES = [
   // Connected H brand (brand/): canonical tokens + DM Sans (OFL), the favicon family and logo SVGs. Referenced by
   // plain links/imgs from pages Vite doesn't process, so copied verbatim (brand/scripts/sync-tokens.sh, export-icons.js).
   'brand-tokens.css', 'fonts/dm-sans-latin.woff2', 'fonts/DM-Sans-OFL.txt',
+  // The one signed-in navigation (app-nav.js): a classic global after api.js on every app page.
+  'app-nav.js',
   'favicon.svg', 'favicon-16.png', 'favicon-32.png', 'favicon-48.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png',
   'herae-symbol.svg', 'herae-symbol-white.svg', 'herae-logo.svg', 'herae-logo-on-dark.svg', 'herae-wordmark.svg', 'herae-wordmark-white.svg',
 ];

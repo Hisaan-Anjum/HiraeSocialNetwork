@@ -1,0 +1,116 @@
+// app-nav.js — the ONE navigation for every signed-in page (founder 2026-10-22: "make sure the navbar is perfect
+// throughout the app and consistent"). Desktop: brand · Home · Watch buddies · Friends · Parties · search · account menu.
+// Phones: a slim top bar + a bottom tab bar (Home · Discover · Chats · Friends · Me) with unread badges.
+// Pages keep their old header in the DOM (their scripts still bind to its buttons) but it is hidden.
+// Classic global script, loaded after api.js; does nothing for signed-out visitors.
+(function () {
+  if (typeof getAuth !== 'function' || !getAuth()) return;
+  const me = getAuth().username;
+  const I = {   // 24×24 stroke icons
+    home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    discover: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+    chats: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/>',
+    friends: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.7c1.9.7 3.1 2.4 3.5 5.3"/>',
+    parties: '<rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M10 9.5l4.5 2.5-4.5 2.5z"/>',
+    me: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  };
+  const svg = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+  let page, hash;   // re-read on every check: social.html changes tab by hash without reloading
+  const refresh = () => { page = location.pathname.replace(/^.*\//, '') || 'memories.html'; hash = location.hash.replace(/^#/, '').split('/')[0]; };
+  refresh();
+  const at = (p, h) => page === p && (!h || hash === h || (h === 'discover' && !hash));
+  const TOP = [['Home', 'memories.html', 'home', () => /^(memories|movie|post|review|session|search)\.html$/.test(page)],
+    ['Watch buddies', 'social.html#discover', 'discover', () => page === 'social.html' && hash !== 'friends'],
+    ['Friends', 'contacts.html', 'friends', () => page === 'contacts.html' || at('social.html', 'friends') || page === 'user.html']];   // Parties lives under Watch buddies
+  const BOTTOM = [['Home', 'memories.html', 'home', TOP[0][3]], ['Discover', 'social.html#discover', 'discover', () => at('social.html', 'discover') || at('social.html', 'matches') || at('social.html', 'parties')],
+    ['Chats', 'social.html#chats', 'chats', () => at('social.html', 'chats')], ['Friends', 'contacts.html', 'friends', TOP[2][3]],
+    ['Me', 'watch-profile.html', 'me', () => /^(watch-profile|billing|upgrade|refer)\.html$/.test(page)]];
+
+  const css = `
+  body.has-app-nav > .topbar, body.has-app-nav > header.h-topbar, body.has-app-nav .topbar:not(.an-top) { display: none !important; }
+  .an-top { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 max(16px, calc((100vw - 1120px) / 2));
+    background: rgba(15, 23, 42, .86); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid rgba(148, 163, 184, .16);
+    font-family: var(--font-sans, system-ui, sans-serif); }
+  .an-brand { display: flex; align-items: center; margin-right: 16px; } .an-brand img { height: 26px; width: auto; display: block; }
+  .an-links { display: flex; gap: 2px; flex: 1; }
+  .an-links a { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px; color: #94A3B8; font-weight: 600; font-size: 14.5px; text-decoration: none; position: relative; }
+  .an-links a svg { width: 18px; height: 18px; }
+  .an-links a:hover { color: #F8FAFC; background: rgba(148, 163, 184, .1); }
+  .an-links a[aria-current="page"] { color: #F8FAFC; background: rgba(99, 102, 241, .16); }
+  .an-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .an-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #CBD5E1; background: none; border: 0; cursor: pointer; text-decoration: none; }
+  .an-icon:hover { background: rgba(148, 163, 184, .12); color: #F8FAFC; } .an-icon svg { width: 20px; height: 20px; }
+  .an-avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: #fff; background: linear-gradient(135deg, #4F46E5, #7C3AED 55%, #DB2777); border: 0; cursor: pointer; }
+  .an-menu { position: absolute; right: max(16px, calc((100vw - 1120px) / 2)); top: 56px; min-width: 220px; padding: 6px; border-radius: 14px; background: #111827; border: 1px solid #334155;
+    box-shadow: 0 18px 48px rgba(2, 6, 23, .55); list-style: none; margin: 0; z-index: 60; }
+  .an-menu .an-who { padding: 10px 12px 8px; color: #94A3B8; font-size: 12.5px; border-bottom: 1px solid #1E293B; margin-bottom: 4px; } .an-menu .an-who b { display: block; color: #F8FAFC; font-size: 14px; }
+  .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: #E2E8F0; font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
+  .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: #1E293B; outline: none; }
+  .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: #EC4899; color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
+  .an-bottom { display: none; }
+  @media (max-width: 760px) {
+    .an-links { display: none; } .an-top { height: 56px; }
+    .an-bottom { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(15, 23, 42, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(148, 163, 184, .16); }
+    .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #94A3B8; font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
+    .an-bottom a svg { width: 23px; height: 23px; }
+    .an-bottom a[aria-current="page"] { color: #F8FAFC; } .an-bottom a[aria-current="page"] svg { color: #A5B4FC; }
+    .an-bottom .an-badge { top: 4px; right: calc(50% - 22px); }
+    body.has-app-nav { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+    body.has-app-nav.in-thread .an-bottom { display: none; } body.has-app-nav.in-thread { padding-bottom: 0; }
+    /* page action bars that stick to the bottom sit ON TOP of the tab bar, never under it */
+    body.has-app-nav .wp-save { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  }`;
+
+  function build() {
+    if (document.querySelector('.an-top')) return;
+    const style = document.createElement('style'); style.textContent = css; document.head.append(style);
+    const top = document.createElement('header'); top.className = 'an-top'; top.setAttribute('role', 'banner');
+    top.innerHTML = `<a class="an-brand" href="memories.html" aria-label="herae — home"><img src="herae-logo-on-dark.svg" alt="herae"></a>
+      <nav class="an-links" aria-label="Main">${TOP.map(([t, h, i]) => `<a href="${h}" data-key="${i}">${svg(i)}<span>${t}</span></a>`).join('')}</nav>
+      <div class="an-right"><a class="an-icon" href="search.html" aria-label="Search" data-search>${svg('search')}</a>
+        <button class="an-avatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu">${(me || '?')[0].toUpperCase()}</button></div>`;
+    const bottom = document.createElement('nav'); bottom.className = 'an-bottom'; bottom.setAttribute('aria-label', 'Main');
+    bottom.innerHTML = BOTTOM.map(([t, h, i]) => `<a href="${h}" data-key="${i}">${svg(i)}<span>${t}</span></a>`).join('');
+    document.body.prepend(top); document.body.append(bottom); document.body.classList.add('has-app-nav');
+    // search: pages with their own search overlay keep it
+    top.querySelector('[data-search]').onclick = (e) => { const own = document.getElementById('searchTrigger'); if (own) { e.preventDefault(); own.click(); } };
+    // account menu
+    const btn = top.querySelector('.an-avatar'); let menu = null;
+    const close = () => { if (menu) { menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false'); } };
+    btn.onclick = () => {
+      if (menu) return close();
+      menu = document.createElement('ul'); menu.className = 'an-menu'; menu.setAttribute('role', 'menu');
+      menu.innerHTML = `<li class="an-who" role="none"><b>${me}</b>Signed in</li>
+        <li role="none"><a role="menuitem" href="user.html?u=${encodeURIComponent(me)}">Your page</a></li>
+        <li role="none"><a role="menuitem" href="watch-profile.html">Watch profile &amp; privacy</a></li>
+        <li role="none"><a role="menuitem" href="billing.html">Plan &amp; billing</a></li>
+        <li role="none"><a role="menuitem" href="refer.html">Invite friends</a></li>
+        <li role="none"><a role="menuitem" href="help.html">Help</a></li>
+        <li role="none"><button role="menuitem" type="button" data-logout>Log out</button></li>`;
+      menu.querySelector('[data-logout]').onclick = () => (typeof logout === 'function' ? logout() : (localStorage.removeItem('moments_auth'), location.href = 'index.html'));
+      top.append(menu); btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a').focus();
+    };
+    document.addEventListener('click', (e) => { if (menu && !menu.contains(e.target) && e.target !== btn) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu) { close(); btn.focus(); } });
+    mark(); window.addEventListener('hashchange', () => { mark(); });
+    badges(); setInterval(badges, 60000);
+  }
+  function mark() {
+    refresh();
+    for (const [links, defs] of [[document.querySelectorAll('.an-links a'), TOP], [document.querySelectorAll('.an-bottom a'), BOTTOM]]) {
+      links.forEach((a, k) => { if (defs[k][3]()) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    }
+  }
+  async function badges() {
+    try {
+      const [c, f] = await Promise.all([apiRequest('/api/chats'), apiRequest('/api/contacts')]);
+      const unread = (c.conversations || []).reduce((s, x) => s + (x.unread || 0), 0); const reqs = (f.incoming || []).length;
+      const set = (key, n) => document.querySelectorAll(`[data-key="${key}"]`).forEach((a) => { let b = a.querySelector('.an-badge'); if (!n) { if (b) b.remove(); return; }
+        if (!b) { b = document.createElement('span'); b.className = 'an-badge'; a.append(b); } b.textContent = n > 9 ? '9+' : String(n); b.setAttribute('aria-label', `${n} new`); });
+      set('chats', unread); set('friends', reqs);
+    } catch (e) { /* badges are a convenience */ }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
+})();

@@ -21,7 +21,7 @@
   .rf-link .btn { flex: 0 0 auto; }
   .rf-progress { display: flex; gap: 8px; margin: 16px 0 10px; }
   .rf-dot { flex: 1; height: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); }
-  .rf-dot.on { background: linear-gradient(90deg, #7c5cff, #c084fc); }
+  .rf-dot.on { background: var(--brand-gradient); }
   .rf-count { font-size: 15px; font-weight: 700; }
   .rf-list { list-style: none; padding: 0; margin: 12px 0 0; font-size: 14px; line-height: 1.5; }
   .rf-list li { display: flex; gap: 10px; margin-bottom: 8px; }
@@ -68,6 +68,7 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+<script src="app-nav.js"></script>
   <script>
   'use strict';
   requireAuth();

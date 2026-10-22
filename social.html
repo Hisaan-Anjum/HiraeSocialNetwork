@@ -12,16 +12,18 @@
 <link rel="stylesheet" href="h2.css">
 <style>
   body { margin: 0; min-height: 100dvh; }
-  .s-tabs { display: flex; gap: var(--h-1); padding: 0 var(--h-4); border-bottom: 1px solid var(--h-line); position: sticky; top: 0; background: var(--h-bg); z-index: 5; }
+  .s-tabs { display: flex; gap: var(--h-1); padding: 0 max(var(--h-4), calc((100vw - 1120px) / 2)); border-bottom: 1px solid var(--h-line); position: sticky; top: 60px; background: var(--h-bg); z-index: 5; }
   .s-tab { position: relative; min-height: var(--h-tap); padding: 0 var(--h-4); background: none; border: 0; color: var(--h-text-2); font: 600 var(--h-size-sm) var(--h-font-body); cursor: pointer; border-bottom: 2px solid transparent; }
   .s-tab[aria-selected="true"] { color: var(--h-text); border-bottom-color: var(--h-accent); }
   .s-badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--h-coral); color: #1b0d09; font-size: 11px; line-height: 18px; text-align: center; }
   .s-badge[hidden] { display: none; }
   .s-tab { white-space: nowrap; }
   @media (max-width: 640px) {
-    .s-tabs { position: fixed; bottom: 0; top: auto; left: 0; right: 0; justify-content: space-around; border-top: 1px solid var(--h-line); border-bottom: 0; padding: 0 0 env(safe-area-inset-bottom); }
-    .s-tab { flex: 1; padding: 0; border-bottom: 0; border-top: 2px solid transparent; }
-    .s-tab[aria-selected="true"] { border-top-color: var(--h-accent); }
+    /* phones: the global bottom bar is the main nav; these become a row of pills under the header */
+    .s-tabs { top: 56px; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--h-line); }
+    .s-tabs::-webkit-scrollbar { display: none; }
+    .s-tab { min-height: 36px; padding: 0 14px; border: 1px solid var(--h-line-strong); border-radius: 999px; }
+    .s-tab[aria-selected="true"] { background: #F8FAFC; color: #0F172A; border-color: #F8FAFC; }
     main.h-page { padding-bottom: 96px; }
   }
   /* deck */
@@ -101,7 +103,7 @@
     <button class="s-tab" role="tab" id="t-discover" aria-controls="v-discover" data-tab="discover">Discover</button>
     <button class="s-tab" role="tab" id="t-matches" aria-controls="v-matches" data-tab="matches">Matches<span class="s-badge" id="b-matches" hidden></span></button>
     <button class="s-tab" role="tab" id="t-chats" aria-controls="v-chats" data-tab="chats">Chats<span class="s-badge" id="b-chats" hidden></span></button>
-    <button class="s-tab" role="tab" id="t-friends" aria-controls="v-friends" data-tab="friends">Friends<span class="s-badge" id="b-friends" hidden></span></button>
+    <button class="s-tab" role="tab" id="t-friends" aria-controls="v-friends" data-tab="friends" hidden>Friends<span class="s-badge" id="b-friends" hidden></span></button>
     <button class="s-tab" role="tab" id="t-parties" aria-controls="v-parties" data-tab="parties">Parties</button>
   </nav>
   <main class="h-page" id="main">
@@ -121,6 +123,7 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+<script src="app-nav.js"></script>
   <script>
   requireAuth();
   (() => {
@@ -231,7 +234,7 @@
       views[name](...args);
     }
     document.querySelectorAll('.s-tab').forEach((b) => { b.onclick = () => { location.hash = b.dataset.tab; }; });
-    document.querySelector('.s-tabs').onkeydown = (e) => { const tabs = [...document.querySelectorAll('.s-tab')]; const i = tabs.indexOf(document.activeElement);
+    document.querySelector('.s-tabs').onkeydown = (e) => { const tabs = [...document.querySelectorAll('.s-tab')].filter((t) => !t.hidden); const i = tabs.indexOf(document.activeElement);
       if (i < 0) return; if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); n.click(); } };
     window.addEventListener('hashchange', route);
 
