@@ -247,7 +247,7 @@ function requireAuth() {
     // the top, and half of them have already given up by now.
     () => window.location.reload(),
     () => {
-      sessionStorage.setItem('moments_return_to', location.pathname + location.search);
+      sessionStorage.setItem('moments_return_to', location.pathname + location.search + location.hash);
       window.location.href = '/login.html';
     },
     openedByExtension ? { probeMs: 8000, waitMs: 12000 } : undefined,

@@ -30,14 +30,20 @@ if (inviteParam) window.savePendingInvite(inviteParam);
 // requireAuth) turned into "the review never opened": the extension's login
 // arrived a moment later, this branch ran, and the night they were sent to
 // review was replaced by the feed.
+//
+// Read ONCE, and only the first way out leaves: a password login, the extension's sign-in and the storage poll below
+// can all fire within a few hundred ms, and each used to read-and-delete the address — the slower one then found
+// nothing and sent the person to the feed instead of where they were going (matching journey QA, 2026-10-22).
+const RETURN_TO = sessionStorage.getItem('moments_return_to');
+let leaving = false;
+function leave(to = RETURN_TO || 'memories.html') {
+  if (leaving) return;
+  leaving = true;
+  sessionStorage.removeItem('moments_return_to');
+  window.location.href = to;
+}
 function leaveLoggedIn() {
-  redeemPendingInvite().then((r) => {
-    const returnTo = sessionStorage.getItem('moments_return_to');
-    sessionStorage.removeItem('moments_return_to');
-    window.location.href = r && r.username && !r.self
-      ? `user.html?u=${encodeURIComponent(r.username)}`
-      : (returnTo || 'memories.html');
-  });
+  redeemPendingInvite().then((r) => leave(r && r.username && !r.self ? `user.html?u=${encodeURIComponent(r.username)}` : undefined));
 }
 if (getAuth()) {
   leaveLoggedIn();
@@ -48,7 +54,7 @@ if (getAuth()) {
     // Still nothing — but somebody sent here from a page the extension opened
     // (a saved return address) may simply have a slow machine. Keep looking for
     // a while; typing a password meanwhile works exactly as before.
-    if (!sessionStorage.getItem('moments_return_to')) return;
+    if (!RETURN_TO) return;
     let tries = 0;
     const t = setInterval(() => {
       if (getAuth()) { clearInterval(t); leaveLoggedIn(); }
@@ -83,9 +89,7 @@ mountGoogleButton(document.getElementById('googleMount'), {
       if (!result) return;
       // Awaited so the redirect below can't cancel it mid-flight.
       await redeemPendingInvite();
-      const returnTo = sessionStorage.getItem('moments_return_to');
-      sessionStorage.removeItem('moments_return_to');
-      window.location.href = returnTo || 'memories.html';
+      leave();
     } catch (err) {
       errorText.textContent = err.message;
     }
@@ -109,9 +113,7 @@ loginForm.addEventListener('submit', async (e) => {
   try {
     await login(serverUrl, username, password);
     await redeemPendingInvite();
-    const returnTo = sessionStorage.getItem('moments_return_to');
-    sessionStorage.removeItem('moments_return_to');
-    window.location.href = returnTo || 'memories.html';
+    leave();
   } catch (err) {
     errorText.textContent = err.message;
     loginBtn.disabled = false;
@@ -135,12 +137,7 @@ loginForm.addEventListener('submit', async (e) => {
   const tick = () => {
     let auth = null;
     try { auth = JSON.parse(localStorage.getItem('moments_auth') || 'null'); } catch (e) { /* corrupt */ }
-    if (auth && auth.token) {
-      const returnTo = sessionStorage.getItem('moments_return_to');
-      sessionStorage.removeItem('moments_return_to');
-      window.location.href = returnTo || 'memories.html';
-      return;
-    }
+    if (auth && auth.token) { leave(); return; }
     if (Date.now() - started < LIMIT_MS) setTimeout(tick, 250);
   };
   // A beat after load, so a person typing their password is never interrupted

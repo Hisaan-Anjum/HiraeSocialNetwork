@@ -23,8 +23,12 @@
     main.h-page { padding-bottom: 96px; }
   }
   /* deck */
+  #v-discover { overflow-x: clip; }   /* a card mid-swipe must not make the page scroll sideways */
   .d-card { position: relative; touch-action: pan-y; user-select: none; transition: transform var(--h-med) var(--h-ease); }
   .d-card.dragging { transition: none; }
+  .d-stamp { position: absolute; top: var(--h-5); padding: 4px 12px; border: 2px solid currentColor; border-radius: var(--h-r-md, 8px); font: 700 var(--h-size-md) var(--h-font-body); opacity: 0; pointer-events: none; z-index: 2; }
+  .d-stamp.yes { left: var(--h-5); color: var(--h-accent); transform: rotate(-8deg); }
+  .d-stamp.no { right: var(--h-5); color: var(--h-text-2); transform: rotate(8deg); }
   .d-head { display: flex; gap: var(--h-3); align-items: center; margin-bottom: var(--h-3); }
   .d-head .h-avatar { width: 56px; height: 56px; font-size: 22px; }
   .d-why { list-style: none; margin: 0 0 var(--h-4); padding: 0; }
@@ -46,6 +50,7 @@
   .c-compose .hi { flex: 1; min-height: var(--h-tap); }
   .c-starters { display: flex; flex-wrap: wrap; gap: var(--h-2); margin: var(--h-2) 0; }
   .row-main { flex: 1; min-width: 0; }
+  .tap-row { cursor: pointer; }
   .row-main .sub { font-size: var(--h-size-sm); color: var(--h-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .new-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--h-coral); flex: none; }
   menu.h-menu { position: absolute; right: 0; top: 100%; margin: 4px 0 0; padding: var(--h-1); list-style: none; background: var(--h-surface-2); border: 1px solid var(--h-line-strong); border-radius: var(--h-r-md); z-index: 10; min-width: 180px; }
@@ -106,6 +111,8 @@
     const LABEL = { weekday_evenings: 'Weekday evenings', weekend_days: 'Weekend days', weekend_evenings: 'Weekend evenings', late_nights: 'Late nights', flexible: 'Flexible',
       one_to_one: 'One-to-one', small_group: 'A few friends', big_party: 'Big parties', quiet_watcher: 'Quiet watcher', commentator: 'Running commentary', rewatcher: 'Rewatcher',
       binger: 'Binger', one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films', snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
+    // Tapping anywhere on a list row opens it (people tap the name, not the small button); the button stays for keyboards.
+    const rowGo = (hash) => (e) => { if (!e.target.closest('a, button, menu')) location.hash = hash; };
     const L = (xs) => (xs || []).map((x) => LABEL[x] || x).join(', ');
     const when = (s) => { const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('Z') ? '' : 'Z')); return isNaN(d) ? '' : d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' }); };
 
@@ -195,8 +202,9 @@
       }
       if (r.reason === 'groups_only') {
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Group watch parties only'),
-          el('p', {}, 'You chose not to be matched one-to-one. Watch parties are coming to Herae next; until then you can change this in your profile.'),
-          el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Change discovery settings')));
+          el('p', {}, 'You chose not to be matched one-to-one. Find or start a watch party instead, or change this in your profile.'),
+          el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' }, el('a', { class: 'hb hb-primary', href: '#parties' }, 'Watch parties'),
+            el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Change discovery settings'))));
         return;
       }
       showCard();
@@ -226,7 +234,7 @@
           el('button', { type: 'button', class: 'hb hb-secondary', onclick: skip }, 'Skip'),
           el('button', { type: 'button', class: 'hb hb-quiet', onclick: undo, 'aria-label': 'Undo last skip' }, '↶'),
           el('button', { type: 'button', class: 'hb hb-primary', onclick: interested }, 'Watch together?')),
-        el('p', { class: 'd-hint' }, 'Keyboard: ← skip · → watch together · U undo. They only find out if you both say yes.'));
+        el('p', { class: 'd-hint' }, 'Swipe right to watch together, left to skip (or ← → and U to undo). They only find out if you both say yes.'));
       v.append(card); dragify(card); card.focus({ preventScroll: true });
     }
     function next() { deck.shift(); showCard(); }
@@ -240,18 +248,22 @@
         if (r.matched) {
           const go = await dialog('It’s a match', el('p', {}, `You and ${c.name} both want to watch together. Say hi when you’re ready — there’s no rush.`), [['Keep browsing', 'hb-quiet', false], ['Open chat', 'hb-primary', true]]);
           refreshBadges(); if (go) location.hash = `chats/${r.conversationId}`;
-        } else announce(`You’d like to watch with ${c.name}. They’ll only know if they feel the same.`);
+        } else { announce(`You’d like to watch with ${c.name}. They’ll only know if they feel the same.`); toast(`Sent. ${c.name} only finds out if they say yes too.`); }
       } catch (e) { toast(e.message || 'Could not send.'); next(); }
     }
     // Optional drag; buttons and keys do the same (WCAG 2.5.7).
     function dragify(card) {
       let x0 = null, dx = 0;
       card.onpointerdown = (e) => { if (e.target.closest('button,a,menu')) return; x0 = e.clientX; dx = 0; card.classList.add('dragging'); card.setPointerCapture(e.pointerId); };
-      card.onpointermove = (e) => { if (x0 === null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`; };
-      card.onpointerup = () => { if (x0 === null) return; card.classList.remove('dragging'); x0 = null; card.style.transform = '';
+      // What letting go will do, shown while dragging (Tinder-style), so a swipe is never a surprise.
+      const yes = el('span', { class: 'd-stamp yes', 'aria-hidden': 'true' }, 'Watch together?'); const no = el('span', { class: 'd-stamp no', 'aria-hidden': 'true' }, 'Skip');
+      card.append(yes, no);
+      const stamp = (d) => { yes.style.opacity = Math.max(0, Math.min(1, d / 110)); no.style.opacity = Math.max(0, Math.min(1, -d / 110)); };
+      card.onpointermove = (e) => { if (x0 === null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`; stamp(dx); };
+      card.onpointerup = () => { if (x0 === null) return; card.classList.remove('dragging'); x0 = null; card.style.transform = ''; stamp(0);
         if (dx > 110) interested(); else if (dx < -110) skip(); };
       // The browser took the gesture (e.g. it became a scroll): put the card back, decide nothing.
-      card.onpointercancel = () => { x0 = null; dx = 0; card.classList.remove('dragging'); card.style.transform = ''; };
+      card.onpointercancel = () => { x0 = null; dx = 0; card.classList.remove('dragging'); card.style.transform = ''; stamp(0); };
       card.onkeydown = (e) => { if (e.target !== card) return; if (e.key === 'ArrowRight') { e.preventDefault(); interested(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); skip(); } else if (e.key.toLowerCase() === 'u') undo(); };
     }
 
@@ -262,7 +274,7 @@
       if (!r.matches.length) { v.append(el('p', { class: 'h-empty' }, 'No matches yet. When you and someone in Discover both want to watch together, they’ll show up here.')); return; }
       const ul = el('ul', { class: 'h-list' });
       for (const m of r.matches) {
-        ul.append(el('li', {}, m.isNew ? el('span', { class: 'new-dot', title: 'New match' }, el('span', { class: 'sr-only' }, 'New')) : null, avatar(m.person),
+        ul.append(el('li', { class: 'tap-row', onclick: rowGo(`chats/${m.conversationId}`) }, m.isNew ? el('span', { class: 'new-dot', title: 'New match' }, el('span', { class: 'sr-only' }, 'New')) : null, avatar(m.person),
           el('div', { class: 'row-main' }, el('strong', {}, m.person.name), el('div', { class: 'sub' }, (m.person.why || [])[0] || (m.person.genres || []).join(', '))),
           el('a', { class: 'hb hb-secondary', href: `#chats/${m.conversationId}` }, m.isNew ? 'Say hi' : 'Chat')));
       }
@@ -280,7 +292,7 @@
       const ul = el('ul', { class: 'h-list' });
       for (const c of r.conversations) {
         const preview = c.last ? (c.last.kind === 'text' ? `${c.last.sender === me ? 'You: ' : ''}${c.last.body}` : 'Watch suggestion') : (c.relation === 'match' ? 'New match — say hi' : 'Start a conversation');
-        ul.append(el('li', {}, avatar(c.with), el('div', { class: 'row-main' }, el('strong', {}, c.with.name), el('div', { class: 'sub' }, preview)),
+        ul.append(el('li', { class: 'tap-row', onclick: rowGo(`chats/${c.id}`) }, avatar(c.with), el('div', { class: 'row-main' }, el('strong', {}, c.with.name), el('div', { class: 'sub' }, preview)),
           c.unread ? el('span', { class: 's-badge' }, String(c.unread), el('span', { class: 'sr-only' }, ' unread')) : null,
           el('a', { class: 'hb hb-quiet', href: `#chats/${c.id}`, 'aria-label': `Open chat with ${c.with.name}` }, 'Open')));
       }
@@ -291,14 +303,15 @@
       const v = $('v-chats'); v.innerHTML = '';
       let page; try { page = await apiRequest(`/api/chats/${id}/messages`); } catch (e) { v.append(el('p', { class: 'h-empty' }, 'This conversation isn’t available.'), el('a', { class: 'hb hb-secondary', href: '#chats' }, 'Back to chats')); return; }
       const other = page.with;
-      const thread = el('div', { class: 'c-thread', role: 'log', 'aria-label': `Conversation with ${other}` });
+      const otherName = page.withName || other;   // what people read; `other` (the username) is what the API takes
+      const thread = el('div', { class: 'c-thread', role: 'log', 'aria-label': `Conversation with ${otherName}` });
       let oldest = null, newest = 0;
       let proposals = new Map();
       const loadProposals = async () => { const r = await apiRequest(`/api/chats/${id}/proposals`).catch(() => ({ proposals: [] })); proposals = new Map(r.proposals.map((p) => [p.id, p])); };
       await loadProposals();
       const msgEl = (m, pending) => {
         if (m.kind === 'proposal') return proposalCard(proposals.get(m.refId), m);
-        if (m.kind === 'system') return el('div', { class: 'c-sys', 'data-id': m.id }, `${m.sender === me ? 'You' : other} ${m.body === 'accepted' ? 'accepted the watch suggestion' : 'declined the watch suggestion'} · ${when(m.createdAt)}`);
+        if (m.kind === 'system') return el('div', { class: 'c-sys', 'data-id': m.id }, `${m.sender === me ? 'You' : otherName} ${m.body === 'accepted' ? 'accepted the watch suggestion' : 'declined the watch suggestion'} · ${when(m.createdAt)}`);
         return el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}${pending === 'failed' ? ' failed' : ''}`, 'data-id': m.id || '' },
           m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : when(m.createdAt)));
       };
@@ -308,7 +321,7 @@
         const card = el('div', { class: 'p-card', 'data-id': m.id, role: 'group', 'aria-label': `Watch suggestion: ${p.title || p.url}` });
         const host = p.url ? (() => { try { return new URL(p.url).hostname.replace(/^www\./, ''); } catch (e) { return ''; } })() : '';
         card.append(el('div', { class: 'h-row', style: 'justify-content:space-between' },
-            el('span', { class: 'faint', style: 'font-size:var(--h-size-xs)' }, p.mine ? 'You suggested a watch' : `${other} suggested a watch`),
+            el('span', { class: 'faint', style: 'font-size:var(--h-size-xs)' }, p.mine ? 'You suggested a watch' : `${otherName} suggested a watch`),
             el('span', { class: `p-state ${p.state}` }, STATE[p.state] || p.state)),
           el('div', { class: 'p-title' }, p.title || host || 'Something to watch'),
           el('div', { class: 'p-meta' }, [host, p.mode === 'scheduled' ? when(p.startAt) : 'Now', p.note].filter(Boolean).join(' · ')));
@@ -327,7 +340,7 @@
         const ack = await handOff({ target: other, url: p.url || '', title: p.title || '' });
         if (!ack.handled) return needExtension('Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free), sign in with this account, then press Start watching again.');
         if (ack.error) { toast(ack.error); return; }
-        toast(`Inviting ${other}… Herae is opening ${p.title || 'the film'} for both of you.`);
+        toast(`Inviting ${otherName}… Herae is opening ${p.title || 'the film'} for both of you.`);
       }
       const addPage = (msgs, prepend) => { const nodes = msgs.slice().reverse().map((m) => msgEl(m));
         if (prepend) thread.prepend(...nodes); else thread.append(...nodes);
@@ -336,12 +349,12 @@
       const older = el('button', { type: 'button', class: 'hb hb-quiet', hidden: !page.hasMore, onclick: async () => {
         const p = await apiRequest(`/api/chats/${id}/messages?before=${oldest}`); addPage(p.messages, true); older.hidden = !p.hasMore; } }, 'Show older messages');
       const head = el('div', { class: 'h-row', style: 'justify-content:space-between' },
-        el('a', { class: 'hb hb-quiet', href: '#chats', 'aria-label': 'Back to chats' }, '← Chats'), el('h1', { style: 'font-size:var(--h-size-xl)' }, other),
-        moreMenu([['Add as friend', () => addFriend(other)], ...(page.relation === 'match' ? [['Unmatch', () => unmatchWith(other)]] : []),
+        el('a', { class: 'hb hb-quiet', href: '#chats', 'aria-label': 'Back to chats' }, '← Chats'), el('h1', { style: 'font-size:var(--h-size-xl)' }, page.withName || other),
+        moreMenu([['Add as friend', () => addFriend(other)], ...(page.relation === 'match' ? [['Unmatch', () => unmatchWith(other, otherName)]] : []),
           ['Report', () => reportPerson(other, 'user')], ['Block', async () => { if (await blockPerson(other)) location.hash = 'chats'; }, true]]));
       v.append(head, older, thread);
       if (!page.messages.length && page.relation === 'match') {
-        v.append(el('p', { class: 'muted' }, 'You matched. A few ways to start (optional):'),
+        v.append(el('p', { class: 'muted c-starters' }, 'You matched. A few ways to start (optional):'),
           el('div', { class: 'c-starters' }, ...['Hi! What have you been watching lately?', 'What’s a film you could watch again and again?', 'When are you usually free to watch something?'].map((t) =>
             el('button', { type: 'button', class: 'h-chip', onclick: () => { input.value = t; input.focus(); } }, t))));
       }
@@ -357,11 +370,12 @@
         const laterR = el('input', { type: 'radio', name: 'sgWhen', value: 'later' });
         const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
-        const ok = await dialog(`Suggest a watch to ${other}`, [el('div', { class: 'h-stack' },
+        dt.hidden = true; nowR.onchange = laterR.onchange = () => { dt.hidden = !laterR.checked; if (laterR.checked) dt.focus(); };
+        const ok = await dialog(`Suggest a watch to ${otherName}`, [el('div', { class: 'h-stack' },
           el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u,
           el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
             el('label', { class: 'h-row' }, nowR, ' Now'), el('label', { class: 'h-row' }, laterR, ' At a time'), dt),
-          el('p', { class: 'h-help' }, `Nothing starts until ${other} accepts.`))], [['Cancel', 'hb-quiet', false], ['Send suggestion', 'hb-primary', true]]);
+          el('p', { class: 'h-help' }, `Nothing starts until ${otherName} accepts.`))], [['Cancel', 'hb-quiet', false], ['Send suggestion', 'hb-primary', true]]);
         if (!ok) return;
         try {
           await apiRequest(`/api/chats/${id}/proposals`, { method: 'POST', body: JSON.stringify({ title: t.value, url: u.value || null, when: laterR.checked ? new Date(dt.value).toISOString() : 'now' }) });
@@ -374,6 +388,7 @@
       async function deliver(body, node, clientId) {
         try { const r = await apiRequest(`/api/chats/${id}/messages`, { method: 'POST', body: JSON.stringify({ body, clientId }) });
           node.replaceWith(msgEl(r.message)); newest = Math.max(newest, r.message.id); markRead();
+          v.querySelectorAll('.c-starters').forEach((x) => x.remove());   // the conversation has started
         } catch (e) { const failed = msgEl({ sender: me, body }, 'failed'); failed.tabIndex = 0; failed.setAttribute('role', 'button');
           failed.onclick = () => { const again = msgEl({ sender: me, body }, 'sending'); failed.replaceWith(again); deliver(body, again, clientId); };
           node.replaceWith(failed); toast(e.message || 'Not sent.'); if (e.message && /can’t|can't/.test(e.message)) { input.disabled = true; send.disabled = true; } }
@@ -386,15 +401,15 @@
       pollTimer = setInterval(async () => { if (location.hash !== `#chats/${id}`) return clearInterval(pollTimer);
         const p = await apiRequest(`/api/chats/${id}/messages`).catch(() => null); if (!p) return;
         const fresh = p.messages.filter((m) => m.id > newest && m.sender !== me);
-        if (fresh.length) { addPage(fresh, false); thread.lastElementChild.scrollIntoView({ block: 'end' }); announce(`New message from ${other}`); markRead(); }
+        if (fresh.length) { addPage(fresh, false); thread.lastElementChild.scrollIntoView({ block: 'end' }); announce(`New message from ${otherName}`); markRead(); }
         if (!p.canSend && !input.disabled) { input.disabled = true; send.disabled = true; input.placeholder = 'You can’t message this person any more'; } }, 8000);
     }
-    async function unmatchWith(other) {
-      const ok = await dialog(`Unmatch ${other}?`, el('p', { class: 'muted' }, 'You won’t be able to message each other or match again through Discover. The messages so far stay visible to each of you. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Unmatch', 'hb-danger', true]]);
+    async function unmatchWith(other, name = other) {
+      const ok = await dialog(`Unmatch ${name}?`, el('p', { class: 'muted' }, 'You won’t be able to message each other or match again through Discover. The messages so far stay visible to each of you. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Unmatch', 'hb-danger', true]]);
       if (!ok) return;
       const r = await apiRequest('/api/discover/matches'); const m = r.matches.find((x) => x.person.username === other);
       if (m) await apiRequest(`/api/discover/matches/${m.id}/unmatch`, { method: 'POST' });
-      toast(`You unmatched ${other}.`); location.hash = 'matches';
+      toast(`You unmatched ${name}.`); location.hash = 'matches';
     }
 
     // ── Friends (the existing contacts system) ──
@@ -426,7 +441,7 @@
     }
 
     // ── Parties (private by default; the invite link is #parties/<id>/<token>, a hash, so it never reaches server logs) ──
-    const partyRow = (p) => el('li', {}, el('div', { class: 'row-main' }, el('strong', {}, p.title),
+    const partyRow = (p) => el('li', { class: 'tap-row', onclick: rowGo(`parties/${p.id}`) }, el('div', { class: 'row-main' }, el('strong', {}, p.title),
         el('div', { class: 'sub' }, [`${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
           p.startsAt ? when(p.startsAt) : '', p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
       el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));

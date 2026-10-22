@@ -51,6 +51,7 @@
 .h2 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* buttons: primary (amber), secondary (outline), quiet (text), danger */
+.h2 [hidden] { display: none !important; }   /* component display rules must never un-hide [hidden] */
 .h2 .hb { display: inline-flex; align-items: center; justify-content: center; gap: var(--h-2); min-height: var(--h-tap);
   padding: 0 var(--h-5); border-radius: var(--h-r-md); border: 1px solid transparent; font: 600 var(--h-size-sm)/1 var(--h-font-body);
   cursor: pointer; text-decoration: none; transition: background var(--h-fast) var(--h-ease), border-color var(--h-fast) var(--h-ease); }
@@ -64,7 +65,7 @@
 .h2 .hb[disabled], .h2 .hb[aria-busy="true"] { opacity: .55; cursor: not-allowed; }
 
 /* inputs */
-.h2 .hi { width: 100%; min-height: var(--h-tap); padding: 0 var(--h-3); background: var(--h-surface-2); color: var(--h-text);
+.h2 .hi { box-sizing: border-box; width: 100%; min-height: var(--h-tap); padding: 0 var(--h-3); background: var(--h-surface-2); color: var(--h-text);
   border: 1px solid var(--h-line-strong); border-radius: var(--h-r-md); font: var(--h-size-md) var(--h-font-body); }
 .h2 textarea.hi { padding: var(--h-3); min-height: 96px; resize: vertical; }
 .h2 .hi:focus-visible { border-color: var(--h-focus); outline: none; box-shadow: 0 0 0 2px rgba(255, 211, 138, .35); }

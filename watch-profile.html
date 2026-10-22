@@ -16,7 +16,8 @@
   .wp-add .hi { flex: 1; }
   .wp-radios label { display: flex; gap: var(--h-3); align-items: flex-start; padding: var(--h-2) 0; cursor: pointer; }
   .wp-radios input { margin-top: 4px; accent-color: var(--h-accent); width: 18px; height: 18px; }
-  .wp-save { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--h-bg) 30%); padding: var(--h-6) 0 var(--h-4); display: flex; gap: var(--h-3); align-items: center; }
+  .wp-save > * { pointer-events: auto; }
+  .wp-save { pointer-events: none; position: sticky; bottom: 0; background: linear-gradient(transparent, var(--h-bg) 30%); padding: var(--h-6) 0 var(--h-4); display: flex; gap: var(--h-3); align-items: center; }
   .wp-status { font-size: var(--h-size-sm); color: var(--h-text-2); }
   .wp-chip-x { margin-left: var(--h-1); opacity: .7; }
 </style>
@@ -35,6 +36,9 @@
     <form id="form" hidden novalidate>
       <section class="h-section" aria-labelledby="s-taste">
         <h2 id="s-taste">What you like to watch</h2>
+        <label class="h-label" for="dname">Name on your card</label>
+        <input class="hi" id="dname" maxlength="40" autocomplete="given-name" placeholder="Your first name or a nickname">
+        <p class="h-help">Only shown if you turn discovery on. Leave it empty to show your username.</p>
         <fieldset><legend>Genres</legend><div class="h-chips" id="genres"></div></fieldset>
         <fieldset><legend>Films and series you love</legend>
           <div class="h-chips" id="titles"></div>
@@ -158,11 +162,13 @@
         el.append(b);
       }
     }
+    const pendingAdds = [];   // Save also adds whatever is still typed in an "Add" box — people don't always press Add
     function adder(input, btn, el, key, max) {
       const add = () => { const v = input.value.trim().replace(/\s+/g, ' '); if (!v) return;
         if (state[key].includes(v)) { input.value = ''; return; }
         if (state[key].length >= max) { say(`Up to ${max}.`); return; }
         state[key] = [...state[key], v]; input.value = ''; dirty = true; removable(el, key); };
+      pendingAdds.push(add);
       btn.onclick = add; input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
     }
     function render() {
@@ -171,7 +177,7 @@
       chips($('availability'), options.availability, state.availability, 0, 'availability');
       chips($('formats'), options.formats, state.session_formats, 0, 'session_formats');
       chips($('traits'), options.traits, state.traits, 5, 'traits');
-      $('bio').value = state.bio || '';
+      $('bio').value = state.bio || ''; $('dname').value = state.display_name || '';
       $('discoverable').checked = !!state.discoverable;
       document.querySelector(`input[name=scope][value=${state.discovery_scope}]`).checked = true;
       document.querySelector(`input[name=fvis][value=${state.friends_list_visibility}]`).checked = true;
@@ -186,6 +192,7 @@
     adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
     adder($('langIn'), $('langAdd'), $('languages'), 'languages', 6);
     $('bio').oninput = () => { state.bio = $('bio').value; dirty = true; };
+    $('dname').oninput = () => { state.display_name = $('dname').value; dirty = true; };
     document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; $('genderWrap').hidden = r.value !== 'same_gender' && !state.gender; dirty = true; });
     document.querySelectorAll('input[name=fvis]').forEach((r) => r.onchange = () => { state.friends_list_visibility = r.value; dirty = true; });
     $('gender').onchange = () => { state.gender = $('gender').value || null; dirty = true; };
@@ -194,6 +201,7 @@
     let confirmAdult = false;
     $('discoverable').onchange = () => {
       if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; return; }
+      if (!state.genres.length && !state.favorite_titles.length) { $('discoverable').checked = false; say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); $('genres').querySelector('button').focus(); return; }
       if (state.adult_confirmed_at) { state.discoverable = 1; dirty = true; return; }
       $('discoverable').checked = false; $('adultChk').checked = false; $('adultOk').disabled = true; $('adultDlg').showModal();
     };
@@ -201,14 +209,16 @@
     $('adultCancel').onclick = () => $('adultDlg').close();
     $('adultOk').onclick = () => { confirmAdult = true; state.discoverable = 1; $('discoverable').checked = true; dirty = true; $('adultDlg').close(); $('discoverable').focus(); };
     $('form').onsubmit = async (e) => {
-      e.preventDefault(); $('save').setAttribute('aria-busy', 'true'); say('Saving…');
+      e.preventDefault(); pendingAdds.forEach((add) => add()); $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
-        const body = { genres: state.genres, favorite_titles: state.favorite_titles, creators: state.creators, languages: state.languages,
+        const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, creators: state.creators, languages: state.languages,
           availability: state.availability, session_formats: state.session_formats, traits: state.traits, bio: state.bio,
           discovery_scope: state.discovery_scope, gender: state.gender, friends_list_visibility: state.friends_list_visibility,
           show_online: !!state.show_online, discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
         const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
         state = r.profile; confirmAdult = false; dirty = false; render(); say('Saved.');
+        // The next step, right where the person is looking: discovery on → go and see who's here.
+        if (state.discoverable) { const a = document.createElement('a'); a.className = 'hb hb-primary'; a.href = 'social.html#discover'; a.textContent = 'See who’s here →'; $('status').append(' ', a); }
       } catch (err) { say(err.message || 'Could not save. Try again.'); }
       $('save').removeAttribute('aria-busy');
     };
