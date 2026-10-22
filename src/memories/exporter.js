@@ -17,11 +17,11 @@
 
 // ── shared drawing helpers (parametric in width/height) ─────────────────
 const ACCENTS = {
-  gold: ['#2a1c10', '#241a33', '#0d0b12'],
-  purple: ['#1b1327', '#241a33', '#0d0b12'],
-  rose: ['#2a1220', '#241a33', '#0d0b12'],
+  gold: ['#2a1c10', '#1e293b', '#0f172a'],
+  purple: ['#1b1327', '#1e293b', '#0f172a'],
+  rose: ['#2a1220', '#1e293b', '#0f172a'],
 };
-const ACCENT_LINE = { gold: ['#f5b942', '#a78bfa'], purple: ['#a78bfa', '#f5b942'], rose: ['#fb7185', '#a78bfa'] };
+const ACCENT_LINE = { gold: ['#f5b942', '#a78bfa'], purple: ['#a78bfa', '#f5b942'], rose: ['#f472b6', '#a78bfa'] };
 
 function loadImage(src) {
   return new Promise((resolve) => {
@@ -145,7 +145,11 @@ function wrapText(ctx, text, cx, y, maxW, lh, font, fill, align = 'center') {
 }
 
 // ── the square share card (header "Share Card") ─────────────────────────
+// Canvas only draws a web font once it has loaded; without this the export silently falls back to the system face.
+const brandFont = () => (document.fonts ? document.fonts.load('700 60px "DM Sans"').catch(() => {}) : Promise.resolve());
+
 export async function buildStoryShareCard(manifest) {
+  await brandFont();
   const SIZE = 1080;
   const accent = manifest.variant?.accent || 'purple';
   const line = ACCENT_LINE[accent] || ACCENT_LINE.purple;
@@ -166,7 +170,7 @@ export async function buildStoryShareCard(manifest) {
   ctx.fillText(manifest.emoji || '❤️', SIZE / 2, 200);
   const gt = ctx.createLinearGradient(SIZE * 0.2, 0, SIZE * 0.8, 0);
   gt.addColorStop(0, line[0]); gt.addColorStop(1, line[1]);
-  wrapText(ctx, manifest.title, SIZE / 2, 285, SIZE * 0.8, 62, `700 60px Georgia, serif`, gt);
+  wrapText(ctx, manifest.title, SIZE / 2, 285, SIZE * 0.8, 62, `700 60px "DM Sans", system-ui, sans-serif`, gt);
   if (manifest.subtitle) {
     ctx.fillStyle = 'rgba(233,213,255,0.7)';
     ctx.font = `500 26px -apple-system, sans-serif`;
@@ -191,7 +195,7 @@ export async function buildStoryShareCard(manifest) {
     const y = 835, colW = SIZE / stats.length;
     stats.forEach((s, i) => {
       const cx = colW * i + colW / 2;
-      ctx.fillStyle = line[0]; ctx.font = `700 60px Georgia, serif`; ctx.textAlign = 'center';
+      ctx.fillStyle = line[0]; ctx.font = `700 60px "DM Sans", system-ui, sans-serif`; ctx.textAlign = 'center';
       ctx.fillText(String(s.value), cx, y);
       ctx.fillStyle = 'rgba(233,213,255,0.8)'; ctx.font = `600 24px -apple-system, sans-serif`;
       ctx.fillText(`${s.emoji} ${s.label}`, cx, y + 40);
@@ -215,12 +219,13 @@ export async function buildStoryShareCard(manifest) {
 function drawPill(ctx, cx, cy, text) {
   ctx.font = '700 30px -apple-system, BlinkMacSystemFont, sans-serif';
   const w = ctx.measureText(text).width; const padX = 30, h = 66;
-  ctx.fillStyle = 'rgba(139,92,246,0.92)';
+  ctx.fillStyle = 'rgba(99, 102, 241,0.92)';
   roundRect(ctx, cx - w / 2 - padX, cy - h / 2, w + padX * 2, h, h / 2); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, cx, cy + 1); ctx.textBaseline = 'alphabetic';
 }
 export async function buildRelationshipCard(summary) {
+  await brandFont();
   const SIZE = 1080;
   const line = ACCENT_LINE.purple;
   const logo = await loadImage('logo.png');
@@ -235,7 +240,7 @@ export async function buildRelationshipCard(summary) {
 
   const g = ctx.createLinearGradient(SIZE * 0.2, 0, SIZE * 0.8, 0);
   g.addColorStop(0, line[0]); g.addColorStop(1, line[1]);
-  ctx.fillStyle = g; ctx.font = '700 74px Georgia, serif';
+  ctx.fillStyle = g; ctx.font = '700 74px "DM Sans", system-ui, sans-serif';
   ctx.fillText(`${summary.me} & ${summary.them}`, SIZE / 2, 372);
 
   const mt = summary.monthsTogether || 0;
@@ -251,7 +256,7 @@ export async function buildRelationshipCard(summary) {
   const y = 770, colW = SIZE / 3;
   cells.forEach(([num, label], i) => {
     const cx = colW * i + colW / 2;
-    ctx.fillStyle = line[0]; ctx.font = '700 78px Georgia, serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = line[0]; ctx.font = '700 78px "DM Sans", system-ui, sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(String(num), cx, y);
     ctx.fillStyle = 'rgba(233,213,255,0.8)'; ctx.font = '600 26px -apple-system, sans-serif';
     ctx.fillText(label, cx, y + 46);
@@ -333,7 +338,7 @@ function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
     const m = scene.m;
     ctx.textAlign = 'left';
     let ty = H - 240;
-    if (m.sessionTitle) { ctx.fillStyle = '#fff'; ctx.font = '700 52px Georgia, serif'; ctx.fillText(String(m.sessionTitle).slice(0, 26), 70, ty); ty += 62; }
+    if (m.sessionTitle) { ctx.fillStyle = '#fff'; ctx.font = '700 52px "DM Sans", system-ui, sans-serif'; ctx.fillText(String(m.sessionTitle).slice(0, 26), 70, ty); ty += 62; }
     if (m.caption) { ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.font = '400 36px -apple-system, sans-serif'; wrapText(ctx, m.caption, 70, ty, W - 140, 44, '400 36px -apple-system, sans-serif', 'rgba(255,255,255,0.92)', 'left'); ty += 88; }
     if (m.dateLabel) { ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '500 30px -apple-system, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(m.dateLabel, 70, ty); }
     ctx.globalAlpha = 1;
@@ -350,7 +355,7 @@ function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
     ctx.font = '110px serif'; ctx.fillText(manifest.emoji || '❤️', cx, H / 2 - 110);
     const g = ctx.createLinearGradient(W * 0.12, 0, W * 0.88, 0);
     g.addColorStop(0, line[0]); g.addColorStop(1, line[1]);
-    const rows = wrapText(ctx, manifest.title, cx, H / 2 + 10, W * 0.82, 96, '700 86px Georgia, serif', g);
+    const rows = wrapText(ctx, manifest.title, cx, H / 2 + 10, W * 0.82, 96, '700 86px "DM Sans", system-ui, sans-serif', g);
     if (manifest.subtitle) { ctx.fillStyle = 'rgba(233,213,255,0.7)'; ctx.font = '500 34px -apple-system, sans-serif'; ctx.fillText(manifest.subtitle, cx, H / 2 + 10 + rows * 96 + 20); }
   } else if (scene.kind === 'stats') {
     const stats = manifest.stats.slice(0, 4);
@@ -358,7 +363,7 @@ function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
     // Lead stat, centered and stacked with real vertical spacing.
     ctx.textAlign = 'center';
     ctx.font = '76px serif'; ctx.fillStyle = '#fff'; ctx.fillText(lead.emoji, cx, H / 2 - 330);
-    ctx.fillStyle = line[0]; ctx.font = '700 190px Georgia, serif'; ctx.fillText(String(lead.value), cx, H / 2 - 140);
+    ctx.fillStyle = line[0]; ctx.font = '700 190px "DM Sans", system-ui, sans-serif'; ctx.fillText(String(lead.value), cx, H / 2 - 140);
     ctx.fillStyle = 'rgba(233,213,255,0.9)'; ctx.font = '600 42px -apple-system, sans-serif';
     ctx.fillText(lead.label, cx, H / 2 - 70);
     // Secondary stats: value right-aligned into the left column, emoji+label
@@ -367,7 +372,7 @@ function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
     stats.slice(1).forEach((s, i) => {
       const y = H / 2 + 90 + i * 120;
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#fff'; ctx.font = '700 66px Georgia, serif';
+      ctx.fillStyle = '#fff'; ctx.font = '700 66px "DM Sans", system-ui, sans-serif';
       ctx.fillText(String(s.value), cx - 28, y);
       ctx.textAlign = 'left';
       ctx.fillStyle = 'rgba(233,213,255,0.78)'; ctx.font = '500 34px -apple-system, sans-serif';
@@ -410,21 +415,21 @@ function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
             ctx.fillText('🎬', px + pw / 2, y + 18);
           }
           ctx.textAlign = 'left';
-          ctx.fillStyle = '#fff'; ctx.font = '700 46px Georgia, serif';
+          ctx.fillStyle = '#fff'; ctx.font = '700 46px "DM Sans", system-ui, sans-serif';
           ctx.fillText(String(s.title).slice(0, 22), px + pw + 34, y - 14);
           if (s.year) { ctx.fillStyle = 'rgba(233,213,255,.65)'; ctx.font = '500 30px -apple-system, sans-serif'; ctx.fillText(String(s.year), px + pw + 34, y + 26); }
           ctx.fillStyle = line[0]; ctx.font = '38px serif';
           ctx.fillText('★'.repeat(Math.round(s.rating)) + '  ' + s.rating, px + pw + 34, y + 74);
           ctx.textAlign = 'center';
         } else {
-          ctx.fillStyle = '#fff'; ctx.font = '700 48px Georgia, serif'; ctx.fillText(String(s.title).slice(0, 24), cx, y);
+          ctx.fillStyle = '#fff'; ctx.font = '700 48px "DM Sans", system-ui, sans-serif'; ctx.fillText(String(s.title).slice(0, 24), cx, y);
           ctx.fillStyle = line[0]; ctx.font = '44px serif'; ctx.fillText('★'.repeat(Math.round(s.rating)), cx, y + 52);
         }
       });
     } else {
       manifest.comments.slice(0, 3).forEach((c, i) => {
         ctx.fillStyle = '#fff';
-        const rows = wrapText(ctx, `“${c.text}”`, cx, H / 2 - 200 + i * 200, W * 0.8, 52, 'italic 600 44px Georgia, serif', '#fff');
+        const rows = wrapText(ctx, `“${c.text}”`, cx, H / 2 - 200 + i * 200, W * 0.8, 52, 'italic 600 44px "DM Sans", system-ui, sans-serif', '#fff');
         ctx.fillStyle = 'rgba(233,213,255,0.6)'; ctx.font = '400 30px -apple-system, sans-serif';
         ctx.fillText(`— ${c.username}`, cx, H / 2 - 200 + i * 200 + rows * 52 + 6);
       });
@@ -432,7 +437,7 @@ function drawScene(ctx, W, H, manifest, scene, p, logo, topArt = []) {
   } else if (scene.kind === 'ending') {
     ctx.font = '120px serif'; ctx.fillStyle = '#fff';
     ctx.fillText(manifest.variant?.endingStyle === 'sparkle' ? '✨' : manifest.variant?.endingStyle === 'stars' ? '🌟' : '❤️', cx, H / 2 - 120);
-    wrapText(ctx, manifest.ending, cx, H / 2 + 10, W * 0.82, 70, '600 56px Georgia, serif', '#f3f0f8');
+    wrapText(ctx, manifest.ending, cx, H / 2 + 10, W * 0.82, 70, '600 56px "DM Sans", system-ui, sans-serif', '#f8fafc');
     ctx.fillStyle = 'rgba(233,213,255,0.75)'; ctx.font = '500 36px -apple-system, sans-serif';
     ctx.fillText(`${manifest.names.me} & ${manifest.names.them}`, cx, H / 2 + 180);
   }
@@ -485,6 +490,7 @@ const VIDEO_BITRATE = 6_000_000;
 // by arrival, so a ~30s story takes ~30s to record. onProgress(0..1) drives the
 // loading state meanwhile.
 export async function renderStoryVideo(manifest, { onProgress } = {}) {
+  await brandFont();
   const mime = pickMime();
   if (!mime) throw new Error('This browser can’t record video — try the Share Card instead.');
 

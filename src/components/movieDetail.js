@@ -67,7 +67,7 @@ export function renderMovieDetail(rec, { similar = [], actionsHtml = '', inModal
     <div class="carousel-item"><img src="${url}" alt="${escapeHtml(rec.title)} gallery image" class="movie-gallery-img" loading="lazy"></div>
   `);
   return `
-    <div class="movie-hero" style="${bg ? `background-image: linear-gradient(180deg, rgba(13,11,18,0.1) 0%, rgba(13,11,18,0.65) 60%, var(--bg-0) 100%), url('${bg}')` : ''}">
+    <div class="movie-hero" style="${bg ? `background-image: linear-gradient(180deg, rgba(15, 23, 42,0.1) 0%, rgba(15, 23, 42,0.65) 60%, var(--bg-0) 100%), url('${bg}')` : ''}">
       <div class="movie-hero-inner">
         ${rec.posterUrl ? `<img src="${rec.posterUrl}" alt="${escapeHtml(rec.title)} poster" class="movie-poster">` : ''}
         <div class="movie-hero-info">

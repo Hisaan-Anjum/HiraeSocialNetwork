@@ -1,3 +1,4 @@
+@import url("brand-tokens.css");
 /* site-help.css — the guides page.
    Shares style.css and legal.css for chrome, colour and type; this is only the
    layout the guides need. Kept visually in step with the extension's Help
@@ -19,13 +20,13 @@
 .sh-onboard li {
   position: relative; padding: 16px 16px 16px 52px;
   border-radius: 12px;
-  background: rgba(139, 92, 246, .07);
-  border: 1px solid rgba(139, 92, 246, .18);
+  background: rgba(99, 102, 241, .07);
+  border: 1px solid rgba(99, 102, 241, .18);
 }
 .sh-step-n {
   position: absolute; left: 14px; top: 15px;
   width: 26px; height: 26px; border-radius: 50%;
-  background: rgba(139, 92, 246, .22); color: #c4b5fd;
+  background: rgba(99, 102, 241, .22); color: #c7d2fe;
   font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
@@ -36,11 +37,11 @@
 .sh-search-wrap { margin: 0 0 20px; }
 .sh-search {
   width: 100%; padding: 13px 16px; border-radius: 12px;
-  border: 1px solid rgba(139, 92, 246, .3);
+  border: 1px solid rgba(99, 102, 241, .3);
   background: rgba(255, 255, 255, .04);
   color: inherit; font: inherit;
 }
-.sh-search:focus { outline: 2px solid rgba(139, 92, 246, .55); outline-offset: 1px; }
+.sh-search:focus { outline: 2px solid rgba(99, 102, 241, .55); outline-offset: 1px; }
 
 /* ── Layout ────────────────────────────────────────────────────────── */
 .sh-layout { display: grid; grid-template-columns: 260px 1fr; gap: 28px; align-items: start; }
@@ -62,7 +63,7 @@
   text-align: left; cursor: pointer;
 }
 .sh-nav-item:hover { background: rgba(255, 255, 255, .05); }
-.sh-nav-item.is-active { background: rgba(139, 92, 246, .18); font-weight: 600; }
+.sh-nav-item.is-active { background: rgba(99, 102, 241, .18); font-weight: 600; }
 .sh-nav-icon { flex: none; }
 .sh-nav-label { font-size: 14px; }
 
@@ -91,13 +92,13 @@
   content: counter(shwalk);
   position: absolute; left: 0; top: 0;
   width: 26px; height: 26px; border-radius: 50%;
-  background: rgba(139, 92, 246, .18); color: #c4b5fd;
+  background: rgba(99, 102, 241, .18); color: #c7d2fe;
   font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
 .sh-walk li:not(:last-child)::after {
   content: ''; position: absolute; left: 12.5px; top: 28px; bottom: 4px;
-  width: 1px; background: rgba(139, 92, 246, .22);
+  width: 1px; background: rgba(99, 102, 241, .22);
 }
 .sh-walk-title { display: block; font-weight: 700; margin-bottom: 3px; }
 .sh-walk-body { display: block; opacity: .84; }

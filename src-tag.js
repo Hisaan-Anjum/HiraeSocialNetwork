@@ -80,7 +80,7 @@
         : 'Send yourself the link and add it on your laptop tonight. It takes a minute.') + '</p>' +
       '<form novalidate style="display:flex;flex-direction:column;gap:10px">' +
       '<input type="email" placeholder="your email" autocomplete="email" inputmode="email" aria-label="Your email" required style="font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:inherit">' +
-      '<button type="submit" style="font:inherit;font-weight:700;font-size:16px;padding:13px;border-radius:12px;border:0;background:linear-gradient(135deg,#f5b942,#e0901a);color:#1a1205">Email me the link</button></form>' +
+      '<button type="submit" style="font:inherit;font-weight:700;font-size:16px;padding:13px;border-radius:12px;border:0;background:linear-gradient(135deg,#4F46E5,#7C3AED 55%,#DB2777);color:#fff">Email me the link</button></form>' +
       (navigator.share ? '<button type="button" data-share style="margin-top:10px;width:100%;font:inherit;font-size:15px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:transparent;color:inherit">Or share it to yourself</button>' : '') +
       '<p role="status" data-note style="font-size:13px;color:#8a8a96;margin:12px 0 0;min-height:1em">One email with the link. Nothing else.</p>' +
       '<button type="button" data-close style="margin-top:6px;width:100%;font:inherit;font-size:14px;padding:10px;border:0;background:transparent;color:#8a8a96">Not now</button></div>';

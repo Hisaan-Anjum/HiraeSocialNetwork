@@ -151,7 +151,7 @@ function renderPrivate() {
 function visitorCta(heading) {
   const phone = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
   return `
-    <div style="margin-top:18px;border:1px solid rgba(139,92,246,.45);background:rgba(139,92,246,.08);border-radius:16px;padding:18px">
+    <div style="margin-top:18px;border:1px solid rgba(99, 102, 241,.45);background:rgba(99, 102, 241,.08);border-radius:16px;padding:18px">
       <div style="font-weight:800;margin-bottom:6px">${escapeHtml(heading)}</div>
       <div style="color:var(--ink-dim);font-size:14px;line-height:1.55">Herae plays the same film for two people at the same second, on Netflix, Prime Video, YouTube and almost any site, with a video call beside it. It catches your best moments too. Free on Chrome.</div>
       ${phone ? `

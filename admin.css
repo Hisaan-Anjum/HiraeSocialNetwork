@@ -1,3 +1,4 @@
+@import url("brand-tokens.css");
 /* admin.css — admin.html only. Back-office tool: data-dense but still the
    same dark purple/gold product as the rest of the site (see style.css's
    palette vars), not a generic Bootstrap admin template. */
@@ -28,8 +29,8 @@
   font-size: 14px; font-family: inherit;
 }
 .admin-search input:focus {
-  outline: none; border-color: rgba(139,92,246,0.6);
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+  outline: none; border-color: rgba(99, 102, 241,0.6);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241,0.15);
 }
 /* The browser's own clear button is invisible on a dark field. */
 .admin-search input::-webkit-search-cancel-button {
@@ -44,7 +45,7 @@
   background: var(--bg-1); color: var(--ink); border: 1px solid var(--border);
   cursor: pointer;
 }
-.admin-sort select:focus { outline: none; border-color: rgba(139,92,246,0.6); }
+.admin-sort select:focus { outline: none; border-color: rgba(99, 102, 241,0.6); }
 .admin-count { font-size: 13px; color: var(--ink-faint); margin-left: auto; }
 
 /* ── Pager ─────────────────────────────────────────────────────────── */
@@ -70,7 +71,7 @@
 .rec-row td { padding: 12px 14px; vertical-align: middle; }
 .rec-row td:first-child { border-radius: 14px 0 0 14px; }
 .rec-row td:last-child { border-radius: 0 14px 14px 0; }
-.rec-row:hover { border-color: rgba(139,92,246,0.4); box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
+.rec-row:hover { border-color: rgba(99, 102, 241,0.4); box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
 .rec-row.dragging { opacity: 0.4; }
 .rec-row.drag-over { border-top: 2px solid var(--gold); }
 
@@ -100,7 +101,7 @@
 .featured-pill {
   display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 9px;
   border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em;
-  background: rgba(245,185,66,0.14); color: var(--gold); border: 1px solid rgba(245,185,66,0.3);
+  background: rgba(236,72,153,0.14); color: var(--gold); border: 1px solid rgba(236,72,153,0.3);
   white-space: nowrap;
 }
 
@@ -175,7 +176,7 @@
   position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
   border-radius: 50%; background: var(--ink-faint); transition: transform 0.15s ease, background 0.15s ease;
 }
-.switch input:checked + .switch-track { background: rgba(139,92,246,0.35); border-color: var(--purple); }
+.switch input:checked + .switch-track { background: rgba(99, 102, 241,0.35); border-color: var(--purple); }
 .switch input:checked + .switch-track .switch-thumb { transform: translateX(18px); background: var(--purple); }
 
 /* ── Artwork pickers ────────────────────────────────────────────────── */

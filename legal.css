@@ -1,3 +1,4 @@
+@import url("brand-tokens.css");
 /* legal.css — shared styling for Herae's legal & policy pages
    (privacy, terms, cookies, community, dmca, takedown, account deletion,
    contact). Self-contained, loaded after style.css so it inherits the same
@@ -7,7 +8,7 @@
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; padding: 16px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(13, 11, 18, 0.7);
+  background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   position: sticky; top: 0; z-index: 10;
 }
@@ -15,8 +16,8 @@
 .legal-brand img { width: 34px; height: 34px; border-radius: 9px; }
 .legal-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
 .legal-brand-name {
-  font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 18px;
-  background: linear-gradient(140deg, #f5b942, #8b5cf6);
+  font-family: var(--font-sans); letter-spacing: -0.02em; font-weight: 700; font-size: 18px;
+  background: var(--brand-gradient);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .legal-brand-sub { font-size: 11px; color: var(--ink-faint); }
@@ -30,7 +31,7 @@
 }
 .legal-eyebrow {
   text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
-  font-weight: 700; color: var(--purple); margin-bottom: 12px;
+  font-weight: 700; color: var(--brand-primary-soft); margin-bottom: 12px;
 }
 .legal-doc h1 { font-size: 34px; margin-bottom: 10px; line-height: 1.15; }
 .legal-updated { color: var(--ink-faint); font-size: 13px; margin-bottom: 8px; }
@@ -46,17 +47,17 @@
 .legal-doc ul, .legal-doc ol { color: var(--ink-dim); font-size: 15px; line-height: 1.75; margin: 12px 0 12px 22px; }
 .legal-doc li { margin: 7px 0; }
 .legal-doc strong { color: var(--ink); font-weight: 700; }
-.legal-doc a { color: var(--purple); }
+.legal-doc a { color: var(--brand-primary-soft); }
 
 .legal-callout {
-  background: rgba(139,92,246,0.09); border: 1px solid var(--border);
+  background: rgba(99, 102, 241,0.09); border: 1px solid var(--border);
   border-left: 3px solid var(--purple); border-radius: 12px;
   padding: 16px 18px; margin: 20px 0;
 }
 .legal-callout p { margin: 6px 0; color: var(--ink-dim); font-size: 14.5px; }
 .legal-placeholder {
   display: inline-block; padding: 1px 7px; border-radius: 6px;
-  background: rgba(245,185,66,0.14); color: var(--gold);
+  background: rgba(236,72,153,0.14); color: var(--gold);
   font-size: 0.92em; font-weight: 600;
 }
 
@@ -105,3 +106,6 @@
     min-height: 44px; display: inline-flex; align-items: center;
   }
 }
+
+/* Connected H lock-up (symbol + wordmark, vector). Height-driven so it never stretches. */
+.brand-lockup { display: block; height: 28px; width: auto; }

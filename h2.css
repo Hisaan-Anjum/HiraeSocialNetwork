@@ -1,41 +1,37 @@
-/* h2.css — Herae 2.0 design system: tokens + base components (docs/herae-2/DESIGN-SYSTEM.md).
-   Direction: cinematic and editorial, not "AI product" — deep warm ink, warm neutrals, one amber accent, coral for
-   the human/"interested" moments, editorial serif headings, square-ish shapes, no glows, no gradients behind text.
-   New Herae 2.0 surfaces load this file; existing pages move onto it one at a time (each checked rendered). */
-
-/* Fraunces (SIL Open Font License), self-hosted so no visitor's IP goes to a font CDN. Latin subset, variable. */
-@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 500 700; font-display: swap;
-  src: url('fonts/fraunces-latin.woff2') format('woff2'); }
+@import url("brand-tokens.css");
+/* h2.css — Herae 2.0 components on the Connected H brand (brand/tokens/herae-tokens.css is the source of truth;
+   these --h-* names map onto it so the 2.0 pages didn't need rewriting). Rebrand 2026-10-22: the earlier warm
+   amber/ink direction is replaced by midnight navy + indigo, pink for the human "watch together" moments, DM Sans. */
 
 :root {
   /* colour */
-  --h-bg: #0f0e0c;
-  --h-surface: #191714;
-  --h-surface-2: #221f1b;
-  --h-surface-3: #2c2823;
-  --h-line: rgba(255, 238, 214, 0.11);
-  --h-line-strong: rgba(255, 238, 214, 0.22);
-  --h-text: #f4efe7;
-  --h-text-2: #bdb4a6;
-  --h-text-3: #8a8174;          /* ≥ 4.5:1 on --h-bg for body-size text */
-  --h-accent: #e9a63f;          /* amber: primary actions */
-  --h-accent-hover: #f2b75a;
-  --h-accent-ink: #1b1206;      /* text on amber */
-  --h-coral: #e3735d;           /* "interested", warm human moments */
-  --h-ok: #6cbf86;
-  --h-warn: #e5b450;
-  --h-danger: #e8604f;
-  --h-focus: #ffd38a;
+  --h-bg: var(--hz-bg);
+  --h-surface: var(--hz-surface);
+  --h-surface-2: var(--hz-surface-2);
+  --h-surface-3: #273449;
+  --h-line: rgba(148, 163, 184, 0.16);
+  --h-line-strong: rgba(148, 163, 184, 0.32);
+  --h-text: var(--hz-text);
+  --h-text-2: #CBD5E1;
+  --h-text-3: var(--hz-text-2);  /* ≥ 4.5:1 on navy for body-size text */
+  --h-accent: var(--brand-primary);         /* indigo: primary actions */
+  --h-accent-hover: #818CF8;
+  --h-accent-ink: #FFFFFF;      /* text on indigo (5.0:1) */
+  --h-coral: #F472B6;           /* pink: "interested", warm human moments */
+  --h-ok: var(--hz-success);
+  --h-warn: var(--hz-warning);
+  --h-danger: var(--hz-danger);
+  --h-focus: #A5B4FC;
   /* type */
-  --h-font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --h-font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --h-font-display: var(--font-sans);
+  --h-font-body: var(--font-sans);
   --h-size-xs: 12px; --h-size-sm: 14px; --h-size-md: 16px; --h-size-lg: 19px; --h-size-xl: 24px; --h-size-2xl: 32px;
   --h-lh: 1.55;
   /* space (4-pt) */
   --h-1: 4px; --h-2: 8px; --h-3: 12px; --h-4: 16px; --h-5: 20px; --h-6: 24px; --h-8: 32px; --h-10: 40px; --h-12: 48px;
   /* shape, depth, motion */
-  --h-r-sm: 6px; --h-r-md: 10px; --h-r-lg: 14px; --h-r-pill: 999px;
-  --h-shadow: 0 1px 0 rgba(255, 238, 214, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --h-r-sm: 8px; --h-r-md: 12px; --h-r-lg: 16px; --h-r-pill: 999px;
+  --h-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(2, 6, 23, 0.45);
   --h-fast: 120ms; --h-med: 220ms; --h-ease: cubic-bezier(.2, .7, .2, 1);
   --h-tap: 44px;                /* minimum touch target */
   /* breakpoints (reference): 360 · 430 · 768 · 1024 */
@@ -43,9 +39,9 @@
 @media (prefers-reduced-motion: reduce) { :root { --h-fast: 0ms; --h-med: 0ms; } }
 
 .h2 { background: var(--h-bg); color: var(--h-text); font: var(--h-size-md)/var(--h-lh) var(--h-font-body); }
-.h2 h1, .h2 h2, .h2 h3 { font-family: var(--h-font-display); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+.h2 h1, .h2 h2, .h2 h3 { font-family: var(--h-font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
 .h2 h1 { font-size: var(--h-size-2xl); } .h2 h2 { font-size: var(--h-size-xl); } .h2 h3 { font-size: var(--h-size-lg); }
-.h2 a { color: var(--h-accent); }
+.h2 a { color: var(--hz-link); }
 .h2 :focus-visible { outline: 2px solid var(--h-focus); outline-offset: 2px; border-radius: var(--h-r-sm); }
 .h2 .muted { color: var(--h-text-2); } .h2 .faint { color: var(--h-text-3); }
 .h2 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -68,7 +64,7 @@
 .h2 .hi { box-sizing: border-box; width: 100%; min-height: var(--h-tap); padding: 0 var(--h-3); background: var(--h-surface-2); color: var(--h-text);
   border: 1px solid var(--h-line-strong); border-radius: var(--h-r-md); font: var(--h-size-md) var(--h-font-body); }
 .h2 textarea.hi { padding: var(--h-3); min-height: 96px; resize: vertical; }
-.h2 .hi:focus-visible { border-color: var(--h-focus); outline: none; box-shadow: 0 0 0 2px rgba(255, 211, 138, .35); }
+.h2 .hi:focus-visible { border-color: var(--h-focus); outline: none; box-shadow: 0 0 0 2px rgba(129, 140, 248, .45); }
 .h2 .hi[aria-invalid="true"] { border-color: var(--h-danger); }
 .h2 .h-label { display: block; font-size: var(--h-size-sm); font-weight: 600; margin-bottom: var(--h-1); }
 .h2 .h-help { font-size: var(--h-size-xs); color: var(--h-text-3); margin-top: var(--h-1); }
@@ -120,4 +116,5 @@
 .h2 .h-page { max-width: 760px; margin: 0 auto; padding: var(--h-6) var(--h-4) var(--h-12); }
 .h2 .h-topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--h-3); padding: var(--h-3) var(--h-4);
   border-bottom: 1px solid var(--h-line); }
+.h2 .h-brand img { display: block; height: 26px; width: auto; }
 .h2 .h-brand { font-family: var(--h-font-display); font-size: var(--h-size-lg); font-weight: 600; color: var(--h-text); text-decoration: none; }

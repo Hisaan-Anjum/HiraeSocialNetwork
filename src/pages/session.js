@@ -79,7 +79,7 @@ async function showPublicOrLogin() {
         <div style="color:var(--ink-dim);font-size:14px">${escapeHtml(pub.description)}</div>
       </div>
     </div>
-    <div style="margin-top:18px;border:1px solid rgba(139,92,246,.45);background:rgba(139,92,246,.08);border-radius:16px;padding:18px">
+    <div style="margin-top:18px;border:1px solid rgba(99, 102, 241,.45);background:rgba(99, 102, 241,.08);border-radius:16px;padding:18px">
       <div style="font-weight:800;margin-bottom:6px">Watch together, however far apart</div>
       <div style="color:var(--ink-dim);font-size:14px;line-height:1.55">Herae keeps two people's video in sync on almost any site, with a video call beside it, and keeps nights like this one. Free on Chrome.</div>
       <a class="btn btn-primary" href="${STORE_URL}" target="_blank" rel="noopener" style="margin-top:12px;display:inline-flex">Try Herae — free</a>

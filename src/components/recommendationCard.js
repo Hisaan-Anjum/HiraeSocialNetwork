@@ -38,7 +38,7 @@ export function renderFeaturedHero(rec) {
   if (!rec) return '';
   const bg = rec.backdropUrl || rec.posterUrl;
   return `
-    <a href="movie.html?id=${rec.id}" class="hero-card" style="${bg ? `background-image: linear-gradient(180deg, rgba(13,11,18,0.05) 0%, rgba(13,11,18,0.55) 55%, var(--bg-0) 100%), url('${bg}')` : ''}">
+    <a href="movie.html?id=${rec.id}" class="hero-card" style="${bg ? `background-image: linear-gradient(180deg, rgba(15, 23, 42,0.05) 0%, rgba(15, 23, 42,0.55) 55%, var(--bg-0) 100%), url('${bg}')` : ''}">
       <div class="hero-card-badge">✨ Tonight's pick</div>
       <div class="hero-card-title">${escapeHtml(rec.title)}</div>
       <div class="hero-card-meta">${escapeHtml(genreLine(rec))}${rec.rating ? ` · ★ ${rec.rating.toFixed(1)}` : ''}</div>

@@ -6,7 +6,9 @@
 <title>People — Herae</title>
 <meta name="robots" content="noindex">
 <meta name="herae-memories-site" content="1">
-<link rel="icon" type="image/png" href="logo.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="h2.css">
 <style>
   body { margin: 0; min-height: 100dvh; }
@@ -27,7 +29,7 @@
   .d-card { position: relative; touch-action: pan-y; user-select: none; transition: transform var(--h-med) var(--h-ease); }
   .d-card.dragging { transition: none; }
   .d-stamp { position: absolute; top: var(--h-5); padding: 4px 12px; border: 2px solid currentColor; border-radius: var(--h-r-md, 8px); font: 700 var(--h-size-md) var(--h-font-body); opacity: 0; pointer-events: none; z-index: 2; }
-  .d-stamp.yes { left: var(--h-5); color: var(--h-accent); transform: rotate(-8deg); }
+  .d-stamp.yes { left: var(--h-5); color: #A5B4FC; transform: rotate(-8deg); }
   .d-stamp.no { right: var(--h-5); color: var(--h-text-2); transform: rotate(8deg); }
   .d-head { display: flex; gap: var(--h-3); align-items: center; margin-bottom: var(--h-3); }
   .d-head .h-avatar { width: 56px; height: 56px; font-size: 22px; }
@@ -68,7 +70,7 @@
 </head>
 <body class="h2">
   <header class="h-topbar">
-    <a class="h-brand" href="memories.html">Herae</a>
+    <a class="h-brand" href="memories.html" aria-label="herae — home"><img src="herae-logo-on-dark.svg" alt="herae" height="26"></a>
     <a class="hb hb-quiet" href="watch-profile.html">Profile &amp; privacy</a>
   </header>
   <nav class="s-tabs" role="tablist" aria-label="People">

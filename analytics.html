@@ -5,13 +5,15 @@
 <meta name="herae-memories-site" content="1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Analytics — Herae Admin</title>
-<link rel="icon" type="image/png" href="logo.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
 <style>
   /* ── Analytics dashboard — self-contained, admin only. Palette validated for
-       the dark surface (dataviz): purple #8b5cf6, amber, sky, pink. ── */
+       the dark surface (dataviz): purple #6366f1, amber, sky, pink. ── */
   :root {
-    --c-purple: #8b5cf6; --c-amber: #d99a2b; --c-sky: #2f9fd0; --c-pink: #db5fa0; --c-green: #4ade80;
+    --c-purple: #6366f1; --c-amber: #d99a2b; --c-sky: #2f9fd0; --c-pink: #db5fa0; --c-green: #4ade80;
   }
   .an-wrap { max-width: 1200px; margin: 0 auto; padding: 26px 22px 80px; }
   .an-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -36,9 +38,9 @@
     border: 1px solid var(--border); border-radius: 16px; padding: 18px 18px;
   }
   .kpi .kpi-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); font-weight: 700; }
-  .kpi .kpi-value { font-size: 30px; font-weight: 800; margin-top: 6px; line-height: 1; font-family: Georgia, serif; }
+  .kpi .kpi-value { font-size: 30px; font-weight: 800; margin-top: 6px; line-height: 1; font-family: var(--font-sans); letter-spacing: -0.02em; }
   .kpi .kpi-sub { font-size: 12px; color: var(--ink-dim); margin-top: 7px; }
-  .kpi .kpi-value.accent { background: linear-gradient(140deg, var(--gold), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .kpi .kpi-value.accent { background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
   .chart-card h3 { font-size: 14px; margin-bottom: 2px; }
   .chart-card .chart-total { font-size: 12px; color: var(--ink-faint); margin-bottom: 10px; }
@@ -46,7 +48,7 @@
   .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
   .chart-tip {
     position: absolute; pointer-events: none; opacity: 0; transform: translate(-50%, -120%);
-    background: #0d0b12; border: 1px solid var(--border); border-radius: 8px; padding: 5px 9px;
+    background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 5px 9px;
     font-size: 12px; white-space: nowrap; z-index: 3; transition: opacity 0.08s;
   }
   .chart-tip b { color: var(--ink); } .chart-tip span { color: var(--ink-faint); }
@@ -85,7 +87,7 @@
     transition: border-color .15s ease, box-shadow .15s ease;
   }
   .ppl-search input::placeholder { color: var(--ink-dim); opacity: .8; }
-  .ppl-search input:focus { border-color: var(--c-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22); }
+  .ppl-search input:focus { border-color: var(--c-purple); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22); }
   .ppl-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: .6; font-size: 12px; pointer-events: none; }
   .ppl-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: transparent;
     color: var(--ink-dim); cursor: pointer; font-size: 16px; line-height: 1; padding: 3px 6px; border-radius: 6px; }
@@ -152,7 +154,7 @@
 <body>
   <div class="topbar">
     <a class="brand-link" href="memories.html" aria-label="Herae — home">
-      <img src="logo.png" alt="Herae" class="brand-logo">
+      <img src="herae-logo-on-dark.svg" alt="herae" class="brand-lockup">
       <span class="brand-sub">Admin · Analytics</span>
     </a>
     <nav class="nav-links">
@@ -639,7 +641,7 @@
 
     // Resolve a CSS var to its hex so the chart dot/JS can use it.
     function getColor(v) {
-      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#8b5cf6';
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#6366f1';
     }
 
     load();

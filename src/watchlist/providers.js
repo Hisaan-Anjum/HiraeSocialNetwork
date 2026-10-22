@@ -23,14 +23,14 @@ const BRAND = {
   netflix: { name: 'Netflix', color: '#e50914', fg: '#fff' },
   prime_video: { name: 'Prime Video', color: '#00a8e1', fg: '#04121a' },
   amazon_video: { name: 'Amazon Video', color: '#00a8e1', fg: '#04121a' },
-  apple_tv: { name: 'Apple TV', color: '#f5f5f7', fg: '#111' },
+  apple_tv: { name: 'Apple TV', color: '#f8fafc', fg: '#111' },
   hulu: { name: 'Hulu', color: '#1ce783', fg: '#04120a' },
   disney_plus: { name: 'Disney+', color: '#113ccf', fg: '#fff' },
   max: { name: 'Max', color: '#0046ff', fg: '#fff' },
   paramount_plus: { name: 'Paramount+', color: '#0064ff', fg: '#fff' },
   peacock: { name: 'Peacock', color: '#000', fg: '#fff' },
 };
-const fallback = (link) => ({ name: link.name || 'Watch', color: '#8b5cf6', fg: '#fff' });
+const fallback = (link) => ({ name: link.name || 'Watch', color: '#6366f1', fg: '#fff' });
 
 export function hasWatchLinks(movie) {
   return Array.isArray(movie?.watchLinks) && movie.watchLinks.length > 0;

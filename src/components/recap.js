@@ -96,7 +96,7 @@ function drawWatermark(ctx, W, H, logo) {
   } else {
     const hcx = markX + markSize / 2, hcy = markY + markSize / 2;
     const g = ctx.createLinearGradient(hcx - markSize / 2, hcy - markSize / 2, hcx + markSize / 2, hcy + markSize / 2);
-    g.addColorStop(0, '#f5b942'); g.addColorStop(1, '#a78bfa');
+    g.addColorStop(0, '#6366F1'); g.addColorStop(0.5, '#A78BFA'); g.addColorStop(1, '#EC4899');
     drawHeart(ctx, hcx, hcy + markSize * 0.06, markSize * 0.95, g);
   }
   ctx.fillStyle = 'rgba(255,255,255,0.97)';
@@ -127,7 +127,11 @@ function gridFor(count) {
 // media type — we use each one's poster `url`). Returns a moment-like object
 // the media viewer + Share flow accept, or null when there isn't enough (or
 // the canvas couldn't be produced, e.g. tainted in a cross-origin dev setup).
+// Canvas only draws a web font once it has loaded; without this the card silently falls back to the system face.
+const brandFont = () => (document.fonts ? document.fonts.load('700 54px "DM Sans"').catch(() => {}) : Promise.resolve());
+
 export async function buildRecap({ username, moments, profileUrl }) {
+  await brandFont();
   const usable = (moments || []).filter((m) => m && m.url);
   if (usable.length < MIN_MOMENTS) return null;
 
@@ -149,8 +153,8 @@ export async function buildRecap({ username, moments, profileUrl }) {
   // Background — warm Herae gradient.
   const bg = ctx.createLinearGradient(0, 0, SIZE, SIZE);
   bg.addColorStop(0, '#1b1327');
-  bg.addColorStop(0.55, '#241a33');
-  bg.addColorStop(1, '#0d0b12');
+  bg.addColorStop(0.55, '#1e293b');
+  bg.addColorStop(1, '#0f172a');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, SIZE, SIZE);
 
@@ -158,9 +162,9 @@ export async function buildRecap({ username, moments, profileUrl }) {
   const headerH = 150;
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   const gTitle = ctx.createLinearGradient(64, 0, 520, 0);
-  gTitle.addColorStop(0, '#f5b942'); gTitle.addColorStop(1, '#a78bfa');
+  gTitle.addColorStop(0, '#A5B4FC'); gTitle.addColorStop(0.5, '#C4B5FD'); gTitle.addColorStop(1, '#F9A8D4');
   ctx.fillStyle = gTitle;
-  ctx.font = `700 54px Georgia, 'Times New Roman', serif`;
+  ctx.font = `700 54px "DM Sans", system-ui, sans-serif`;
   ctx.fillText('Herae Recap', 64, 92);
   ctx.fillStyle = 'rgba(233,213,255,0.85)';
   ctx.font = `500 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;

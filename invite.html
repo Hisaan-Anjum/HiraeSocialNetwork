@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>You're invited — Herae</title>
 <meta name="description" content="Someone wants to watch something with you on Herae. Join in one click — no account needed.">
-<link rel="icon" type="image/png" href="/logo.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
 <style>
   /* Page-local styling only. Everything structural (cards, buttons, fields,
@@ -22,7 +24,7 @@
     font-size: 30px; font-weight: 700; color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: linear-gradient(140deg, var(--purple), var(--purple-deep));
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.35);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.35);
     position: relative; overflow: hidden; flex: none;
   }
   .invite-avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
@@ -43,7 +45,7 @@
     100% { transform: scale(1.7);  opacity: 0; }
   }
 
-  .invite-title { font-family: Georgia, 'Times New Roman', serif; font-size: 25px; font-weight: 700; text-align: center; line-height: 1.25; }
+  .invite-title { font-family: var(--font-sans); letter-spacing: -0.02em; font-size: 25px; font-weight: 700; text-align: center; line-height: 1.25; }
   .invite-title em { font-style: normal; color: var(--gold); }
   .invite-sub { font-size: 14px; color: var(--ink-dim); text-align: center; line-height: 1.6; margin-top: 8px; }
   .invite-online-note { font-size: 12.5px; color: #34d399; font-weight: 600; text-align: center; margin-top: 8px; }
@@ -60,7 +62,7 @@
     background: rgba(255, 255, 255, 0.12); transition: background 0.3s ease;
   }
   .invite-step-dot.is-done { background: var(--purple); }
-  .invite-step-dot.is-current { background: linear-gradient(90deg, var(--purple), var(--gold)); }
+  .invite-step-dot.is-current { background: var(--brand-gradient); }
 
   .invite-cta { width: 100%; margin-top: 4px; }
   .invite-secondary {
@@ -84,7 +86,7 @@
   .invite-num {
     flex: none; width: 22px; height: 22px; border-radius: 50%;
     display: grid; place-items: center; font-size: 11.5px; font-weight: 700;
-    background: rgba(139, 92, 246, 0.16); color: #c4b5fd; border: 1px solid var(--border);
+    background: rgba(99, 102, 241, 0.16); color: #c7d2fe; border: 1px solid var(--border);
   }
   .invite-waiting {
     display: flex; align-items: center; justify-content: center; gap: 9px;
