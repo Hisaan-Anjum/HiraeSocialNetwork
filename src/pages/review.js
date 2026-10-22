@@ -209,7 +209,7 @@ async function loadSession() {
       line.className = 'review-plan-line';
       line.innerHTML = s.unlimited
         ? (s.compUntil ? `💛 Herae Together is on for you until ${escapeHtml(new Date(s.compUntil).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }))}: every night unlimited.` : '')
-        : 'Every night unlimited for both of you: Herae Together, $6.99 a month (less in many countries). <a href="upgrade.html">See your price</a>';
+        : 'Every night unlimited for both of you: Herae Together (see the price in your currency). <a href="upgrade.html">See your price</a>';
       if (line.innerHTML) at.insertAdjacentElement('afterend', line);
     }).catch(() => {});
   }

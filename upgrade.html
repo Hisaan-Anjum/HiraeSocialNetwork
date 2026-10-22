@@ -141,6 +141,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="local-price.js"></script>
   <script src="api.js"></script>
 <script src="app-nav.js"></script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
@@ -194,7 +195,11 @@
     if (!items.length) return;
     try {
       const preview = await Paddle.PricePreview({ items });
-      for (const li of preview.data.details.lineItems) formatted[li.price.id] = li.formattedTotals.total;
+      const loc = window.heraeLocalPrices ? await window.heraeLocalPrices(preview) : {};   // their own currency (PKR, …)
+      for (const li of preview.data.details.lineItems) formatted[li.price.id] = (loc[li.price.id] || {}).text || li.formattedTotals.total;
+      const anyBilled = Object.values(loc).find((v) => v && v.billed);
+      if (anyBilled && !document.getElementById('billedNote')) { const n = document.createElement('p'); n.id = 'billedNote'; n.style.cssText = 'font-size:12px;opacity:.7;text-align:center;margin-top:8px';
+        n.textContent = 'Prices shown in your currency at today’s rate; your card is charged in US dollars.'; (document.querySelector('main') || document.body).append(n); }
     } catch (e) { /* checkout still shows the real price */ }
     renderPrices();
     if (cfg.founding && formatted[cfg.founding.priceId]) el('foundingPrice').textContent = formatted[cfg.founding.priceId];

@@ -72,6 +72,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="local-price.js"></script>
   <script src="api.js"></script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script>
@@ -113,7 +114,9 @@
       Paddle.Initialize({ token: pc.clientToken, eventCallback: onPaddleEvent });
       // This visitor's own price (regional prices differ), so the page never shows more than checkout charges.
       Paddle.PricePreview({ items: [{ priceId: gc.priceId, quantity: 1 }] })
-        .then((p) => { const t = p.data.details.lineItems[0].formattedTotals.total; if (t) el('giftPrice').textContent = t; }).catch(() => {});
+        .then(async (p) => { const loc = window.heraeLocalPrices ? await window.heraeLocalPrices(p) : {}; const li = p.data.details.lineItems[0];
+          const v = loc[li.price.id] || { text: li.formattedTotals.total }; if (v.text) el('giftPrice').textContent = v.text;
+          if (v.billed) el('giftPrice').title = v.billed; }).catch(() => {});
     } catch (e) { el('buy').disabled = true; say('Couldn’t load checkout. Refresh to try again.', 'err'); }
   })();
 

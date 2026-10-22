@@ -39,6 +39,7 @@
   .founding-note[hidden] { display: none; }
   .founding-note b { color: #F472B6; }
   .founding-note a { color: #F472B6; font-weight: 700; }
+  .price-billed { display: block; margin-top: 4px; font-size: 12px; opacity: .7; font-weight: 500; }
 </style>
   <meta name="robots" content="index, follow">
   <meta property="og:type" content="website">
@@ -145,6 +146,7 @@
   </footer>
 
   <script src="config.js"></script>
+  <script src="local-price.js"></script>
   <script src="api.js"></script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script>
@@ -173,10 +175,13 @@
         const items = [plusId, togId, yearId, fId].filter(Boolean).map((priceId) => ({ priceId, quantity: 1 }));
         if (items.length) {
           const preview = await Paddle.PricePreview({ items });
-          const by = {};
-          for (const li of preview.data.details.lineItems) by[li.price.id] = li.formattedTotals.total;
-          if (by[plusId]) document.getElementById('pricePlus').textContent = by[plusId];
-          if (by[togId]) document.getElementById('priceTogether').textContent = by[togId];
+          // In the visitor's own currency (PKR for Pakistan, …) — converted with "billed as US$…" where Paddle bills USD.
+          const loc = window.heraeLocalPrices ? await window.heraeLocalPrices(preview) : {};
+          const by = {}; for (const li of preview.data.details.lineItems) by[li.price.id] = (loc[li.price.id] || {}).text || li.formattedTotals.total;
+          const put = (elId, pid) => { const e = document.getElementById(elId); if (!e || !by[pid]) return; e.textContent = by[pid];
+            const billed = (loc[pid] || {}).billed; if (!billed) return;
+            let n = e.parentElement.querySelector('.price-billed'); if (!n) { n = document.createElement('small'); n.className = 'price-billed'; e.parentElement.append(n); } n.textContent = billed; };
+          put('pricePlus', plusId); put('priceTogether', togId);
           // The founding note in this visitor's own prices (regional prices differ).
           if (fId && by[fId] && by[yearId]) { document.getElementById('foundingPrice').textContent = by[fId]; document.getElementById('foundingWas').textContent = by[yearId]; }
         }
