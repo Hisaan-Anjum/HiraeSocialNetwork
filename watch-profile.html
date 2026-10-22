@@ -116,6 +116,12 @@
           <label><input type="radio" name="pvis" value="matches_friends"> <span>My matches and my friends</span></label>
           <label><input type="radio" name="pvis" value="approved"> <span>Only people I allow, one by one<br><span class="faint">Allow someone from your chat with them (⋯ → Show my photos).</span></span></label>
         </fieldset>
+        <fieldset class="wp-radios" id="pageLinkSet"><legend>Show my Herae page on my buddy card</legend>
+          <label><input type="radio" name="plink" value="none"> <span>Nobody</span></label>
+          <label><input type="radio" name="plink" value="matches"> <span>My matches</span></label>
+          <label><input type="radio" name="plink" value="discover"> <span>Everyone in Discover</span></label>
+          <p class="h-help">Your page shows your films, reviews and moments. Each moment still follows its own privacy, so nothing private is ever shown.</p>
+        </fieldset>
         <details class="wp-more"><summary>Who I see, and privacy</summary>
           <fieldset class="wp-radios" id="scopeSet"><legend>One-to-one or groups</legend>
             <label><input type="radio" name="scope" value="groups_only"> <span>No one-to-one matches, only group watch parties</span></label>
@@ -230,6 +236,7 @@
       const sc = document.querySelector(`input[name=scope][value=${state.discovery_scope}]`) || document.querySelector('input[name=scope][value=everyone]'); sc.checked = true;
       renderGender();
       document.querySelector(`input[name=fvis][value=${state.friends_list_visibility}]`).checked = true;
+      (document.querySelector(`input[name=plink][value=${state.page_link || 'none'}]`) || {}).checked = true;
 
       $('showOnline').checked = !!state.show_online;
     }
@@ -245,6 +252,7 @@
     $('dname').oninput = () => { state.display_name = $('dname').value; dirty = true; };
     document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; dirty = true; });
     document.querySelectorAll('input[name=fvis]').forEach((r) => r.onchange = () => { state.friends_list_visibility = r.value; dirty = true; });
+    document.querySelectorAll('input[name=plink]').forEach((r) => r.onchange = () => { state.page_link = r.value; dirty = true; });
     function renderGender() {
       const g = $('genderChips'); g.innerHTML = '';
       for (const [v, label] of [['woman', 'Woman'], ['man', 'Man'], ['nonbinary', 'Non-binary']]) {
@@ -272,7 +280,7 @@
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, creators: state.creators, languages: state.languages,
           availability: state.availability, session_formats: state.session_formats, traits: state.traits, bio: state.bio,
           discovery_scope: state.discovery_scope, gender: state.gender, friends_list_visibility: state.friends_list_visibility,
-          show_online: !!state.show_online, discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
+          show_online: !!state.show_online, page_link: state.page_link || 'none', discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
         const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
         state = r.profile; confirmAdult = false; dirty = false; render(); say('Saved.');
         if (pendingVis) { apiRequest('/api/photos/visibility', { method: 'PUT', body: JSON.stringify({ visibility: pendingVis }) }).catch(() => {}); pendingVis = null; }

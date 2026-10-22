@@ -63,6 +63,7 @@
   .d-photo img { width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
   .d-bars { position: absolute; left: 10px; right: 10px; top: 10px; display: flex; gap: 4px; }
   .d-bars i { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.4); } .d-bars i.on { background: #fff; }
+  .d-page { display: block; margin-top: 6px; font-size: var(--h-size-sm); font-weight: 600; }
   .d-photos { display: inline-block; margin-top: 4px; font-size: var(--h-size-xs); font-weight: 600; color: var(--h-text-2); padding: 3px 10px; border-radius: 999px; background: var(--h-surface-2); }
   .ph-strip { display: grid; grid-auto-flow: column; grid-auto-columns: min(78vw, 360px); gap: var(--h-3); overflow-x: auto; scroll-snap-type: x mandatory; }
   .ph-strip img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--h-r-lg); scroll-snap-align: start; }
@@ -279,7 +280,8 @@
         el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
         cardPhotos(c),
         el('div', { class: 'd-head' }, c.photos && c.photos.length ? null : avatar(c), el('div', {}, el('h2', {}, c.name),
-          (() => { const hidden = (c.photoCount || 0) - ((c.photos || []).length); return hidden > 0 ? el('span', { class: 'd-photos' }, `📷 ${(c.photos || []).length ? '+' : ''}${hidden} photo${hidden === 1 ? '' : 's'} · after you match`) : null; })())),
+          (() => { const hidden = (c.photoCount || 0) - ((c.photos || []).length); return hidden > 0 ? el('span', { class: 'd-photos' }, `📷 ${(c.photos || []).length ? '+' : ''}${hidden} photo${hidden === 1 ? '' : 's'} · after you match`) : null; })(),
+          c.pageLink ? el('a', { class: 'd-page', href: `user.html?u=${encodeURIComponent(c.username)}` }, 'See their Herae page →') : null)),
         c.why && c.why.length ? el('ul', { class: 'd-why', 'aria-label': 'Why you’re seeing this' }, ...c.why.map((w) => el('li', {}, w))) : null,
         c.bio ? el('p', {}, c.bio) : null, dl,
         el('div', { class: 'd-actions' },
@@ -421,6 +423,7 @@
         el('a', { class: 'hb hb-quiet c-back', href: '#chats', 'aria-label': 'Back to chats' }, '←'), (() => { const a = photoAvatar(other, { name: otherName, avatarUrl: page.withAvatar }); a.style.cursor = 'pointer'; a.onclick = () => showPhotos(other, otherName); return a; })(),
         el('div', { class: 'c-who' }, el('h1', { class: 'sr-only' }, `Chat with ${otherName}`), el('b', { 'aria-hidden': 'true' }, otherName), el('span', {}, page.relation === 'match' ? 'Match' : page.relation === 'friends' ? 'Friend' : '')),
         moreMenu([['See their photos', () => showPhotos(other, otherName)],
+          ...(page.withPage ? [['See their Herae page', () => { location.href = `user.html?u=${encodeURIComponent(other)}`; }]] : []),
           [granted ? 'Stop showing my photos' : 'Show my photos', async () => {
             try { await apiRequest(granted ? `/api/photos/grants/${encodeURIComponent(other)}` : '/api/photos/grants', granted ? { method: 'DELETE' } : { method: 'POST', body: JSON.stringify({ username: other }) });
               toast(granted ? `${otherName} can no longer see your photos (unless your photo setting allows matches/friends).` : `${otherName} can now see your photos.`); photoInfo.delete(other); renderThread(id); }
