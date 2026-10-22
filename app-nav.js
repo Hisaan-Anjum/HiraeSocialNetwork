@@ -15,6 +15,7 @@
     me: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
   };
   const svg = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
   let page, hash;   // re-read on every check: social.html changes tab by hash without reloading
@@ -41,6 +42,7 @@
   .an-links a[aria-current="page"] { color: #F8FAFC; background: rgba(99, 102, 241, .16); }
   .an-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
   .an-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #CBD5E1; background: none; border: 0; cursor: pointer; text-decoration: none; }
+  .an-bell { position: relative; }   /* the bell's count sits on its corner */
   .an-icon:hover { background: rgba(148, 163, 184, .12); color: #F8FAFC; } .an-icon svg { width: 20px; height: 20px; }
   .an-menu-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; font: 600 14px var(--font-sans, inherit); cursor: pointer; }
   .an-menu-btn svg { width: 20px; height: 20px; }
@@ -79,7 +81,7 @@
     const top = document.createElement('header'); top.className = 'an-top'; top.setAttribute('role', 'banner');
     top.innerHTML = `<a class="an-brand" href="memories.html" aria-label="herae — home"><img src="herae-logo-on-dark.svg" alt="herae"></a>
       <nav class="an-links" aria-label="Main">${TOP.map(([t, h, i]) => `<a href="${h}" data-key="${i}">${svg(i)}<span>${t}</span></a>`).join('')}</nav>
-      <div class="an-right"><a class="an-icon" href="search.html" aria-label="Search" data-search>${svg('search')}</a>
+      <div class="an-right"><a class="an-icon an-bell" href="notifications.html" aria-label="Notifications" data-key="bell">${svg('bell')}</a><a class="an-icon" href="search.html" aria-label="Search" data-search>${svg('search')}</a>
         <button class="an-menu-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Menu">${svg('menu')}<span>Menu</span></button></div>`;
     const bottom = document.createElement('nav'); bottom.className = 'an-bottom'; bottom.setAttribute('aria-label', 'Main');
     bottom.innerHTML = BOTTOM.map(([t, h, i]) => `<a href="${h}" data-key="${i}">${svg(i)}<span>${t}</span></a>`).join('');
@@ -143,12 +145,13 @@
   }
   async function badges() {
     try {
-      const [c, f] = await Promise.all([apiRequest('/api/chats'), apiRequest('/api/contacts')]);
+      const [c, f, nt] = await Promise.all([apiRequest('/api/chats'), apiRequest('/api/contacts'), apiRequest('/api/notifications/count').catch(() => ({ unread: 0 }))]);
       const unread = (c.conversations || []).reduce((s, x) => s + (x.unread || 0), 0); const reqs = (f.incoming || []).length;
       const set = (key, n) => document.querySelectorAll(`[data-key="${key}"]`).forEach((a) => { let b = a.querySelector('.an-badge'); if (!n) { if (b) b.remove(); return; }
         if (!b) { b = document.createElement('span'); b.className = 'an-badge'; a.append(b); } b.textContent = n > 9 ? '9+' : String(n); b.setAttribute('aria-label', `${n} new`); });
-      set('chats', unread); set('friends', reqs);
+      set('chats', unread); set('friends', reqs); set('bell', page === 'notifications.html' ? 0 : nt.unread);
     } catch (e) { /* badges are a convenience */ }
   }
+  window.heraeNavBadges = () => badges();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
 })();

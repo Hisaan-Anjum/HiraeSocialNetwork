@@ -148,6 +148,7 @@ const FILES = [
   'h2.css',
   'watch-profile.html',
   'social.html',
+  'notifications.html',
   'fonts/fraunces-latin.woff2',
   // Connected H brand (brand/): canonical tokens + DM Sans (OFL), the favicon family and logo SVGs. Referenced by
   // plain links/imgs from pages Vite doesn't process, so copied verbatim (brand/scripts/sync-tokens.sh, export-icons.js).
