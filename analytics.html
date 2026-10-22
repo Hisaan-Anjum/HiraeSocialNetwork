@@ -350,17 +350,48 @@
         </div>`);
       charts.push(['watch', d.series.watch_minutes, cAmber]);
 
-      // ── Activation funnel ──
-      const fSteps = [
-        ['Signed up', a.accounts], ['Invited a partner', a.invited_a_partner],
-        ['Partner accepted', a.partner_accepted], ['Captured a moment', a.captured_a_moment],
-        ['Wrote a review', a.wrote_a_review],
-      ];
-      const fMax = fSteps[0][1] || 1;
-      out.push(`<div class="an-section-title">Activation funnel</div>
-        <div class="card">${fSteps.map(([l, v]) =>
-          barRow(l, v, fMax, 'linear-gradient(90deg, var(--c-purple), var(--c-pink))',
-            ` <small>${fMax ? Math.round((v / fMax) * 100) : 0}%</small>`)).join('')}</div>`);
+      // ── Getting connected (Herae 2.0, founder 2026-10-22): does everyone have someone to watch with, fast? ──
+      const cn = d.connect;
+      if (cn) {
+        const fu = cn.funnel; const sp = cn.speed;
+        const steps = [['Signed up', fu.accounts], ['Made a watch profile', fu.profile], ['Turned on Discover', fu.discoverable],
+          ['Connected (partner or match)', fu.connected], ['First night (10+ min)', fu.first_night], ['Second night', fu.second_night]];
+        const top = steps[0][1] || 1;
+        const STEP = { no_profile: 'No profile yet', discovery_off: 'Discover off', browse: 'Browsing Discover', say_hi: 'Match, no hello', matched: 'Matched, no watch' };
+        const nd = Object.entries(cn.nudges || {});
+        out.push(`<div class="an-section-title">Getting connected</div>
+          <div class="an-grid cols-4">
+            ${kpi('Connected', pct(cn.connected_pct), `${fmt(fu.connected)} of ${fmt(fu.accounts)} have someone to watch with`, true)}
+            ${kpi('Time to first connection', sp.median_min == null ? '—' : sp.median_min < 120 ? `${fmt(sp.median_min)}<span style="font-size:15px"> min</span>` : `${fmt(Math.round(sp.median_min / 60))}<span style="font-size:15px"> h</span>`, 'median, sign-ups of the last 30 days')}
+            ${kpi('Within 10 minutes', `${fmt(sp.within_10m)}`, `of ${fmt(sp.joined)} sign-ups (30 days)`)}
+            ${kpi('Still alone', fmt(Math.max(0, fu.accounts - fu.connected)), 'no partner, no match yet')}
+          </div>
+          <div class="an-grid cols-2" style="margin-top:14px">
+            <div class="card"><h3 style="font-size:14px;margin-bottom:12px">Funnel · sign-up to second night</h3>${steps.map(([l, v]) =>
+              barRow(l, v, top, 'linear-gradient(90deg, #6366F1, #A78BFA 50%, #EC4899)', ` <small>${Math.round((v / top) * 100)}%</small>`)).join('')}</div>
+            <div class="card"><h3 style="font-size:14px;margin-bottom:12px">"Connect fast" banner · last 30 days</h3>${nd.length
+              ? nd.map(([k, v]) => `<div class="stat-line"><span class="sl-label">${esc(STEP[k] || k)}</span><span class="sl-value">${fmt(v.shown)} shown · ${fmt(v.open)} opened (${v.shown ? Math.round((v.open / v.shown) * 100) : 0}%)</span></div>`).join('')
+              : '<div class="sl-label">Not shown to anyone yet.</div>'}</div>
+          </div>`);
+        const bd = cn.buddies;
+        out.push(`<div class="an-section-title">Watch buddies</div>
+          <div class="an-grid cols-4">
+            ${kpi('Matches', fmt(bd.matches), `${fmt(bd.active_matches)} active · ${fmt(bd.interests)} swipes right`)}
+            ${kpi('Chats started', fmt(bd.chats), `${fmt(bd.messages)} messages · ${fmt(bd.messages_7d)} this week`)}
+            ${kpi('Watch suggestions', fmt(bd.proposals), `${fmt(bd.proposals_accepted)} accepted (${bd.proposals ? Math.round((bd.proposals_accepted / bd.proposals) * 100) : 0}%)`)}
+            ${kpi('Parties', fmt(bd.parties), `${fmt(bd.party_joins)} people joined one`)}
+          </div>
+          <div class="an-grid cols-2" style="margin-top:14px">
+            <div class="card">
+              <div class="stat-line"><span class="sl-label">People with photos</span><span class="sl-value">${fmt(bd.with_photos)} (${fmt(bd.photos)} photos)</span></div>
+              <div class="stat-line"><span class="sl-label">Discoverable profiles</span><span class="sl-value">${fmt(fu.discoverable)}</span></div>
+            </div>
+            <div class="card">
+              <div class="stat-line"><span class="sl-label">"New people" emails (30 days)</span><span class="sl-value">${fmt(bd.buddies_emails_30d)}</span></div>
+              <div class="stat-line"><span class="sl-label">Right-swipes that became a match</span><span class="sl-value">${bd.interests ? Math.round((bd.interests_matched / bd.interests) * 100) : 0}%</span></div>
+            </div>
+          </div>`);
+      }
 
       // ── Retention ──
       out.push(`<div class="an-section-title">Retention &amp; engagement</div>
@@ -370,18 +401,12 @@
           ${kpi('MAU', fmt(r.mau), 'active this month')}
           ${kpi('Stickiness', pct(r.dau_wau_pct), 'DAU / WAU', true)}
         </div>
-        <div class="an-grid cols-2" style="margin-top:14px">
+        <div class="an-grid" style="grid-template-columns:1fr;margin-top:14px">
           <div class="card">
             <div class="stat-line"><span class="sl-label">Returning users (2+ days)</span><span class="sl-value">${fmt(r.returning_users)}</span></div>
             <div class="stat-line"><span class="sl-label">Return rate</span><span class="sl-value">${pct(r.return_rate_pct)}</span></div>
             <div class="stat-line"><span class="sl-label">Ever-active users</span><span class="sl-value">${fmt(r.active_users)}</span></div>
             <div class="stat-line"><span class="sl-label">Moments per capturing user</span><span class="sl-value">${fmt(h.moments_per_capturing_user)}</span></div>
-          </div>
-          <div class="card">
-            <div class="stat-line"><span class="sl-label">💜 Likes</span><span class="sl-value">${fmt(h.likes)}</span></div>
-            <div class="stat-line"><span class="sl-label">💬 Comments</span><span class="sl-value">${fmt(h.comments)}</span></div>
-            <div class="stat-line"><span class="sl-label">📤 Shares</span><span class="sl-value">${fmt(h.shares)}</span></div>
-            <div class="stat-line"><span class="sl-label">✨ Recaps generated</span><span class="sl-value">${fmt(h.recaps_generated)}</span></div>
           </div>
         </div>`);
 
@@ -452,8 +477,8 @@
       const evEntries = Object.entries(ev).sort((x, y) => y[1] - x[1]);
       const evMax = Math.max(1, ...evEntries.map((e) => e[1]));
       if (evEntries.length) {
-        out.push(`<div class="an-section-title">All tracked events</div>
-          <div class="card">${evEntries.map(([k, v]) => barRow(k, v, evMax, 'var(--c-purple)')).join('')}</div>`);
+        out.push(`<details class="card" style="margin-top:28px"><summary style="cursor:pointer;font-weight:700">All tracked events (${evEntries.length})</summary>
+          <div style="margin-top:12px">${evEntries.map(([k, v]) => barRow(k, v, evMax, 'var(--c-purple)')).join('')}</div></details>`);
       }
 
       app.innerHTML = out.join('') + peopleShell();
