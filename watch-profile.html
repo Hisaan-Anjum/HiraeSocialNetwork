@@ -78,6 +78,12 @@
           <div class="wp-add"><label class="sr-only" for="titleIn">Add a film or series</label>
             <input class="hi" id="titleIn" maxlength="60" placeholder="e.g. Past Lives"><button type="button" class="hb hb-secondary" id="titleAdd">Add</button></div>
         </fieldset>
+        <fieldset><legend>Your watchlist <span class="faint">(what you want to watch next)</span></legend>
+          <p class="faint" style="margin:0 0 8px;font-size:13px">People who want the same films come first, and if you’re in Discover we’ll tell you when a public watch party is showing one.</p>
+          <div class="h-chips" id="wantList"></div>
+          <div class="wp-add"><label class="sr-only" for="wantIn">Add to your watchlist</label>
+            <input class="hi" id="wantIn" maxlength="60" placeholder="e.g. Dune: Part Two"><button type="button" class="hb hb-secondary" id="wantAdd">Add</button></div>
+        </fieldset>
         <fieldset><legend>Languages you watch in</legend>
           <div class="h-chips" id="languages"></div>
           <div class="wp-add"><label class="sr-only" for="langIn">Add a language</label>
@@ -202,7 +208,7 @@
         b.textContent = LABEL[v] || v; b.setAttribute('aria-pressed', String(selected.includes(v)));
         b.onclick = () => { const on = state[key].includes(v);
           if (!on && max && state[key].length >= max) { say(`Up to ${max}.`); return; }
-          state[key] = on ? state[key].filter((x) => x !== v) : [...state[key], v]; b.setAttribute('aria-pressed', String(!on)); dirty = true; };
+          state[key] = on ? state[key].filter((x) => x !== v) : [...state[key], v]; b.setAttribute('aria-pressed', String(!on)); dirty = true; say(''); };   // an old "pick at least one" must not linger
         el.append(b);
       }
     }
@@ -221,13 +227,13 @@
       const add = () => { const v = input.value.trim().replace(/\s+/g, ' '); if (!v) return;
         if (state[key].includes(v)) { input.value = ''; return; }
         if (state[key].length >= max) { say(`Up to ${max}.`); return; }
-        state[key] = [...state[key], v]; input.value = ''; dirty = true; removable(el, key); };
+        state[key] = [...state[key], v]; input.value = ''; dirty = true; say(''); removable(el, key); };
       pendingAdds.push(add);
       btn.onclick = add; input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
     }
     function render() {
       chips($('genres'), [...new Set([...GENRES, ...state.genres])], state.genres, 12, 'genres');
-      removable($('titles'), 'favorite_titles'); removable($('creators'), 'creators'); removable($('languages'), 'languages');
+      removable($('titles'), 'favorite_titles'); removable($('wantList'), 'watchlist'); removable($('creators'), 'creators'); removable($('languages'), 'languages');
       chips($('availability'), options.availability, state.availability, 0, 'availability');
       chips($('formats'), options.formats, state.session_formats, 0, 'session_formats');
       chips($('traits'), options.traits, state.traits, 5, 'traits');
@@ -244,11 +250,12 @@
     // unless they switch it off on step 3 or decline the 18+ question — then it is a normal private save.
     const wantPublic = new URLSearchParams(location.search).get('start') === 'public';
     try {
-      const r = await apiRequest('/api/profile/watch'); state = r.profile; options = r.options; firstTime = !state.exists;
+      const r = await apiRequest('/api/profile/watch'); state = r.profile; state.watchlist = state.watchlist || []; options = r.options; firstTime = !state.exists;
     } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
     $('loading').hidden = true; $('form').hidden = false; $('blocksSec').hidden = false; render();
     setWizard(firstTime); loadPhotos(); meter();
     adder($('titleIn'), $('titleAdd'), $('titles'), 'favorite_titles', 10);
+    adder($('wantIn'), $('wantAdd'), $('wantList'), 'watchlist', 20);
     adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
     adder($('langIn'), $('langAdd'), $('languages'), 'languages', 6);
     $('bio').oninput = () => { state.bio = $('bio').value; dirty = true; };
@@ -271,7 +278,7 @@
     $('discoverable').onchange = () => {
       if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; choseOff = true; return; }
       if (!state.gender) { $('discoverable').checked = false; say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return; }
-      if (!state.genres.length && !state.favorite_titles.length) { $('discoverable').checked = false; say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); $('genres').querySelector('button').focus(); return; }
+      if (!state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length) { $('discoverable').checked = false; say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); $('genres').querySelector('button').focus(); return; }
       if (state.adult_confirmed_at) { state.discoverable = 1; dirty = true; return; }
       $('discoverable').checked = false; $('adultChk').checked = false; $('adultOk').disabled = true; $('adultDlg').showModal();
     };
@@ -284,7 +291,7 @@
       if (wantPublic && firstTime && !state.discoverable && !choseOff) { $('discoverable').checked = true; $('discoverable').onchange(); if (!state.discoverable) return; }
       $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
-        const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, creators: state.creators, languages: state.languages,
+        const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, watchlist: state.watchlist || [], creators: state.creators, languages: state.languages,
           availability: state.availability, session_formats: state.session_formats, traits: state.traits, bio: state.bio,
           discovery_scope: state.discovery_scope, gender: state.gender, friends_list_visibility: state.friends_list_visibility,
           show_online: !!state.show_online, page_link: state.page_link || 'none', discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
@@ -339,7 +346,7 @@
     $('next').onclick = () => {
       pendingAdds.forEach((add) => add());   // a film typed but not yet added counts for "pick at least one"
       if (step === 1 && !state.gender) { say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
-      if (step === 2 && !state.genres.length && !state.favorite_titles.length) { say('Pick at least one genre or add a film, so people can see what you like.'); return; }
+      if (step === 2 && !state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length) { say('Pick at least one genre or add a film, so people can see what you like.'); return; }
       say(''); showStep(step + 1);
     };
     $('back').onclick = () => showStep(step - 1);

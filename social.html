@@ -30,9 +30,12 @@
   /* deck */
   #v-discover { overflow-x: clip; }   /* a card mid-swipe must not make the page scroll sideways */
   /* ── Discover: one tall card at a time, Tinder-style (founder 10-22: "beautiful, elegant, modern, addictive") ── */
-  .dz { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-top: 4px; }
-  .dz-stack { position: relative; height: clamp(440px, calc(100dvh - 290px), 700px); }
-  @media (max-width: 640px) { .dz { gap: 14px; } .dz-stack { height: max(400px, calc(100dvh - 56px - 57px - 64px - 86px - 40px)); } }
+  /* the column has a fixed height and the card takes whatever the teaser and the buttons leave, so the buttons never
+     slip under the phone's bottom bar */
+  .dz { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-top: 4px; height: clamp(528px, calc(100dvh - 202px), 790px); }
+  .dz-stack { position: relative; flex: 1 1 auto; min-height: 0; }
+  .dz-actions, .dz-tease { flex: none; }
+  @media (max-width: 640px) { .dz { gap: 14px; height: max(480px, calc(100dvh - 56px - 57px - 64px - 44px)); } }
   .d-card { position: absolute; inset: 0; border-radius: 26px; overflow: hidden; background: #0B1022; color: #fff;
     box-shadow: 0 24px 60px -12px rgba(2, 6, 23, .7), 0 0 0 1px rgba(255, 255, 255, .07);
     touch-action: pan-y; user-select: none; -webkit-user-select: none; outline: none;
@@ -87,6 +90,8 @@
     font: 900 32px/1 var(--h-font-display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; background: rgba(2, 6, 23, .18); }
   .d-stamp.yes { left: 22px; color: #4ADE80; transform: rotate(-14deg); }
   .d-stamp.no { right: 22px; color: #FB7185; transform: rotate(14deg); }
+  .dz-tease { margin: 0; align-self: center; display: inline-flex; gap: 6px; padding: 7px 14px; border-radius: 999px; font: 700 13px/1.2 var(--h-font-body); color: #fff;
+    background: linear-gradient(135deg, rgba(99, 102, 241, .28), rgba(236, 72, 153, .28)); border: 1px solid rgba(236, 72, 153, .45); }
   .dz-actions { display: flex; justify-content: center; align-items: center; gap: 20px; }
   .dz-btn { width: 54px; height: 54px; flex: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; padding: 0;
     border: 1px solid rgba(255, 255, 255, .09); background: linear-gradient(180deg, #172036, #0F172A); box-shadow: 0 10px 24px -6px rgba(2, 6, 23, .8), inset 0 1px 0 rgba(255, 255, 255, .06);
@@ -334,14 +339,14 @@
     window.addEventListener('hashchange', route);
 
     // ── Discover ──
-    let deck = [];
+    let deck = []; let likedYou = 0;   // how many in this deck already said yes to me (a count, never who)
     // #discover/<username>: a "new people" email about this person — their card comes first (if they're still in my deck).
     let emailOpenSent = false;
     async function renderDiscover(first) {
       if (!emailOpenSent && /[?&]utm_medium=buddies\b/.test(location.search)) { emailOpenSent = true; trackEvent('buddies_email_open', { named: !!first }); }
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
-      deck = r.cards; v.innerHTML = '';
+      deck = r.cards; likedYou = r.likedYou || 0; v.innerHTML = '';
       if (r.reason === 'not_discoverable') {
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
           el('p', {}, 'Discovery is off for you. Turn it on in your watch profile to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'),
@@ -379,7 +384,8 @@
       const actions = el('div', { class: 'dz-actions' },
         iconBtn('undo', 'Undo last skip', ICON.undo, undo), iconBtn('no lg', 'Skip', ICON.no, () => decide(-1)),
         iconBtn('yes lg', 'Watch together?', ICON.heart, () => decide(1)), iconBtn('info', `More about ${c.name}`, ICON.up, () => details(c)));
-      v.append(el('div', { class: 'dz' }, stack, actions));
+      const tease = likedYou > 0 ? el('p', { class: 'dz-tease', role: 'status' }, el('span', { 'aria-hidden': 'true' }, '👀'), ` ${likedYou === 1 ? 'Someone' : `${likedYou} people`} here already ${likedYou === 1 ? 'wants' : 'want'} to watch with you`) : null;
+      v.append(el('div', { class: 'dz' }, tease, stack, actions));
       let coached = true; try { coached = !!localStorage.getItem('hz_swipe_coach'); } catch (e) { /* storage blocked: no coach */ }
       if (!coached) {
         const coach = el('div', { class: 'dz-coach', role: 'note', onclick: () => coach.remove() },
@@ -423,7 +429,7 @@
     // Photos the viewer may see, tap left/right half to move; otherwise their initial over their films, poster-style.
     function cardMedia(c) {
       if (!c.photos || !c.photos.length) {
-        const words = [...(c.favoriteTitles || []), ...(c.genres || [])]; const line = words.length ? words.join(' · ') + ' · ' : 'Herae · ';
+        const words = [...(c.favoriteTitles || []), ...(c.watchlist || []), ...(c.genres || [])]; const line = words.length ? words.join(' · ') + ' · ' : 'Herae · ';
         return el('div', { class: 'd-art', 'aria-hidden': 'true' }, el('div', { class: 'd-reel' }, ...[0, 1, 2, 3, 4].map((k) => el('span', {}, line.repeat(4).slice(k * 7)))),
           el('div', { class: 'd-initial' }, (c.name || '?').trim()[0].toUpperCase()));
       }
@@ -441,12 +447,12 @@
       const dl = el('dl', { class: 'd-meta' });
       const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
       add('Why you’re seeing them', (c.why || []).join(' · ')); add('About', c.bio);
-      add('Loves', (c.favoriteTitles || []).join(', ')); add('Genres', (c.genres || []).join(', ')); add('Creators', (c.creators || []).join(', '));
+      add('Loves', (c.favoriteTitles || []).join(', ')); add('Wants to watch', (c.watchlist || []).join(', ')); add('Genres', (c.genres || []).join(', ')); add('Creators', (c.creators || []).join(', '));
       add('Watches in', (c.languages || []).join(', ')); add('Usually free', L(c.availability)); add('Likes watching', L(c.formats)); add('As a viewer', L(c.traits));
       dialog(c.name, [dl, c.pageLink ? el('a', { class: 'd-page', href: `user.html?u=${encodeURIComponent(c.username)}` }, 'See their Herae page →') : null].filter(Boolean),
         [['Skip', 'hb-quiet', -1], ['Watch together?', 'hb-primary', 1]]).then((v) => { if ((v === 1 || v === -1) && deck[0] === c) decide(v); });
     }
-    function next() { deck.shift(); showCard(); }
+    function next() { deck.shift(); if (likedYou > 0) likedYou--; showCard(); }   // shortcut: assumes likers lead the deck (true while LIKES_GATE is off)
     // The card leaves the way it was sent, then the next one rises (buttons, keys and swipes all come through here).
     let deciding = false;
     async function decide(dir) {
