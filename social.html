@@ -339,14 +339,14 @@
     window.addEventListener('hashchange', route);
 
     // ── Discover ──
-    let deck = []; let likedYou = 0;   // how many in this deck already said yes to me (a count, never who)
+    let deck = []; let likedYou = 0; let widen = 0;   // how many in this deck already said yes to me (a count, never who)
     // #discover/<username>: a "new people" email about this person — their card comes first (if they're still in my deck).
     let emailOpenSent = false;
     async function renderDiscover(first) {
       if (!emailOpenSent && /[?&]utm_medium=buddies\b/.test(location.search)) { emailOpenSent = true; trackEvent('buddies_email_open', { named: !!first }); }
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
-      deck = r.cards; likedYou = r.likedYou || 0; v.innerHTML = '';
+      deck = r.cards; likedYou = r.likedYou || 0; widen = r.widen || 0; v.innerHTML = '';
       if (r.reason === 'not_discoverable') {
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
           el('p', {}, 'Discovery is off for you. Turn it on in your watch profile to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'),
@@ -368,11 +368,14 @@
       if (!c) {
         // Cold start (founder 10-22): never a dead end. They're on the list; the email comes to them; meanwhile two real
         // things to do now — a party (many people, so it works with few), or bring someone they already know.
+        const widenBtn = widen > 0 ? el('button', { type: 'button', class: 'hb hb-primary', onclick: async () => {
+          try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discovery_scope: 'everyone' }) }); toast('Showing everyone now. Change it any time in your profile.'); renderDiscover(); }
+          catch (e) { toast(e.message || 'Could not change it.'); } } }, `Show me everyone (${widen} more ${widen === 1 ? 'person' : 'people'})`) : null;
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'You’re in — we’ll find them for you'),
           el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll email you a link straight to their card. Nothing to keep checking.'),
           el('p', { class: 'muted' }, 'More films and genres on your profile means more people fit.'),
-          el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' },
-            el('a', { class: 'hb hb-primary', href: '#parties' }, 'Find a watch party'),
+          el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' }, widenBtn,
+            el('a', { class: `hb ${widenBtn ? 'hb-secondary' : 'hb-primary'}`, href: '#parties' }, 'Find a watch party'),
             el('a', { class: 'hb hb-secondary', href: 'contacts.html' }, 'Invite someone I know'),
             el('a', { class: 'hb hb-secondary', href: 'watch-profile.html' }, 'Add to my profile')),
           el('button', { type: 'button', class: 'hb hb-quiet', onclick: undo }, 'Undo last skip')));

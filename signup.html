@@ -61,10 +61,10 @@
 
       <fieldset class="mode-pick" id="modePick">
         <legend>Who do you want to watch with?</legend>
-        <label class="mode-opt"><input type="radio" name="mode" value="private" checked>
+        <label class="mode-opt"><input type="radio" name="mode" value="public" checked>
+          <span><b>🌍 Meet new people too</b><small>Public. We’ll match you with people who love the same films and shows, and you can join watch parties. You choose what’s shown, and nobody can message you unless you both say yes. 18+.</small></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="private">
           <span><b>🔒 Just people I invite</b><small>Private. Only someone you send your link to can find you — your partner or friends you already have.</small></span></label>
-        <label class="mode-opt"><input type="radio" name="mode" value="public">
-          <span><b>🌍 Also meet new people</b><small>Public. We’ll match you with people who love the same films and shows, and you can join watch parties. You choose what’s shown, and nobody can message you unless you both say yes. 18+.</small></span></label>
       </fieldset>
 
       <!-- Above the form on purpose: Google sign-up is one click versus three
@@ -145,8 +145,8 @@
     var pwFill = document.getElementById('pwFill');
     var pwHint = document.getElementById('pwHint');
 
-    // Private unless they pick public. Kept in sessionStorage so the Google path (api.js loginWithGoogle) sends it too.
-    function mode() { var c = document.querySelector('input[name=mode]:checked'); return c ? c.value : 'private'; }
+    // Public unless they pick private (founder 10-22: opt-out, the default most people keep). Kept in sessionStorage so the Google path (api.js loginWithGoogle) sends it too.
+    function mode() { var c = document.querySelector('input[name=mode]:checked'); return c ? c.value : 'public'; }
     function rememberMode() { try { sessionStorage.setItem('herae_signup_mode', mode()); } catch (e) { /* storage blocked */ } }
     document.querySelectorAll('input[name=mode]').forEach(function (r) { r.addEventListener('change', rememberMode); });
     rememberMode();

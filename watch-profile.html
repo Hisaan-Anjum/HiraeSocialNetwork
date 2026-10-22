@@ -30,7 +30,7 @@
   .wp-meter { display: flex; align-items: center; gap: var(--h-3); margin: 0 0 var(--h-5); font-size: var(--h-size-sm); color: var(--h-text-2); }
   .wp-meter-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--h-surface-2); overflow: hidden; }
   .wp-meter-bar i { display: block; height: 100%; width: 0; background: var(--brand-gradient); transition: width var(--h-med) var(--h-ease); }
-  .wp-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--h-2); margin-bottom: var(--h-2); }
+  .wp-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--h-2); margin-bottom: var(--h-2); max-width: 440px; }   /* phone-sized tiles on a desktop too */
   .wp-ph { position: relative; aspect-ratio: 4 / 5; border-radius: var(--h-r-lg); overflow: hidden; background: var(--h-surface-2); border: 1.5px dashed var(--h-line-strong); }
   .wp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .wp-ph.filled { border-style: solid; border-color: transparent; }
@@ -45,6 +45,8 @@
   .crop-stage { position: relative; width: min(78vw, 320px); aspect-ratio: 4 / 5; margin: 0 auto; overflow: hidden; border-radius: var(--h-r-lg); background: #000; touch-action: none; cursor: grab; }
   .crop-stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; user-select: none; -webkit-user-drag: none; max-width: none; }
   .crop-zoom { width: 100%; margin-top: var(--h-4); accent-color: var(--h-accent); }
+  .wp-partner { margin: -4px 0 16px; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45; color: var(--h-text-2); background: var(--h-surface); border: 1px solid var(--h-line); } .wp-partner a { font-weight: 700; }
+  .wp-invite { display: flex; gap: 8px; align-items: center; margin-top: 8px; } .wp-invite code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 12px; border-radius: 10px; background: var(--h-surface-2); color: var(--h-text); font-size: 13px; }
 </style>
 </head>
 <body class="h2">
@@ -55,6 +57,9 @@
   <main class="h-page" id="main">
     <h1>Your watch profile</h1>
     <p class="muted wp-intro" id="intro">Three quick steps. Private until you turn discovery on.</p>
+    <!-- Public is the sign-up default, so someone who came for their partner must not be stuck here: one tap to the invite. -->
+    <div class="wp-partner" id="partnerOut" hidden>Here to watch with someone you already know? Send them your link — they don’t need an account:
+      <span class="wp-invite"><code id="partnerLink">…</code><button type="button" class="hb hb-secondary" id="partnerCopy">Copy</button></span></div>
     <div class="wp-meter" id="meter" hidden><div class="wp-meter-bar"><i id="meterFill"></i></div><span id="meterText"></span></div>
     <ol class="wp-steps" id="steps" hidden><li data-s="1">You</li><li data-s="2">Your taste</li><li data-s="3">Go live</li></ol>
     <div id="loading" class="h-skeleton" style="height:240px" aria-hidden="true"></div>
@@ -63,7 +68,7 @@
       <section class="h-section wp-step" data-step="1" aria-labelledby="s-you">
         <h2 id="s-you">You</h2>
         <div class="wp-photos" id="photos" aria-label="Your photos"></div>
-        <p class="h-help" id="photoHelp">Up to 6. Your first photo is your main one. Only people you choose can see them — set that in step 3.</p>
+        <p class="h-help" id="photoHelp">Up to 6. Your first photo is your main one. People in Discover see them on your card — change who in step 3.</p>
         <label class="h-label" for="dname">Name on your card</label>
         <input class="hi" id="dname" maxlength="40" autocomplete="given-name" placeholder="Your first name or a nickname">
         <fieldset style="margin-top:var(--h-5)"><legend>I am <span class="faint">(needed for “show me”; not shown on your card)</span></legend>
@@ -246,14 +251,19 @@
 
       $('showOnline').checked = !!state.show_online;
     }
-    // Chose "Also meet new people" at sign-up (?start=public): Finish turns discovery on (asking the 18+ question once)
+    // Chose "Meet new people too" at sign-up (?start=public): Finish turns discovery on (asking the 18+ question once)
     // unless they switch it off on step 3 or decline the 18+ question — then it is a normal private save.
     const wantPublic = new URLSearchParams(location.search).get('start') === 'public';
+    let partnerLinkAsked = false;   // declared before the first setWizard() call (a later `let` throws there)
     try {
       const r = await apiRequest('/api/profile/watch'); state = r.profile; state.watchlist = state.watchlist || []; options = r.options; firstTime = !state.exists;
     } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
     $('loading').hidden = true; $('form').hidden = false; $('blocksSec').hidden = false; render();
     setWizard(firstTime); loadPhotos(); meter();
+    // From a night's review page: "Loved <film>? …" arrives as ?love=<title> and is added (kept on Save / Finish).
+    const love = (new URLSearchParams(location.search).get('love') || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+    if (love && !state.favorite_titles.includes(love) && state.favorite_titles.length < 10) {
+      state.favorite_titles = [...state.favorite_titles, love]; dirty = true; render(); say(`Added “${love}” to films you love. ${firstTime ? 'Finish' : 'Save'} to keep it.`); }
     adder($('titleIn'), $('titleAdd'), $('titles'), 'favorite_titles', 10);
     adder($('wantIn'), $('wantAdd'), $('wantList'), 'watchlist', 20);
     adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
@@ -332,6 +342,11 @@
     // ── Guided first time: three short steps; afterwards the same sections on one page ──
     function setWizard(on) {
       $('form').classList.toggle('wizard', on); $('steps').hidden = !on; $('meter').hidden = on;
+      $('partnerOut').hidden = !(on && wantPublic);
+      if (on && wantPublic && !partnerLinkAsked) { partnerLinkAsked = true;   // their own invite link, right here: zero taps for partner people
+        getMyInvite().then((r) => { $('partnerLink').textContent = r.url;
+          $('partnerCopy').onclick = () => navigator.clipboard.writeText(r.url).then(() => say('Link copied — send it to them.'), () => say(r.url)); })
+          .catch(() => { $('partnerOut').innerHTML = 'Here to watch with someone you already know? <a href="contacts.html">Send them a link first →</a>'; }); }
       $('intro').textContent = on ? (wantPublic ? 'You chose to meet new people. Three quick steps, then you’ll see who’s here.' : 'Three quick steps. Private until you turn discovery on.') : 'Private until you turn discovery on. Change anything, any time.';
       showStep(on ? 1 : 0);
     }

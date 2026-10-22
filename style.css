@@ -1089,6 +1089,10 @@ a.search-result.contact-row { display: flex; padding: 8px 10px; border: none; ba
   max-width: 640px; margin: 0 auto 18px; font-size: 14px; font-weight: 700;
   color: var(--ink-dim); text-align: center;
 }
+/* "Loved <film>? … meet people who love it too" — the night (the tool) hands over to watch buddies (the network). */
+.review-meet { display: block; max-width: 640px; margin: -6px auto 22px; padding: 12px 16px; border-radius: 14px; text-align: center; font-size: 14px; line-height: 1.45;
+  color: #fff; text-decoration: none; background: linear-gradient(135deg, rgba(99, 102, 241, .22), rgba(236, 72, 153, .22)); border: 1px solid rgba(236, 72, 153, .4); }
+.review-meet:hover { border-color: #EC4899; }
 .review-moment-strip-item { flex-shrink: 0; }
 
 /* ══════════════════════════════════════════════════════════════════════

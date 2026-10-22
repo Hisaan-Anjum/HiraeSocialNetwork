@@ -143,6 +143,7 @@ async function loadSession() {
   contentEl.innerHTML = `
     ${detail.sessionTitle ? `<div class="review-session-title-banner">${escapeHtml(detail.sessionTitle)}</div>` : ''}
     ${title ? `<div class="review-content-banner">📺 ${escapeHtml(title)}</div>` : ''}
+    ${title && title.length <= 80 ? `<a class="review-meet" href="watch-profile.html?love=${encodeURIComponent(title.slice(0, 60))}">💞 Loved <b>${escapeHtml(title)}</b>? Add it to your watch profile and meet people who love it too →</a>` : ''}
     ${momentsStrip}
     ${shareNight}
     <div class="review-panel">
