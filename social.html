@@ -250,6 +250,8 @@
       card.onpointermove = (e) => { if (x0 === null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`; };
       card.onpointerup = () => { if (x0 === null) return; card.classList.remove('dragging'); x0 = null; card.style.transform = '';
         if (dx > 110) interested(); else if (dx < -110) skip(); };
+      // The browser took the gesture (e.g. it became a scroll): put the card back, decide nothing.
+      card.onpointercancel = () => { x0 = null; dx = 0; card.classList.remove('dragging'); card.style.transform = ''; };
       card.onkeydown = (e) => { if (e.target !== card) return; if (e.key === 'ArrowRight') { e.preventDefault(); interested(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); skip(); } else if (e.key.toLowerCase() === 'u') undo(); };
     }
 
@@ -464,7 +466,9 @@
       const actions = el('div', { class: 'h-row', style: 'flex-wrap:wrap;margin:var(--h-4) 0' }); v.append(actions);
       if (!inside) {
         const full = p.members >= p.capacity;
-        if (p.myRequest && p.myRequest.state === 'pending') actions.append(el('span', { class: 'p-state' }, 'Request sent'), el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('/requests/withdraw', null, 'Request withdrawn.') }, 'Withdraw'));
+        if (p.myRequest && p.myRequest.state === 'pending') actions.append(el('span', { class: 'p-state' }, 'Request sent'),
+          el('button', { type: 'button', class: 'hb hb-secondary', onclick: () => requestChat(id, p.myRequest.id, p.owner) }, 'Message the host'),
+          el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('/requests/withdraw', null, 'Request withdrawn.') }, 'Withdraw'));
         else if (full) actions.append(el('p', { class: 'muted' }, 'This party is full.'));
         else if (p.access === 'invited' || p.admission === 'open') actions.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => act('/join', { token }, `You joined ${p.title}.`).then(() => { location.hash = `parties/${id}`; }) }, 'Join'));
         else actions.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: async () => {
@@ -493,6 +497,7 @@
           v.append(el('h2', {}, `Asking to join (${p.requests.length})`));
           const ul = el('ul', { class: 'h-list' });
           p.requests.forEach((q) => ul.append(el('li', {}, el('div', { class: 'row-main' }, el('strong', {}, q.username), q.note ? el('div', { class: 'sub' }, q.note) : null),
+            el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => requestChat(id, q.id, q.username) }, 'Chat'),
             el('button', { type: 'button', class: 'hb hb-primary', onclick: () => act(`/requests/${q.id}/approve`, null, `${q.username} is in.`) }, 'Let in'),
             el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act(`/requests/${q.id}/reject`) }, 'Decline'))));
           v.append(ul);
@@ -516,6 +521,23 @@
         ul.append(el('li', {}, el('div', { class: 'row-main' }, el('strong', {}, m.username), ROLE[m.role] ? el('div', { class: 'sub' }, ROLE[m.role]) : null), items.length ? moreMenu(items) : null));
       });
       v.append(ul);
+    }
+    // The short chat attached to one request to join (applicant ↔ host/moderators). Closes once the request is answered.
+    async function requestChat(partyId, rid, withName) {
+      const path = `/api/parties/${partyId}/requests/${rid}/messages`;
+      for (;;) {
+        let t; try { t = await apiRequest(path); } catch (e) { toast(e.message || 'This chat isn’t available.'); return; }
+        const list = el('div', { class: 'c-thread', role: 'log', 'aria-label': `Messages with ${withName}`, style: 'max-height:40vh;overflow:auto' },
+          t.messages.length ? t.messages.map((m) => el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}` }, m.body, el('time', {}, `${m.sender === me ? 'You' : m.sender} · ${when(m.createdAt)}`)))
+            : el('p', { class: 'muted' }, 'No messages yet.'));
+        const box = t.open ? el('textarea', { class: 'hi', id: 'rqMsg', maxlength: '1000', placeholder: 'Write a message', 'aria-label': 'Message' }) : null;
+        const res = await dialog(`About joining — ${withName}`, [el('div', { class: 'h-stack' }, list, box || el('p', { class: 'h-help' }, 'This request has been answered, so the chat is closed.'))],
+          t.open ? [['Close', 'hb-quiet', false], ['Send', 'hb-primary', true]] : [['Close', 'hb-quiet', false]]);
+        if (!res) return;
+        if (!box.value.trim()) continue;
+        try { await apiRequest(path, { method: 'POST', body: JSON.stringify({ body: box.value }) }); }
+        catch (e) { toast(e.message || 'Could not send.'); }
+      }
     }
     // Create (no argument) or edit (owner) a party.
     async function editParty(p = null) {
