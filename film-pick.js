@@ -13,7 +13,7 @@
   'use strict';
   const css = `
 .fp-list{position:fixed;z-index:2147483000;margin:0;padding:4px;list-style:none;background:var(--h-surface-2,#1e293b);border:1px solid var(--h-line-strong,#475569);
-  border-radius:var(--h-r-md,12px);box-shadow:var(--h-shadow,0 8px 24px rgba(0,0,0,.5));max-height:min(320px,45vh);overflow:auto;color:var(--h-text,#f1f5f9)}
+  border-radius:var(--h-r-md,12px);box-shadow:var(--h-shadow,0 8px 24px rgba(0,0,0,.5));max-height:min(320px,45vh);overflow:auto;overscroll-behavior:contain;touch-action:pan-y;color:var(--h-text,#f1f5f9)}
 .fp-list[hidden]{display:none}
 .fp-opt{display:flex;gap:10px;align-items:center;min-height:var(--h-tap,44px);padding:6px 10px;border-radius:var(--h-r-sm,8px);cursor:pointer}
 .fp-opt[aria-selected=true],.fp-opt:hover{background:var(--h-surface-3,#273449)}
@@ -52,8 +52,11 @@
       items.forEach(([value, label, item], i) => {
         const li = document.createElement('li'); li.className = 'fp-opt'; li.id = `${list.id}-${i}`; li.setAttribute('role', 'option');
         li.innerHTML = `${item && 'posterUrl' in item ? (item.posterUrl ? `<img alt="" src="${esc(item.posterUrl)}">` : '<span class="fp-ph"></span>') : ''}<b>${esc(value)}</b>${label ? `<small>${esc(label)}</small>` : ''}`;
-        // pointerdown, not click: on a phone the input's blur (which closes the list) would otherwise win the race.
-        li.addEventListener('pointerdown', (e) => { e.preventDefault(); pick(i); });
+        // Picked on click — a real tap. A finger that starts a scroll on the list gets pointercancel and no click, so
+        // the list scrolls (founder 10-23: "I can't scroll through the autocomplete, it just clicks it"). pointerdown
+        // only keeps the field focused, so its blur can't close the list before the tap lands.
+        li.addEventListener('pointerdown', (e) => e.preventDefault());
+        li.addEventListener('click', () => pick(i));
         list.append(li);
       });
       if (!items.length) return close();
