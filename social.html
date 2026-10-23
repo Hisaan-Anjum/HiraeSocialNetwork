@@ -226,6 +226,7 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+  <script src="film-pick.js"></script>
 <script src="app-nav.js"></script>
   <script>
   requireAuth();
@@ -684,11 +685,13 @@
       const form = el('form', { class: 'c-compose' }, suggest, input, send);
       v.append(form);
       async function suggestWatch() {
-        const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'Start typing a film or series', list: 'sgTitleList', autocomplete: 'off' });
-        const tl = el('datalist', { id: 'sgTitleList' });
-        let tt; t.oninput = () => { clearTimeout(tt); const q = t.value.trim(); if (q.length < 2) return;
-          tt = setTimeout(async () => { const r = await apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).catch(() => ({ recommendations: [] }));
-            if (t.value.trim() !== q) return; tl.innerHTML = ''; (r.recommendations || []).forEach((m) => tl.append(el('option', { value: m.title, label: m.releaseYear ? String(m.releaseYear) : '' }))); }, 180); };
+        // Both ways to pick (founder 10-23): a dropdown as you type, or the whole catalogue — the shared Watchlist's
+        // "Add a movie" browser. A chosen film with a known streaming link fills the link too. (film-pick.js)
+        const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'Start typing a film or series', autocomplete: 'off' });
+        const fillLink = (m) => { const l = m && Array.isArray(m.watchLinks) && m.watchLinks[0]; if (l && l.url && !u.value) u.value = l.url; };
+        heraeTypeahead(t, (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '', m])), { onPick: fillLink });
+        const browse = el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { const m = await heraeCatalogPick({ withUser: other, withName: otherName, title: `Pick something to watch with ${otherName}` }); if (m) { t.value = m.title; fillLink(m); t.focus(); } } }, '🍿 Browse the catalogue');
+        const tl = el('div', { class: 'h-row', style: 'justify-content:flex-start' }, browse);
         const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'Link (optional) — or pick Netflix, Prime… when you start' });
         const nowR = el('input', { type: 'radio', name: 'sgWhen', value: 'now', checked: true });
         const laterR = el('input', { type: 'radio', name: 'sgWhen', value: 'later' });

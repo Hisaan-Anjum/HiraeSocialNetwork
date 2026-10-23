@@ -191,6 +191,7 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+  <script src="film-pick.js"></script>
 <script src="app-nav.js"></script>
   <script>
   requireAuth();
@@ -271,13 +272,9 @@
       state.favorite_titles = [...state.favorite_titles, love]; dirty = true; render(); say(`Added “${love}” to films you love. ${firstTime ? 'Finish' : 'Save'} to keep it.`); }
     // Type-ahead (founder 10-23: "fill it from the movie DB"): films and watchlist suggest from Herae's catalogue as you
     // type; languages from a fixed list. Typing anything else still works — it's a suggestion, never a restriction.
-    function suggest(input, fetchItems) {
-      const dl = document.createElement('datalist'); dl.id = input.id + 'List'; document.body.append(dl); input.setAttribute('list', dl.id); input.setAttribute('autocomplete', 'off');
-      let t; input.addEventListener('input', () => { clearTimeout(t); const q = input.value.trim(); if (q.length < 2) return;
-        t = setTimeout(async () => { const items = await fetchItems(q).catch(() => []); if (input.value.trim() !== q) return;
-          dl.innerHTML = ''; items.slice(0, 8).forEach(([value, label]) => { const o = document.createElement('option'); o.value = value; if (label) o.label = label; dl.append(o); }); }, 180); });
-    }
-    const films = (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '']));
+    // A real dropdown (film-pick.js) — <datalist> on Android is only keyboard chips and a ▼ that does nothing (10-23).
+    const suggest = (input, fetchItems) => heraeTypeahead(input, fetchItems);
+    const films = (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '', m]));
     const LANGS = ['English', 'Spanish', 'Hindi', 'Urdu', 'Arabic', 'French', 'Portuguese', 'German', 'Italian', 'Turkish', 'Russian', 'Japanese', 'Korean', 'Chinese (Mandarin)', 'Cantonese',
       'Bengali', 'Punjabi', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Gujarati', 'Persian', 'Indonesian', 'Malay', 'Filipino (Tagalog)', 'Thai', 'Vietnamese', 'Dutch',
       'Polish', 'Ukrainian', 'Greek', 'Swedish', 'Norwegian', 'Danish', 'Finnish', 'Hebrew', 'Swahili', 'Yoruba', 'Hausa', 'Amharic', 'Romanian', 'Czech', 'Hungarian'];
