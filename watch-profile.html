@@ -390,11 +390,16 @@
       // First visit after choosing "meet new people": the fork first, the steps only once they pick "Meet people".
       // ?meet=1: they already chose to meet people (Discover's "Set up my profile", the top bar) — no fork, straight in.
       let chose = new URLSearchParams(location.search).get('meet') === '1'; try { chose = chose || sessionStorage.getItem('herae_fork') === 'meet'; } catch (e) { /* storage blocked */ }
-      const fork = on && wantPublic && !chose;
+      // gate=1 (app-nav.js): no partner and not in Discover — the choice even for a saved profile; "Meet people" then
+      // goes to Discover's one-tap switch, since there's nothing left to fill in.
+      const gate = new URLSearchParams(location.search).get('gate') === '1';
+      const fork = wantPublic && !chose && (on || gate);
+      if (!on) { $('forkMeet').querySelector('small').textContent = 'Your profile is ready — turn on Discover in one tap.'; $('forkMeet').querySelector('.wp-fork-go').textContent = 'Turn it on →'; }
       document.querySelector('main h1').textContent = fork ? 'Who do you want to watch with?' : 'Your watch profile';
       $('fork').hidden = !fork; $('form').hidden = fork; $('steps').hidden = !on || fork; $('intro').hidden = fork; if (fork) $('blocksSec').hidden = true;
-      $('forkKnown').onclick = () => { try { localStorage.setItem('herae_setup_skipped', '1'); } catch (e) { /* fine */ } };   // app-nav.js won't send them back
+      $('forkKnown').onclick = () => { try { localStorage.setItem('herae_setup_skipped', String(Date.now())); } catch (e) { /* fine */ } };   // app-nav.js holds off 3 days
       $('forkMeet').onclick = () => { try { sessionStorage.setItem('herae_fork', 'meet'); } catch (e) { /* fine */ }
+        if (!on) { location.href = 'social.html#discover'; return; }
         $('fork').hidden = true; $('form').hidden = false; $('steps').hidden = false; $('intro').hidden = false; $('blocksSec').hidden = false; document.querySelector('main h1').textContent = 'Your watch profile'; showStep(1); };
       showStep(on ? 1 : 0);
     }

@@ -131,9 +131,10 @@
   // step for where they are. Dismissing hides it for an hour; it is always there for everyone (founder 10-22: persistent).
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
-    // A new public sign-up sets up their profile before anything else (founder 10-23) — unless they chose "skip" there.
-    let skipped = false; try { skipped = !!localStorage.getItem('herae_setup_skipped'); } catch (e) { /* storage blocked */ }
-    if (st.setupFirst && !skipped && page !== 'watch-profile.html') { location.replace('watch-profile.html?start=public'); return; }
+    // Nobody in between (founder 10-23): no partner and no profile → the choice, from every app page.
+    // "Someone I already know" (the fork) holds off the choice for 3 days — time to bring their person in — then it asks again.
+    let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 3 * 864e5; } catch (e) { /* storage blocked */ }
+    if (st.setupFirst && !skipped && page !== 'watch-profile.html') { location.replace('watch-profile.html?start=public&gate=1'); return; }
     const MSG = {
       // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
