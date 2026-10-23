@@ -190,7 +190,7 @@
       <button type="button" class="hb hb-primary" id="cropUse">Use photo</button>
     </div>
   </dialog>
-  <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp" hidden>
+  <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp" multiple hidden>
 
   <script src="config.js"></script>
   <script src="api.js"></script>
@@ -429,7 +429,7 @@
             cell.append(mk); }
         } else {
           const add = document.createElement('button'); add.type = 'button'; add.className = 'add'; add.textContent = '+';
-          add.setAttribute('aria-label', i === 0 ? 'Add your main photo' : 'Add a photo'); add.onclick = () => $('photoFile').click(); cell.append(add);
+          add.setAttribute('aria-label', i === 0 ? 'Add your main photo' : 'Add photos'); add.onclick = () => { $('photoFile').multiple = true; $('photoFile').click(); }; cell.append(add);
         }
         g.append(cell);
       }
@@ -446,7 +446,7 @@
           cell.style.visibility = 'hidden'; const under = document.elementFromPoint(e.clientX, e.clientY); cell.style.visibility = '';
           const t = under && under.closest('.wp-ph.filled'); if (t && t !== cell) t.classList.add('drop'); } };
       cell.onpointerup = (e) => { if (!start) return; start = null; cell.classList.remove('dragging'); cell.style.transform = '';
-        if (!moving) { replaceAt = i; $('photoFile').click(); return; }   // a tap: replace this photo
+        if (!moving) { replaceAt = i; $('photoFile').multiple = false; $('photoFile').click(); return; }   // a tap: replace this photo
         const target = document.querySelector('.wp-ph.drop'); document.querySelectorAll('.wp-ph').forEach((c) => c.classList.remove('drop'));
         if (!target) return; const to = +target.dataset.i;
         photos.splice(to, 0, photos.splice(i, 1)[0]); renderPhotos(); saveOrder(); say(to === 0 ? 'That’s your main photo now.' : 'Order saved.'); };
@@ -469,8 +469,9 @@
       dlg.showModal();
     }
     $('photoFile').onchange = async () => {
-      const f = $('photoFile').files[0]; $('photoFile').value = ''; const at = replaceAt; replaceAt = null; if (!f) return;
-      const dataUrl = await cropPhoto(f); if (!dataUrl) return;
+      const files = [...$('photoFile').files]; $('photoFile').value = ''; const at = replaceAt; replaceAt = null; if (!files.length) return;
+      if (at === null) return addPhotos(files);
+      const dataUrl = await cropPhoto(files[0]); if (!dataUrl) return;
       if (at !== null && photos[at]) {   // replace: the new photo takes the old one's place and keeps its privacy setting
         const old = photos[at]; say('Replacing photo…');
         try {
@@ -483,12 +484,25 @@
         } catch (e) { say(e.message || 'Could not replace that photo.'); loadPhotos(); }
         return;
       }
-      say('Uploading photo…');
-      try { const r = await apiRequest('/api/photos/mine', { method: 'POST', body: JSON.stringify({ image: dataUrl, width: 1080, height: 1350 }) });
-        const fresh = r.photos.find((p) => !photos.some((q) => q.id === p.id));
-        if (fresh) photos.push({ ...fresh, src: dataUrl }); renderPhotos(); meter(); say('Photo added.'); }
-      catch (e) { say(e.message || 'Could not add that photo.'); }
     };
+    // Several at once (founder 10-23), added in the order the picker hands them over — the phone's photo picker keeps
+    // the order you tapped them in. Each still gets its crop; skipping one skips only that one.
+    async function addPhotos(files) {
+      const room = 6 - photos.length; if (room <= 0) { say('You have 6 photos — tap one to replace it.'); return; }
+      const list = files.slice(0, room); let added = 0;
+      if (files.length > room) say(`Adding the first ${room} — you can have 6 photos.`);
+      for (let k = 0; k < list.length; k++) {
+        $('cropTitle').textContent = list.length > 1 ? `Position photo ${k + 1} of ${list.length}` : 'Position your photo';
+        const dataUrl = await cropPhoto(list[k]); if (!dataUrl) continue;
+        say(list.length > 1 ? `Uploading photo ${k + 1} of ${list.length}…` : 'Uploading photo…');
+        try { const r = await apiRequest('/api/photos/mine', { method: 'POST', body: JSON.stringify({ image: dataUrl, width: 1080, height: 1350 }) });
+          const fresh = r.photos.find((p) => !photos.some((q) => q.id === p.id));
+          if (fresh) { photos.push({ ...fresh, src: dataUrl }); added++; } renderPhotos(); meter(); }
+        catch (e) { say(e.message || 'Could not add that photo.'); break; }
+      }
+      $('cropTitle').textContent = 'Position your photo';
+      if (added) say(added > 1 ? `${added} photos added.` : 'Photo added.');
+    }
     document.querySelectorAll('input[name=pvis]').forEach((r) => r.onchange = async () => {
       if (!state.exists) { pendingVis = r.value; return; }   // saved with the profile
       try { await apiRequest('/api/photos/visibility', { method: 'PUT', body: JSON.stringify({ visibility: r.value }) }); say('Photo privacy saved.'); }
