@@ -103,7 +103,8 @@
   .dz-btn:active { transform: scale(.88); }
   .dz-btn:focus-visible { outline: 3px solid #A78BFA; outline-offset: 3px; }
   @media (hover: hover) { .dz-btn:hover { transform: translateY(-2px) scale(1.05); } .dz-btn.no:hover { box-shadow: 0 12px 28px -6px rgba(251, 113, 133, .5); } }
-    text-align: center; color: #fff; background: rgba(2, 6, 23, .78); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); cursor: pointer; }
+  .pt-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 var(--h-3); }
+  @media (max-width: 640px) { .pt-filters { grid-template-columns: 1fr 1fr; } .pt-filters select:last-child { grid-column: 1 / -1; } }
   /* the match moment */
   .mt { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden;
     background: radial-gradient(80% 60% at 50% 30%, rgba(99, 102, 241, .55), transparent 70%), radial-gradient(60% 50% at 80% 90%, rgba(236, 72, 153, .45), transparent 70%), rgba(2, 6, 23, .97);
@@ -855,17 +856,27 @@
       if (mine.parties.length) { const ul = el('ul', { class: 'h-list' }); mine.parties.forEach((p) => ul.append(partyRow(p))); v.append(ul); }
       else v.append(el('p', { class: 'muted' }, 'None yet. Start one and send the invite link to the people you want there. New parties are private.'));
       v.append(el('h2', { style: 'margin-top:var(--h-6, 32px)' }, 'Public parties'));
-      const search = el('input', { class: 'hi', type: 'search', id: 'ptSearch', placeholder: 'Search by film or party name', 'aria-label': 'Search public watch parties', maxlength: '80', style: 'margin:0 0 var(--h-3)' });
+      // Several searches at once (comma-separated) and filters (founder 10-23): where it's streaming, the film's
+      // category, the host. Server: parties.js /directory.
+      const search = el('input', { class: 'hi', type: 'search', id: 'ptSearch', placeholder: 'Search films or parties — e.g. Dune, Interstellar', 'aria-label': 'Search public watch parties (separate several with commas)', maxlength: '200', style: 'margin:0 0 var(--h-2)' });
+      const pick = (id, label, opts) => el('select', { class: 'hi pt-filter', id, 'aria-label': label }, ...opts.map(([v2, t]) => el('option', { value: v2 }, t)));
+      const fSite = pick('ptSite', 'Where it’s streaming', [['', 'Any site'], ['netflix', 'Netflix'], ['prime', 'Prime Video'], ['disney', 'Disney+'], ['apple', 'Apple TV'], ['youtube', 'YouTube'], ['other', 'Other sites']]);
+      const fGenre = pick('ptGenre', 'Category', [['', 'Any category'], ...['Drama', 'Comedy', 'Romance', 'Thriller', 'Horror', 'Science Fiction', 'Fantasy', 'Action', 'Animation', 'Documentary', 'Crime', 'Mystery', 'Musical'].map((g) => [g, g])]);
+      const fHost = pick('ptHost', 'Host', [['', 'Any host'], ['woman', 'Hosted by a woman'], ['man', 'Hosted by a man'], ['nonbinary', 'Hosted by a non-binary person']]);
+      const filters = el('div', { class: 'pt-filters' }, fSite, fGenre, fHost);
       const list = el('ul', { class: 'h-list' }); const more = el('button', { type: 'button', class: 'hb hb-secondary', hidden: true }, 'Show more');
-      v.append(search, list, more);
+      v.append(search, filters, list, more);
       let q = ''; let searchTimer;
-      search.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { q = search.value.trim(); list.innerHTML = ''; page(); }, 250); };
+      const rerun = () => { q = search.value.trim(); list.innerHTML = ''; page(); };
+      search.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(rerun, 250); };
+      [fSite, fGenre, fHost].forEach((f) => { f.onchange = rerun; });
       const page = async (before) => {
-        const qs = [before ? `before=${before}` : '', q ? `q=${encodeURIComponent(q)}` : ''].filter(Boolean).join('&');
+        const qs = [before ? `before=${before}` : '', q ? `q=${encodeURIComponent(q)}` : '', fSite.value ? `site=${fSite.value}` : '',
+          fGenre.value ? `genre=${encodeURIComponent(fGenre.value)}` : '', fHost.value ? `host=${fHost.value}` : ''].filter(Boolean).join('&');
         const r = await apiRequest(`/api/parties/directory${qs ? `?${qs}` : ''}`).catch(() => ({ parties: [] }));
         if (r.reason === 'adult_required') { list.replaceWith(el('p', { class: 'muted' }, 'Public parties are for adults. Confirm you’re 18 or over in ', el('a', { href: 'watch-profile.html' }, 'your watch profile'), ' to see them.')); return; }
         r.parties.forEach((p) => list.append(partyRow(p)));
-        if (!before && !r.parties.length) list.append(el('li', { class: 'muted' }, q ? `No open public party for “${q}” right now. Start one — people who want it can find it.` : 'No public parties right now.'));
+        if (!before && !r.parties.length) list.append(el('li', { class: 'muted' }, (q || fSite.value || fGenre.value || fHost.value) ? `No open public party ${q ? `for “${q}” ` : ''}matches right now. Start one — people who want it can find it.` : 'No public parties right now.'));
         more.hidden = !r.next; more.onclick = () => page(r.next);
       };
       await page();

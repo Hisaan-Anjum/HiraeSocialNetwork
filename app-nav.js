@@ -131,6 +131,9 @@
   // step for where they are. Dismissing hides it for an hour; it is always there for everyone (founder 10-22: persistent).
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
+    // A new public sign-up sets up their profile before anything else (founder 10-23) — unless they chose "skip" there.
+    let skipped = false; try { skipped = !!localStorage.getItem('herae_setup_skipped'); } catch (e) { /* storage blocked */ }
+    if (st.setupFirst && !skipped && page !== 'watch-profile.html') { location.replace('watch-profile.html?start=public'); return; }
     const MSG = {
       // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.

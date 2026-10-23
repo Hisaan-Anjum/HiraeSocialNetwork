@@ -57,6 +57,18 @@
   .h2 .wp-golive input { width: 58px; height: 34px; } .h2 .wp-golive input::after { width: 26px; height: 26px; }
   .h2 .wp-golive input:not(:checked) { background: #334155; border-color: #64748B; } .h2 .wp-golive input:not(:checked)::after { background: #E2E8F0; }
   .h2 .wp-golive input:checked { background: linear-gradient(135deg, #6366F1, #EC4899); border-color: transparent; } .h2 .wp-golive input:checked::after { transform: translateX(24px); background: #fff; }
+  .wp-fork { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0 8px; }
+  @media (max-width: 640px) { .wp-fork { grid-template-columns: 1fr; } }
+  .wp-fork-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 190px; padding: 22px; border-radius: 20px; text-align: left; cursor: pointer;
+    font: inherit; color: var(--h-text); text-decoration: none; background: var(--h-surface); border: 1.5px solid var(--h-line-strong); transition: transform var(--h-fast) var(--h-ease), border-color var(--h-fast); }
+  .wp-fork-tile:hover { transform: translateY(-2px); border-color: rgba(167, 139, 250, .7); }
+  .wp-fork-tile:focus-visible { outline: 3px solid var(--h-focus); outline-offset: 3px; }
+  .wp-fork-tile b { font-size: 19px; line-height: 1.25; color: var(--h-text); } .wp-fork-tile small { font-size: 15px; line-height: 1.45; color: var(--h-text-3); }
+  .wp-fork-ico { font-size: 30px; line-height: 1; }
+  .wp-fork-go { margin-top: auto; font-weight: 700; font-size: 15px; color: #C4B5FD; }
+  .wp-fork-tile.meet { border: 0; background: linear-gradient(135deg, rgba(99, 102, 241, .32), rgba(236, 72, 153, .26)); box-shadow: inset 0 0 0 1.5px rgba(167, 139, 250, .65), 0 18px 40px -18px rgba(236, 72, 153, .55); }
+  .wp-fork-tile.meet .wp-fork-go { display: inline-flex; padding: 10px 18px; border-radius: 999px; color: #fff; background: linear-gradient(135deg, #6366F1, #A78BFA 52%, #EC4899); }
+  .wp-skip { display: inline-block; margin: 6px 0 4px; font-size: 14px; color: var(--h-text-3); text-decoration: underline; }
   .wp-adult { margin: 10px 2px 22px; font-size: 13px; color: var(--h-text-2); }
 </style>
 </head>
@@ -68,9 +80,16 @@
   <main class="h-page" id="main">
     <h1>Your watch profile</h1>
     <p class="muted wp-intro" id="intro">Three quick steps. Private until you turn discovery on.</p>
-    <!-- Public is the sign-up default, so someone who came for their partner must not be stuck here: one tap to the invite. -->
-    <div class="wp-partner" id="partnerOut" hidden>Here to watch with someone you already know? Send them your link — they don’t need an account:
-      <span class="wp-invite"><code id="partnerLink">…</code><button type="button" class="hb hb-secondary" id="partnerCopy">Copy</button></span></div>
+    <!-- The fork (founder 10-23): watching with someone you know comes first and is big — it should never feel hidden — but
+         it is one tap away, not a box beside the form: once "Meet people" is chosen only the three steps remain. -->
+    <div class="wp-fork" id="fork" hidden>
+      <a class="wp-fork-tile known" id="forkKnown" href="memories.html">
+        <span class="wp-fork-ico" aria-hidden="true">💞</span><b>Watch with someone I already know</b>
+        <small>Send them your link and press play together. No profile needed.</small><span class="wp-fork-go">Get my link →</span></a>
+      <button type="button" class="wp-fork-tile meet" id="forkMeet">
+        <span class="wp-fork-ico" aria-hidden="true">🌍</span><b>Meet people who love the same films</b>
+        <small>Set up your watch profile: three quick steps, about a minute.</small><span class="wp-fork-go">Start →</span></button>
+    </div>
     <div class="wp-meter" id="meter" hidden><div class="wp-meter-bar"><i id="meterFill"></i></div><span id="meterText"></span></div>
     <ol class="wp-steps" id="steps" hidden><li data-s="1">You</li><li data-s="2">Your taste</li><li data-s="3">Go live</li></ol>
     <div id="loading" class="h-skeleton" style="height:240px" aria-hidden="true"></div>
@@ -259,7 +278,6 @@
     // Chose "Meet new people too" at sign-up (?start=public): Finish turns discovery on (asking the 18+ question once)
     // unless they switch it off on step 3 or decline the 18+ question — then it is a normal private save.
     const wantPublic = new URLSearchParams(location.search).get('start') === 'public';
-    let partnerLinkAsked = false;   // declared before the first setWizard() call (a later `let` throws there)
     // Declared here, before the first render() reads them (a later `let`/`const` throws there).
     let confirmAdult = false;
     let choseOff = false;   // they switched Discover off this visit
@@ -368,12 +386,15 @@
     // ── Guided first time: three short steps; afterwards the same sections on one page ──
     function setWizard(on) {
       $('form').classList.toggle('wizard', on); $('steps').hidden = !on; $('meter').hidden = on;
-      $('partnerOut').hidden = !(on && wantPublic);
-      if (on && wantPublic && !partnerLinkAsked) { partnerLinkAsked = true;   // their own invite link, right here: zero taps for partner people
-        getMyInvite().then((r) => { $('partnerLink').textContent = r.url;
-          $('partnerCopy').onclick = () => navigator.clipboard.writeText(r.url).then(() => say('Link copied — send it to them.'), () => say(r.url)); })
-          .catch(() => { $('partnerOut').innerHTML = 'Here to watch with someone you already know? <a href="contacts.html">Send them a link first →</a>'; }); }
-      $('intro').textContent = on ? (wantPublic ? 'Meet people who love the same films. Three quick steps, then you’ll see who’s here.' : 'Three quick steps, then you’ll see who’s here. Turn Discover off on step 3 to keep it private.') : 'Private until you turn discovery on. Change anything, any time.';
+      $('intro').textContent = on ? (wantPublic ? 'Three quick steps, then you’ll see who’s here.' : 'Three quick steps, then you’ll see who’s here. Turn Discover off on step 3 to keep it private.') : 'Private until you turn discovery on. Change anything, any time.';
+      // First visit after choosing "meet new people": the fork first, the steps only once they pick "Meet people".
+      let chose = false; try { chose = sessionStorage.getItem('herae_fork') === 'meet'; } catch (e) { /* storage blocked */ }
+      const fork = on && wantPublic && !chose;
+      document.querySelector('main h1').textContent = fork ? 'Who do you want to watch with?' : 'Your watch profile';
+      $('fork').hidden = !fork; $('form').hidden = fork; $('steps').hidden = !on || fork; $('intro').hidden = fork; if (fork) $('blocksSec').hidden = true;
+      $('forkKnown').onclick = () => { try { localStorage.setItem('herae_setup_skipped', '1'); } catch (e) { /* fine */ } };   // app-nav.js won't send them back
+      $('forkMeet').onclick = () => { try { sessionStorage.setItem('herae_fork', 'meet'); } catch (e) { /* fine */ }
+        $('fork').hidden = true; $('form').hidden = false; $('steps').hidden = false; $('intro').hidden = false; $('blocksSec').hidden = false; document.querySelector('main h1').textContent = 'Your watch profile'; showStep(1); };
       showStep(on ? 1 : 0);
     }
     function showStep(n) {
