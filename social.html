@@ -688,9 +688,24 @@
         // Both ways to pick (founder 10-23): a dropdown as you type, or the whole catalogue — the shared Watchlist's
         // "Add a movie" browser. A chosen film with a known streaming link fills the link too. (film-pick.js)
         const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'Start typing a film or series', autocomplete: 'off' });
-        const fillLink = (m) => { const l = m && Array.isArray(m.watchLinks) && m.watchLinks[0]; if (l && l.url && !u.value) u.value = l.url; };
-        heraeTypeahead(t, (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '', m])), { onPick: fillLink });
-        const browse = el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { const m = await heraeCatalogPick({ withUser: other, withName: otherName, title: `Pick something to watch with ${otherName}` }); if (m) { t.value = m.title; fillLink(m); t.focus(); } } }, '🍿 Browse the catalogue');
+        // A film picked from the catalogue (dropdown or browser) swaps the link box for "where are you watching it":
+        // its known streaming links first, then the usual services' search pages. Editing the title brings the box back.
+        let picked = null;
+        const where = el('fieldset', { style: 'border:0;padding:0;margin:0' }); where.hidden = true;
+        const linkBox = el('div', { class: 'h-stack' });
+        const setPick = (m) => {
+          picked = m || null; where.innerHTML = ''; where.hidden = !picked; linkBox.hidden = !!picked;
+          if (!picked) return;
+          const known = (Array.isArray(m.watchLinks) ? m.watchLinks : []).filter((l) => l && /^https:\/\//.test(l.url || ''));
+          const opts = [...known.map((l) => [l.name || l.provider || 'Watch it here', l.url]),
+            ...SERVICES.filter(([id, name]) => !known.some((l) => l.provider === id || String(l.name || '').toLowerCase().includes(name.toLowerCase()))).map(([, name, search]) => [name, search + encodeURIComponent(m.title)]),
+            ['Decide when we start', '']];
+          where.append(el('legend', { class: 'h-label' }, `Where are you watching ${m.title}?`),
+            ...opts.map(([name, url], i) => el('label', { class: 'h-row' }, el('input', { type: 'radio', name: 'sgWhere', value: url, checked: i === 0 }), ' ', name)));
+        };
+        t.addEventListener('input', () => { if (picked && t.value.trim() !== picked.title) setPick(null); });
+        heraeTypeahead(t, (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '', m])), { onPick: (m) => setPick(m) });
+        const browse = el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { const m = await heraeCatalogPick({ withUser: other, withName: otherName, title: `Pick something to watch with ${otherName}` }); if (m) { t.value = m.title; setPick(m); } } }, '🍿 Browse the catalogue');
         const tl = el('div', { class: 'h-row', style: 'justify-content:flex-start' }, browse);
         const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'Link (optional) — or pick Netflix, Prime… when you start' });
         const nowR = el('input', { type: 'radio', name: 'sgWhen', value: 'now', checked: true });
@@ -699,13 +714,14 @@
         const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
         dt.hidden = true; nowR.onchange = laterR.onchange = () => { dt.hidden = !laterR.checked; if (laterR.checked) dt.focus(); };
         const ok = await dialog(`Suggest a watch to ${otherName}`, [el('div', { class: 'h-stack' },
-          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, tl, el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u,
+          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, tl, where, (linkBox.append(el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u), linkBox),
           el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
             el('label', { class: 'h-row' }, nowR, ' Now'), el('label', { class: 'h-row' }, laterR, ' At a time'), dt),
           el('p', { class: 'h-help' }, `Nothing starts until ${otherName} accepts.`))], [['Cancel', 'hb-quiet', false], ['Send suggestion', 'hb-primary', true]]);
         if (!ok) return;
         try {
-          await apiRequest(`/api/chats/${id}/proposals`, { method: 'POST', body: JSON.stringify({ title: t.value, url: u.value || null, when: laterR.checked ? new Date(dt.value).toISOString() : 'now' }) });
+          const link = picked ? ((where.querySelector('input[name=sgWhere]:checked') || {}).value || null) : (u.value || null);
+          await apiRequest(`/api/chats/${id}/proposals`, { method: 'POST', body: JSON.stringify({ title: t.value, url: link, when: laterR.checked ? new Date(dt.value).toISOString() : 'now' }) });
           renderThread(id);
         } catch (e) { toast(e.message || 'Could not send the suggestion.'); }
       }

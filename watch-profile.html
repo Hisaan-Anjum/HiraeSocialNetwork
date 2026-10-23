@@ -17,7 +17,7 @@
   .wp-add { display: flex; gap: var(--h-2); margin-top: var(--h-2); }
   .wp-add .hi { flex: 1; }
   .wp-radios label { display: flex; gap: var(--h-3); align-items: flex-start; padding: var(--h-2) 0; cursor: pointer; }
-  .wp-radios input { margin-top: 4px; accent-color: var(--h-accent); width: 18px; height: 18px; }
+  .h2 .wp-radios input { margin-top: 3px; accent-color: var(--h-accent); width: 20px; height: 20px; flex: none; }   /* flex: none — long labels used to shrink their radio */
   .wp-save > * { pointer-events: auto; }
   .wp-save { pointer-events: none; position: sticky; bottom: 0; background: linear-gradient(transparent, var(--h-bg) 30%); padding: var(--h-6) 0 var(--h-4); display: flex; gap: var(--h-3); align-items: center; }
   .wp-status { font-size: var(--h-size-sm); color: var(--h-text-2); }
@@ -50,11 +50,14 @@
   .wp-partner { margin: -4px 0 16px; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45; color: var(--h-text-2); background: var(--h-surface); border: 1px solid var(--h-line); } .wp-partner a { font-weight: 700; }
   .wp-invite { display: flex; gap: 8px; align-items: center; margin-top: 8px; } .wp-invite code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 12px; border-radius: 10px; background: var(--h-surface-2); color: var(--h-text); font-size: 13px; }
   /* Go live: the one switch that matters most on this page, big and unmissable */
-  .wp-golive { padding: var(--h-4); border-radius: 18px; border: 1.5px solid rgba(167,139,250,.45); background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(236,72,153,.10)); }
+  /* .h2 .h-switch's "padding: … 0" used to win here, so the text sat on the card's border (founder 10-23 phone shot). */
+  .h2 .wp-golive { padding: 18px 20px; gap: 16px; align-items: center; border-radius: 18px; border: 1.5px solid rgba(167,139,250,.45); background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(236,72,153,.10)); }
+  .h2 .wp-golive strong { display: block; font-size: 18px; line-height: 1.3; margin-bottom: 6px; }
+  .h2 .wp-golive .muted { display: block; font-size: 15px; line-height: 1.5; }
   .h2 .wp-golive input { width: 58px; height: 34px; } .h2 .wp-golive input::after { width: 26px; height: 26px; }
   .h2 .wp-golive input:not(:checked) { background: #334155; border-color: #64748B; } .h2 .wp-golive input:not(:checked)::after { background: #E2E8F0; }
   .h2 .wp-golive input:checked { background: linear-gradient(135deg, #6366F1, #EC4899); border-color: transparent; } .h2 .wp-golive input:checked::after { transform: translateX(24px); background: #fff; }
-  .wp-adult { margin: 8px 2px 0; font-size: 13px; color: var(--h-text-2); }
+  .wp-adult { margin: 10px 2px 22px; font-size: 13px; color: var(--h-text-2); }
 </style>
 </head>
 <body class="h2">
@@ -119,7 +122,7 @@
       <section class="h-section wp-step" data-step="3" aria-labelledby="s-disc">
         <h2 id="s-disc">Go live</h2>
         <div class="h-switch wp-golive">
-          <label for="discoverable"><strong>Let people with similar taste find me</strong><br>
+          <label for="discoverable"><strong>Let people with similar taste find me</strong>
             <span class="muted">Others who are also discoverable can see your taste and say they'd like to watch together.
               Nobody can message you until you both say yes. We’ll let you know when someone new who shares your taste joins.</span></label>
           <input type="checkbox" id="discoverable" role="switch">
@@ -273,7 +276,8 @@
     // Type-ahead (founder 10-23: "fill it from the movie DB"): films and watchlist suggest from Herae's catalogue as you
     // type; languages from a fixed list. Typing anything else still works — it's a suggestion, never a restriction.
     // A real dropdown (film-pick.js) — <datalist> on Android is only keyboard chips and a ▼ that does nothing (10-23).
-    const suggest = (input, fetchItems) => heraeTypeahead(input, fetchItems);
+    // Picking a suggestion adds it right away — nobody should have to press Add after choosing (founder 10-23).
+    const suggest = (input, fetchItems) => heraeTypeahead(input, fetchItems, { onPick: () => $(input.id.replace(/In$/, 'Add')).click() });
     const films = (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '', m]));
     const LANGS = ['English', 'Spanish', 'Hindi', 'Urdu', 'Arabic', 'French', 'Portuguese', 'German', 'Italian', 'Turkish', 'Russian', 'Japanese', 'Korean', 'Chinese (Mandarin)', 'Cantonese',
       'Bengali', 'Punjabi', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Gujarati', 'Persian', 'Indonesian', 'Malay', 'Filipino (Tagalog)', 'Thai', 'Vietnamese', 'Dutch',
