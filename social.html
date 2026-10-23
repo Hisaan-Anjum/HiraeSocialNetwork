@@ -582,6 +582,18 @@
 
     // ── Chats ──
     let pollTimer = null;
+    // ── Live updates over the chat server (founder 10-23: "why not use the chat server for that?") ──
+    // A listen-only socket (server/src/ws.js role=site — it never takes the extension's connection): a message,
+    // suggestion or accept for the open chat refreshes it at once. The 3 s check stays, but only as a 15 s backup
+    // while this is connected.
+    let liveUp = false, onLive = null, liveDelay = 2000;
+    (function live() {
+      const auth = getAuth(); if (!auth || !auth.token) return;
+      let ws; try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?role=site&token=${encodeURIComponent(auth.token)}`); } catch (e) { return; }
+      ws.onopen = () => { liveUp = true; liveDelay = 2000; };
+      ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (err) { return; } if (onLive) onLive(m); if (/^chat_message|^match$|^social_news$/.test(m.type)) refreshBadges(); };
+      ws.onclose = (e) => { liveUp = false; if (e.code === 4001) return; setTimeout(live, liveDelay); liveDelay = Math.min(liveDelay * 2, 60000); };
+    })();
     async function renderChats(id) {
       clearInterval(pollTimer);
       if (id) return renderThread(Number(id));
@@ -765,7 +777,9 @@
       }
       const onVis = () => { if (!document.hidden) pull(); };
       document.addEventListener('visibilitychange', onVis);
-      pollTimer = setInterval(() => { if (!document.hidden) pull(); }, 3000);
+      onLive = (m) => { if (Number(m.conversationId) === Number(id)) pull(); };
+      let lastPull = Date.now();
+      pollTimer = setInterval(() => { if (document.hidden || (liveUp && Date.now() - lastPull < 15000)) return; lastPull = Date.now(); pull(); }, 3000);
     }
     // The web app owns the agreement; the extension owns playback. With no link yet, they pick the service now (founder
     // 10-23: "select from the catalogue … it selects it finally when you decide to watch using Netflix or Apple TV").
