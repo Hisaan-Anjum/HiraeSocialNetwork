@@ -20,7 +20,7 @@ import { escapeHtml, formatDate } from '../lib/util.js';
 import { renderAvatar } from '../components/avatar.js';
 import { mountAvatarControls } from '../components/avatarUpload.js';
 import { initSearch } from '../components/search.js';
-import { mountGetStarted } from '../components/getStarted.js';
+import { mountGetStarted, getStartedShows } from '../components/getStarted.js';
 import { mountFoundVia } from '../components/foundVia.js';
 import { mountPlanNext } from '../components/planNext.js';
 import { mountWatchLink } from '../components/watchLink.js';
@@ -120,7 +120,7 @@ async function loadMyPanel() {
       </header>`;
     mountAvatarControls(document.getElementById('feedAvatarWrap'), p.avatarUrl, () => {});
     // "Paste a movie link → watch together" (watchLink.js) for anyone with a partner connected.
-    mountWatchLink(el.querySelector('header') || el.firstElementChild).catch(() => {});
+    mountWatchLink(el.querySelector('header') || el.firstElementChild, { inviteBox: !(p.counts.sessions === 0 && getStartedShows()) }).catch(() => {});
     // A brand-new account has nothing to remember yet; tell it how to get there.
     if (p.counts.sessions === 0) mountGetStarted(document.getElementById('getStarted'));
     // New accounts: one tap on where they heard about Herae (signup can't see the link that brought them).

@@ -135,9 +135,12 @@
     // "Someone I already know" (the fork) holds off the choice for 3 days — time to bring their person in — then it asks again.
     let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 3 * 864e5; } catch (e) { /* storage blocked */ }
     if (st.setupFirst && !skipped && page !== 'watch-profile.html') { location.replace('watch-profile.html?start=public&gate=1'); return; }
+    // Chose "just people I invite" (or the fork's "someone I already know"): their next step is the invite, not a profile.
+    const step = st.inviteFirst || (skipped && st.step === 'no_profile') ? 'invite_first' : st.step;
     const MSG = {
       // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
+      invite_first: ['Your first night is two steps away: add Herae to Chrome, then send your person your link.', 'Show me', 'memories.html'],
       no_profile: ['Find someone to watch with tonight — set up your profile in a minute.', 'Set up', 'watch-profile.html?start=public&meet=1'],
       discovery_off: ['Your profile is ready — turn on Discover to meet people who love the same films.', 'Turn it on', 'social.html#discover'],
       browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
@@ -146,16 +149,16 @@
       matched: ['Ready to watch? Suggest a film to your match.', 'Open chats', 'social.html#chats'],
       // Persistent (founder 10-22): even someone with a partner always has one tap to more people to watch with.
       connected: ['Find someone new to watch with — people who love the same films are in Discover.', 'Find someone', 'social.html#discover'],
-    }[st.step];
+    }[step];
     if (!MSG) return;
-    const [text, cta, href] = MSG; const key = `hz-connect-${st.step}`;
+    const [text, cta, href] = MSG; const key = `hz-connect-${step}`;
     try { if (Date.now() - Number(localStorage.getItem(key) || 0) < 3600e3) return; } catch (e) { /* storage blocked: still show */ }   // "hide" lasts an hour, then it's back
     const [hPathQ, hTab] = href.split('#'); const hPath = hPathQ.split('?')[0]; const curTab = (location.hash.slice(1) || (hPath === 'social.html' ? 'discover' : '')).split('/')[0];
     if (location.pathname.endsWith(hPath) && (!hTab || curTab === hTab)) return;   // already there (#discover/<someone> is still Discover)
     const bar = document.createElement('div'); bar.className = 'an-connect'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
     bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
     bar.querySelector('span').textContent = text; const a = bar.querySelector('a'); a.textContent = cta; a.href = href;
-    const track = (action) => { if (typeof trackEvent === 'function') trackEvent('connect_nudge', { step: st.step, action }); };
+    const track = (action) => { if (typeof trackEvent === 'function') trackEvent('connect_nudge', { step, action }); };
     bar.querySelector('button').onclick = () => { try { localStorage.setItem(key, String(Date.now())); } catch (e) { /* fine */ } bar.remove(); track('hide'); };
     a.onclick = () => track('open');
     document.querySelector('.an-top').after(bar);

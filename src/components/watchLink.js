@@ -8,11 +8,12 @@
 import { escapeHtml } from '../lib/util.js';
 import { handOffToExtension } from '../watchlist/panel.js';
 
-export async function mountWatchLink(anchor) {
+export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
   if (!anchor || !window.getContacts) return null;
   let contacts = [];
   try { contacts = ((await window.getContacts()) || {}).contacts || []; } catch (e) { return null; }
   if (!contacts.length) {
+    if (!inviteBox) return null;   // the first-night steps already carry the invite: one link on the page, not two
     // No partner connected yet: the box still appears (people look for it), but its first step is the invite.
     let invite = null; try { invite = window.getMyInvite ? await window.getMyInvite() : null; } catch (e) { /* none */ }
     const b = document.createElement('section'); b.className = 'watch-link';

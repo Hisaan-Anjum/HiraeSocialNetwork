@@ -56,6 +56,8 @@ function step(n, done, title, body) {
     </li>`;
 }
 
+export function getStartedShows() { try { return localStorage.getItem(HIDE_KEY) !== '1'; } catch (e) { return true; } }
+
 export async function mountGetStarted(el) {
   if (!el) return;
   try { if (localStorage.getItem(HIDE_KEY) === '1') return; } catch (e) { /* private mode */ }

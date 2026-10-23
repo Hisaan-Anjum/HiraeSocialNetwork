@@ -357,7 +357,7 @@
         const steps = [['Signed up', fu.accounts], ['Made a watch profile', fu.profile], ['Turned on Discover', fu.discoverable],
           ['Connected (partner or match)', fu.connected], ['First night (10+ min)', fu.first_night], ['Second night', fu.second_night]];
         const top = steps[0][1] || 1;
-        const STEP = { no_profile: 'No profile yet', discovery_off: 'Discover off', browse: 'Browsing Discover', say_hi: 'Match, no hello', matched: 'Matched, no watch', connected: 'Has a partner (find someone new)' };
+        const STEP = { invite_first: 'Private: invite first', no_profile: 'No profile yet', discovery_off: 'Discover off', browse: 'Browsing Discover', say_hi: 'Match, no hello', matched: 'Matched, no watch', connected: 'Has a partner (find someone new)' };
         const nd = Object.entries(cn.nudges || {});
         out.push(`<div class="an-section-title">Getting connected</div>
           <div class="an-grid cols-4">
