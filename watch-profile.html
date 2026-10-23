@@ -347,7 +347,7 @@
         getMyInvite().then((r) => { $('partnerLink').textContent = r.url;
           $('partnerCopy').onclick = () => navigator.clipboard.writeText(r.url).then(() => say('Link copied — send it to them.'), () => say(r.url)); })
           .catch(() => { $('partnerOut').innerHTML = 'Here to watch with someone you already know? <a href="contacts.html">Send them a link first →</a>'; }); }
-      $('intro').textContent = on ? (wantPublic ? 'You chose to meet new people. Three quick steps, then you’ll see who’s here.' : 'Three quick steps. Private until you turn discovery on.') : 'Private until you turn discovery on. Change anything, any time.';
+      $('intro').textContent = on ? (wantPublic ? 'Meet people who love the same films. Three quick steps, then you’ll see who’s here.' : 'Three quick steps. Private until you turn discovery on.') : 'Private until you turn discovery on. Change anything, any time.';
       showStep(on ? 1 : 0);
     }
     function showStep(n) {
