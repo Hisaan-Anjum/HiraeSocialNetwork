@@ -103,14 +103,7 @@
   .dz-btn:active { transform: scale(.88); }
   .dz-btn:focus-visible { outline: 3px solid #A78BFA; outline-offset: 3px; }
   @media (hover: hover) { .dz-btn:hover { transform: translateY(-2px) scale(1.05); } .dz-btn.no:hover { box-shadow: 0 12px 28px -6px rgba(251, 113, 133, .5); } }
-  /* first time only: how it works, over the card; any tap starts */
-  .dz-coach { position: absolute; inset: 0; z-index: 6; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 28px;
     text-align: center; color: #fff; background: rgba(2, 6, 23, .78); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); cursor: pointer; }
-  .dz-coach b { font: 800 22px/1.2 var(--h-font-display); }
-  .dz-coach .cr { display: flex; gap: 22px; font: 600 14px/1.3 var(--h-font-body); }
-  .dz-coach .cr span { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .dz-coach .cr i { font-style: normal; font-size: 28px; }
-  .dz-coach small { font-size: 13px; color: rgba(255, 255, 255, .72); max-width: 260px; line-height: 1.45; }
   /* the match moment */
   .mt { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden;
     background: radial-gradient(80% 60% at 50% 30%, rgba(99, 102, 241, .55), transparent 70%), radial-gradient(60% 50% at 80% 90%, rgba(236, 72, 153, .45), transparent 70%), rgba(2, 6, 23, .97);
@@ -139,6 +132,15 @@
   .d-meta { margin: 0; } .d-meta dt { font: 700 11.5px/1.2 var(--h-font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--h-text-3); margin-top: 14px; }
   .d-meta dt:first-child { margin-top: 0; } .d-meta dd { margin: 4px 0 0; font-size: 15px; line-height: 1.45; }
   .d-page { display: inline-block; margin-top: 16px; font-weight: 700; }
+  .d-tut-in { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 28px 24px; color: #fff; }
+  .d-tut-in h2 { margin: 0; font: 800 30px/1.1 var(--h-font-display); letter-spacing: -.02em; }
+  .d-tut-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .d-tut-row span { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 16px; background: rgba(15,23,42,.55); border: 1px solid rgba(255,255,255,.14); }
+  .d-tut-row i { font-style: normal; font-size: 26px; } .d-tut-row b { font-size: 15px; } .d-tut-row small { font-size: 12.5px; color: rgba(255,255,255,.75); }
+  .d-tut-in p { margin: 0; font-size: 14.5px; line-height: 1.5; color: rgba(255,255,255,.9); }
+  .d-tut-go { font-weight: 700; color: #F9A8D4 !important; }
+  .dlg-x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--h-surface-2); color: var(--h-text); font-size: 16px; cursor: pointer; }
+  .dlg-x:hover { background: var(--h-surface-3); } #dlg { position: relative; } #dlg h2 { padding-right: 44px; }
   /* Matches: new matches as a row of faces, then the list */
   .mx-new { display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 16px; scrollbar-width: none; }
   .mx-new::-webkit-scrollbar { display: none; }
@@ -216,6 +218,7 @@
   <div id="live" class="sr-only" role="status" aria-live="polite"></div>
 
   <dialog class="h-dialog" id="dlg" aria-labelledby="dlgTitle">
+    <button type="button" class="dlg-x" id="dlgClose" aria-label="Close">✕</button>
     <h2 id="dlgTitle"></h2>
     <div id="dlgBody" style="margin:var(--h-3) 0 var(--h-5)"></div>
     <div class="h-row" style="justify-content:flex-end" id="dlgActions"></div>
@@ -285,6 +288,10 @@
     // Today's messages show just the time; older ones the date too.
     const msgTime = (s) => { const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('Z') ? '' : 'Z')); if (isNaN(d)) return '';
       return d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : when(s); };
+    // Click outside the box or the ✕ closes it (founder 10-23).
+    $('dlg').addEventListener('click', (e) => { if (e.target !== $('dlg')) return; const r = $('dlg').getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) $('dlg').close(); });
+    $('dlgClose').onclick = () => $('dlg').close();
     function dialog(title, body, actions) {
       $('dlgTitle').textContent = title; const b = $('dlgBody'); b.innerHTML = ''; b.append(...[].concat(body));
       const a = $('dlgActions'); a.innerHTML = '';
@@ -347,6 +354,10 @@
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       deck = r.cards; likedYou = r.likedYou || 0; widen = r.widen || 0; v.innerHTML = '';
+      // First visit: a tutorial card leads the deck (founder 10-23: "the tutorial card should just be the tutorial") —
+      // swiping or tapping it only dismisses it; it is never a person.
+      let coached = true; try { coached = !!localStorage.getItem('hz_swipe_coach'); } catch (e) { /* storage blocked: no tutorial */ }
+      if (!coached && deck.length && !first) deck.unshift({ tutorial: true, username: '__tutorial', name: 'How Discover works' });   // an emailed card comes first
       if (r.reason === 'not_discoverable') {
         // One tap to go live, right here (founder 10-23: a finished profile must never be sent back to "set up").
         const prof = await apiRequest('/api/profile/watch').then((x) => x.profile).catch(() => null);
@@ -401,14 +412,6 @@
         iconBtn('yes lg', 'Watch together?', ICON.heart, () => decide(1)), iconBtn('info', `More about ${c.name}`, ICON.up, () => details(c)));
       const tease = likedYou > 0 ? el('p', { class: 'dz-tease', role: 'status' }, el('span', { 'aria-hidden': 'true' }, '👀'), ` ${likedYou === 1 ? 'Someone' : `${likedYou} people`} here already ${likedYou === 1 ? 'wants' : 'want'} to watch with you`) : null;
       v.append(el('div', { class: 'dz' }, tease, stack, actions));
-      let coached = true; try { coached = !!localStorage.getItem('hz_swipe_coach'); } catch (e) { /* storage blocked: no coach */ }
-      if (!coached) {
-        const coach = el('div', { class: 'dz-coach', role: 'note', onclick: () => coach.remove() },
-          el('b', {}, 'Who would you watch with?'),
-          el('div', { class: 'cr' }, el('span', {}, el('i', {}, '👈'), 'Skip'), el('span', {}, el('i', {}, '👉'), 'Watch together')),
-          el('small', {}, 'They only find out if you both say yes. Tap anywhere to start.'));
-        stack.append(coach); try { localStorage.setItem('hz_swipe_coach', '1'); } catch (e) { /* fine */ }
-      }
       dragify(card); if (viaKeys) card.focus({ preventScroll: true });   // keyboard users keep their place; a tap never draws a focus ring
     }
     let viaKeys = false;
@@ -425,6 +428,7 @@
     const iconBtn = (cls, label, icon, onclick) => el('button', { type: 'button', class: `dz-btn ${cls}`, 'aria-label': label, title: label, onclick }, svgEl(icon));
     // One card. `behind`: the quiet copy under the top card — no controls, hidden from assistive tech.
     function cardEl(c, behind) {
+      if (c.tutorial) return tutorialCard(behind);
       const why = c.why || [];
       const badges = why.slice(0, 2).map((w, i) => el('span', { class: `d-badge${i ? '' : ' hot'}` }, svgEl(/^You both love/.test(w) ? ICON.film : ICON.spark), w));
       const hidden = (c.photoCount || 0) - (c.photos || []).length;
@@ -441,6 +445,17 @@
           chips.length ? el('div', { class: 'd-chips' }, ...chips.map((t) => el('span', { class: 'd-chip' }, t))) : null));
       return card;
     }
+    function tutorialCard(behind) {
+      return el('article', behind ? { class: 'd-card behind', 'aria-hidden': 'true' } : { class: 'd-card enter d-tut', tabindex: '0', 'aria-label': 'How Discover works' },
+        el('div', { class: 'd-art', 'aria-hidden': 'true' }), el('div', { class: 'd-shade' }),
+        el('div', { class: 'd-tut-in' }, el('span', { class: 'd-badge hot' }, svgEl(ICON.spark), 'How it works'),
+          el('h2', {}, 'Who would you watch with?'),
+          el('div', { class: 'd-tut-row' }, el('span', {}, el('i', {}, '👉'), el('b', {}, 'Swipe right'), el('small', {}, 'or ♥ — “I’d watch with you”')),
+            el('span', {}, el('i', {}, '👈'), el('b', {}, 'Swipe left'), el('small', {}, 'or ✕ — skip'))),
+          el('p', {}, 'They only find out if you both say yes. Tap ˄ to see everything on someone’s profile.'),
+          el('p', { class: 'd-tut-go' }, 'Swipe this card either way to start')));
+    }
+    const doneTutorial = () => { try { localStorage.setItem('hz_swipe_coach', '1'); } catch (e) { /* fine */ } };
     // Photos the viewer may see, tap left/right half to move; otherwise their initial over their films, poster-style.
     function cardMedia(c) {
       if (!c.photos || !c.photos.length) {
@@ -459,6 +474,7 @@
     }
     // Everything on their profile, for the ˄ button.
     function details(c) {
+      if (c.tutorial) { dialog('How Discover works', [el('p', {}, 'Each card is someone who loves films like you do. Swipe right (or ♥) if you’d watch with them, left (or ✕) to skip. If you both say yes, it’s a match and you can chat and pick a film. Nobody can message you before that.')], [['Got it', 'hb-primary', true]]); return; }
       const dl = el('dl', { class: 'd-meta' });
       const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
       add('Why you’re seeing them', (c.why || []).join(' · ')); add('About', c.bio);
@@ -467,7 +483,7 @@
       dialog(c.name, [dl, c.pageLink ? el('a', { class: 'd-page', href: `user.html?u=${encodeURIComponent(c.username)}` }, 'See their Herae page →') : null].filter(Boolean),
         [['Skip', 'hb-quiet', -1], ['Watch together?', 'hb-primary', 1]]).then((v) => { if ((v === 1 || v === -1) && deck[0] === c) decide(v); });
     }
-    function next() { deck.shift(); if (likedYou > 0) likedYou--; showCard(); }   // shortcut: assumes likers lead the deck (true while LIKES_GATE is off)
+    function next() { const was = deck.shift(); if (was && was.tutorial) doneTutorial(); else if (likedYou > 0) likedYou--; showCard(); }   // shortcut: assumes likers lead the deck (true while LIKES_GATE is off)
     // The card leaves the way it was sent, then the next one rises (buttons, keys and swipes all come through here).
     let deciding = false;
     async function decide(dir) {
@@ -480,6 +496,7 @@
         await new Promise((r) => setTimeout(r, 240));
       }
       deciding = false;
+      if (deck[0] && deck[0].tutorial) { next(); return; }   // the tutorial card: no person, no API call
       if (dir > 0) interested(); else skip();
     }
     async function skip() { const c = deck[0]; if (!c) return; next(); announce(`Skipped ${c.name}`); apiRequest('/api/discover/skip', { method: 'POST', body: JSON.stringify({ username: c.username }) }).catch(() => {}); }
@@ -567,8 +584,22 @@
     async function renderChats(id) {
       clearInterval(pollTimer);
       if (id) return renderThread(Number(id));
-      const v = $('v-chats'); v.innerHTML = ''; v.classList.remove('c-view'); v.append(el('h1', {}, 'Chats'));
-      let r; try { r = await apiRequest('/api/chats'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
+      const v = $('v-chats');
+      // Fetch first, then replace (founder 10-23: "chats sometimes disappear" — a slow or failed refresh blanked the list).
+      let r, up; try { [r, up] = await Promise.all([apiRequest('/api/chats'), apiRequest('/api/proposals/upcoming').catch(() => ({ upcoming: [] }))]); }
+      catch (e) { if (!v.querySelector('.h-list')) { v.innerHTML = ''; v.append(el('h1', {}, 'Chats'), el('p', { class: 'h-empty' }, e.message || 'Could not load.')); } return; }
+      if (location.hash !== '#chats') return;
+      v.innerHTML = ''; v.classList.remove('c-view'); v.append(el('h1', {}, 'Chats'));
+      // ── E. Upcoming watches: accepted suggestions, each starts with one tap ──
+      if ((up.upcoming || []).length) {
+        v.append(el('p', { class: 'mx-h' }, 'Upcoming watches'));
+        const ul = el('ul', { class: 'h-list' });
+        for (const p of up.upcoming) ul.append(el('li', {}, el('span', { class: 'h-avatar', 'aria-hidden': 'true' }, '🎬'),
+          el('div', { class: 'row-main' }, el('strong', {}, p.title || 'Something to watch'), el('div', { class: 'sub' }, `With ${p.withName} · ${p.mode === 'scheduled' ? when(p.startAt) : 'Now'}`)),
+          el('button', { type: 'button', class: 'hb hb-primary', onclick: () => startWatch(p, p.with, p.withName) }, 'Start')));
+        v.append(ul);
+        v.append(el('p', { class: 'mx-h' }, 'Messages'));
+      }
       if (!r.conversations.length) { v.append(el('p', { class: 'h-empty' }, 'No conversations yet. You can chat with your friends and your matches.')); return; }
       const ul = el('ul', { class: 'h-list' });
       for (const c of r.conversations) {
@@ -599,7 +630,7 @@
       const STATE = { pending: 'Waiting for an answer', accepted: 'Accepted', declined: 'Declined', cancelled: 'Cancelled', expired: 'Expired', completed: 'Done' };
       function proposalCard(p, m) {
         if (!p) return el('div', { class: 'c-sys', 'data-id': m.id }, 'A watch suggestion');
-        const card = el('div', { class: 'p-card', 'data-id': m.id, role: 'group', 'aria-label': `Watch suggestion: ${p.title || p.url}` });
+        const card = el('div', { class: 'p-card', 'data-id': m.id, 'data-state': p.state, role: 'group', 'aria-label': `Watch suggestion: ${p.title || p.url}` }); card.__m = m;
         const host = p.url ? (() => { try { return new URL(p.url).hostname.replace(/^www\./, ''); } catch (e) { return ''; } })() : '';
         card.append(el('div', { class: 'h-row', style: 'justify-content:space-between' },
             el('span', { class: 'faint', style: 'font-size:var(--h-size-xs)' }, p.mine ? 'You suggested a watch' : `${otherName} suggested a watch`),
@@ -611,17 +642,10 @@
           catch (e) { toast(e.message || 'Could not do that.'); await loadProposals(); card.replaceWith(proposalCard(proposals.get(p.id), m)); } };
         if (p.state === 'pending' && !p.mine) row.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => act('accept') }, 'Accept'), el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('decline') }, 'Decline'));
         if (p.state === 'pending' && p.mine) row.append(el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('cancel') }, 'Cancel suggestion'));
-        if (p.state === 'accepted') row.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => startWatching(p) }, 'Start watching'),
+        if (p.state === 'accepted') row.append(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => startWatch(p, other, otherName) }, 'Start watching'),
           ...(p.mine ? [el('button', { type: 'button', class: 'hb hb-quiet', onclick: () => act('cancel') }, 'Call it off')] : []));
         if (row.childNodes.length) card.append(row);
         return card;
-      }
-      // The web app owns the agreement; the extension owns playback. Same hand-off the watchlist uses.
-      async function startWatching(p) {
-        const ack = await handOff({ target: other, url: p.url || '', title: p.title || '' });
-        if (!ack.handled) return needExtension('Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free), sign in with this account, then press Start watching again.');
-        if (ack.error) { toast(ack.error); return; }
-        toast(`Inviting ${otherName}… Herae is opening ${p.title || 'the film'} for both of you.`);
       }
       const addPage = (msgs, prepend) => { const nodes = msgs.slice().reverse().map((m) => msgEl(m));
         if (prepend) thread.prepend(...nodes); else thread.append(...nodes);
@@ -660,15 +684,19 @@
       const form = el('form', { class: 'c-compose' }, suggest, input, send);
       v.append(form);
       async function suggestWatch() {
-        const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'e.g. Past Lives' });
-        const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'https://… (optional)' });
+        const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'Start typing a film or series', list: 'sgTitleList', autocomplete: 'off' });
+        const tl = el('datalist', { id: 'sgTitleList' });
+        let tt; t.oninput = () => { clearTimeout(tt); const q = t.value.trim(); if (q.length < 2) return;
+          tt = setTimeout(async () => { const r = await apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).catch(() => ({ recommendations: [] }));
+            if (t.value.trim() !== q) return; tl.innerHTML = ''; (r.recommendations || []).forEach((m) => tl.append(el('option', { value: m.title, label: m.releaseYear ? String(m.releaseYear) : '' }))); }, 180); };
+        const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'Link (optional) — or pick Netflix, Prime… when you start' });
         const nowR = el('input', { type: 'radio', name: 'sgWhen', value: 'now', checked: true });
         const laterR = el('input', { type: 'radio', name: 'sgWhen', value: 'later' });
         const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
         dt.hidden = true; nowR.onchange = laterR.onchange = () => { dt.hidden = !laterR.checked; if (laterR.checked) dt.focus(); };
         const ok = await dialog(`Suggest a watch to ${otherName}`, [el('div', { class: 'h-stack' },
-          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u,
+          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, tl, el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u,
           el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
             el('label', { class: 'h-row' }, nowR, ' Now'), el('label', { class: 'h-row' }, laterR, ' At a time'), dt),
           el('p', { class: 'h-help' }, `Nothing starts until ${otherName} accepts.`))], [['Cancel', 'hb-quiet', false], ['Send suggestion', 'hb-primary', true]]);
@@ -698,9 +726,35 @@
       pollTimer = setInterval(async () => { if (location.hash !== `#chats/${id}`) return clearInterval(pollTimer);
         const p = await apiRequest(`/api/chats/${id}/messages`).catch(() => null); if (!p) return;
         const fresh = p.messages.filter((m) => m.id > newest && m.sender !== me);
+        await loadProposals();
+        thread.querySelectorAll('.p-card').forEach((cardNode) => { const m = cardNode.__m; const pr = m && proposals.get(m.refId);
+          if (pr && cardNode.dataset.state !== pr.state) cardNode.replaceWith(proposalCard(pr, m)); });
         if (fresh.length) { thread.hidden = false; v.querySelectorAll('.c-starters').forEach((x) => x.remove()); addPage(fresh, false); thread.lastElementChild.scrollIntoView({ block: 'end' }); announce(`New message from ${otherName}`); markRead(); }
         if (!p.canSend && !input.disabled) { input.disabled = true; send.disabled = true; input.placeholder = 'You can’t message this person any more'; } }, 8000);
     }
+    // The web app owns the agreement; the extension owns playback. With no link yet, they pick the service now (founder
+    // 10-23: "select from the catalogue … it selects it finally when you decide to watch using Netflix or Apple TV").
+    const SERVICES = [['netflix', 'Netflix', 'https://www.netflix.com/search?q='], ['prime', 'Prime Video', 'https://www.primevideo.com/search/?phrase='],
+      ['disney', 'Disney+', 'https://www.disneyplus.com/search?q='], ['apple', 'Apple TV', 'https://tv.apple.com/search?term='], ['youtube', 'YouTube', 'https://www.youtube.com/results?search_query=']];
+    async function startWatch(p, other, otherName) {
+      let url = p.url || '';
+      if (!url) {
+        const film = p.title ? await apiRequest(`/api/recommendations?q=${encodeURIComponent(p.title)}&limit=5`).then((r) => (r.recommendations || []).find((m) => m.title.toLowerCase() === p.title.toLowerCase())).catch(() => null) : null;
+        const links = (film && film.watchLinks) || [];
+        let chosen = null;   // set by a service button, which then closes the dialog
+        await dialog(`Where are you watching ${p.title || 'it'}?`, [el('div', { class: 'h-stack' },
+          ...SERVICES.map(([id, name, search]) => { const known = links.find((l) => l.provider === id || String(l.name || '').toLowerCase().includes(name.toLowerCase()));
+            return el('button', { type: 'button', class: 'hb hb-secondary', onclick: () => { chosen = known ? known.url : search + encodeURIComponent(p.title || ''); $('dlg').close(); } }, known ? `${name} — open it` : name); }),
+          el('p', { class: 'h-help' }, 'Herae opens it for both of you and keeps it in sync.'))], [['Cancel', 'hb-quiet', false]]);
+        if (!chosen) return;
+        url = chosen;
+      }
+      const ack = await handOff({ target: other, url, title: p.title || '' });
+      if (!ack.handled) return needExtension('Watching together runs in the Herae extension for Chrome on a laptop or desktop. Add it (free), sign in with this account, then press Start again.');
+      if (ack.error) { toast(ack.error); return; }
+      toast(`Inviting ${otherName}… Herae is opening ${p.title || 'the film'} for both of you.`);
+    }
+
     async function unmatchWith(other, name = other) {
       const ok = await dialog(`Unmatch ${name}?`, el('p', { class: 'muted' }, 'You won’t be able to message each other or match again through Discover. The messages so far stay visible to each of you. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Unmatch', 'hb-danger', true]]);
       if (!ok) return;
