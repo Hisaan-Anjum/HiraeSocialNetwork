@@ -98,7 +98,7 @@ async function mountRelationship(container, profile, opts = {}) {
     if (!headerEl) return;
     const s = summary;
     const avThem = renderAvatar({ username: s.them, avatarUrl: profile.avatarUrl }, { size: 'xl' });
-    const avMe = renderAvatar({ username: s.me }, { size: 'lg' });
+    const avMe = renderAvatar({ username: s.me, avatarUrl: s.meAvatarUrl }, { size: 'lg' });
     const st = s.stats || {};
     headerEl.innerHTML = `
       <header class="profile-header rel-header">

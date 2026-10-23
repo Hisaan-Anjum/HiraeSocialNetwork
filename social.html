@@ -32,7 +32,7 @@
   /* ── Discover: one tall card at a time, Tinder-style (founder 10-22: "beautiful, elegant, modern, addictive") ── */
   /* the column has a fixed height and the card takes whatever the teaser and the buttons leave, so the buttons never
      slip under the phone's bottom bar */
-  .dz { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-top: 4px; height: clamp(528px, calc(100dvh - 202px), 790px); }
+  .dz { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-top: 4px; height: clamp(480px, calc(100dvh - 300px), 790px); }   /* 300: header + tabs + the desktop dock (app-nav.js) */
   .dz-stack { position: relative; flex: 1 1 auto; min-height: 0; }
   .dz-actions, .dz-tease { flex: none; }
   @media (max-width: 640px) { .dz { gap: 14px; height: max(480px, calc(100dvh - 56px - 57px - 64px - 44px)); } }
