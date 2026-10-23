@@ -375,7 +375,7 @@
           el('p', {}, ready ? 'Your profile is ready. Turn on Discover to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'
             : 'Tell Herae what you love to watch (it takes about a minute), then you’ll see people with similar taste. Nobody can message you until you both say yes.'),
           ready ? (prof.adult_confirmed_at ? null : age) : null,
-          ready ? go : el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public' }, 'Set up my profile')));
+          ready ? go : el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile')));
         return;
       }
       if (r.reason === 'groups_only') {

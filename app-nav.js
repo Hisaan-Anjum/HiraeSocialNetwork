@@ -137,7 +137,7 @@
     const MSG = {
       // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
-      no_profile: ['Find someone to watch with tonight — set up your profile in a minute.', 'Set up', 'watch-profile.html?start=public'],
+      no_profile: ['Find someone to watch with tonight — set up your profile in a minute.', 'Set up', 'watch-profile.html?start=public&meet=1'],
       discovery_off: ['Your profile is ready — turn on Discover to meet people who love the same films.', 'Turn it on', 'social.html#discover'],
       browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
         : ['You’re in Discover. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],

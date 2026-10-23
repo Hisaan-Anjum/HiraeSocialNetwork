@@ -388,7 +388,8 @@
       $('form').classList.toggle('wizard', on); $('steps').hidden = !on; $('meter').hidden = on;
       $('intro').textContent = on ? (wantPublic ? 'Three quick steps, then you’ll see who’s here.' : 'Three quick steps, then you’ll see who’s here. Turn Discover off on step 3 to keep it private.') : 'Private until you turn discovery on. Change anything, any time.';
       // First visit after choosing "meet new people": the fork first, the steps only once they pick "Meet people".
-      let chose = false; try { chose = sessionStorage.getItem('herae_fork') === 'meet'; } catch (e) { /* storage blocked */ }
+      // ?meet=1: they already chose to meet people (Discover's "Set up my profile", the top bar) — no fork, straight in.
+      let chose = new URLSearchParams(location.search).get('meet') === '1'; try { chose = chose || sessionStorage.getItem('herae_fork') === 'meet'; } catch (e) { /* storage blocked */ }
       const fork = on && wantPublic && !chose;
       document.querySelector('main h1').textContent = fork ? 'Who do you want to watch with?' : 'Your watch profile';
       $('fork').hidden = !fork; $('form').hidden = fork; $('steps').hidden = !on || fork; $('intro').hidden = fork; if (fork) $('blocksSec').hidden = true;
