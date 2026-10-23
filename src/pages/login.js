@@ -36,7 +36,9 @@ if (inviteParam) window.savePendingInvite(inviteParam);
 // nothing and sent the person to the feed instead of where they were going (matching journey QA, 2026-10-22).
 const RETURN_TO = sessionStorage.getItem('moments_return_to');
 let leaving = false;
-function leave(to = RETURN_TO || 'memories.html') {
+// A Google sign-up from this page that chose "meet new people" goes into the profile setup (google-signin.js sets it).
+function postSignup() { try { const p = sessionStorage.getItem('herae_post_signup'); sessionStorage.removeItem('herae_post_signup'); return p || null; } catch (e) { return null; } }
+function leave(to = RETURN_TO || postSignup() || 'memories.html') {
   if (leaving) return;
   leaving = true;
   sessionStorage.removeItem('moments_return_to');

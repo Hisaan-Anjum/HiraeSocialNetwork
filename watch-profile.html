@@ -32,8 +32,10 @@
   .wp-meter-bar i { display: block; height: 100%; width: 0; background: var(--brand-gradient); transition: width var(--h-med) var(--h-ease); }
   .wp-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--h-2); margin-bottom: var(--h-2); max-width: 440px; }   /* phone-sized tiles on a desktop too */
   .wp-ph { position: relative; aspect-ratio: 4 / 5; border-radius: var(--h-r-lg); overflow: hidden; background: var(--h-surface-2); border: 1.5px dashed var(--h-line-strong); }
-  .wp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .wp-ph.filled { border-style: solid; border-color: transparent; }
+  .wp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; user-select: none; pointer-events: none; }
+  .wp-ph.filled { border-style: solid; border-color: transparent; cursor: grab; touch-action: none; transition: box-shadow .15s ease; }
+  .wp-ph.dragging { z-index: 5; cursor: grabbing; box-shadow: 0 16px 40px rgba(2,6,23,.6); transition: none; }
+  .wp-ph.drop { box-shadow: 0 0 0 3px #A78BFA; }
   .wp-ph .add { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: none; color: var(--h-text-2); font-size: 30px; cursor: pointer; }
   .wp-ph .rm { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(15,23,42,.8); color: #fff; font-size: 15px; cursor: pointer; }
   .wp-ph .pv { position: absolute; right: 6px; bottom: 6px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; border: 0; background: rgba(15,23,42,.85); color: #fff; cursor: pointer; }
@@ -47,6 +49,12 @@
   .crop-zoom { width: 100%; margin-top: var(--h-4); accent-color: var(--h-accent); }
   .wp-partner { margin: -4px 0 16px; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45; color: var(--h-text-2); background: var(--h-surface); border: 1px solid var(--h-line); } .wp-partner a { font-weight: 700; }
   .wp-invite { display: flex; gap: 8px; align-items: center; margin-top: 8px; } .wp-invite code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 12px; border-radius: 10px; background: var(--h-surface-2); color: var(--h-text); font-size: 13px; }
+  /* Go live: the one switch that matters most on this page, big and unmissable */
+  .wp-golive { padding: var(--h-4); border-radius: 18px; border: 1.5px solid rgba(167,139,250,.45); background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(236,72,153,.10)); }
+  .h2 .wp-golive input { width: 58px; height: 34px; } .h2 .wp-golive input::after { width: 26px; height: 26px; }
+  .h2 .wp-golive input:not(:checked) { background: #334155; border-color: #64748B; } .h2 .wp-golive input:not(:checked)::after { background: #E2E8F0; }
+  .h2 .wp-golive input:checked { background: linear-gradient(135deg, #6366F1, #EC4899); border-color: transparent; } .h2 .wp-golive input:checked::after { transform: translateX(24px); background: #fff; }
+  .wp-adult { margin: 8px 2px 0; font-size: 13px; color: var(--h-text-2); }
 </style>
 </head>
 <body class="h2">
@@ -68,7 +76,7 @@
       <section class="h-section wp-step" data-step="1" aria-labelledby="s-you">
         <h2 id="s-you">You</h2>
         <div class="wp-photos" id="photos" aria-label="Your photos"></div>
-        <p class="h-help" id="photoHelp">Up to 6. Your first photo is your main one. People in Discover see them on your card — change who in step 3.</p>
+        <p class="h-help" id="photoHelp">Up to 6. The first is your main one — drag to reorder, tap one to replace it. People in Discover see them on your card; change who in step 3.</p>
         <label class="h-label" for="dname">Name on your card</label>
         <input class="hi" id="dname" maxlength="40" autocomplete="given-name" placeholder="Your first name or a nickname">
         <fieldset style="margin-top:var(--h-5)"><legend>I am <span class="faint">(needed for “show me”; not shown on your card)</span></legend>
@@ -110,12 +118,13 @@
 
       <section class="h-section wp-step" data-step="3" aria-labelledby="s-disc">
         <h2 id="s-disc">Go live</h2>
-        <div class="h-switch">
+        <div class="h-switch wp-golive">
           <label for="discoverable"><strong>Let people with similar taste find me</strong><br>
             <span class="muted">Others who are also discoverable can see your taste and say they'd like to watch together.
-              Nobody can message you until you both say yes. We'll email you, at most every few days, when someone new who shares your taste turns this on.</span></label>
+              Nobody can message you until you both say yes. We’ll let you know when someone new who shares your taste joins.</span></label>
           <input type="checkbox" id="discoverable" role="switch">
         </div>
+        <p class="wp-adult" id="adultNote">By turning this on and saving, you confirm you’re 18 or older.</p>
         <fieldset class="wp-radios" id="showMeSet"><legend>Show me</legend>
           <label><input type="radio" name="scope" value="everyone"> <span>No preference</span></label>
           <label><input type="radio" name="scope" value="men"> <span>Men</span></label>
@@ -168,15 +177,6 @@
     </section>
   </main>
 
-  <dialog class="h-dialog" id="adultDlg" aria-labelledby="adultTitle">
-    <h2 id="adultTitle">Before you turn on discovery</h2>
-    <p class="muted" style="margin:var(--h-3) 0">Discovery can connect you with people you don't know yet. It's for adults only.</p>
-    <label class="h-row" style="margin:var(--h-4) 0"><input type="checkbox" id="adultChk" style="width:20px;height:20px;accent-color:var(--h-accent)"> <span>I'm 18 or older</span></label>
-    <div class="h-row" style="justify-content:flex-end">
-      <button type="button" class="hb hb-quiet" id="adultCancel">Not now</button>
-      <button type="button" class="hb hb-primary" id="adultOk" disabled>Turn on</button>
-    </div>
-  </dialog>
   <dialog class="h-dialog" id="cropDlg" aria-labelledby="cropTitle">
     <h2 id="cropTitle">Position your photo</h2>
     <p class="muted" style="margin:var(--h-2) 0 var(--h-4);font-size:var(--h-size-sm)">Drag to move, slide to zoom.</p>
@@ -243,7 +243,8 @@
       chips($('formats'), options.formats, state.session_formats, 0, 'session_formats');
       chips($('traits'), options.traits, state.traits, 5, 'traits');
       $('bio').value = state.bio || ''; $('dname').value = state.display_name || '';
-      $('discoverable').checked = !!state.discoverable;
+      $('discoverable').checked = !!state.discoverable || (neverOn() && !choseOff);
+      $('adultNote').hidden = !!state.adult_confirmed_at;
       const sc = document.querySelector(`input[name=scope][value=${state.discovery_scope}]`) || document.querySelector('input[name=scope][value=everyone]'); sc.checked = true;
       renderGender();
       document.querySelector(`input[name=fvis][value=${state.friends_list_visibility}]`).checked = true;
@@ -255,6 +256,10 @@
     // unless they switch it off on step 3 or decline the 18+ question — then it is a normal private save.
     const wantPublic = new URLSearchParams(location.search).get('start') === 'public';
     let partnerLinkAsked = false;   // declared before the first setWizard() call (a later `let` throws there)
+    // Declared here, before the first render() reads them (a later `let`/`const` throws there).
+    let confirmAdult = false;
+    let choseOff = false;   // they switched Discover off this visit
+    const neverOn = () => !state.discoverable && !state.discoverable_at;
     try {
       const r = await apiRequest('/api/profile/watch'); state = r.profile; state.watchlist = state.watchlist || []; options = r.options; firstTime = !state.exists;
     } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
@@ -264,6 +269,20 @@
     const love = (new URLSearchParams(location.search).get('love') || '').trim().replace(/\s+/g, ' ').slice(0, 60);
     if (love && !state.favorite_titles.includes(love) && state.favorite_titles.length < 10) {
       state.favorite_titles = [...state.favorite_titles, love]; dirty = true; render(); say(`Added “${love}” to films you love. ${firstTime ? 'Finish' : 'Save'} to keep it.`); }
+    // Type-ahead (founder 10-23: "fill it from the movie DB"): films and watchlist suggest from Herae's catalogue as you
+    // type; languages from a fixed list. Typing anything else still works — it's a suggestion, never a restriction.
+    function suggest(input, fetchItems) {
+      const dl = document.createElement('datalist'); dl.id = input.id + 'List'; document.body.append(dl); input.setAttribute('list', dl.id); input.setAttribute('autocomplete', 'off');
+      let t; input.addEventListener('input', () => { clearTimeout(t); const q = input.value.trim(); if (q.length < 2) return;
+        t = setTimeout(async () => { const items = await fetchItems(q).catch(() => []); if (input.value.trim() !== q) return;
+          dl.innerHTML = ''; items.slice(0, 8).forEach(([value, label]) => { const o = document.createElement('option'); o.value = value; if (label) o.label = label; dl.append(o); }); }, 180); });
+    }
+    const films = (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '']));
+    const LANGS = ['English', 'Spanish', 'Hindi', 'Urdu', 'Arabic', 'French', 'Portuguese', 'German', 'Italian', 'Turkish', 'Russian', 'Japanese', 'Korean', 'Chinese (Mandarin)', 'Cantonese',
+      'Bengali', 'Punjabi', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Gujarati', 'Persian', 'Indonesian', 'Malay', 'Filipino (Tagalog)', 'Thai', 'Vietnamese', 'Dutch',
+      'Polish', 'Ukrainian', 'Greek', 'Swedish', 'Norwegian', 'Danish', 'Finnish', 'Hebrew', 'Swahili', 'Yoruba', 'Hausa', 'Amharic', 'Romanian', 'Czech', 'Hungarian'];
+    suggest($('titleIn'), films); suggest($('wantIn'), films);
+    suggest($('langIn'), async (q) => LANGS.filter((l) => l.toLowerCase().startsWith(q.toLowerCase())).map((l) => [l, '']));
     adder($('titleIn'), $('titleAdd'), $('titles'), 'favorite_titles', 10);
     adder($('wantIn'), $('wantAdd'), $('wantList'), 'watchlist', 20);
     adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
@@ -282,23 +301,29 @@
       }
     }
     $('showOnline').onchange = () => { state.show_online = $('showOnline').checked ? 1 : 0; dirty = true; };
-    // Turning discovery on asks for the 18+ declaration once; turning it off is immediate.
-    let confirmAdult = false;
-    let choseOff = false;
-    $('discoverable').onchange = () => {
-      if (!$('discoverable').checked) { state.discoverable = 0; dirty = true; choseOff = true; return; }
-      if (!state.gender) { $('discoverable').checked = false; say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return; }
-      if (!state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length) { $('discoverable').checked = false; say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); $('genres').querySelector('button').focus(); return; }
-      if (state.adult_confirmed_at) { state.discoverable = 1; dirty = true; return; }
-      $('discoverable').checked = false; $('adultChk').checked = false; $('adultOk').disabled = true; $('adultDlg').showModal();
+    // Discover is ON by default (founder 10-23: "all the options need to be on by default") for anyone who has never
+    // been in it; someone who turned it off themselves stays off. No 18+ pop-up: the line under the switch says that
+    // saving with it on confirms they're 18 or older, and the save sends that confirmation.
+    const canGoLive = (quiet) => {
+      if (!state.gender) { if (!quiet) say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return false; }
+      if (!state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length) { if (!quiet) say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); return false; }
+      return true;
     };
-    $('adultChk').onchange = () => { $('adultOk').disabled = !$('adultChk').checked; };
-    $('adultCancel').onclick = () => { $('adultDlg').close(); choseOff = true; };
-    $('adultOk').onclick = () => { confirmAdult = true; state.discoverable = 1; $('discoverable').checked = true; dirty = true; $('adultDlg').close(); $('discoverable').focus();
-      if (wantPublic && firstTime) $('form').requestSubmit(); };
+    $('discoverable').onchange = () => {
+      dirty = true;
+      if (!$('discoverable').checked) { state.discoverable = 0; choseOff = true; return; }
+      choseOff = false;
+      if (!canGoLive()) { $('discoverable').checked = false; return; }
+      state.discoverable = 1; if (!state.adult_confirmed_at) confirmAdult = true;
+    };
     $('form').onsubmit = async (e) => {
       e.preventDefault(); pendingAdds.forEach((add) => add());
-      if (wantPublic && firstTime && !state.discoverable && !choseOff) { $('discoverable').checked = true; $('discoverable').onchange(); if (!state.discoverable) return; }
+      // Switched on (by default or by them) but not yet live: go live with this save, if the profile can be.
+      if ($('discoverable').checked && !state.discoverable && !choseOff) {
+        if (canGoLive(!firstTime)) { state.discoverable = 1; if (!state.adult_confirmed_at) confirmAdult = true; }
+        else if (firstTime) return;
+        else $('discoverable').checked = false;
+      }
       $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, watchlist: state.watchlist || [], creators: state.creators, languages: state.languages,
@@ -347,7 +372,7 @@
         getMyInvite().then((r) => { $('partnerLink').textContent = r.url;
           $('partnerCopy').onclick = () => navigator.clipboard.writeText(r.url).then(() => say('Link copied — send it to them.'), () => say(r.url)); })
           .catch(() => { $('partnerOut').innerHTML = 'Here to watch with someone you already know? <a href="contacts.html">Send them a link first →</a>'; }); }
-      $('intro').textContent = on ? (wantPublic ? 'Meet people who love the same films. Three quick steps, then you’ll see who’s here.' : 'Three quick steps. Private until you turn discovery on.') : 'Private until you turn discovery on. Change anything, any time.';
+      $('intro').textContent = on ? (wantPublic ? 'Meet people who love the same films. Three quick steps, then you’ll see who’s here.' : 'Three quick steps, then you’ll see who’s here. Turn Discover off on step 3 to keep it private.') : 'Private until you turn discovery on. Change anything, any time.';
       showStep(on ? 1 : 0);
     }
     function showStep(n) {
@@ -389,6 +414,8 @@
         const p = photos[i]; const cell = document.createElement('div'); cell.className = 'wp-ph' + (p ? ' filled' : '');
         if (p) {
           const img = document.createElement('img'); img.src = p.src; img.alt = i === 0 ? 'Your main photo' : `Photo ${i + 1}`; cell.append(img);
+          img.draggable = false; cell.ondragstart = (e) => e.preventDefault();   // the browser's own image drag would cancel ours
+          cell.dataset.i = i; cell.title = 'Tap to replace · drag to reorder'; dragOrTap(cell, i);
           const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'rm'; rm.textContent = '✕'; rm.setAttribute('aria-label', `Remove photo ${i + 1}`);
           rm.onclick = async () => { await apiRequest(`/api/photos/mine/${p.id}`, { method: 'DELETE' }); photos.splice(i, 1); renderPhotos(); meter(); };
           cell.append(rm);
@@ -406,6 +433,25 @@
         g.append(cell);
       }
     }
+    // A filled photo: a tap replaces it; a drag (8px+) moves it — pointer events, so a finger works as well as a mouse.
+    const saveOrder = () => apiRequest('/api/photos/mine/order', { method: 'PUT', body: JSON.stringify({ ids: photos.map((x) => x.id) }) }).catch(() => {});
+    function dragOrTap(cell, i) {
+      let start = null, moving = false;
+      cell.onpointerdown = (e) => { if (e.target.closest('button')) return; start = { x: e.clientX, y: e.clientY }; moving = false; cell.setPointerCapture(e.pointerId); };
+      cell.onpointermove = (e) => { if (!start) return; const dx = e.clientX - start.x, dy = e.clientY - start.y;
+        if (!moving && Math.hypot(dx, dy) > 8) { moving = true; cell.classList.add('dragging'); }
+        if (moving) { cell.style.transform = `translate(${dx}px, ${dy}px) scale(1.04)`;
+          document.querySelectorAll('.wp-ph').forEach((c) => c.classList.remove('drop'));
+          cell.style.visibility = 'hidden'; const under = document.elementFromPoint(e.clientX, e.clientY); cell.style.visibility = '';
+          const t = under && under.closest('.wp-ph.filled'); if (t && t !== cell) t.classList.add('drop'); } };
+      cell.onpointerup = (e) => { if (!start) return; start = null; cell.classList.remove('dragging'); cell.style.transform = '';
+        if (!moving) { replaceAt = i; $('photoFile').click(); return; }   // a tap: replace this photo
+        const target = document.querySelector('.wp-ph.drop'); document.querySelectorAll('.wp-ph').forEach((c) => c.classList.remove('drop'));
+        if (!target) return; const to = +target.dataset.i;
+        photos.splice(to, 0, photos.splice(i, 1)[0]); renderPhotos(); saveOrder(); say(to === 0 ? 'That’s your main photo now.' : 'Order saved.'); };
+      cell.onpointercancel = () => { start = null; moving = false; cell.classList.remove('dragging'); cell.style.transform = ''; };
+    }
+    let replaceAt = null;
     const PV_SHORT = { public: '🌐 Everyone', matches: '🔒 Matches', matches_friends: '🔒 Friends', approved: '🔒 Allowed' };
     const PV_LONG = { public: 'everyone in Discover', matches: 'only my matches', matches_friends: 'my matches and friends', approved: 'only people I allow' };
     async function photoPrivacy(p, i) {
@@ -422,8 +468,20 @@
       dlg.showModal();
     }
     $('photoFile').onchange = async () => {
-      const f = $('photoFile').files[0]; $('photoFile').value = ''; if (!f) return;
+      const f = $('photoFile').files[0]; $('photoFile').value = ''; const at = replaceAt; replaceAt = null; if (!f) return;
       const dataUrl = await cropPhoto(f); if (!dataUrl) return;
+      if (at !== null && photos[at]) {   // replace: the new photo takes the old one's place and keeps its privacy setting
+        const old = photos[at]; say('Replacing photo…');
+        try {
+          if (photos.length >= 6) { await apiRequest(`/api/photos/mine/${old.id}`, { method: 'DELETE' }); }   // full: make room first
+          const r = await apiRequest('/api/photos/mine', { method: 'POST', body: JSON.stringify({ image: dataUrl, width: 1080, height: 1350 }) });
+          const fresh = r.photos.find((p) => !photos.some((q) => q.id === p.id));
+          if (photos.length < 6) await apiRequest(`/api/photos/mine/${old.id}`, { method: 'DELETE' });
+          if (fresh && old.visibility) await apiRequest(`/api/photos/mine/${fresh.id}/visibility`, { method: 'PUT', body: JSON.stringify({ visibility: old.visibility }) }).catch(() => {});
+          photos[at] = { ...fresh, visibility: old.visibility, src: dataUrl }; renderPhotos(); await saveOrder(); meter(); say('Photo replaced.');
+        } catch (e) { say(e.message || 'Could not replace that photo.'); loadPhotos(); }
+        return;
+      }
       say('Uploading photo…');
       try { const r = await apiRequest('/api/photos/mine', { method: 'POST', body: JSON.stringify({ image: dataUrl, width: 1080, height: 1350 }) });
         const fresh = r.photos.find((p) => !photos.some((q) => q.id === p.id));

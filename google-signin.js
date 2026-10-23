@@ -81,6 +81,11 @@
         + '  <input type="text" class="gsu-input" id="gsuInput" autocomplete="username"'
         + '         maxlength="32" autocapitalize="none" spellcheck="false" placeholder="pick a username">'
         + '  <div class="gsu-hint" id="gsuHint">3–32 characters — lowercase letters, numbers and underscores.</div>'
+        // The same question as the sign-up page (founder 10-23: Google sign-ups must be able to choose too).
+        + '  <fieldset class="gsu-mode"><legend>Who do you want to watch with?</legend>'
+        + '    <label class="gsu-opt"><input type="radio" name="gsuMode" value="public"><span><b>🌍 Meet new people too</b><small>Matched with people who love the same films. Both must say yes. 18+.</small></span></label>'
+        + '    <label class="gsu-opt"><input type="radio" name="gsuMode" value="private"><span><b>🔒 Just people I invite</b><small>Only someone you send your link to can find you.</small></span></label>'
+        + '  </fieldset>'
         + '  <button class="btn btn-primary gsu-go" id="gsuGo">Create my account</button>'
         + '  <button class="gsu-cancel" id="gsuCancel">Cancel</button>'
         + '</div>';
@@ -91,6 +96,8 @@
       const go = overlay.querySelector('#gsuGo');
 
       if (o.error) { hint.textContent = o.error; hint.className = 'gsu-hint bad'; }
+      let startMode = 'public'; try { startMode = sessionStorage.getItem('herae_signup_mode') || 'public'; } catch (e) { /* storage blocked */ }
+      const radio = overlay.querySelector('input[name=gsuMode][value=' + (startMode === 'private' ? 'private' : 'public') + ']'); if (radio) radio.checked = true;
       input.value = o.suggested || '';
       setTimeout(function () { input.focus(); input.select(); }, 30);
 
@@ -109,6 +116,8 @@
         }
         go.disabled = true;
         go.textContent = 'Creating…';
+        const m = (overlay.querySelector('input[name=gsuMode]:checked') || {}).value || 'public';
+        try { sessionStorage.setItem('herae_signup_mode', m); } catch (e) { /* storage blocked */ }   // loginWithGoogle sends it
         done(v);
       };
       const onKey = function (e) {
@@ -143,6 +152,10 @@
       suggested = chosen;
       data = await submit(accessToken, chosen);
       error = data && data.needsUsername ? (data.error || 'Try another username.') : '';
+      // A brand-new account that chose public goes straight into the 3-step profile (signup.html / login.js read this).
+      if (data && !data.needsUsername) {
+        try { sessionStorage.setItem('herae_post_signup', sessionStorage.getItem('herae_signup_mode') === 'private' ? '' : 'watch-profile.html?start=public'); } catch (e) { /* storage blocked */ }
+      }
     }
     return data;
   };

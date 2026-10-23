@@ -151,7 +151,11 @@
     document.querySelectorAll('input[name=mode]').forEach(function (r) { r.addEventListener('change', rememberMode); });
     rememberMode();
     // Public → straight into the 3-step profile wizard, which ends in Discover. Private → home, where the invite lives.
-    function landing() { return mode() === 'public' ? 'watch-profile.html?start=public' : 'memories.html'; }
+    function landing() {
+      // A Google account just created through the username dialog answers there (it may differ from this page's radios).
+      try { var post = sessionStorage.getItem('herae_post_signup'); if (post !== null) { sessionStorage.removeItem('herae_post_signup'); return post || 'memories.html'; } } catch (e) { /* storage blocked */ }
+      return mode() === 'public' ? 'watch-profile.html?start=public' : 'memories.html';
+    }
 
     // An invite can arrive as ?invite=CODE as well as in localStorage, because
     // localStorage is per-origin and doesn't survive a herae.app →

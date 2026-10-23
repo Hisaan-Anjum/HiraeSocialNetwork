@@ -348,9 +348,21 @@
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       deck = r.cards; likedYou = r.likedYou || 0; widen = r.widen || 0; v.innerHTML = '';
       if (r.reason === 'not_discoverable') {
+        // One tap to go live, right here (founder 10-23: a finished profile must never be sent back to "set up").
+        const prof = await apiRequest('/api/profile/watch').then((x) => x.profile).catch(() => null);
+        const ready = prof && prof.exists && prof.gender && ((prof.genres || []).length || (prof.favorite_titles || []).length || (prof.watchlist || []).length);
+        const go = el('button', { type: 'button', class: 'hb hb-primary' }, 'Turn on Discover');
+        const age = el('p', { class: 'muted', style: 'font-size:13px;margin:0' }, 'By turning it on, you confirm you’re 18 or older.');
+        go.onclick = async () => {
+          go.setAttribute('aria-busy', 'true');
+          try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discoverable: true, ...(prof && prof.adult_confirmed_at ? {} : { confirm_adult: true }) }) }); toast('You’re in Discover.'); renderDiscover(); }
+          catch (e) { go.removeAttribute('aria-busy'); toast(e.message || 'Could not turn it on.'); }
+        };
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
-          el('p', {}, 'Discovery is off for you. Turn it on in your watch profile to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'),
-          el('a', { class: 'hb hb-primary', href: 'watch-profile.html' }, 'Set up discovery')));
+          el('p', {}, ready ? 'Your profile is ready. Turn on Discover to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'
+            : 'Tell Herae what you love to watch (it takes about a minute), then you’ll see people with similar taste. Nobody can message you until you both say yes.'),
+          ready ? (prof.adult_confirmed_at ? null : age) : null,
+          ready ? go : el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public' }, 'Set up my profile')));
         return;
       }
       if (r.reason === 'groups_only') {

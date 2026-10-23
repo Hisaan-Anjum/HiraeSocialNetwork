@@ -117,8 +117,10 @@
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
     const MSG = {
-      no_profile: ['Find someone to watch with tonight — set up your profile in 2 minutes.', 'Set up', 'watch-profile.html'],
-      discovery_off: ['Turn on Discover to meet people who love the same films.', 'Turn it on', 'watch-profile.html'],
+      // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
+      // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
+      no_profile: ['Find someone to watch with tonight — set up your profile in a minute.', 'Set up', 'watch-profile.html?start=public'],
+      discovery_off: ['Your profile is ready — turn on Discover to meet people who love the same films.', 'Turn it on', 'social.html#discover'],
       browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
         : ['You’re in Discover. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
       say_hi: [`You have ${st.unchatted === 1 ? 'a match' : st.unchatted + ' matches'} waiting for a hello.`, 'Say hi', 'social.html#matches'],
@@ -129,7 +131,7 @@
     if (!MSG) return;
     const [text, cta, href] = MSG; const key = `hz-connect-${st.step}`;
     try { if (Date.now() - Number(localStorage.getItem(key) || 0) < 3600e3) return; } catch (e) { /* storage blocked: still show */ }   // "hide" lasts an hour, then it's back
-    const [hPath, hTab] = href.split('#'); const curTab = (location.hash.slice(1) || (hPath === 'social.html' ? 'discover' : '')).split('/')[0];
+    const [hPathQ, hTab] = href.split('#'); const hPath = hPathQ.split('?')[0]; const curTab = (location.hash.slice(1) || (hPath === 'social.html' ? 'discover' : '')).split('/')[0];
     if (location.pathname.endsWith(hPath) && (!hTab || curTab === hTab)) return;   // already there (#discover/<someone> is still Discover)
     const bar = document.createElement('div'); bar.className = 'an-connect'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
     bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
