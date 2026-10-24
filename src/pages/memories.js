@@ -142,8 +142,8 @@ async function loadMyPanel() {
 
 async function loadHero() {
   try {
-    const { recommendation } = await getFeaturedRecommendation();
-    heroEl.innerHTML = renderFeaturedHero(recommendation);
+    const { recommendation, personalised } = await getFeaturedRecommendation();
+    heroEl.innerHTML = renderFeaturedHero(recommendation, personalised);
   } catch (e) {
     heroEl.innerHTML = '';
   }

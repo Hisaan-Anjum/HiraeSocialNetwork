@@ -34,12 +34,12 @@ export function renderRecommendationCard(rec) {
   `;
 }
 
-export function renderFeaturedHero(rec) {
+export function renderFeaturedHero(rec, personalised = false) {
   if (!rec) return '';
   const bg = rec.backdropUrl || rec.posterUrl;
   return `
     <a href="movie.html?id=${rec.id}" class="hero-card" style="${bg ? `background-image: linear-gradient(180deg, rgba(15, 23, 42,0.05) 0%, rgba(15, 23, 42,0.55) 55%, var(--bg-0) 100%), url('${bg}')` : ''}">
-      <div class="hero-card-badge">✨ Tonight's pick</div>
+      <div class="hero-card-badge">${personalised ? '✨ Picked for you' : '✨ Tonight\'s pick'}</div>
       <div class="hero-card-title">${escapeHtml(rec.title)}</div>
       <div class="hero-card-meta">${escapeHtml(genreLine(rec))}${rec.rating ? ` · ★ ${rec.rating.toFixed(1)}` : ''}</div>
       ${rec.description ? `<div class="hero-card-desc">${escapeHtml(rec.description)}</div>` : ''}
