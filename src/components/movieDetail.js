@@ -89,10 +89,11 @@ export function renderMovieDetail(rec, { similar = [], actionsHtml = '', inModal
   `;
 }
 
-// Opens the movie detail as a modal. `onAdd(rec)` — when provided — renders the
+// Opens the movie detail as a modal with "Add to…" (watchlist/addTo.js). `sharedWith` + `onAdd(rec)` — when the page
+// is about one person — make its "Shared watchlist" choice add straight to that list. Historically `onAdd(rec)` rendered the
 // "Add to Shared Watchlist" button and is awaited on click, so the button can
 // report success/failure inline. `alreadyAdded` renders it as a done state.
-export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = false } = {}) {
+export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = false, sharedWith = null } = {}) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay movie-modal-overlay';
   overlay.innerHTML = `
@@ -134,15 +135,12 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
     // most of the long tail has none, and a dead button is worse than none.
     const canWatch = Array.isArray(rec.watchLinks) && rec.watchLinks.length > 0;
     const added = typeof alreadyAdded === 'function' ? alreadyAdded(rec.id) : alreadyAdded;
-    const actions = (onAdd || canWatch)
-      ? `<div class="movie-modal-actions">
-           ${onAdd ? `<button class="btn btn-primary" data-mm="add" ${added ? 'disabled' : ''}>
-             ${added ? '✓ On your watchlist' : '❤️ Add to Shared Watchlist'}
-           </button>` : ''}
+    // "Add to…" is offered on every film (founder 10-23); "Find it on" only with links.
+    const actions = `<div class="movie-modal-actions">
+           <button class="btn btn-primary" data-mm="add">${onAdd && added ? '✓ On your list together · Add to…' : '❤️ Add to…'}</button>
            ${canWatch ? '<button class="btn btn-ghost" data-mm="watch">▶ Find it on…</button>' : ''}
            <span class="movie-modal-msg" id="movieModalMsg"></span>
-         </div>`
-      : '';
+         </div>`;
     body.innerHTML = renderMovieDetail(rec, { similar, actionsHtml: actions, inModal: true });
     attachCarouselHandlers(body);
     if (canWatch) import('../watchlist/providers.js').then((m) => m.refreshAvailability(rec, body)).catch(() => {});
@@ -152,24 +150,11 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
       openWatchPicker(rec, { onPick: (link) => window.open(link.url, '_blank', 'noopener') });
     });
 
-    const addBtn = body.querySelector('[data-mm="add"]');
-    if (addBtn && onAdd) {
-      addBtn.addEventListener('click', async () => {
-        const msg = body.querySelector('#movieModalMsg');
-        addBtn.disabled = true;
-        addBtn.textContent = 'Adding…';
-        try {
-          await onAdd(rec);
-          addBtn.textContent = '✓ Added to your watchlist';
-          if (msg) msg.textContent = '';
-          setTimeout(close, 700);
-        } catch (err) {
-          addBtn.disabled = false;
-          addBtn.textContent = '❤️ Add to Shared Watchlist';
-          if (msg) msg.textContent = err.message || 'Could not add that.';
-        }
-      });
-    }
+    // "Add to…" (founder 10-23): shared watchlist (with this page's person when there is one) / suggest in a chat / mine.
+    body.querySelector('[data-mm="add"]')?.addEventListener('click', async () => {
+      const { openAddTo } = await import('../watchlist/addTo.js');
+      openAddTo({ movie: rec, sharedWith, onShared: onAdd ? (m) => onAdd(m) : null });
+    });
   }
 
   // Delegated so it survives every in-place swap.

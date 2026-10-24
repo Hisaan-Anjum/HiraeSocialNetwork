@@ -10,7 +10,6 @@ import { attachCarouselHandlers } from '../components/carousel.js';
 // The hero/body markup lives in components/movieDetail.js so this page and the
 // watchlist's movie modal render the identical view from one definition.
 import { renderMovieDetail } from '../components/movieDetail.js';
-import { openPickContact } from '../watchlist/pickContact.js';
 import { initSearch } from '../components/search.js';
 
 const { requireAuth, logout, getRecommendationById } = window;
@@ -46,21 +45,20 @@ async function load() {
     // about any one contact — adding has to ask who it's for.
     const actionsHtml = `
       <div class="movie-modal-actions">
-        <button class="btn btn-primary" id="movieAddWatchlist">❤️ Add to Watchlist</button>
+        <button class="btn btn-primary" id="movieAddWatchlist">❤️ Add to…</button>
         ${(rec.watchLinks || []).length ? '<button class="btn btn-ghost" id="movieFindOn">▶ Find it on…</button>' : ''}
         <span class="movie-modal-msg" id="movieActionMsg"></span>
       </div>`;
     contentEl.innerHTML = renderMovieDetail(rec, { similar, actionsHtml });
     if ((rec.watchLinks || []).length) import('../watchlist/providers.js').then((m) => m.refreshAvailability(rec, contentEl)).catch(() => {});
 
-    document.getElementById('movieAddWatchlist')?.addEventListener('click', () => {
-      openPickContact({
-        movie: rec,
-        onAdded: (username) => {
-          const msg = document.getElementById('movieActionMsg');
-          if (msg) msg.textContent = `Added to your list with ${username} 💜`;
-        },
-      });
+    // "Add to…" (founder 10-23): a shared watchlist, a suggestion in a chat, or my own watchlist.
+    document.getElementById('movieAddWatchlist')?.addEventListener('click', async () => {
+      const { openAddTo } = await import('../watchlist/addTo.js');
+      openAddTo({ movie: rec, onDone: (kind, who) => {
+        const msg = document.getElementById('movieActionMsg');
+        if (msg && kind === 'shared' && who) msg.textContent = `Added to your list with ${who} 💜`;
+      } });
     });
     document.getElementById('movieFindOn')?.addEventListener('click', async () => {
       const { openWatchPicker } = await import('../watchlist/providers.js');

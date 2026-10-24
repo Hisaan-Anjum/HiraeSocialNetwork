@@ -2209,6 +2209,27 @@ html { scroll-behavior: smooth; }
 .sl-option-guess + .sl-option-seen { margin-left: 8px; }
 
 /* ── "Add to a shared watchlist" contact picker (movie page) ── */
+/* "Add to…" (watchlist/addTo.js, founder 10-23): three big choices, then a short list. */
+.at-card { max-width: 440px; width: 100%; }
+.at-movie { margin: 2px 0 14px; font-weight: 700; color: var(--ink-dim); }
+.at-opt, .at-chat { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; margin-bottom: 10px; border-radius: 16px;
+  border: 1px solid var(--line, rgba(148, 163, 184, .3)); background: rgba(30, 41, 59, .55); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.at-opt:hover, .at-chat:hover { border-color: rgba(236, 72, 153, .6); }
+.at-opt strong { display: block; font-size: 16px; }
+.at-opt small { display: block; margin-top: 2px; font-size: 13px; color: var(--ink-dim); }
+.at-e { font-size: 24px; line-height: 1; }
+.at-av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: linear-gradient(135deg, #6366F1, #EC4899); color: #fff; }
+.at-hint { margin: 0 0 10px; color: var(--ink-dim); }
+.at-done { padding: 8px 0 14px; font-size: 15px; line-height: 1.5; }
+.at-done a { color: #F472B6; }
+.at-close, .at-back { margin-top: 4px; }
+/* Your own page: the films you saved with "Add to… → My watchlist". */
+.my-watchlist { max-width: 1032px; margin: 18px auto 0; padding: 16px 18px; border-radius: 18px; border: 1px solid var(--line, rgba(148, 163, 184, .3)); }
+@media (max-width: 1080px) { .my-watchlist { margin: 18px 24px 0; } }   /* same gutter as the danger zone below */
+.my-watchlist h3 { margin: 0 0 10px; font-size: 16px; }
+.my-watchlist ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.my-watchlist li { padding: 6px 12px; border-radius: 999px; background: rgba(99, 102, 241, .16); border: 1px solid rgba(99, 102, 241, .3); font-size: 14px; }
+.my-watchlist p { margin: 0; color: var(--ink-dim); font-size: 14px; }
 .pc-card { max-width: 460px; width: 100%; display: flex; flex-direction: column; max-height: min(82vh, 640px); }
 .pc-movie { font-family: var(--font-sans); letter-spacing: -0.02em; font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 12px; flex: 0 0 auto; }
 .pc-search {

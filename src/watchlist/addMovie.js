@@ -66,6 +66,7 @@ export function openAddMovie({ onAdd, isOnList = () => false, withUser = '' }) {
   function openDetail(id) {
     openMovieModal(id, {
       alreadyAdded: isOnList(id),
+      sharedWith: withUser || null,   // "Add to…" → Shared watchlist goes straight to this person's list
       onAdd: async (rec) => { await onAdd(rec.id); close(); },
     });
   }

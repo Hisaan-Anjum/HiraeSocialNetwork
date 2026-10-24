@@ -182,14 +182,25 @@ function renderHeader(profile) {
     btn.addEventListener('click', () => runContactAction(btn.dataset.action, btn));
   });
 
-  // Your own profile also carries the account danger zone (delete account).
-  if (profile.isMe) renderDangerZone(profile);
+  // Your own profile shows your personal watchlist ("Add to… → My watchlist", founder 10-23) and the danger zone.
+  if (profile.isMe) { renderMyWatchlist(); renderDangerZone(profile); }
 }
 
 // ── Delete account ─────────────────────────────────────────────────────
 // Rendered only on your own profile, below the header. Opens a confirmation
 // modal that re-authenticates (password for a local account, username for a
 // Google one — see profile.authProvider) before calling DELETE /api/me.
+async function renderMyWatchlist() {
+  const box = document.createElement('section');
+  box.className = 'my-watchlist'; box.setAttribute('aria-label', 'My watchlist');
+  headerEl.appendChild(box);
+  let list = [];
+  try { list = ((await window.apiRequest('/api/profile/watch')).profile || {}).watchlist || []; } catch (e) { box.remove(); return; }
+  box.innerHTML = `<h3>📌 My watchlist</h3>${list.length
+    ? `<ul>${list.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`
+    : '<p>Nothing yet. On any film, tap “Add to…” → My watchlist.</p>'}`;
+}
+
 function renderDangerZone(profile) {
   const zone = document.createElement('div');
   zone.className = 'danger-zone';
