@@ -703,7 +703,7 @@
       input.oninput = grow;
       const SEND_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
       const send = el('button', { type: 'submit', class: 'c-ico send', disabled: !page.canSend, 'aria-label': 'Send' }); send.innerHTML = SEND_SVG;
-      const suggest = el('button', { type: 'button', class: 'c-ico', disabled: !page.canSend, onclick: suggestWatch, 'aria-label': 'Suggest a watch', title: 'Suggest a watch' }, '🎬');
+      const suggest = el('button', { type: 'button', class: 'c-ico', disabled: !page.canSend, onclick: () => suggestWatch(), 'aria-label': 'Suggest a watch', title: 'Suggest a watch' }, '🎬');
       const form = el('form', { class: 'c-compose' }, suggest, input, send);
       v.append(form);
       // pre: a film already chosen elsewhere (the catalogue's "Add to… → Suggest it in a chat", founder 10-24) — the
@@ -738,7 +738,7 @@
         const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
         dt.hidden = true; nowR.onchange = laterR.onchange = () => { dt.hidden = !laterR.checked; if (laterR.checked) dt.focus(); };
         let fixed = null;
-        if (pre) { t.value = pre.title; t.hidden = true; tl.hidden = true; setPick(pre); fixed = el('div', { class: 'sg-film' }, `🎬 ${pre.title}${pre.releaseYear ? ` (${pre.releaseYear})` : ''}`); }
+        if (pre && pre.title) { t.value = pre.title; t.hidden = true; tl.hidden = true; setPick(pre); fixed = el('div', { class: 'sg-film' }, `🎬 ${pre.title}${pre.releaseYear ? ` (${pre.releaseYear})` : ''}`); }
         const ok = await dialog(`Suggest a watch to ${otherName}`, [el('div', { class: 'h-stack' },
           el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, fixed, tl, where, (linkBox.append(el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u), linkBox),
           el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
