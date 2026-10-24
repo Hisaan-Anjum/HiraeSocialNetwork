@@ -2223,13 +2223,11 @@ html { scroll-behavior: smooth; }
 .at-done { padding: 8px 0 14px; font-size: 15px; line-height: 1.5; }
 .at-done a { color: #F472B6; }
 .at-close, .at-back { margin-top: 4px; }
-/* Your own page: the films you saved with "Add to… → My watchlist". */
-.my-watchlist { max-width: 1032px; margin: 18px auto 0; padding: 16px 18px; border-radius: 18px; border: 1px solid var(--line, rgba(148, 163, 184, .3)); }
-@media (max-width: 1080px) { .my-watchlist { margin: 18px 24px 0; } }   /* same gutter as the danger zone below */
-.my-watchlist h3 { margin: 0 0 10px; font-size: 16px; }
-.my-watchlist ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.my-watchlist li { padding: 6px 12px; border-radius: 999px; background: rgba(99, 102, 241, .16); border: 1px solid rgba(99, 102, 241, .3); font-size: 14px; }
-.my-watchlist p { margin: 0; color: var(--ink-dim); font-size: 14px; }
+/* Herae page watchlists (founder 10-24): big tabs between "Together" (shared) and the person's own list. */
+.wl-tabs { display: flex; gap: 8px; margin: 0 0 12px; padding: 4px; border-radius: 16px; background: rgba(30, 41, 59, .6); border: 1px solid var(--line, rgba(148, 163, 184, .3)); }
+.wl-tabs [role=tab] { flex: 1; min-height: 46px; border: 0; border-radius: 12px; background: transparent; color: var(--ink-dim); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.wl-tabs [role=tab][aria-selected="true"] { background: linear-gradient(135deg, #6366F1, #EC4899); color: #fff; box-shadow: 0 6px 18px rgba(236, 72, 153, .28); }
+.wl-tabs [role=tab]:focus-visible { outline: 2px solid #F472B6; outline-offset: 2px; }
 .pc-card { max-width: 460px; width: 100%; display: flex; flex-direction: column; max-height: min(82vh, 640px); }
 .pc-movie { font-family: var(--font-sans); letter-spacing: -0.02em; font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 12px; flex: 0 0 auto; }
 .pc-search {

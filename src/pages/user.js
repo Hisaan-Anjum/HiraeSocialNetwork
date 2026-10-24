@@ -26,6 +26,7 @@ import { mountAvatarControls } from '../components/avatarUpload.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 import { mountMemoriesSection } from '../memories/section.js';
 import { mountWatchlist } from '../watchlist/panel.js';
+import { fetchPersonalWatchlist, mountPersonalWatchlist } from '../watchlist/personal.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
 const {
@@ -75,13 +76,21 @@ function mountMemories() {
 // element identity, so the feed's own paging code is untouched by the move.
 let splitEl = null;
 let watchlistEl = null;
-function mountWatchlistColumn() {
+// Founder 10-24: one watchlist section, in the shared-watchlist style. Friends get big tabs — ❤️ Together (your shared
+// list) and 📌 <their> list — opening on their list when nothing is shared yet. Your own page and a public stranger's
+// page show just that person's list (strangers only when their profile is public and the list has something in it).
+let watchlistMount = 0;
+async function mountWatchlistColumn() {
   if (!state.profile) return;
-  const wants = !state.profile.isMe && state.profile.contact?.status === 'accepted';
+  const profile = state.profile; const mine = ++watchlistMount;
+  const isFriend = !profile.isMe && profile.contact?.status === 'accepted';
+  const personal = await fetchPersonalWatchlist(profile.username);
+  if (mine !== watchlistMount) return;   // a newer render took over while this one was loading
+  const showPersonal = personal.allowed && (profile.isMe || isFriend || personal.items.length > 0);
+  const wants = isFriend || showPersonal;
 
   if (!wants) {
-    // Not a relationship (own profile, stranger, pending) — put the feed back
-    // to full width if a previous render had split it.
+    // Nothing to show — put the feed back to full width if a previous render had split it.
     if (splitEl) {
       splitEl.parentNode.insertBefore(contentEl, splitEl);
       splitEl.parentNode.insertBefore(sentinelEl, splitEl);
@@ -103,7 +112,24 @@ function mountWatchlistColumn() {
     feedCol.append(contentEl, sentinelEl); // moved, not recreated
   }
   watchlistEl.innerHTML = '';
-  mountWatchlist(watchlistEl, { profile: state.profile });
+  const name = profile.username;
+  if (!isFriend) { mountPersonalWatchlist(watchlistEl, { username: profile.username, isMe: !!profile.isMe, name, data: personal }); return; }
+
+  let shared = 0; try { shared = ((await window.getWatchlist(profile.username)).items || []).length; } catch (e) { /* show both anyway */ }
+  if (mine !== watchlistMount) return;
+  const tabs = document.createElement('div'); tabs.className = 'wl-tabs'; tabs.setAttribute('role', 'tablist');
+  tabs.innerHTML = `<button type="button" role="tab" data-tab="shared">❤️ Together</button><button type="button" role="tab" data-tab="personal">📌 ${escapeHtml(name)}’s list</button>`;
+  const sharedPane = document.createElement('div'); sharedPane.dataset.pane = 'shared';
+  const personalPane = document.createElement('div'); personalPane.dataset.pane = 'personal';
+  watchlistEl.append(tabs, sharedPane, personalPane);
+  mountWatchlist(sharedPane, { profile });
+  mountPersonalWatchlist(personalPane, { username: profile.username, isMe: false, name, data: personal });
+  const show = (which) => {
+    for (const b of tabs.querySelectorAll('[role=tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === which));
+    sharedPane.hidden = which !== 'shared'; personalPane.hidden = which !== 'personal';
+  };
+  tabs.addEventListener('click', (e) => { const b = e.target.closest('[role=tab]'); if (b) show(b.dataset.tab); });
+  show(shared > 0 || !personal.items.length ? 'shared' : 'personal');   // nothing shared yet → their list first
 }
 
 if (auth) {
@@ -183,24 +209,13 @@ function renderHeader(profile) {
   });
 
   // Your own profile shows your personal watchlist ("Add to… → My watchlist", founder 10-23) and the danger zone.
-  if (profile.isMe) { renderMyWatchlist(); renderDangerZone(profile); }
+  if (profile.isMe) renderDangerZone(profile);
 }
 
 // ── Delete account ─────────────────────────────────────────────────────
 // Rendered only on your own profile, below the header. Opens a confirmation
 // modal that re-authenticates (password for a local account, username for a
 // Google one — see profile.authProvider) before calling DELETE /api/me.
-async function renderMyWatchlist() {
-  const box = document.createElement('section');
-  box.className = 'my-watchlist'; box.setAttribute('aria-label', 'My watchlist');
-  headerEl.appendChild(box);
-  let list = [];
-  try { list = ((await window.apiRequest('/api/profile/watch')).profile || {}).watchlist || []; } catch (e) { box.remove(); return; }
-  box.innerHTML = `<h3>📌 My watchlist</h3>${list.length
-    ? `<ul>${list.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`
-    : '<p>Nothing yet. On any film, tap “Add to…” → My watchlist.</p>'}`;
-}
-
 function renderDangerZone(profile) {
   const zone = document.createElement('div');
   zone.className = 'danger-zone';
