@@ -134,7 +134,9 @@
     // Nobody in between (founder 10-23): no partner and no profile → the choice, from every app page.
     // "Someone I already know" (the fork) holds off the choice for 3 days — time to bring their person in — then it asks again.
     let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 3 * 864e5; } catch (e) { /* storage blocked */ }
-    if (st.setupFirst && !skipped && page !== 'watch-profile.html') { location.replace('watch-profile.html?start=public&gate=1'); return; }
+    // A party link (#parties/…) opens the party it came for: joining one is the way to a night, not "in between".
+    const partyLink = page === 'social.html' && /^#parties/.test(location.hash);
+    if (st.setupFirst && !skipped && !partyLink && page !== 'watch-profile.html') { location.replace('watch-profile.html?start=public&gate=1'); return; }
     // Chose "just people I invite" (or the fork's "someone I already know"): their next step is the invite, not a profile.
     const step = st.inviteFirst || (skipped && st.step === 'no_profile') ? 'invite_first' : st.step;
     const MSG = {
