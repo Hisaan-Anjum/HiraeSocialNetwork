@@ -113,7 +113,7 @@ async function mountWatchlistColumn() {
   }
   watchlistEl.innerHTML = '';
   const name = profile.username;
-  if (!isFriend) { mountPersonalWatchlist(watchlistEl, { username: profile.username, isMe: !!profile.isMe, name, data: personal }); return; }
+  if (!isFriend) { mountPersonalWatchlist(watchlistEl, { username: profile.username, isMe: !!profile.isMe, name, data: personal }); focusMyList(); return; }
 
   let shared = 0; try { shared = ((await window.getWatchlist(profile.username)).items || []).length; } catch (e) { /* show both anyway */ }
   if (mine !== watchlistMount) return;
@@ -129,7 +129,16 @@ async function mountWatchlistColumn() {
     sharedPane.hidden = which !== 'shared'; personalPane.hidden = which !== 'personal';
   };
   tabs.addEventListener('click', (e) => { const b = e.target.closest('[role=tab]'); if (b) show(b.dataset.tab); });
-  show(shared > 0 || !personal.items.length ? 'shared' : 'personal');   // nothing shared yet → their list first
+  show(location.hash === '#my-watchlist' ? 'personal' : shared > 0 || !personal.items.length ? 'shared' : 'personal');   // nothing shared yet → their list first
+  focusMyList();
+}
+
+// Arrived from "Add to… → My watchlist → See it" (#my-watchlist): bring the list into view and light it up briefly.
+function focusMyList() {
+  if (location.hash !== '#my-watchlist') return;
+  const el = watchlistEl && watchlistEl.querySelector('.wl-personal');
+  if (!el) return;
+  setTimeout(() => { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); el.classList.add('wl-flash'); setTimeout(() => el.classList.remove('wl-flash'), 2200); }, 300);
 }
 
 if (auth) {

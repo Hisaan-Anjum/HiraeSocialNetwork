@@ -11,6 +11,8 @@ import { openPickContact } from './pickContact.js';
 
 const { apiRequest } = window;
 const MY_LIST_MAX = 20;   // watch-profile.js LIST_FIELDS.watchlist
+// "See it" opens your Herae page at My watchlist (founder 10-24).
+const myListHref = () => `user.html?u=${encodeURIComponent(((window.getAuth && window.getAuth()) || {}).username || '')}#my-watchlist`;
 
 // sharedWith: a username when the page is already about one relationship; onShared(movie) then does that add.
 // onDone(kind, detail) fires after any successful add ('shared' | 'suggested' | 'mine').
@@ -90,10 +92,10 @@ export function openAddTo({ movie, sharedWith = null, onShared = null, onDone = 
     try {
       const { profile } = await apiRequest('/api/profile/watch');
       const list = (profile && profile.watchlist) || [];
-      if (list.some((t) => String(t).toLowerCase() === movie.title.toLowerCase())) { say('Already on your watchlist 📌 <a href="watch-profile.html">See it</a>'); return; }
+      if (list.some((t) => String(t).toLowerCase() === movie.title.toLowerCase())) { say(`Already on your watchlist 📌 <a href="${myListHref()}">See it</a>`); return; }
       if (list.length >= MY_LIST_MAX) { say(`Your watchlist is full (${MY_LIST_MAX}). Remove one on <a href="watch-profile.html">your profile</a> first.`); return; }
       await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: [...list, movie.title] }) });
-      say('Added to your watchlist 📌 <a href="watch-profile.html">See it</a>');
+      say(`Added to your watchlist 📌 <a href="${myListHref()}">See it</a>`);
       if (onDone) onDone('mine', null);
     } catch (e) { say(escapeHtml(e.message || 'Could not add it.')); }
   }

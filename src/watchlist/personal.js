@@ -25,13 +25,22 @@ export function mountPersonalWatchlist(container, { username, isMe, name, data }
         ${items.length ? `<span class="wl-count">${items.length} film${items.length === 1 ? '' : 's'}</span>` : ''}</div>
       ${items.length ? `<ul class="wl-list">${items.map((it, i) => {
         const m = it.film;
-        return `<li class="wl-item">
+        const stars = [1, 2, 3, 4, 5].map((n) => isMe
+          ? `<button class="wl-star${it.rating >= n ? ' is-on' : ''}" data-pw="rate" data-i="${i}" data-rating="${n}" aria-label="Rate ${n} of 5">★</button>`
+          : `<span class="wl-star${it.rating >= n ? ' is-on' : ''}" aria-hidden="true">★</span>`).join('');
+        return `<li class="wl-item${it.watched ? ' is-watched' : ''}">
           <span class="wl-art" ${m ? `data-pw="open" data-movie="${m.id}" role="button" tabindex="0"` : ''}
             style="${m && m.posterUrl ? `background-image:url('${m.posterUrl}')` : ''}">${!m || !m.posterUrl ? '<span class="recommendation-card-placeholder">🎬</span>' : ''}</span>
           <div class="wl-main">
             <div class="wl-title" ${m ? `data-pw="open" data-movie="${m.id}" role="button" tabindex="0"` : ''}>${escapeHtml(it.title)}</div>
-            <div class="wl-meta">${m && m.releaseYear ? m.releaseYear : ''}</div>
-            ${isMe ? `<div class="wl-actions"><button class="wl-chip" data-pw="remove" data-i="${i}">Remove</button></div>` : ''}
+            <div class="wl-meta">${m && m.releaseYear ? m.releaseYear : ''}${it.watched ? ' · ✓ Watched' : ''}</div>
+            ${isMe || it.rating ? `<div class="wl-stars" role="group" aria-label="Rating">${stars}</div>` : ''}
+            ${it.note ? `<div class="wl-comment">“${escapeHtml(it.note)}”</div>` : ''}
+            ${isMe ? `<div class="wl-actions">
+              <button class="wl-chip" data-pw="watched" data-i="${i}">${it.watched ? '✓ Watched' : 'Mark watched'}</button>
+              <button class="wl-chip" data-pw="note" data-i="${i}">${it.note ? 'Edit note' : 'Add note'}</button>
+              ${m && (m.watchLinks || []).length ? `<button class="wl-chip wl-chip-go" data-pw="watch" data-i="${i}">▶ Watch now</button>` : ''}
+              <button class="wl-chip" data-pw="remove" data-i="${i}">Remove</button></div>` : ''}
           </div></li>`;
       }).join('')}</ul>`
       : `<div class="wl-empty">${isMe ? 'Nothing yet — add the films you want to watch.' : 'Nothing here yet.'}</div>`}
@@ -50,11 +59,24 @@ export function mountPersonalWatchlist(container, { username, isMe, name, data }
           const { recommendation: rec } = await window.getRecommendationById(id);
           if (has(rec.title)) return;
           if (items.length >= 20) throw new Error('Your watchlist is full (20). Remove one first.');
-          const next = [...items, { title: rec.title, film: rec }];
+          const next = [...items, { title: rec.title, film: rec, watched: false, rating: 0, note: null }];
           await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: next.map((x) => x.title) }) });
           items = next; render();
         },
       });
+      return;
+    }
+    // The shared watchlist's extras on your own films: watched, stars, a note, and where to watch it.
+    const act = e.target.closest('[data-pw="watched"], [data-pw="rate"], [data-pw="note"], [data-pw="watch"]');
+    if (act && isMe) {
+      const it = items[Number(act.dataset.i)]; if (!it) return;
+      if (act.dataset.pw === 'watch') { const { openWatchPicker } = await import('./providers.js'); openWatchPicker(it.film, { onPick: (l) => window.open(l.url, '_blank', 'noopener') }); return; }
+      let body = null;
+      if (act.dataset.pw === 'watched') body = { watched: !it.watched };
+      if (act.dataset.pw === 'rate') { const r = Number(act.dataset.rating); body = { rating: it.rating === r ? 0 : r }; }
+      if (act.dataset.pw === 'note') { const note = window.prompt(`A note about ${it.title}`, it.note || ''); if (note === null) return; body = { note }; }
+      try { const { item } = await apiRequest('/api/profile/watch/watchlist-item', { method: 'PUT', body: JSON.stringify({ title: it.title, ...body }) }); Object.assign(it, item); render(); }
+      catch (err) { act.textContent = 'Try again'; }
       return;
     }
     const rm = e.target.closest('[data-pw="remove"]');
