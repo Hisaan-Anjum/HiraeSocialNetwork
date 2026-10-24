@@ -154,7 +154,8 @@
     function landing() {
       // A Google account just created through the username dialog answers there (it may differ from this page's radios).
       try { var post = sessionStorage.getItem('herae_post_signup'); if (post !== null) { sessionStorage.removeItem('herae_post_signup'); return post || 'memories.html'; } } catch (e) { /* storage blocked */ }
-      return mode() === 'public' ? 'watch-profile.html?start=public' : 'memories.html';
+      // They just chose on this page: the profile page must not ask the same question again (founder 10-24) — meet=1.
+      return mode() === 'public' ? 'watch-profile.html?start=public&meet=1' : 'memories.html';
     }
 
     // An invite can arrive as ?invite=CODE as well as in localStorage, because

@@ -53,7 +53,8 @@
   .wp-vq-opt { margin-left: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
     color: var(--h-text-2, #94A3B8); border: 1px solid var(--h-line-strong); }
   .wp-vq-count { font-size: 12px; font-weight: 600; color: var(--h-text-2, #94A3B8); white-space: nowrap; }
-  .wp-vq-bar { display: flex; align-items: center; justify-content: flex-end; gap: var(--h-3); margin-top: var(--h-3); }
+  .wp-vq-bar { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--h-2) var(--h-3); margin-top: var(--h-3); }
+  .wp-vq-prev { margin-right: auto; }   /* back on the left, forward on the right */
   .wp-vq-link { background: none; border: 0; padding: 6px 4px; color: var(--h-text-2, #94A3B8); font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; }
   .wp-vq-next { min-height: 36px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
     color: #F9A8D4; background: transparent; border: 1px solid rgba(236, 72, 153, .55); }
@@ -164,7 +165,8 @@
           <div class="wp-vq" data-q="3" hidden><h3 class="wp-vibe-h">What you do</h3><div class="h-chips" id="work" role="group" aria-label="What you do"></div></div>
           <div class="wp-vq-done" id="vibeDone" hidden><span id="vibeSum"></span> <button type="button" class="wp-vq-link" id="vibeEdit">Edit</button></div>
           <div class="wp-vq-bar" id="vibeBar">
-            <button type="button" class="wp-vq-link" id="vibeSkip">Skip question</button><button type="button" class="wp-vq-next" id="vibeNext">Next question →</button></div>
+            <button type="button" class="wp-vq-link wp-vq-prev" id="vibePrev">← Previous</button>
+            <button type="button" class="wp-vq-link" id="vibeSkip">Skip</button><button type="button" class="wp-vq-next" id="vibeNext">Next question →</button></div>
         </fieldset>
         <details class="wp-more"><summary>Add more about you <span class="faint">(optional)</span></summary>
           <fieldset><legend>When you're usually free</legend><div class="h-chips" id="availability"></div></fieldset>
@@ -284,6 +286,7 @@
       document.querySelectorAll('#vibe .wp-vq').forEach((el) => { el.hidden = Number(el.dataset.q) !== q; });
       $('vibeBar').hidden = q > 3; $('vibeDone').hidden = q <= 3;
       $('vibeCount').textContent = q <= 3 ? `Question ${q} of 3` : 'Done ✓';
+      $('vibePrev').hidden = q <= 1;
       $('vibeNext').textContent = q === 3 ? 'Finish vibe ✓' : 'Next question →';
       if (q > 3) {
         const picked = [...state.personality.map((v) => `${VIBE_EMOJI[v] || ''} ${LABEL[v] || v}`), ...state.hobbies.map((v) => `${HOBBY_EMOJI[v] || ''} ${LABEL[v] || v}`),
@@ -395,6 +398,7 @@
     $('vibeNext').onclick = () => showVibe(vibeQ + 1);
     $('vibeSkip').onclick = () => showVibe(vibeQ + 1);   // picks save as you tap; Skip just moves on
     $('vibeEdit').onclick = () => showVibe(1);
+    $('vibePrev').onclick = () => showVibe(Math.max(1, vibeQ - 1));
     document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; dirty = true; });
     document.querySelectorAll('input[name=fvis]').forEach((r) => r.onchange = () => { state.friends_list_visibility = r.value; dirty = true; });
     document.querySelectorAll('input[name=plink]').forEach((r) => r.onchange = () => { state.page_link = r.value; dirty = true; });
@@ -484,8 +488,11 @@
       if (!on) { $('forkMeet').querySelector('small').textContent = 'Your profile is ready — turn on Discover in one tap.'; $('forkMeet').querySelector('.wp-fork-go').textContent = 'Turn it on →'; }
       document.querySelector('main h1').textContent = fork ? 'Who do you want to watch with?' : 'Your watch profile';
       $('fork').hidden = !fork; $('form').hidden = fork; $('steps').hidden = !on || fork; $('intro').hidden = fork; if (fork) $('blocksSec').hidden = true;
-      $('forkKnown').onclick = () => { try { localStorage.setItem('herae_setup_skipped', String(Date.now())); } catch (e) { /* fine */ } };   // app-nav.js holds off 3 days
-      $('forkMeet').onclick = () => { try { sessionStorage.setItem('herae_fork', 'meet'); } catch (e) { /* fine */ }
+      // The choice is recorded on the account too, so the extension and other devices never ask again (founder 10-24).
+      const record = (choice) => Promise.race([apiRequest('/api/profile/watch/choice', { method: 'POST', body: JSON.stringify({ choice, via: 'site' }) }).catch(() => {}), new Promise((r) => setTimeout(r, 1500))]);
+      $('forkKnown').onclick = async (e) => { e.preventDefault(); try { localStorage.setItem('herae_setup_skipped', String(Date.now())); } catch (er) { /* fine */ }   // app-nav.js holds off 3 days
+        await record('know'); location.href = $('forkKnown').getAttribute('href'); };
+      $('forkMeet').onclick = () => { try { sessionStorage.setItem('herae_fork', 'meet'); } catch (e) { /* fine */ } record('meet');
         if (!on) { location.href = 'social.html#discover'; return; }
         $('fork').hidden = true; $('form').hidden = false; $('steps').hidden = false; $('intro').hidden = false; $('blocksSec').hidden = false; document.querySelector('main h1').textContent = 'Your watch profile'; showStep(1); };
       showStep(on ? 1 : 0);

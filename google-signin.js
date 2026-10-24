@@ -154,7 +154,7 @@
       error = data && data.needsUsername ? (data.error || 'Try another username.') : '';
       // A brand-new account that chose public goes straight into the 3-step profile (signup.html / login.js read this).
       if (data && !data.needsUsername) {
-        try { sessionStorage.setItem('herae_post_signup', sessionStorage.getItem('herae_signup_mode') === 'private' ? '' : 'watch-profile.html?start=public'); } catch (e) { /* storage blocked */ }
+        try { sessionStorage.setItem('herae_post_signup', sessionStorage.getItem('herae_signup_mode') === 'private' ? '' : 'watch-profile.html?start=public&meet=1'); } catch (e) { /* storage blocked */ }
       }
     }
     return data;
