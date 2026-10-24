@@ -4,6 +4,7 @@
 
 import { escapeHtml } from '../lib/util.js';
 import { openMovieModal } from '../components/movieDetail.js';
+import { openAddMovie } from './addMovie.js';
 
 const { apiRequest } = window;
 
@@ -33,12 +34,29 @@ export function mountPersonalWatchlist(container, { username, isMe, name, data }
             ${isMe ? `<div class="wl-actions"><button class="wl-chip" data-pw="remove" data-i="${i}">Remove</button></div>` : ''}
           </div></li>`;
       }).join('')}</ul>`
-      : `<div class="wl-empty">${isMe ? 'Nothing yet. On any film, tap “Add to…” → My watchlist.' : 'Nothing here yet.'}</div>`}`;
+      : `<div class="wl-empty">${isMe ? 'Nothing yet — add the films you want to watch.' : 'Nothing here yet.'}</div>`}
+      ${isMe ? '<button class="btn btn-primary wl-add-btn" data-pw="add">＋ Add Movie</button>' : ''}`;
   }
 
   panel.addEventListener('click', async (e) => {
     const open = e.target.closest('[data-pw="open"]');
     if (open) { openMovieModal(Number(open.dataset.movie)); return; }
+    // "＋ Add Movie" (founder 10-24): the same catalogue browser as the shared watchlist, adding to your own list.
+    if (e.target.closest('[data-pw="add"]') && isMe) {
+      const has = (title) => items.some((x) => String(x.title).toLowerCase() === String(title).toLowerCase());
+      openAddMovie({
+        isOnList: (id) => items.some((x) => x.film && x.film.id === id),
+        onAdd: async (id) => {
+          const { recommendation: rec } = await window.getRecommendationById(id);
+          if (has(rec.title)) return;
+          if (items.length >= 20) throw new Error('Your watchlist is full (20). Remove one first.');
+          const next = [...items, { title: rec.title, film: rec }];
+          await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: next.map((x) => x.title) }) });
+          items = next; render();
+        },
+      });
+      return;
+    }
     const rm = e.target.closest('[data-pw="remove"]');
     if (rm && isMe) {
       const next = items.filter((_, i) => i !== Number(rm.dataset.i));

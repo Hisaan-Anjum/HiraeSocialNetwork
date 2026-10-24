@@ -75,15 +75,13 @@ export function openAddTo({ movie, sharedWith = null, onShared = null, onDone = 
         <span>${escapeHtml(c.with.name)}</span></button>`).join('')}
       <button class="btn btn-ghost at-back" data-back>← Back</button>`;
     body.querySelector('[data-back]').onclick = menu;
-    body.querySelectorAll('.at-chat').forEach((b) => { b.onclick = async () => {
+    // Picking a chat opens that chat's own "Suggest a watch" dialog with this film already chosen (founder 10-24): when,
+    // and where to watch it, are decided there — the same dialog as suggesting from inside the chat.
+    body.querySelectorAll('.at-chat').forEach((b) => { b.onclick = () => {
       const c = chats[Number(b.dataset.i)];
-      body.innerHTML = '<div class="spinner-text">Sending…</div>';
-      const link = (movie.watchLinks || []).find((l) => l && l.url && l.available !== false);
-      try {
-        await apiRequest(`/api/chats/${c.id}/proposals`, { method: 'POST', body: JSON.stringify({ title: movie.title, url: link ? link.url : null, when: 'now' }) });
-        say(`Suggested to ${escapeHtml(c.with.name)} 💬 <a href="social.html#chats/${c.id}">Open the chat →</a>`);
-        if (onDone) onDone('suggested', c.with.username);
-      } catch (e) { say(escapeHtml(e.message || 'Could not send it.')); }
+      try { sessionStorage.setItem('herae_suggest_film', JSON.stringify({ id: movie.id, title: movie.title, releaseYear: movie.releaseYear || null, watchLinks: movie.watchLinks || [] })); } catch (e) { /* the dialog opens empty */ }
+      if (onDone) onDone('suggested', c.with.username);
+      location.href = `social.html#chats/${c.id}`;
     }; });
   }
 

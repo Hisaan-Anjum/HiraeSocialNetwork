@@ -202,6 +202,7 @@
   .p-state { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: var(--h-r-pill); border: 1px solid var(--h-line-strong); }
   .p-state.accepted { color: var(--h-ok); border-color: currentColor; }
   .c-sys { align-self: center; font-size: var(--h-size-xs); color: var(--h-text-3); }
+  .sg-film { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--h-line); background: rgba(99, 102, 241, .12); font-weight: 700; }
 </style>
 </head>
 <body class="h2">
@@ -705,7 +706,9 @@
       const suggest = el('button', { type: 'button', class: 'c-ico', disabled: !page.canSend, onclick: suggestWatch, 'aria-label': 'Suggest a watch', title: 'Suggest a watch' }, '🎬');
       const form = el('form', { class: 'c-compose' }, suggest, input, send);
       v.append(form);
-      async function suggestWatch() {
+      // pre: a film already chosen elsewhere (the catalogue's "Add to… → Suggest it in a chat", founder 10-24) — the
+      // same dialog, with the film's name instead of the box, no catalogue button, and where-to-watch instead of the link.
+      async function suggestWatch(pre = null) {
         // Both ways to pick (founder 10-23): a dropdown as you type, or the whole catalogue — the shared Watchlist's
         // "Add a movie" browser. A chosen film with a known streaming link fills the link too. (film-pick.js)
         const t = el('input', { class: 'hi', id: 'sgTitle', maxlength: '120', placeholder: 'Start typing a film or series', autocomplete: 'off' });
@@ -717,7 +720,7 @@
         const setPick = (m) => {
           picked = m || null; where.innerHTML = ''; where.hidden = !picked; linkBox.hidden = !!picked;
           if (!picked) return;
-          const known = (Array.isArray(m.watchLinks) ? m.watchLinks : []).filter((l) => l && /^https:\/\//.test(l.url || ''));
+          const known = (Array.isArray(m.watchLinks) ? m.watchLinks : []).filter((l) => l && l.available !== false && /^https:\/\//.test(l.url || ''));   // not ones known to be unavailable here
           const opts = [...known.map((l) => [l.name || l.provider || 'Watch it here', l.url]),
             ...SERVICES.filter(([id, name]) => !known.some((l) => l.provider === id || String(l.name || '').toLowerCase().includes(name.toLowerCase()))).map(([, name, search]) => [name, search + encodeURIComponent(m.title)]),
             ['Decide when we start', '']];
@@ -734,8 +737,10 @@
         const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
         dt.hidden = true; nowR.onchange = laterR.onchange = () => { dt.hidden = !laterR.checked; if (laterR.checked) dt.focus(); };
+        let fixed = null;
+        if (pre) { t.value = pre.title; t.hidden = true; tl.hidden = true; setPick(pre); fixed = el('div', { class: 'sg-film' }, `🎬 ${pre.title}${pre.releaseYear ? ` (${pre.releaseYear})` : ''}`); }
         const ok = await dialog(`Suggest a watch to ${otherName}`, [el('div', { class: 'h-stack' },
-          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, tl, where, (linkBox.append(el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u), linkBox),
+          el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, fixed, tl, where, (linkBox.append(el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u), linkBox),
           el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
             el('label', { class: 'h-row' }, nowR, ' Now'), el('label', { class: 'h-row' }, laterR, ' At a time'), dt),
           el('p', { class: 'h-help' }, `Nothing starts until ${otherName} accepts.`))], [['Cancel', 'hb-quiet', false], ['Send suggestion', 'hb-primary', true]]);
@@ -750,6 +755,9 @@
       // compose bar — every new message needed a manual scroll (founder 10-23). The true bottom is the page's.
       const toBottom = () => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight }));
       toBottom();
+      // Arrived from "Add to… → Suggest it in a chat": open the suggest dialog with that film already picked.
+      let handed = null; try { handed = JSON.parse(sessionStorage.getItem('herae_suggest_film') || 'null'); sessionStorage.removeItem('herae_suggest_film'); } catch (e) { /* none */ }
+      if (handed && handed.title && page.canSend) setTimeout(() => suggestWatch(handed), 300);
       const markRead = () => { if (newest) apiRequest(`/api/chats/${id}/read`, { method: 'POST', body: JSON.stringify({ lastId: newest }) }).then(refreshBadges).catch(() => {}); };
       markRead();
       async function deliver(body, node, clientId) {
