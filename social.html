@@ -73,6 +73,13 @@
   .d-badge.hot { background: linear-gradient(135deg, #6366F1, #A78BFA 55%, #EC4899); border-color: transparent; box-shadow: 0 6px 18px -4px rgba(236, 72, 153, .55); }
   .d-badge svg { width: 14px; height: 14px; flex: none; }
   .d-name { display: flex; align-items: flex-end; gap: 12px; }
+  /* Premium members (founder 10-24): a gold ring around the card and a gold pill beside the name, with a slow shine. */
+  .d-card.premium { box-shadow: 0 0 0 2px rgba(251, 191, 36, .85), 0 0 28px rgba(251, 191, 36, .35), 0 18px 48px rgba(2, 6, 23, .55); }
+  .d-premium { align-self: center; flex: none; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .04em;
+    color: #3B2300; background: linear-gradient(110deg, #F59E0B 0%, #FDE68A 45%, #FFF7D6 50%, #FDE68A 55%, #F59E0B 100%); background-size: 250% 100%;
+    box-shadow: 0 2px 10px rgba(245, 158, 11, .45); animation: d-shine 3.2s ease-in-out infinite; }
+  @keyframes d-shine { 0%, 60% { background-position: 100% 0; } 100% { background-position: -150% 0; } }
+  @media (prefers-reduced-motion: reduce) { .d-premium { animation: none; } }
   .d-card h2 { flex: 1; min-width: 0; margin: 0; font: 800 34px/1.02 var(--h-font-display); letter-spacing: -.025em; color: #fff;
     text-shadow: 0 2px 18px rgba(2, 6, 23, .5); overflow-wrap: anywhere; }
   .d-infob { flex: none; width: 38px; height: 38px; margin-bottom: 1px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .14);
@@ -261,7 +268,7 @@
     const avatar = (p) => p.avatarUrl ? el('span', { class: 'h-avatar' }, el('img', { src: p.avatarUrl, alt: '' })) : el('span', { class: 'h-avatar', 'aria-hidden': 'true' }, (p.name || p.username || '?')[0].toUpperCase());
     const LABEL = { weekday_evenings: 'Weekday evenings', weekend_days: 'Weekend days', weekend_evenings: 'Weekend evenings', late_nights: 'Late nights', flexible: 'Flexible',
       one_to_one: 'One-to-one', small_group: 'A few friends', big_party: 'Big parties', quiet_watcher: 'Quiet watcher', commentator: 'Running commentary', rewatcher: 'Rewatcher',
-      binger: 'Binger', one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films', snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
+      binger: 'Binger', one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films', gaming: 'Gaming', reading: 'Reading', fitness: 'Fitness', travel: 'Travel', cooking: 'Cooking', music_making: 'Making music', art: 'Art', outdoors: 'Outdoors', cafes: 'Cafés', pets: 'Pets', sports: 'Sports', photography: 'Photography', student: 'Student', tech: 'Tech', healthcare: 'Healthcare', education: 'Education', business: 'Business', creative: 'Creative', engineering: 'Engineering', law: 'Law', hospitality: 'Hospitality', trades: 'Trades', public_service: 'Public service', other: 'Something else', homebody: 'Homebody', adventurous: 'Adventurous', deep_talks: 'Loves deep talks', jokester: 'Jokester', calm: 'Calm', chatty: 'Chatty', romantic: 'Romantic', curious: 'Curious', planner: 'Planner', spontaneous: 'Spontaneous', snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
     // Tapping anywhere on a list row opens it (people tap the name, not the small button); the button stays for keyboards.
     const rowGo = (hash) => (e) => { if (!e.target.closest('a, button, menu')) location.hash = hash; };
     const L = (xs) => (xs || []).map((x) => LABEL[x] || x).join(', ');
@@ -435,12 +442,13 @@
       const badges = why.slice(0, 2).map((w, i) => el('span', { class: `d-badge${i ? '' : ' hot'}` }, svgEl(/^You both love/.test(w) ? ICON.film : ICON.spark), w));
       const hidden = (c.photoCount || 0) - (c.photos || []).length;
       const chips = [...(c.genres || []).slice(0, 3), ...(c.languages || []).slice(0, 1), ...(c.formats || []).slice(0, 1).map((x) => LABEL[x] || x)];
-      const card = el('article', behind ? { class: 'd-card behind', 'aria-hidden': 'true' } : { class: 'd-card enter', tabindex: '0', 'aria-label': `${c.name}. ${why.join('. ')}` },
+      const prem = c.premium ? ' premium' : '';   // founder 10-24: premium members' cards look premium
+      const card = el('article', behind ? { class: `d-card behind${prem}`, 'aria-hidden': 'true' } : { class: `d-card enter${prem}`, tabindex: '0', 'aria-label': `${c.name}${c.premium ? ', Herae Premium' : ''}. ${why.join('. ')}` },
         cardMedia(c), el('div', { class: 'd-shade' }),
         behind ? null : el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
         el('div', { class: 'd-info' },
           badges.length ? el('div', { class: 'd-badges' }, ...badges) : null,
-          el('div', { class: 'd-name' }, el('h2', {}, c.name),
+          el('div', { class: 'd-name' }, el('h2', {}, c.name), c.premium ? el('span', { class: 'd-premium', title: 'Herae Premium member' }, '✦ Premium') : null,
             behind ? null : el('button', { type: 'button', class: 'd-infob', 'aria-label': `More about ${c.name}`, onclick: () => details(c) }, svgEl(ICON.up))),
           hidden > 0 ? el('div', { class: 'd-sub' }, svgEl(ICON.lock), `${hidden} more photo${hidden === 1 ? '' : 's'} after you match`) : null,
           c.bio ? el('p', { class: 'd-bio' }, c.bio) : null,
@@ -481,7 +489,7 @@
       const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
       add('Why you’re seeing them', (c.why || []).join(' · ')); add('About', c.bio);
       add('Loves', (c.favoriteTitles || []).join(', ')); add('Wants to watch', (c.watchlist || []).join(', ')); add('Genres', (c.genres || []).join(', ')); add('Creators', (c.creators || []).join(', '));
-      add('Watches in', (c.languages || []).join(', ')); add('Usually free', L(c.availability)); add('Likes watching', L(c.formats)); add('As a viewer', L(c.traits));
+      add('Watches in', (c.languages || []).join(', ')); add('Usually free', L(c.availability)); add('Likes watching', L(c.formats)); add('As a viewer', L(c.traits)); add('Listens to', (c.music || []).join(', ')); add('Personality', L(c.personality)); add('In free time', L(c.hobbies)); add('Works in', c.work && c.work !== 'other' ? (LABEL[c.work] || c.work) : '');
       dialog(c.name, [dl, c.pageLink ? el('a', { class: 'd-page', href: `user.html?u=${encodeURIComponent(c.username)}` }, 'See their Herae page →') : null].filter(Boolean),
         [['Skip', 'hb-quiet', -1], ['Watch together?', 'hb-primary', 1]]).then((v) => { if ((v === 1 || v === -1) && deck[0] === c) decide(v); });
     }

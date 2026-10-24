@@ -42,6 +42,31 @@
   .wp-ph .main { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(15,23,42,.8); color: #fff; }
   .wp-ph .mk { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; border: 0; background: rgba(15,23,42,.8); color: #fff; cursor: pointer; }
   .wp-more { margin: var(--h-4) 0; border-top: 1px solid var(--h-line); padding-top: var(--h-3); }
+  .wp-vibe { margin-top: var(--h-5); padding: var(--h-4); border-radius: 20px; border: 1px solid var(--h-line);
+    background: radial-gradient(120% 90% at 100% 0%, rgba(236, 72, 153, .14), transparent 60%), radial-gradient(120% 90% at 0% 100%, rgba(99, 102, 241, .16), transparent 60%); }
+  .wp-vibe legend { float: left; width: 100%; padding: 0; margin: 0 0 4px; font-weight: 700; }
+  .wp-vibe-h { margin: var(--h-2) 0; font-size: 14px; font-weight: 700; }
+  /* Its own little wizard, never mistaken for the page's (founder 10-24): a header strip with "Question n of 3", its own
+     words ("Next question"), and small pills that look nothing like the page's big Next / Back. */
+  .wp-vq-head { display: flex; align-items: center; justify-content: space-between; gap: var(--h-2); margin: calc(-1 * var(--h-4)) calc(-1 * var(--h-4)) var(--h-3);
+    padding: 10px var(--h-4); border-radius: 20px 20px 0 0; background: rgba(236, 72, 153, .12); border-bottom: 1px solid var(--h-line); font-weight: 700; font-size: 14px; }
+  .wp-vq-opt { margin-left: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--h-text-2, #94A3B8); border: 1px solid var(--h-line-strong); }
+  .wp-vq-count { font-size: 12px; font-weight: 600; color: var(--h-text-2, #94A3B8); white-space: nowrap; }
+  .wp-vq-bar { display: flex; align-items: center; justify-content: flex-end; gap: var(--h-3); margin-top: var(--h-3); }
+  .wp-vq-link { background: none; border: 0; padding: 6px 4px; color: var(--h-text-2, #94A3B8); font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; }
+  .wp-vq-next { min-height: 36px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    color: #F9A8D4; background: transparent; border: 1px solid rgba(236, 72, 153, .55); }
+  .wp-vq-next:hover { background: rgba(236, 72, 153, .12); }
+  .wp-vq-done { font-size: 14px; line-height: 1.6; }
+  .wp-vibe-sub { clear: both; margin: 0 0 var(--h-3); font-size: 13px; color: var(--h-text-2, #94A3B8); }
+  /* One look for all three (founder 10-24): emoji pills, a little larger than plain chips, the brand gradient when picked. */
+  .h2 .wp-vibe .h-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; font-size: 14px; font-weight: 600;
+    transition: transform .12s ease, box-shadow .12s ease; }
+  .h2 .wp-vibe .h-chip .e { font-size: 17px; line-height: 1; }
+  .h2 .wp-vibe .h-chip[aria-pressed="true"] { background: linear-gradient(135deg, #6366F1, #EC4899); color: #fff; border-color: transparent;
+    box-shadow: 0 6px 18px rgba(236, 72, 153, .28); transform: translateY(-1px); }
+  @media (prefers-reduced-motion: reduce) { .h2 .wp-vibe .h-chip { transition: none; } .h2 .wp-vibe .h-chip[aria-pressed="true"] { transform: none; } }
   .wp-more summary { cursor: pointer; font-weight: 600; padding: var(--h-2) 0; min-height: 32px; }
   .wizard .wp-step:not(.cur) { display: none; }
   .crop-stage { position: relative; width: min(78vw, 320px); aspect-ratio: 4 / 5; margin: 0 auto; overflow: hidden; border-radius: var(--h-r-lg); background: #000; touch-action: none; cursor: grab; }
@@ -113,6 +138,11 @@
           <div class="wp-add"><label class="sr-only" for="titleIn">Add a film or series</label>
             <input class="hi" id="titleIn" maxlength="60" placeholder="e.g. Past Lives"><button type="button" class="hb hb-secondary" id="titleAdd">Add</button></div>
         </fieldset>
+        <fieldset><legend>Music you love <span class="faint">(artists or genres)</span></legend>
+          <div class="h-chips" id="musicList"></div>
+          <div class="wp-add"><label class="sr-only" for="musicIn">Add an artist or genre</label>
+            <input class="hi" id="musicIn" maxlength="60" placeholder="e.g. Arijit Singh, lo-fi"><button type="button" class="hb hb-secondary" id="musicAdd">Add</button></div>
+        </fieldset>
         <fieldset><legend>Your watchlist <span class="faint">(what you want to watch next)</span></legend>
           <p class="faint" style="margin:0 0 8px;font-size:13px">People who want the same films come first, and if you’re in Discover we’ll tell you when a public watch party is showing one.</p>
           <div class="h-chips" id="wantList"></div>
@@ -123,6 +153,18 @@
           <div class="h-chips" id="languages"></div>
           <div class="wp-add"><label class="sr-only" for="langIn">Add a language</label>
             <input class="hi" id="langIn" maxlength="30" placeholder="e.g. Hindi"><button type="button" class="hb hb-secondary" id="langAdd">Add</button></div>
+        </fieldset>
+        <!-- Founder 10-24: personality, free time and work — optional, dating-app style, and small: a nested three-question
+             wizard in one box (one question at a time, Skip or Next), folding to a one-line summary when done. -->
+        <fieldset class="wp-vibe" id="vibe"><legend class="sr-only">Your vibe (optional)</legend>
+          <div class="wp-vq-head"><span>✨ Quick vibe check <span class="wp-vq-opt">optional</span></span><span class="wp-vq-count" id="vibeCount" aria-live="polite"></span></div>
+          <p class="wp-vibe-sub">People you’d click with show up first in Discover.</p>
+          <div class="wp-vq" data-q="1"><h3 class="wp-vibe-h">Your personality <span class="faint">(up to 3)</span></h3><div class="h-chips" id="personality"></div></div>
+          <div class="wp-vq" data-q="2" hidden><h3 class="wp-vibe-h">In your free time <span class="faint">(up to 3)</span></h3><div class="h-chips" id="hobbies"></div></div>
+          <div class="wp-vq" data-q="3" hidden><h3 class="wp-vibe-h">What you do</h3><div class="h-chips" id="work" role="group" aria-label="What you do"></div></div>
+          <div class="wp-vq-done" id="vibeDone" hidden><span id="vibeSum"></span> <button type="button" class="wp-vq-link" id="vibeEdit">Edit</button></div>
+          <div class="wp-vq-bar" id="vibeBar">
+            <button type="button" class="wp-vq-link" id="vibeSkip">Skip question</button><button type="button" class="wp-vq-next" id="vibeNext">Next question →</button></div>
         </fieldset>
         <details class="wp-more"><summary>Add more about you <span class="faint">(optional)</span></summary>
           <fieldset><legend>When you're usually free</legend><div class="h-chips" id="availability"></div></fieldset>
@@ -225,10 +267,41 @@
       late_nights: 'Late nights', flexible: 'Flexible', one_to_one: 'One person', small_group: 'A few friends', big_party: 'A big watch party',
       quiet_watcher: 'Quiet watcher', commentator: 'Running commentary', rewatcher: 'Rewatcher', binger: 'Binger',
       one_episode: 'One episode a night', night_owl: 'Night owl', subtitles_on: 'Subtitles always', cries_at_films: 'Cries at films',
-      snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss' };
+      snack_first: 'Snacks first', pauses_to_discuss: 'Pauses to discuss',
+      gaming: 'Gaming', reading: 'Reading', fitness: 'Fitness', travel: 'Travel', cooking: 'Cooking', music_making: 'Making music', art: 'Art', outdoors: 'Outdoors', cafes: 'Cafés', pets: 'Pets', sports: 'Sports', photography: 'Photography',
+      student: 'Student', tech: 'Tech', healthcare: 'Healthcare', education: 'Education', business: 'Business', creative: 'Creative', engineering: 'Engineering', law: 'Law', hospitality: 'Hospitality', trades: 'Trades', public_service: 'Public service', other: 'Something else',
+      homebody: 'Homebody', adventurous: 'Adventurous', deep_talks: 'Loves deep talks', jokester: 'Jokester', calm: 'Calm', chatty: 'Chatty', romantic: 'Romantic', curious: 'Curious', planner: 'Planner', spontaneous: 'Spontaneous' };
+    const WORK_EMOJI = { student: '🎓', tech: '💻', healthcare: '🩺', education: '🍎', business: '💼', creative: '🎬', engineering: '🛠️', law: '⚖️', hospitality: '🍽️', trades: '🔧', public_service: '🏛️', other: '✨' };
+    const HOBBY_EMOJI = { gaming: '🎮', reading: '📚', fitness: '🏋️', travel: '✈️', cooking: '🍳', music_making: '🎸', art: '🎨', outdoors: '🥾', cafes: '☕', pets: '🐾', sports: '⚽', photography: '📷' };
+    const VIBE_EMOJI = { homebody: '🏠', adventurous: '🧗', deep_talks: '💬', jokester: '😂', calm: '🌿', chatty: '🗣️', romantic: '💘', curious: '🔍', planner: '📅', spontaneous: '⚡' };
     let state, options, dirty = false, firstTime = false;
     let photos = [], pendingVis = null, step = 1;
     const say = (t) => { $('status').textContent = t; };
+    // The vibe box's own little wizard: questions 1–3 one at a time, 4 = done (a one-line summary with Edit).
+    let vibeQ = 0;
+    function showVibe(q) {
+      vibeQ = q;
+      document.querySelectorAll('#vibe .wp-vq').forEach((el) => { el.hidden = Number(el.dataset.q) !== q; });
+      $('vibeBar').hidden = q > 3; $('vibeDone').hidden = q <= 3;
+      $('vibeCount').textContent = q <= 3 ? `Question ${q} of 3` : 'Done ✓';
+      $('vibeNext').textContent = q === 3 ? 'Finish vibe ✓' : 'Next question →';
+      if (q > 3) {
+        const picked = [...state.personality.map((v) => `${VIBE_EMOJI[v] || ''} ${LABEL[v] || v}`), ...state.hobbies.map((v) => `${HOBBY_EMOJI[v] || ''} ${LABEL[v] || v}`),
+          ...(state.work ? [`${WORK_EMOJI[state.work] || ''} ${LABEL[state.work] || state.work}`] : [])];
+        $('vibeSum').textContent = picked.length ? picked.join(' · ') : 'Skipped — add it any time.';
+      }
+    }
+    // "What you do": one choice; tapping it again clears it (optional, like everything in "Your vibe").
+    function workChips() {
+      const el = $('work'); el.innerHTML = '';
+      for (const v of options.work || []) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'h-chip'; b.textContent = LABEL[v] || v;
+        const e = document.createElement('span'); e.className = 'e'; e.setAttribute('aria-hidden', 'true'); e.textContent = WORK_EMOJI[v] || ''; b.prepend(e);
+        b.setAttribute('aria-pressed', String(state.work === v));
+        b.onclick = () => { state.work = state.work === v ? null : v; dirty = true; workChips(); };
+        el.append(b);
+      }
+    }
     function chips(el, values, selected, max, key) {
       el.innerHTML = '';
       for (const v of values) {
@@ -261,10 +334,20 @@
     }
     function render() {
       chips($('genres'), [...new Set([...GENRES, ...state.genres])], state.genres, 12, 'genres');
-      removable($('titles'), 'favorite_titles'); removable($('wantList'), 'watchlist'); removable($('creators'), 'creators'); removable($('languages'), 'languages');
+      state.music = state.music || []; state.personality = state.personality || [];
+      removable($('titles'), 'favorite_titles'); removable($('musicList'), 'music'); removable($('wantList'), 'watchlist'); removable($('creators'), 'creators'); removable($('languages'), 'languages');
       chips($('availability'), options.availability, state.availability, 0, 'availability');
       chips($('formats'), options.formats, state.session_formats, 0, 'session_formats');
       chips($('traits'), options.traits, state.traits, 5, 'traits');
+      chips($('personality'), options.personality || [], state.personality, 3, 'personality');
+      $('personality').querySelectorAll('button').forEach((b, i) => { const e = document.createElement('span'); e.className = 'e'; e.setAttribute('aria-hidden', 'true');
+        e.textContent = VIBE_EMOJI[(options.personality || [])[i]] || '✨'; b.prepend(e); });
+      state.hobbies = state.hobbies || [];
+      chips($('hobbies'), options.hobbies || [], state.hobbies, 3, 'hobbies');
+      $('hobbies').querySelectorAll('button').forEach((b, i) => { const e = document.createElement('span'); e.className = 'e'; e.setAttribute('aria-hidden', 'true');
+        e.textContent = HOBBY_EMOJI[(options.hobbies || [])[i]] || ''; b.prepend(e); });
+      workChips();
+      showVibe(vibeQ || ((state.personality.length || state.hobbies.length || state.work) ? 4 : 1));
       $('bio').value = state.bio || ''; $('dname').value = state.display_name || '';
       $('discoverable').checked = !!state.discoverable || (neverOn() && !choseOff);
       $('adultNote').hidden = !!state.adult_confirmed_at;
@@ -305,9 +388,13 @@
     adder($('titleIn'), $('titleAdd'), $('titles'), 'favorite_titles', 10);
     adder($('wantIn'), $('wantAdd'), $('wantList'), 'watchlist', 20);
     adder($('creatorIn'), $('creatorAdd'), $('creators'), 'creators', 10);
+    adder($('musicIn'), $('musicAdd'), $('musicList'), 'music', 10);
     adder($('langIn'), $('langAdd'), $('languages'), 'languages', 6);
     $('bio').oninput = () => { state.bio = $('bio').value; dirty = true; };
     $('dname').oninput = () => { state.display_name = $('dname').value; dirty = true; };
+    $('vibeNext').onclick = () => showVibe(vibeQ + 1);
+    $('vibeSkip').onclick = () => showVibe(vibeQ + 1);   // picks save as you tap; Skip just moves on
+    $('vibeEdit').onclick = () => showVibe(1);
     document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { state.discovery_scope = r.value; dirty = true; });
     document.querySelectorAll('input[name=fvis]').forEach((r) => r.onchange = () => { state.friends_list_visibility = r.value; dirty = true; });
     document.querySelectorAll('input[name=plink]').forEach((r) => r.onchange = () => { state.page_link = r.value; dirty = true; });
@@ -325,7 +412,7 @@
     // saving with it on confirms they're 18 or older, and the save sends that confirmation.
     const canGoLive = (quiet) => {
       if (!state.gender) { if (!quiet) say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return false; }
-      if (!state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length) { if (!quiet) say('First pick at least one genre or add a film you love, so people can see what you like to watch.'); return false; }
+      if (!state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length && !(state.music || []).length) { if (!quiet) say('First pick at least one genre, or add a film, series or music you love, so people can see your taste.'); return false; }
       return true;
     };
     $('discoverable').onchange = () => {
@@ -346,7 +433,7 @@
       $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, watchlist: state.watchlist || [], creators: state.creators, languages: state.languages,
-          availability: state.availability, session_formats: state.session_formats, traits: state.traits, bio: state.bio,
+          availability: state.availability, session_formats: state.session_formats, traits: state.traits, music: state.music || [], personality: state.personality || [], hobbies: state.hobbies || [], work: state.work || null, bio: state.bio,
           discovery_scope: state.discovery_scope, gender: state.gender, friends_list_visibility: state.friends_list_visibility,
           show_online: !!state.show_online, page_link: state.page_link || 'none', discoverable: !!state.discoverable, ...(confirmAdult ? { confirm_adult: true } : {}) };
         const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
@@ -414,7 +501,7 @@
     $('next').onclick = () => {
       pendingAdds.forEach((add) => add());   // a film typed but not yet added counts for "pick at least one"
       if (step === 1 && !state.gender) { say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
-      if (step === 2 && !state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length) { say('Pick at least one genre or add a film, so people can see what you like.'); return; }
+      if (step === 2 && !state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length && !(state.music || []).length) { say('Pick at least one genre, or add a film, series or music you love, so people can see your taste.'); return; }
       say(''); showStep(step + 1);
     };
     $('back').onclick = () => showStep(step - 1);
