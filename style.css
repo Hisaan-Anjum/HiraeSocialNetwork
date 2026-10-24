@@ -1064,6 +1064,11 @@ a.search-result.contact-row { display: flex; padding: 8px 10px; border: none; ba
 .movie-title { font-size: 34px; margin-bottom: 8px; }
 .movie-meta { font-size: 14px; color: var(--ink-dim); margin-bottom: 8px; }
 .movie-rating { color: var(--rating); font-weight: 700; }
+/* Region labels (founder 10-24): say it, never hide the film. */
+.region-off { display: inline-block; margin-top: 6px; padding: 2px 10px; border: 1px solid rgba(148, 163, 184, .4); border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--ink-dim); }
+.region-off[hidden] { display: none; }
+.wp-chip.wp-off { opacity: .55; }
+.wp-chip small { display: block; font-size: 11px; font-weight: 500; opacity: .9; }
 .movie-body { padding-top: 30px; max-width: 1080px; }
 .movie-description { font-size: 15px; line-height: 1.7; color: var(--ink-dim); margin-bottom: 18px; max-width: 720px; }
 /* Licence attribution: legally required, so it must be legible, but it isn't

@@ -51,6 +51,7 @@ async function load() {
         <span class="movie-modal-msg" id="movieActionMsg"></span>
       </div>`;
     contentEl.innerHTML = renderMovieDetail(rec, { similar, actionsHtml });
+    if ((rec.watchLinks || []).length) import('../watchlist/providers.js').then((m) => m.refreshAvailability(rec, contentEl)).catch(() => {});
 
     document.getElementById('movieAddWatchlist')?.addEventListener('click', () => {
       openPickContact({

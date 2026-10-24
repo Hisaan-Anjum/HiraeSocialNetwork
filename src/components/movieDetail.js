@@ -74,6 +74,7 @@ export function renderMovieDetail(rec, { similar = [], actionsHtml = '', inModal
           <div class="movie-title">${escapeHtml(rec.title)}</div>
           <div class="movie-meta">${escapeHtml(movieMetaLine(rec))}</div>
           ${rec.rating ? `<div class="movie-rating">★ ${rec.rating.toFixed(1)} / 10</div>` : ''}
+          <div class="region-off" data-region ${rec.availableHere === false ? '' : 'hidden'}>Not available in your region</div>
           ${actionsHtml}
         </div>
       </div>
@@ -144,6 +145,7 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
       : '';
     body.innerHTML = renderMovieDetail(rec, { similar, actionsHtml: actions, inModal: true });
     attachCarouselHandlers(body);
+    if (canWatch) import('../watchlist/providers.js').then((m) => m.refreshAvailability(rec, body)).catch(() => {});
 
     body.querySelector('[data-mm="watch"]')?.addEventListener('click', async () => {
       const { openWatchPicker } = await import('../watchlist/providers.js');

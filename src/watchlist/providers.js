@@ -32,6 +32,33 @@ const BRAND = {
 };
 const fallback = (link) => ({ name: link.name || 'Watch', color: '#6366f1', fg: '#fff' });
 
+// Region labels (founder 10-24): if this browser has Herae, it checks the film's Netflix / Apple TV pages from here —
+// so for this country — and the server keeps the answer for everyone here (server/src/recommendations.js). No
+// extension: nothing happens and only what others here already found is shown. Never hides a film, only labels it.
+const CHECKABLE = ['netflix', 'apple_tv'];
+function checkAvailabilityHere(rec, timeoutMs = 12000) {
+  const checks = (rec.watchLinks || []).filter((l) => l && CHECKABLE.includes(l.provider) && l.available === undefined)
+    .map((l) => ({ id: rec.id, provider: l.provider, url: l.url }));
+  if (!checks.length) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const done = (v) => { window.removeEventListener('message', onAck); resolve(v); };
+    function onAck(e) { if (e.source === window && e.data && e.data.__heraeCheckAvailabilityAck === true) done(e.data.saved > 0); }
+    window.addEventListener('message', onAck);
+    window.postMessage({ __heraeCheckAvailability: true, checks }, window.location.origin);
+    setTimeout(() => done(false), timeoutMs);
+  });
+}
+// Checks, then re-reads the film so its links (and the "Find it on" picker, which reads rec at click time) carry the answer.
+export async function refreshAvailability(rec, root) {
+  if (!(await checkAvailabilityHere(rec))) return;
+  try {
+    const { recommendation: fresh } = await window.getRecommendationById(rec.id);
+    rec.watchLinks = fresh.watchLinks; rec.availableHere = fresh.availableHere;
+    const tag = root && root.querySelector('[data-region]');
+    if (tag) tag.hidden = fresh.availableHere !== false;
+  } catch (e) { /* the labels just stay as they were */ }
+}
+
 export function hasWatchLinks(movie) {
   return Array.isArray(movie?.watchLinks) && movie.watchLinks.length > 0;
 }
@@ -40,8 +67,9 @@ export function hasWatchLinks(movie) {
 export function openWatchPicker(movie, { onPick }) {
   const links = (movie.watchLinks || []).filter((l) => l && l.url);
   if (!links.length) return null;
-  // One service: nothing to choose, so "Watch now" goes straight there (2026-10-16 — every step is a place to stop).
-  if (links.length === 1) { onPick(links[0]); return null; }
+  // One service: nothing to choose, so "Watch now" goes straight there (2026-10-16 — every step is a place to stop) —
+  // unless it's known not to be there in this country: then the picker shows them why.
+  if (links.length === 1 && links[0].available !== false) { onPick(links[0]); return null; }
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay wp-overlay';
@@ -55,8 +83,8 @@ export function openWatchPicker(movie, { onPick }) {
       <div class="wp-grid">
         ${links.map((l, i) => {
           const b = BRAND[l.provider] || fallback(l);
-          return `<button class="wp-chip" data-wp="pick" data-i="${i}"
-                    style="--wp-bg:${b.color};--wp-fg:${b.fg}">${escapeHtml(b.name)}</button>`;
+          return `<button class="wp-chip${l.available === false ? ' wp-off' : ''}" data-wp="pick" data-i="${i}"
+                    style="--wp-bg:${b.color};--wp-fg:${b.fg}">${escapeHtml(b.name)}${l.available === false ? '<small>Not in your country</small>' : ''}</button>`;
         }).join('')}
       </div>
       <div class="wp-note">Opens the title page on that service. Availability varies by country and changes over time.</div>
