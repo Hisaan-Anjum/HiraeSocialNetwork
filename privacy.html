@@ -74,7 +74,7 @@
         <li><strong>Authentication tokens</strong> (a signed JWT) kept in your browser's local storage so you stay logged in.</li>
         <li><strong>Presence</strong> — whether you're currently online, so contacts can see availability. This is transient and not logged historically.</li>
         <li><strong>Limited request metadata</strong> — IP address and standard request data are processed transiently for security and rate-limiting. We do not build advertising profiles from it.</li>
-        <li><strong>Where a film is available</strong> — when you open a film in Herae, the extension checks that film's public page on Netflix or Apple TV from your browser, without your cookies, so the answer is right for your country. We keep only the result per country (for example "not on Netflix in Pakistan"), never who looked, so everyone in your country sees the same label.</li>
+        <li><strong>Where a film is available</strong> — when you open a film in Herae, the extension checks that film's public page on Netflix or Apple TV from your browser, without your cookies, so the answer is right for your country. We keep only the result per country (for example "not on Netflix in Pakistan"), never who looked, so everyone in your country sees the same label. For most countries the answer comes from the Streaming Availability API by Movie of the Night, which we ask about films, never about people.</li>
         <li><strong>Error diagnostics</strong> — if something crashes, technical error details may be sent to our error-monitoring provider (Sentry) to help us fix it.</li>
       </ul>
 

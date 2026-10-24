@@ -2152,6 +2152,7 @@ html { scroll-behavior: smooth; }
 }
 .wp-chip:hover { transform: translateY(-2px); filter: brightness(1.08); }
 .wp-note { margin-top: 16px; font-size: 12px; color: var(--ink-faint); line-height: 1.5; }
+.wp-note a { color: inherit; text-decoration: underline; }
 
 /* ── Watchlist: rating derived from attached movie nights ── */
 .wl-derived { font-size: 11px; color: var(--gold); margin-top: 5px; font-weight: 700; }

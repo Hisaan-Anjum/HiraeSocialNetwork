@@ -31,6 +31,8 @@ const BRAND = {
   peacock: { name: 'Peacock', color: '#000', fg: '#fff' },
 };
 const fallback = (link) => ({ name: link.name || 'Watch', color: '#6366f1', fg: '#fff' });
+// How a service offers it here (from the availability data); subscription is the default and says nothing.
+const KIND_LABEL = { free: 'Free', addon: 'Add-on', rent: 'Rent', buy: 'Buy' };
 
 // Region labels (founder 10-24): if this browser has Herae, it checks the film's Netflix / Apple TV pages from here —
 // so for this country — and the server keeps the answer for everyone here (server/src/recommendations.js). No
@@ -84,10 +86,11 @@ export function openWatchPicker(movie, { onPick }) {
         ${links.map((l, i) => {
           const b = BRAND[l.provider] || fallback(l);
           return `<button class="wp-chip${l.available === false ? ' wp-off' : ''}" data-wp="pick" data-i="${i}"
-                    style="--wp-bg:${b.color};--wp-fg:${b.fg}">${escapeHtml(b.name)}${l.available === false ? '<small>Not in your country</small>' : ''}</button>`;
+                    style="--wp-bg:${b.color};--wp-fg:${b.fg}">${escapeHtml(b.name)}${l.available === false ? '<small>Not available in your region</small>' : KIND_LABEL[l.kind] ? `<small>${KIND_LABEL[l.kind]}</small>` : ''}</button>`;
         }).join('')}
       </div>
-      <div class="wp-note">Opens the title page on that service. Availability varies by country and changes over time.</div>
+      <div class="wp-note">Opens the title page on that service. Availability changes over time.${links.some((l) => l.available !== undefined)
+        ? ' Streaming availability information is provided by <a href="https://www.movieofthenight.com/about/api" target="_blank" rel="noopener">Streaming Availability API by Movie of the Night</a>.' : ''}</div>
     </div>`;
   document.body.appendChild(overlay);
   const releaseScroll = lockScroll();
