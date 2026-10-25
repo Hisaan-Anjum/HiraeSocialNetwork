@@ -144,7 +144,15 @@
       return;
     }
     // Chose "just people I invite" (or the fork's "someone I already know"): their next step is the invite, not a profile.
-    const step = st.inviteFirst || (skipped && st.step === 'no_profile') ? 'invite_first' : st.step;
+    let step = st.inviteFirst || (skipped && st.step === 'no_profile') ? 'invite_first' : st.step;
+    // A couple who already watch together, while the Founding offer is open (to 31 Oct, program terms): the real next
+    // step is that offer, not "find someone new". Never shown to anyone who pays or is covered by a partner who pays.
+    if (step === 'connected') {
+      try {
+        const [cfg, ent] = await Promise.all([apiRequest('/api/subscription/config'), apiRequest('/api/subscription/status')]);
+        if (cfg.founding && cfg.founding.open && !['own', 'partner', 'special'].includes(ent.source)) step = 'founding';
+      } catch (e) { /* no offer bar if either call fails */ }
+    }
     const MSG = {
       // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
@@ -157,6 +165,7 @@
       matched: ['Ready to watch? Suggest a film to your match.', 'Open chats', 'social.html#chats'],
       // Persistent (founder 10-22): even someone with a partner always has one tap to more people to watch with.
       connected: ['Find someone new to watch with — people who love the same films are in Discover.', 'Find someone', 'social.html#discover'],
+      founding: ['Founding price until 31 October: a whole year of Herae for both of you for $29 (less in some countries), and it stays that price while you keep it.', 'See the offer', 'upgrade.html?utm_source=app&utm_medium=founding_bar'],
     }[step];
     if (!MSG) return;
     const [text, cta, href] = MSG; const key = `hz-connect-${step}`;
