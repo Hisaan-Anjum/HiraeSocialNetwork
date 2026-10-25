@@ -23,6 +23,7 @@ const PUBLIC = [
   ['index.html', null],
   ['watch-movies-together-long-distance.html', 'Guides'],
   ['watch-any-website-together.html', 'Guides'],
+  ['find-someone-to-watch-movies-with.html', 'Guides'],
   ['teleparty-alternative.html', 'Guides'],
   ['best-apps-for-long-distance-couples.html', 'Guides'],
   ['discord-netflix-black-screen.html', 'Guides'],

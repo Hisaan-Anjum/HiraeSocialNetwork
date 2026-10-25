@@ -120,6 +120,7 @@ const FILES = [
   'about.html',
   // How Herae syncs any website (first-hand engineering explainer).
   'watch-any-website-together.html',
+  'find-someone-to-watch-movies-with.html',
   // IndexNow key file (public by design: it proves the site owns the key; docs/HERAE_GEO_IMPLEMENTATION_LOG.md).
   '047423e8fe9fee59549ee5b5ddcc2838.txt',
   'discord-netflix-black-screen.html',
