@@ -271,14 +271,14 @@
   </section>
 
   <!-- ── The whole setup, shown (2026-10-01) ─────────────────────────────
-       A 40-second walkthrough: install, account, send the link, partner
-       presses Join, the film plays on both screens with the call. A plain
+       A 45-second walkthrough, site first (founder 10-24): herae.app, account, add to Chrome, send the link, partner
+       joins, the film plays on both screens with the call. A plain
        thumbnail until clicked, so the page stays light; the player loads
        from youtube-nocookie only when someone asks for it. -->
   <section class="setup-video" id="see-it">
-    <h2 class="section-heading">See the whole setup in 40 seconds.</h2>
-    <button type="button" class="sv-facade" data-id="q55sO5UzKT0" aria-label="Play the 40-second setup video">
-      <img src="https://i.ytimg.com/vi/q55sO5UzKT0/hqdefault.jpg" alt="Herae setup: two laptops playing the same film in sync with a video call" loading="lazy" width="480" height="360">
+    <h2 class="section-heading">See the whole setup in 45 seconds.</h2>
+    <button type="button" class="sv-facade" data-id="O4TFS9S1vzo" aria-label="Play the 45-second setup video">
+      <img src="https://i.ytimg.com/vi/O4TFS9S1vzo/hqdefault.jpg" alt="Herae setup: from herae.app to two laptops playing the same film in sync with a video call" loading="lazy" width="480" height="360">
       <span class="sv-play" aria-hidden="true">▶</span>
     </button>
   </section>
@@ -634,7 +634,7 @@ document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('.sv-facade'); if (!b) return;
   var f = document.createElement('iframe');
   f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.id + '?autoplay=1&rel=0';
-  f.title = 'Herae setup in 40 seconds'; f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true;
+  f.title = 'Herae setup in 45 seconds'; f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true;
   // The site sends Referrer-Policy: no-referrer, and YouTube's player refuses to play an embed with no referrer
   // ("Error 153"). This one frame gets the site's origin only — never the page path.
   f.referrerPolicy = 'strict-origin-when-cross-origin';
