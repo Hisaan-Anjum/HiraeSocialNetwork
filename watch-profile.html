@@ -123,12 +123,15 @@
     <form id="form" hidden novalidate>
       <section class="h-section wp-step" data-step="1" aria-labelledby="s-you">
         <h2 id="s-you">You</h2>
-        <div class="wp-photos" id="photos" aria-label="Your photos"></div>
-        <p class="h-help" id="photoHelp">Up to 6. The first is your main one — drag to reorder, tap one to replace it. People in Discover see them on your card; change who in step 3.</p>
+        <!-- Name and "I am" first, photos after and plainly optional (founder 10-25 emergency: oros_deorde chose "meet
+             someone new" and left 19 s after this screen opened on six empty photo boxes; a photo was never required). -->
         <label class="h-label" for="dname">Name on your card</label>
         <input class="hi" id="dname" maxlength="40" autocomplete="given-name" placeholder="Your first name or a nickname">
         <fieldset style="margin-top:var(--h-5)"><legend>I am <span class="faint">(needed for “show me”; not shown on your card)</span></legend>
           <div class="h-chips" id="genderChips" role="radiogroup" aria-label="Your gender"></div></fieldset>
+        <label class="h-label" style="margin-top:var(--h-5)">Photos <span class="faint">(optional)</span></label>
+        <div class="wp-photos" id="photos" aria-label="Your photos"></div>
+        <p class="h-help" id="photoHelp">Optional — add one now or later. Up to 6; the first is your main one — drag to reorder, tap one to replace it. Choose who sees them in step 3.</p>
       </section>
 
       <section class="h-section wp-step" data-step="2" aria-labelledby="s-taste">
@@ -532,7 +535,8 @@
     }
     function renderPhotos() {
       const g = $('photos'); g.innerHTML = '';
-      for (let i = 0; i < 6; i++) {
+      // Your photos plus ONE add box (not six empty ones): a wall of empty slots reads as "upload six photos first".
+      for (let i = 0; i < Math.min(6, photos.length + 1); i++) {
         const p = photos[i]; const cell = document.createElement('div'); cell.className = 'wp-ph' + (p ? ' filled' : '');
         if (p) {
           const img = document.createElement('img'); img.src = p.src; img.alt = i === 0 ? 'Your main photo' : `Photo ${i + 1}`; cell.append(img);
