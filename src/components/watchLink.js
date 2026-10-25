@@ -6,7 +6,7 @@
 // It uses the same extension hand-off as the watchlist's "Watch now" (handOffToExtension → __heraeStartSession: the
 // extension opens the link, starts the night and invites the partner). Shown to anyone with at least one contact.
 import { escapeHtml } from '../lib/util.js';
-import { handOffToExtension } from '../watchlist/panel.js';
+import { handOffToExtension, offlineNote } from '../watchlist/panel.js';
 
 export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
   if (!anchor || !window.getContacts) return null;
@@ -59,6 +59,7 @@ export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
     }
     if (r.busy) { track('busy'); note.textContent = 'You\'re already in a movie night with someone else. Finish it first, then try again.'; return; }
     if (r.error) { track('error'); note.textContent = 'That didn\'t start: ' + r.error; return; }
+    if (r.offline) { track('offline'); note.textContent = offlineNote(who, r); return; }
     track('ok');
     // Already watching together: it's on both screens now — "gets your invite" was wrong there (ui-start-paths U3).
     note.textContent = r.switched

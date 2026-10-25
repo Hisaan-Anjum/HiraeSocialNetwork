@@ -36,23 +36,41 @@ function toast(message) {
 // `url` may be empty: that means "just start a session with this person", which
 // is what the profile's Watch Together action does — the extension opens its
 // blank sync window and invites, leaving them to pick something together.
+// offline: the partner isn't online, so no invite reached them. autoStart: the extension (2.7.31+) will start the night
+// by itself the moment they come online; an older one can't, so the person must try again (friend14 10-24).
 export function handOffToExtension(url, target, { timeoutMs = 900, title = '' } = {}) {
   return new Promise((resolve) => {
-    let settled = false;
+    let settled = false, acked = false;
     const done = (v) => { if (!settled) { settled = true; window.removeEventListener('message', onAck); resolve(v); } };
-    function onAck(e) {
+    async function onAck(e) {
       if (e.source !== window) return;
       const d = e.data;
       if (d && d.__heraeStartSessionAck === true) {
-        done({ handled: true, switched: !!d.switched, busy: !!d.busy, error: d.error || null });
+        acked = true;   // the partner check below must not lose the race to the no-extension timer
+        const r = { handled: true, switched: !!d.switched, busy: !!d.busy, error: d.error || null, autoStart: !!d.offline, offline: !!d.offline };
+        if (!r.error && !r.switched && !r.offline) r.offline = (await partnerOnline(target)) === false;
+        done(r);
       }
     }
     window.addEventListener('message', onAck);
     try {
       window.postMessage({ __heraeStartSession: true, target, url, title }, window.location.origin);
     } catch (e) { return done({ handled: false }); }
-    setTimeout(() => done({ handled: false }), timeoutMs);
+    setTimeout(() => { if (!acked) done({ handled: false }); }, timeoutMs);
   });
+}
+
+async function partnerOnline(username) {
+  try {
+    const c = (((await window.getContacts()) || {}).contacts || []).find((x) => x.username === username);
+    return c ? !!c.online : null;
+  } catch (e) { return null; }
+}
+
+export function offlineNote(who, r) {
+  return r.autoStart
+    ? `${who} isn't online right now. Herae starts your night the moment ${who} is back.`
+    : `${who} isn't online right now, so the invite didn't reach them. Try again once ${who} has Chrome open.`;
 }
 
 export function mountWatchlist(container, { profile }) {
@@ -249,6 +267,7 @@ export function mountWatchlist(container, { profile }) {
             items = updated; render();
           } catch (err) { /* pinning is a nicety, not the point */ }
 
+          if (r.handled && r.offline) return toast(offlineNote(username, r));
           toast(
             r.switched ? `Switched you both to “${it.movie.title}” on ${link.name} 💜`
               : r.handled ? `Opening “${it.movie.title}” on ${link.name} — inviting ${username} 💜`

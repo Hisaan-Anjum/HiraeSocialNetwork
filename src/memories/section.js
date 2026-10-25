@@ -17,7 +17,7 @@ import { openStorySelector } from './selector.js';
 import { openImportantDates } from './dates.js';
 import { buildStoryShareCard, renderStoryVideo, buildRelationshipCard } from './exporter.js';
 import { openShareSheet } from '../components/shareSheet.js';
-import { handOffToExtension } from '../watchlist/panel.js';
+import { handOffToExtension, offlineNote } from '../watchlist/panel.js';
 
 const {
   getRelationshipSummary, getStory, saveStory, uploadStoryVideo,
@@ -168,6 +168,7 @@ async function mountRelationship(container, profile, opts = {}) {
   async function startSession() {
     const r = await handOffToExtension('', username, { timeoutMs: 900 });
     if (r.handled && r.error) return toast(r.error);
+    if (r.handled && r.offline) return toast(offlineNote(username, r));
     if (r.handled) return toast(`Starting a session — inviting ${username} 💜`);
     toast('Install or sign in to the Herae extension to start a session 💜');
   }
