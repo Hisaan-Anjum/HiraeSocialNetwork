@@ -8,7 +8,8 @@
 
 const STORE_REVIEWS = 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn/reviews?utm_source=review_rate';
 const ISSUE = 'https://herae.app/api/q/night/2';
-const KEY = 'herae_rate_asked';
+export const RATE_ASKED_KEY = 'herae_rate_asked';
+const KEY = RATE_ASKED_KEY;
 
 export function mountRateHerae(anchor, { durationMs } = {}) {
   if (!anchor || !(durationMs >= 10 * 60 * 1000)) return null;

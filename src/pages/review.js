@@ -20,7 +20,7 @@ import { mountRatingAsk } from '../components/ratingAsk.js';
 import { openShareSheet } from '../components/shareSheet.js';
 import { mountFoundVia } from '../components/foundVia.js';
 import { mountPlanNext } from '../components/planNext.js';
-import { mountRateHerae } from '../components/rateHerae.js';
+import { mountRateHerae, RATE_ASKED_KEY as RATE_KEY } from '../components/rateHerae.js';
 
 const { requireAuth, getSessionDetail, postReview, getUserProfile } = window;
 
@@ -212,6 +212,24 @@ async function loadSession() {
         : 'Every night unlimited for both of you: Herae Together (see the price in your currency). <a href="upgrade.html">See your price</a>';
       if (line.innerHTML) at.insertAdjacentElement('afterend', line);
     }).catch(() => {});
+  }
+
+  // After a proper night (30+ min): one quiet line inviting another couple apart (Program Terms Part C). Prod 30 d to
+  // 10-26: 0 referral events — nothing ever asked. Once per browser, placed after the plan/price line, and only on a
+  // night after the rating ask has already been answered or dismissed.
+  if (detail.durationMs >= 30 * 60000) {
+    // One ask per night, not five: the referral line waits until the store-rating card has had its turn (a later night).
+    let seen = true; try { seen = !!localStorage.getItem('herae_referral_prompt') || !localStorage.getItem(RATE_KEY); } catch (e) { /* storage blocked: skip */ }
+    const at = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
+    if (!seen && at) {
+      const track = (action) => { try { window.trackEvent && window.trackEvent('referral_prompt', { action }); } catch (e) { /* best-effort */ } };
+      const line = document.createElement('div'); line.className = 'review-plan-line review-refer-line';
+      line.innerHTML = 'Know another couple who live apart? Send them your invite: they get a free movie night, and you get one once they have their first proper night. <a href="refer.html?utm_source=review&utm_medium=referral_prompt">Invite a couple</a> <button type="button" class="ms-link-btn" aria-label="Hide">✕</button>';
+      line.querySelector('a').onclick = () => { track('open'); try { localStorage.setItem('herae_referral_prompt', 'open'); } catch (e) { /* ignore */ } };
+      line.querySelector('button').onclick = () => { track('dismiss'); try { localStorage.setItem('herae_referral_prompt', 'dismiss'); } catch (e) { /* ignore */ } line.remove(); };
+      try { localStorage.setItem('herae_referral_prompt', 'shown'); } catch (e) { /* ignore */ }
+      setTimeout(() => { (contentEl.querySelector('.review-plan-line:not(.review-refer-line)') || contentEl.querySelector('.plan-next') || at).insertAdjacentElement('afterend', line); track('shown'); }, 1800);
+    }
   }
 
   // After a real night: one ask for a store rating (rateHerae.js) — ratings drive the store's search ranking.
