@@ -360,7 +360,7 @@
     // #discover/<username>: a "new people" email about this person — their card comes first (if they're still in my deck).
     let emailOpenSent = false;
     async function renderDiscover(first) {
-      if (!emailOpenSent && /[?&]utm_medium=buddies\b/.test(location.search)) { emailOpenSent = true; trackEvent('buddies_email_open', { named: !!first }); }
+      if (!emailOpenSent && /[?&](utm_medium|from)=buddies\b/.test(location.search)) { emailOpenSent = true; trackEvent('buddies_email_open', { named: !!first }); }
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       deck = r.cards; likedYou = r.likedYou || 0; widen = r.widen || 0; v.innerHTML = '';
