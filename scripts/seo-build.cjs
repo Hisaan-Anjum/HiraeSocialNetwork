@@ -229,6 +229,7 @@ const lines = [
   '## Facts', '',
   `- Category: ${facts.category}`, `- Platforms: ${facts.platforms}`, `- Audience: ${facts.audience}`,
   `- Pricing: ${facts.pricing.free}. ${facts.pricing.plus.name} $${facts.pricing.plus.price}/${facts.pricing.plus.period} (${facts.pricing.plus.what}). ${facts.pricing.together.name} $${facts.pricing.together.price}/${facts.pricing.together.period} (${facts.pricing.together.what}).`,
+  ...facts.features.map((f) => `- Feature: ${f}`),
   ...facts.limitations.map((l) => `- Limitation: ${l}`),
   `- Privacy: ${facts.privacy}`, `- Install: ${facts.chromeWebStore}`, `- Support: ${facts.support}`, '',
   '## Pages', '',
