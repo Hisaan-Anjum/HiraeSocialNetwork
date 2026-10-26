@@ -405,7 +405,19 @@
           try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discovery_scope: 'everyone' }) }); toast('Showing everyone now. Change it any time in your profile.'); renderDiscover(); }
           catch (e) { toast(e.message || 'Could not change it.'); } } }, `Show me everyone (${widen} more ${widen === 1 ? 'person' : 'people'})`) : null;
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'You’re in — we’ll find them for you'),
-          el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll notify you — here in 🔔, by email and on your desktop — with a link straight to their card. Nothing to keep checking.'),
+          (() => {
+            // Only the channels this person really has (founder 10-27): desktop alerts need the extension; email can land
+            // in Gmail's Promotions tab. The extension answers a __heraePing within ~1.5 s if it's here.
+            const how = el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll tell you here in 🔔 and by email, with a link straight to their card. Nothing to keep checking.');
+            const tip = el('p', { class: 'muted' }, 'If our email lands in Gmail’s Promotions tab, move it to Primary once and you’ll see the next one.');
+            const ext = el('p', { class: 'muted' }, 'Want desktop alerts too? ', el('a', { href: 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=discover_empty', target: '_blank', rel: 'noopener' }, 'Add Herae to Chrome'), ' on your computer.');
+            const box = el('div', {}, how, tip, ext);
+            const onMsg = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { ext.textContent = 'You’ll get a desktop alert too.'; window.removeEventListener('message', onMsg); } };
+            window.addEventListener('message', onMsg);
+            [0, 500, 1200].forEach((t) => setTimeout(() => { try { window.postMessage({ __heraePing: true }, location.origin); } catch (e) { /* fine */ } }, t));
+            setTimeout(() => window.removeEventListener('message', onMsg), 2500);
+            return box;
+          })(),
           el('p', { class: 'muted' }, 'More films and genres on your profile means more people fit.'),
           el('div', { class: 'h-row', style: 'justify-content:center;flex-wrap:wrap' }, widenBtn,
             el('a', { class: `hb ${widenBtn ? 'hb-secondary' : 'hb-primary'}`, href: '#parties' }, 'Find a watch party'),

@@ -161,6 +161,7 @@
       discovery_off: ['Your profile is ready — turn on Discover to meet people who love the same films.', 'Turn it on', 'social.html#discover'],
       browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
         : ['You’re in Discover. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
+      liked: [`${st.likedBy === 1 ? 'Someone wants' : `${st.likedBy} people want`} to watch with you. Say yes back and you’re matched.`, 'See who', 'social.html#discover'],
       say_hi: [`You have ${st.unchatted === 1 ? 'a match' : st.unchatted + ' matches'} waiting for a hello.`, 'Say hi', 'social.html#matches'],
       matched: ['Ready to watch? Suggest a film to your match.', 'Open chats', 'social.html#chats'],
       // Persistent (founder 10-22): even someone with a partner always has one tap to more people to watch with.
