@@ -55,7 +55,7 @@
   .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: #E2E8F0; font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
   .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: #1E293B; outline: none; }
   .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: #EC4899; color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
-  .an-connect { position: sticky; top: 60px; z-index: 45; display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
+  .an-connect { position: relative; z-index: 45;   /* not sticky (10-28): stuck at the same top as the Discover tabs, it covered them on phones */ display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
     background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 600 14px/1.35 var(--font-sans, system-ui); }
   .an-connect span { flex: 1; }
   .an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
