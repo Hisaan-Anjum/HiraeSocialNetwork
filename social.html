@@ -539,7 +539,7 @@
     async function skip() { const c = deck[0]; if (!c) return; next(); announce(`Skipped ${c.name}`); apiRequest('/api/discover/skip', { method: 'POST', body: JSON.stringify({ username: c.username }) }).catch(() => {}); }
     async function undo() { try { const r = await apiRequest('/api/discover/skip/undo', { method: 'POST' }); if (r.username) { toast('Brought back the last person you skipped.'); renderDiscover(); } else toast('Nothing to undo.'); } catch (e) { toast('Could not undo.'); } }
     async function interested() {
-      const c = deck[0]; if (!c) return; next();   // optimistic: the next card is already up while this sends
+      const c = deck[0]; if (!c) return; const likedBefore = likedYou; next();   // optimistic: the next card is already up while this sends
       try {
         const r = await apiRequest('/api/discover/interest', { method: 'POST', body: JSON.stringify({ username: c.username }) });
         if (r.matched) { refreshBadges(); matchMoment(c, r.conversationId); return; }
@@ -547,7 +547,12 @@
         let n = 0; try { n = Number(localStorage.getItem('hz_yes_tips') || 0); localStorage.setItem('hz_yes_tips', String(n + 1)); } catch (e) { /* fine */ }
         if (n < 2) toast(`Sent. ${c.name} only finds out if they say yes too.`);   // taught twice, then out of the way
         askPushOnce(c.name);
-      } catch (e) { toast(e.message || 'Could not send.'); }
+      } catch (e) {
+        // The card already moved on (optimistic); a yes that didn't arrive must not vanish with it (10-27: the founder's
+        // yes to someone who'd liked him never reached the server). Put them back on top, and say so plainly.
+        deck.unshift(c); likedYou = likedBefore; showCard();
+        toast(`Your yes to ${c.name} didn't send${e && e.message ? ` (${e.message})` : ''}. Tap ♥ again.`);
+      }
     }
     // After their first yes (that wasn't an instant match), once per browser: offer this device's notifications, so the
     // answer reaches them even if they never reopen Herae and our email lands in Promotions (founder 10-27).
