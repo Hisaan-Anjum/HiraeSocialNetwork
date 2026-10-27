@@ -49,6 +49,8 @@ const FILES = [
   'analytics.html',
   'config.js',
   'api.js',
+  // The service worker for web push (server/src/web-push.js): must be served from the site root to cover every page.
+  'sw.js',
   // Show/hide password eye toggle — a classic global <script> loaded by every
   // auth page (login/signup/reset), same passthrough treatment as config.js.
   'pw-toggle.js',

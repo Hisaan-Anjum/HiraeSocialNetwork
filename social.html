@@ -411,7 +411,21 @@
             const how = el('p', {}, 'Herae’s watch buddies are brand new, so you’ve seen everyone who fits for now. The moment someone who likes what you like joins, we’ll tell you here in 🔔 and by email, with a link straight to their card. Nothing to keep checking.');
             const tip = el('p', { class: 'muted' }, 'If our email lands in Gmail’s Promotions tab, move it to Primary once and you’ll see the next one.');
             const ext = el('p', { class: 'muted' }, 'Want desktop alerts too? ', el('a', { href: 'https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=discover_empty', target: '_blank', rel: 'noopener' }, 'Add Herae to Chrome'), ' on your computer.');
-            const box = el('div', {}, how, tip, ext);
+            // Web push first (founder 10-27: web-only people must hear without relying on email); Add to Chrome stays the
+            // fallback where the browser can't do push (iPhone Safari outside a home-screen app).
+            const push = el('p', {});
+            webPushState().then((st) => {
+              if (st === 'unsupported') return;
+              ext.hidden = true;
+              if (st === 'on') { push.textContent = 'Notifications are on for this device.'; return; }
+              if (st === 'blocked') { push.className = 'muted'; push.textContent = 'Notifications are blocked for Herae in this browser’s settings, so we’ll use email.'; return; }
+              const b = el('button', { type: 'button', class: 'hb hb-secondary', onclick: async () => {
+                b.disabled = true; const ok = await enableWebPush();
+                push.textContent = ok ? 'Done. You’ll get a notification on this device.' : 'No problem, we’ll use email.';
+              } }, 'Notify me on this device');
+              push.append(b); trackEvent('web_push', { action: 'shown' });
+            }).catch(() => {});
+            const box = el('div', {}, how, tip, push, ext);
             const onMsg = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { ext.textContent = 'You’ll get a desktop alert too.'; window.removeEventListener('message', onMsg); } };
             window.addEventListener('message', onMsg);
             [0, 500, 1200].forEach((t) => setTimeout(() => { try { window.postMessage({ __heraePing: true }, location.origin); } catch (e) { /* fine */ } }, t));
@@ -532,7 +546,20 @@
         announce(`You’d like to watch with ${c.name}. They’ll only know if they feel the same.`);
         let n = 0; try { n = Number(localStorage.getItem('hz_yes_tips') || 0); localStorage.setItem('hz_yes_tips', String(n + 1)); } catch (e) { /* fine */ }
         if (n < 2) toast(`Sent. ${c.name} only finds out if they say yes too.`);   // taught twice, then out of the way
+        askPushOnce(c.name);
       } catch (e) { toast(e.message || 'Could not send.'); }
+    }
+    // After their first yes (that wasn't an instant match), once per browser: offer this device's notifications, so the
+    // answer reaches them even if they never reopen Herae and our email lands in Promotions (founder 10-27).
+    async function askPushOnce(name) {
+      try { if (localStorage.getItem('hz_push_asked')) return; } catch (e) { return; }
+      if (await webPushState() !== 'off') return;
+      try { localStorage.setItem('hz_push_asked', '1'); } catch (e) { /* fine */ }
+      const bar = el('div', { class: 'an-connect', role: 'region', 'aria-label': 'Notifications' },
+        el('span', {}, `Want a ping on this device when ${name || 'they'} says yes?`));
+      const go = el('button', { type: 'button', class: 'an-connect-cta', onclick: async () => { go.disabled = true; const ok = await enableWebPush(); bar.remove(); toast(ok ? 'Done. You’ll get a notification on this device.' : 'No problem, we’ll email you.'); } }, 'Turn on');
+      const no = el('button', { type: 'button', class: 'an-connect-x', 'aria-label': 'Not now', onclick: () => bar.remove() }, '✕');
+      bar.append(go, no); document.body.prepend(bar); trackEvent('web_push', { action: 'shown' });
     }
     // "It's a match!" — both faces, a heartbeat, confetti; one tap to say hi.
     function matchMoment(c, conversationId) {

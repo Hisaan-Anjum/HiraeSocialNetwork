@@ -895,6 +895,35 @@ function trackEvent(name, props = {}, { keepalive = false } = {}) {
   } catch (e) { /* never throws into the caller */ }
 }
 
+// ── Web push (server/src/web-push.js, sw.js) ────────────────────────────
+// For people who use Herae on the website with no extension (founder 10-27): likes, matches and new people reach this
+// device without depending on email. webPushState() → 'on' | 'off' (possible, not on) | 'blocked' (they said no in the
+// browser) | 'unsupported' (no push here, e.g. iPhone Safari outside a home-screen app, or push not configured).
+async function webPushState() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'unsupported';
+  let key = null; try { key = (await apiRequest('/api/push/key')).key; } catch (e) { return 'unsupported'; }
+  if (!key) return 'unsupported';
+  if (Notification.permission === 'denied') return 'blocked';
+  const reg = await navigator.serviceWorker.getRegistration('/');
+  const sub = reg && await reg.pushManager.getSubscription();
+  return sub && Notification.permission === 'granted' ? 'on' : 'off';
+}
+// Asks the browser (it shows its own prompt), subscribes, and tells the server. true when on.
+async function enableWebPush() {
+  try {
+    const { key } = await apiRequest('/api/push/key');
+    if (!key) return false;
+    if (await Notification.requestPermission() !== 'granted') { trackEvent('web_push', { action: 'declined' }); return false; }
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    await navigator.serviceWorker.ready;
+    const raw = atob(key.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (key.length % 4)) % 4));
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: Uint8Array.from(raw, (c) => c.charCodeAt(0)) });
+    await apiRequest('/api/push/subscribe', { method: 'POST', body: JSON.stringify(sub.toJSON()) });
+    trackEvent('web_push', { action: 'on' });
+    return true;
+  } catch (e) { trackEvent('web_push', { action: 'error' }); return false; }
+}
+
 // { q, sort, cursor, limit } — all optional. `cursor` is a row offset; the
 // response carries { recommendations, total, offset, pageSize, sort, nextCursor }.
 function getAdminRecommendations({ q = '', sort = '', cursor = 0, limit = 0 } = {}) {
