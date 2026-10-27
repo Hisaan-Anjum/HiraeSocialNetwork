@@ -868,6 +868,10 @@ function getRecommendationById(id) {
 
 // The full analytics rollup for the admin dashboard (analytics.html). 403s for
 // a non-admin token (server/src/account.js gates it on is_admin).
+function getAnalyticsLive() {
+  return apiRequest('/api/admin/analytics/live');
+}
+
 function getAnalytics() {
   return apiRequest('/api/admin/analytics');
 }

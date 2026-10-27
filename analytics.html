@@ -134,6 +134,20 @@
     .ppl-table th.opt, .ppl-table td.opt, .ppl-mail { display: none; }
     .ppl-search { max-width: none; }
   }
+  /* Currently watching (10-28) */
+  .lv-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+  .lv-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; }
+  .lv-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .lv-dot.together { background: #34d399; box-shadow: 0 0 0 4px rgba(52, 211, 153, .2); animation: lvPulse 1.6s ease-in-out infinite; }
+  .lv-dot.alone { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, .2); }
+  .lv-dot.ended { background: #64748b; }
+  .lv-dot.short { background: #ef4444; }
+  .lv-who { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lv-meta { color: var(--muted, #94a3b8); font-size: 13px; white-space: nowrap; }
+  .lv-empty { color: var(--muted, #94a3b8); font-size: 14px; padding: 6px 0 12px; }
+  .lv-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted, #94a3b8); margin: -4px 0 10px; }
+  .lv-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  @keyframes lvPulse { 50% { box-shadow: 0 0 0 7px rgba(52, 211, 153, .08); } }
 </style>
 
   <meta name="description" content="Herae analytics.">
@@ -255,6 +269,26 @@
         <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
         <div class="bar-val">${fmt(value)}${suffix || ''}</div>
       </div>`;
+    }
+
+    // ── Currently watching (founder 10-28): who is in a night right now, and everyone's last session (24 h) ──
+    let liveTimer = null;
+    async function loadLive() {
+      const box = document.getElementById('liveBox'); if (!box) return;
+      let d; try { d = await getAnalyticsLive(); } catch (e) { box.innerHTML = ''; return; }
+      const dur = (m) => (m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`);
+      const ago = (m) => (m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.floor(m / 60)} h ago`);
+      const rows = [];
+      for (const w of d.watching) rows.push(`<div class="lv-row"><span class="lv-dot ${w.together ? 'together' : 'alone'}"></span>
+        <span class="lv-who">${w.people.map(esc).join(' & ')}</span>
+        <span class="lv-meta">${w.together ? 'watching together' : 'in a night alone'} · ${dur(w.minutes)} so far</span></div>`);
+      for (const r of d.recent.slice(0, 12)) rows.push(`<div class="lv-row"><span class="lv-dot ${r.short ? 'short' : 'ended'}"></span>
+        <span class="lv-who">${esc(r.username)}</span>
+        <span class="lv-meta">last night ${dur(r.minutes || 0)} · ended by ${esc(r.ended_by || '?')}${r.site_host ? ' · ' + esc(r.site_host) : r.site ? ' · ' + esc(r.site) : ''} · ${ago(r.ago)}${r.ext_v ? ' · v' + esc(r.ext_v) : ''}</span></div>`);
+      box.innerHTML = `<div class="an-section-title">Currently watching · ${d.watching.filter((w) => w.together).length} together now</div>
+        <div class="lv-legend"><span><span class="lv-dot together"></span>watching together</span><span><span class="lv-dot alone"></span>in a night alone</span><span><span class="lv-dot ended"></span>last night (24 h)</span><span><span class="lv-dot short"></span>short night (under 15 min, not ended by Finish)</span></div>
+        ${rows.length ? `<div class="lv-list">${rows.join('')}</div>` : '<div class="lv-empty">Nobody has watched in the last 24 hours.</div>'}`;
+      clearTimeout(liveTimer); liveTimer = setTimeout(loadLive, 30000);
     }
 
     async function load() {
@@ -484,7 +518,8 @@
           <div style="margin-top:12px">${evEntries.map(([k, v]) => barRow(k, v, evMax, 'var(--c-purple)')).join('')}</div></details>`);
       }
 
-      app.innerHTML = out.join('') + peopleShell();
+      app.innerHTML = '<div id="liveBox"></div>' + out.join('') + peopleShell();
+      loadLive();
       charts.forEach(([id, s, c]) => wireChart(id, s, c));
       wirePeople();
       // Not awaited: the rollup above is already on screen, and the people
