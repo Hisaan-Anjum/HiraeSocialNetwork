@@ -74,7 +74,7 @@ serverUrlEl.value = getSavedServerUrl();
 const serverUrlField = document.getElementById('serverUrlField');
 const isLocalHost = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
 const derivesFromOrigin = location.protocol.startsWith('http') && !isLocalHost;
-if (serverUrlField && derivesFromOrigin) serverUrlField.style.display = 'none';
+if (serverUrlField && !derivesFromOrigin) serverUrlField.style.display = '';   // starts hidden: no flash (founder 10-29)
 
 // Offered only when the server says Google is configured, so this resolves to
 // nothing at all on a deployment without it. Awaiting it isn't necessary —

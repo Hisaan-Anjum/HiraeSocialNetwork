@@ -77,7 +77,7 @@
       <form id="signupForm" autocomplete="on" novalidate>
         <!-- Hidden in production (site served by the API server) — same rule
              as login.html. Shown only for file:// or a localhost dev server. -->
-        <div class="field" id="serverUrlField">
+        <div class="field" id="serverUrlField" style="display:none">
           <label for="serverUrl">Server address</label>
           <input type="text" id="serverUrl" placeholder="http://localhost:8080" autocomplete="off">
         </div>
@@ -177,7 +177,7 @@
     serverUrlEl.value = getSavedServerUrl();
     var isLocalHost = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname);
     var derivesFromOrigin = location.protocol.startsWith('http') && !isLocalHost;
-    if (serverUrlField && derivesFromOrigin) serverUrlField.style.display = 'none';
+    if (serverUrlField && !derivesFromOrigin) serverUrlField.style.display = '';   // starts hidden: no flash (founder 10-29)
 
     var USERNAME_RE = /^[a-z0-9_]{3,32}$/;
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
