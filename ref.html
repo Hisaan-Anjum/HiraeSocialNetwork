@@ -7,7 +7,7 @@
 <meta name="description" content="Watch movies together when you're apart. Press play once and it plays for both of you, on almost any site, with a call built in.">
 <meta name="robots" content="noindex, follow">
 <meta property="og:title" content="You're invited to Herae">
-<meta property="og:description" content="Watch movies together when you're apart, and get an extra free movie night.">
+<meta property="og:description" content="Watch movies together when you're apart. Your first two movie nights are free.">
 <meta property="og:image" content="https://app.herae.app/og-image.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -45,14 +45,14 @@
     <p class="ref-sub">Watch movies together when you're apart. Press play once and it plays for both of you, on almost any site, with a video call built in. Every night you watch is saved as moments on your timeline.</p>
 
     <div class="ref-gift" id="gift">
-      🎁 <b>Your gift:</b> an extra free movie night. You and your partner each get <b>three</b> free nights instead of two, however long the films run.
+      🎁 Your first <b>two</b> movie nights are free, however long the films run.
     </div>
 
     <div id="desktop">
       <ol class="ref-steps">
         <li>Add Herae to Chrome (it's free).</li>
         <li>Create your account in Herae, then invite your partner from it.</li>
-        <li>Come back to this tab and press “I've signed up” to collect your night.</li>
+        <li>Come back to this tab and press “I've signed up” so we know who invited you.</li>
       </ol>
       <div class="ref-actions">
         <a class="btn btn-primary" id="install" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=referral" target="_blank" rel="noopener">Add Herae to Chrome</a>
@@ -95,8 +95,7 @@
 
   function explain(r) {
     if (!r) return msg('Could not reach Herae just now. Try again in a moment.', 'err');
-    if (r.ok && r.already) return msg('You’re all set: your extra night is already on your account. 💛', 'ok');
-    if (r.ok) return msg(`Done! Your extra free night is on your account. Invite your partner from Herae and they get one too. 💛`, 'ok');
+    if (r.ok) return msg('You’re all set. Invite your partner from Herae and press play together. 💛', 'ok');
     return msg(r.error || 'That didn’t work. Try again in a moment.', 'err');
   }
 

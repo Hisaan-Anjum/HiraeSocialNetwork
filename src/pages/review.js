@@ -224,7 +224,7 @@ async function loadSession() {
     if (!seen && at) {
       const track = (action) => { try { window.trackEvent && window.trackEvent('referral_prompt', { action }); } catch (e) { /* best-effort */ } };
       const line = document.createElement('div'); line.className = 'review-plan-line review-refer-line';
-      line.innerHTML = 'Know another couple who live apart? Send them your invite: they get a free movie night, and you get one once they have their first proper night. <a href="refer.html?utm_source=review&utm_medium=referral_prompt">Invite a couple</a> <button type="button" class="ms-link-btn" aria-label="Hide">✕</button>';
+      line.innerHTML = 'Know another couple who live apart? Send them your invite. <a href="refer.html?utm_source=review&utm_medium=referral_prompt">Invite a couple</a> <button type="button" class="ms-link-btn" aria-label="Hide">✕</button>';
       line.querySelector('a').onclick = () => { track('open'); try { localStorage.setItem('herae_referral_prompt', 'open'); } catch (e) { /* ignore */ } };
       line.querySelector('button').onclick = () => { track('dismiss'); try { localStorage.setItem('herae_referral_prompt', 'dismiss'); } catch (e) { /* ignore */ } line.remove(); };
       try { localStorage.setItem('herae_referral_prompt', 'shown'); } catch (e) { /* ignore */ }

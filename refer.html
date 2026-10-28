@@ -34,7 +34,7 @@
   <div class="rf-wrap">
     <div class="rf-card">
       <h1 class="rf-title">Know another couple who lives apart?</h1>
-      <p class="rf-sub">Send them your link. They get an extra free movie night. When <b id="goal1">3</b> couples you invite have watched their first full night, you and your partner get a <b>month of Herae Together free</b>.</p>
+      <p class="rf-sub">Send them your link. They press play once and the film plays for both of them, in sync, with a call beside it. Their first two movie nights are free.<b id="goal1" hidden>3</b></p>
       <div class="rf-link">
         <input id="url" readonly value="Loading…" aria-label="Your invite link">
         <button class="btn btn-primary" id="copy" type="button">Copy</button>
@@ -43,7 +43,8 @@
       <div class="rf-msg" id="msg"></div>
     </div>
 
-    <div class="rf-card">
+    <!-- Founder 10-29: invite rewards ended (no more free nights or months); the ladder stays in the markup for refer.js. -->
+    <div class="rf-card" hidden>
       <div class="rf-count" id="count">0 of 3 couples</div>
       <div class="rf-progress" id="dots"></div>
       <ul class="rf-list">
@@ -63,7 +64,7 @@
       <p class="rf-rules" style="margin-top:10px">Your share is credited the moment a couple pays. It's paid within 7 days of our payment provider paying us for it. <a href="/program-terms.html#part-b">Creator terms</a>.</p>
     </div>
 
-    <p class="rf-rules">How it counts: a couple counts once someone who signed up through your link watches a movie night of 45 minutes or more with their partner (not with you). Referral links are for new accounts. The free month is given once, and nothing is ever charged for it. <a href="/program-terms.html#part-c">Program terms</a>.</p>
+    <p class="rf-rules">Invite rewards (extra nights and free months) ended on 29 October 2026; anything already earned stays yours. <a href="/program-terms.html#part-c">Program terms</a>.</p>
   </div>
 
   <script src="config.js"></script>
@@ -111,7 +112,7 @@
   });
   el('share').addEventListener('click', async () => {
     if (!shareUrl) return;
-    try { await navigator.share({ title: 'Herae', text: 'We watch movies together on Herae: press play and it plays for both of you. Here’s an extra free night if you two want to try it.', url: shareUrl }); } catch (e) { /* dismissed */ }
+    try { await navigator.share({ title: 'Herae', text: 'We watch movies together on Herae: press play and it plays for both of you. Your first two nights are free if you two want to try it.', url: shareUrl }); } catch (e) { /* dismissed */ }
   });
   </script>
 </body>
