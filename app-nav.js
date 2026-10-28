@@ -132,8 +132,8 @@
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
     // Nobody in between (founder 10-23): no partner and no profile → the choice, from every app page.
-    // "Someone I already know" (the fork) holds off the choice for 3 days — time to bring their person in — then it asks again.
-    let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 3 * 864e5; } catch (e) { /* storage blocked */ }
+    // "Someone I already know" (the fork) holds off the choice for an hour — the server holds 3 days once an invite went out.
+    let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 36e5; } catch (e) { /* storage blocked */ }
     // A party link (#parties/…) opens the party it came for: joining one is the way to a night, not "in between".
     const partyLink = page === 'social.html' && /^#parties/.test(location.hash);
     // Already chose (sign-up, the install guide, this site's choice screen — founder 10-24: never ask twice): "meet
