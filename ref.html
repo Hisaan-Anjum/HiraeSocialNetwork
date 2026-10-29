@@ -104,6 +104,8 @@
     const who = r.inviter || INVITER;
     if (r.ok && who) { el('pairName').textContent = who; el('pairRow').hidden = false; return msg(`You’re in. Is ${who} the person you want to watch with?`, 'ok'); }
     if (r.ok) return msg('You’re all set. Invite your partner from Herae and press play together. 💛', 'ok');
+    // The reward can't apply (an older account, already referred, their partner), but watching together still can.
+    if (who && ['not-new', 'taken', 'partner'].includes(r.reason)) { el('pairName').textContent = who; el('pairRow').hidden = false; return msg(`Want to watch with ${who}?`, 'ok'); }
     return msg(r.error || 'That didn’t work. Try again in a moment.', 'err');
   }
 
@@ -153,10 +155,28 @@
       el('pairRow').hidden = true;
       msg(`Sent. ${who} gets your request in Herae; once they accept, you can start a movie night together.`, 'ok');
     } catch (e) {
+      // Already contacts: they want a night, not a request — hand it to Herae like the invite page does (10-29).
+      if (/already contacts/i.test(String(e && e.message))) return startNight(who);
       el('pair').disabled = false;
       msg((e && e.message) || 'That didn’t work. Try again in a moment.', /pending|already/i.test(String(e && e.message)) ? 'ok' : 'err');
     }
   });
+
+  function startNight(who) {
+    msg(`Opening your night with ${who}…`, 'ok');
+    const done = (text, kind) => { window.removeEventListener('message', onAck); clearTimeout(timer); el('pairRow').hidden = true; msg(text, kind); };
+    const onAck = (e) => {
+      if (e.source !== window || !e.data || e.data.__heraeStartSessionAck !== true) return;
+      const d = e.data;
+      if (d.error) return done(d.error, 'err');
+      if (d.busy) return done(`You’re already in a movie night with someone else. Finish it first, then try again.`, 'err');
+      if (d.offline) return done(`${who} isn’t online right now. Herae starts your night the moment ${who} is back.`, 'ok');
+      done(`Opened. ${who} gets your invite; when they join, you’re watching together.`, 'ok');
+    };
+    const timer = setTimeout(() => done(`You two are already connected. Open Herae (the icon at the top right of Chrome, or in the puzzle-piece menu) and press Connect next to ${who}.`, 'ok'), 8000);
+    window.addEventListener('message', onAck);
+    window.postMessage({ __heraeStartSession: true, target: who, url: '', title: '' }, location.origin);
+  }
 
   el('share').addEventListener('click', async () => {
     const url = location.origin + '/r/' + CODE;
