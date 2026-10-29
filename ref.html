@@ -40,7 +40,7 @@
        localStorage (api.js claims it on the first signed-in page), because the
        new person usually signs up inside the extension, not on this page. -->
   <div class="ref-wrap">
-    <img src="herae-symbol.svg" alt="Herae" class="ref-logo">
+    <img src="/herae-symbol.svg" alt="Herae" class="ref-logo">
     <h1 class="ref-title" id="title">You're invited to Herae</h1>
     <p class="ref-sub">Watch movies together when you're apart. Press play once and it plays for both of you, on almost any site, with a video call built in. Every night you watch is saved as moments on your timeline.</p>
 
@@ -61,13 +61,16 @@
     </div>
 
     <div id="phone" hidden>
-      <p class="ref-sub" style="margin-bottom:14px">Herae runs in Chrome on a computer. Send this link to yourself and open it there, and your extra night comes with it.</p>
+      <p class="ref-sub" style="margin-bottom:14px">Herae runs in Chrome on a computer. Send this link to yourself and open it there.</p>
       <div class="ref-actions">
         <button class="btn btn-primary" id="share" type="button">Send this link to myself</button>
       </div>
     </div>
 
     <div class="ref-msg" id="msg"></div>
+<div class="ref-actions" id="pairRow" hidden>
+<button class="btn btn-primary" id="pair" type="button">Watch with <span id="pairName"></span></button>
+</div>
     <div class="ref-foot">Already watching with Herae? <a href="/refer.html">Get your own link</a> and share it with another couple. <a href="/program-terms.html#part-c">Terms</a>.</div>
   </div>
 
@@ -80,6 +83,7 @@
   const code = (location.pathname.match(/^\/r\/([0-9A-Fa-f]{7})\/?$/) || [])[1]
     || new URLSearchParams(location.search).get('code') || '';
   const CODE = code.toUpperCase();
+  let INVITER = '';
 
   // Same device test as invite.html: phones and tablets can't run the extension.
   const phone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -95,6 +99,10 @@
 
   function explain(r) {
     if (!r) return msg('Could not reach Herae just now. Try again in a moment.', 'err');
+    // 10-29: someone who opens a friend's link usually wants to watch WITH that friend; the claim alone left them
+    // unconnected (zahids/maliha). A request, not a join: /r/ links are posted publicly, so the inviter has to accept.
+    const who = r.inviter || INVITER;
+    if (r.ok && who) { el('pairName').textContent = who; el('pairRow').hidden = false; return msg(`You’re in. Is ${who} the person you want to watch with?`, 'ok'); }
     if (r.ok) return msg('You’re all set. Invite your partner from Herae and press play together. 💛', 'ok');
     return msg(r.error || 'That didn’t work. Try again in a moment.', 'err');
   }
@@ -114,6 +122,7 @@
       const r = await fetch(`${base}/api/referral/${CODE}/preview`);
       if (r.ok) {
         const d = await r.json();
+        INVITER = d.inviter;
         el('title').textContent = `${d.inviter} invited you to Herae`;
         document.title = `${d.inviter} invited you to Herae`;
       } else if (r.status === 404) {
@@ -134,6 +143,19 @@
     whenExtensionMaybeSignsIn(() => tryClaim(), () => {
       msg('Herae isn’t signed in on this browser yet. Create your account in Herae, then press this again.', 'err');
     });
+  });
+
+  el('pair').addEventListener('click', async () => {
+    const who = el('pairName').textContent;
+    el('pair').disabled = true;
+    try {
+      await requestContact(who);
+      el('pairRow').hidden = true;
+      msg(`Sent. ${who} gets your request in Herae; once they accept, you can start a movie night together.`, 'ok');
+    } catch (e) {
+      el('pair').disabled = false;
+      msg((e && e.message) || 'That didn’t work. Try again in a moment.', /pending|already/i.test(String(e && e.message)) ? 'ok' : 'err');
+    }
   });
 
   el('share').addEventListener('click', async () => {
