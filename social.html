@@ -29,6 +29,13 @@
     .s-tab[aria-selected="true"] { background: #F8FAFC; color: #0F172A; border-color: #F8FAFC; }
     main.h-page { padding-bottom: 96px; }
   }
+  /* A party's state, everywhere it's listed (10-31): watching now / scheduled / nobody watching. */
+  .ps { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--h-text-3); }
+  .ps-live { padding: 1px 8px; border-radius: 999px; color: #6EE7B7; background: rgba(52, 211, 153, .15); }
+  .ps-live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #34D399; animation: ps-pulse 1.6s ease-in-out infinite; }
+  .ps-soon { color: #A5B4FC; }
+  @keyframes ps-pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .ps-live::before { animation: none; } }
   /* The empty deck's parties (10-30): quieter than the notifications button above them. */
   .dz-parties { max-width: 340px; margin: 14px auto 0; text-align: left; font-size: 13px; }
   .dz-parties-label { margin: 0 0 2px; font-size: 12px; color: var(--h-text-3); text-align: center; }
@@ -939,21 +946,28 @@
     }
 
     // ── Parties (private by default; the invite link is #parties/<id>/<token>, a hash, so it never reaches server logs) ──
-    const partyRow = (p) => el('li', { class: 'tap-row', onclick: rowGo(`parties/${p.id}`) }, el('div', { class: 'row-main' }, el('strong', {}, p.title),
+    // What's happening with a party, in plain words (founder 10-31: on now, scheduled and nothing-on must not look alike).
+    const localTime = (s) => new Date(String(s).replace(' ', 'T') + 'Z').toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    const partyState = (p) => (p.status === 'live' ? el('span', { class: 'ps ps-live' }, p.live > 2 ? `${p.live} watching now` : 'Watching now')
+      : p.status === 'scheduled' ? el('span', { class: 'ps ps-soon' }, `Starts ${localTime(p.startsAt)}`)
+        : el('span', { class: 'ps' }, 'Nobody watching right now'));
+    const partyRow = (p) => el('li', { class: 'tap-row', onclick: rowGo(`parties/${p.id}`) }, el('div', { class: 'row-main' }, el('strong', {}, p.title), el('div', {}, partyState(p)),
         el('div', { class: 'sub' }, [p.filmTitle ? `🎬 ${p.filmTitle}` : '', `${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
-          p.startsAt ? when(p.startsAt) : '', p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
+          p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
       el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));
     // The empty deck's parties (founder 10-30): small, under the notifications button and never competing with it. At most
     // two lines: the top party someone hosts, then the next Film Night. Text links only: the big button stays the one action.
     async function deckParties() {
       const [f, n] = await Promise.all([apiRequest('/api/parties/featured').catch(() => ({ parties: [] })), apiRequest('/api/parties/film-nights').catch(() => ({ nights: [] }))]);
-      const row = (title, sub, href, cta) => el('a', { class: 'dz-party', href }, el('span', { class: 'dz-party-main' }, el('strong', {}, title), el('span', {}, sub)), el('span', { class: 'dz-party-go' }, cta));
-      const rows = [];
+      const row = (p, title, sub, href, cta) => el('a', { class: 'dz-party', href }, el('span', { class: 'dz-party-main' }, el('strong', {}, title), el('span', {}, sub), partyState(p)), el('span', { class: 'dz-party-go' }, cta));
+      const entries = [];
       const top = f.parties[0];
-      if (top) rows.push(row(top.filmTitle || top.title, `Hosted by ${top.owner} · ${top.members} in`, `#parties/${top.id}`, 'Join'));
-      const night = n.nights[0];
-      if (night) rows.push(row(night.filmTitle, `Film Night · ${new Date(night.startsAt.replace(' ', 'T') + 'Z').toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' })}`, `#parties/${night.id}`, night.joined ? 'You’re in' : 'Join'));
-      if (!rows.length) return null;
+      if (top) entries.push([top, row(top, top.filmTitle || top.title, `Hosted by ${top.owner}`, `#parties/${top.id}`, top.status === 'live' ? 'Join now' : 'Join')]);
+      const night = n.nights.find((x) => x.status === 'live') || n.nights[0];
+      if (night) entries.push([night, row(night, night.filmTitle, 'Film Night', `#parties/${night.id}`, night.joined ? 'You’re in' : night.status === 'live' ? 'Join now' : 'Join')]);
+      if (!entries.length) return null;
+      // Whatever's on right now first; otherwise the party someone hosts.
+      const rows = entries.map(([p, r], i) => [p.status === 'live' ? 0 : 1, i, r]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map((x) => x[2]);
       return el('section', { class: 'dz-parties', 'aria-label': 'Watch parties' }, el('p', { class: 'dz-parties-label' }, 'Watch with people'), ...rows,
         top ? null : el('button', { type: 'button', class: 'dz-parties-host', onclick: () => editParty() }, 'Or host your own'));
     }
@@ -967,8 +981,8 @@
         return box;
       }
       r.parties.forEach((p) => box.append(el('div', { class: 'fn-row' }, el('div', { class: 'row-main' }, el('strong', {}, p.filmTitle || p.title),
-        el('div', { class: 'sub' }, [`Hosted by ${p.owner}`, `${p.members} in`, p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · '))),
-      el('a', { class: 'hb hb-primary', href: `#parties/${p.id}` }, p.admission === 'open' ? 'Join' : 'See it'))));
+        el('div', {}, partyState(p)), el('div', { class: 'sub' }, [`Hosted by ${p.owner}`, `${p.members} in`].join(' · '))),
+      el('a', { class: p.status === 'live' ? 'hb hb-primary' : 'hb hb-secondary', href: `#parties/${p.id}` }, p.status === 'live' ? 'Join now' : p.admission === 'open' ? 'Join' : 'See it'))));
       return box;
     }
     // Film Night (film-night.js): the fixed place and time to find someone, shown wherever the page would otherwise be
@@ -980,12 +994,12 @@
         el('p', { class: 'muted' }, 'Every Friday: one free film, with anyone who loves films. No subscription needed.'));
       r.nights.forEach((n) => {
         const city = n.title.split('·').pop().trim();
-        const local = new Date(n.startsAt.replace(' ', 'T') + 'Z').toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
         const go = !r.canJoin ? el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile')
+          : n.status === 'live' ? el('a', { class: 'hb hb-primary', href: `#parties/${n.id}` }, n.joined ? 'Go in now' : 'Join now')
           : n.joined ? el('a', { class: 'hb hb-secondary', href: `#parties/${n.id}` }, 'You’re in')
-          : el('button', { type: 'button', class: 'hb hb-primary', onclick: async (e) => { e.target.disabled = true; try { await apiRequest(`/api/parties/${n.id}/join`, { method: 'POST', body: '{}' }); location.hash = `parties/${n.id}`; } catch (err) { e.target.disabled = false; toast(err.message || 'Could not join.'); } } }, 'Join');
+          : el('button', { type: 'button', class: 'hb hb-secondary', onclick: async (e) => { e.target.disabled = true; try { await apiRequest(`/api/parties/${n.id}/join`, { method: 'POST', body: '{}' }); location.hash = `parties/${n.id}`; } catch (err) { e.target.disabled = false; toast(err.message || 'Could not join.'); } } }, 'Join');
         box.append(el('div', { class: 'fn-row' }, el('div', { class: 'row-main' }, el('strong', {}, n.filmTitle),
-          el('div', { class: 'sub' }, `${local} · 8 pm in ${city}${n.members ? ` · ${n.members} in` : ''}`)), go));
+          el('div', {}, partyState(n)), el('div', { class: 'sub' }, `8 pm in ${city}${n.members ? ` · ${n.members} in` : ''}`)), go));
       });
       return box;
     }
@@ -995,7 +1009,11 @@
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between;flex-wrap:wrap' }, el('h1', {}, 'Watch parties'),
         el('button', { type: 'button', class: 'hb hb-primary', onclick: () => editParty() }, 'Start a party')));
       const hostSlot = el('div'); const fnSlot = el('div'); v.append(hostSlot, fnSlot);
-      hostedByPeople().then((c) => { if (c) hostSlot.append(c); }); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
+      // Hosts first, except that something on right now beats anything that isn't (founder 10-31).
+      Promise.all([hostedByPeople(), filmNightCards()]).then(([h, fn]) => {
+        if (h) hostSlot.append(h); if (fn) fnSlot.append(fn);
+        if (fn && fn.querySelector('.ps-live') && !(h && h.querySelector('.ps-live'))) v.insertBefore(fnSlot, hostSlot);
+      });
       let mine; try { mine = await apiRequest('/api/parties/mine'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       v.append(el('h2', { style: 'margin-top:var(--h-5)' }, 'Your parties'));
       if (mine.parties.length) { const ul = el('ul', { class: 'h-list' }); mine.parties.forEach((p) => ul.append(partyRow(p))); v.append(ul); }
@@ -1036,7 +1054,7 @@
       const mod = p.access === 'moderator'; const inside = mod || p.access === 'member'; const team = p.owner === 'herae';
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between' }, back,
         p.role === 'owner' || team ? null : moreMenu([['Report this party', () => reportPerson(p.owner, 'party', String(p.id))], ['Block the host', async () => { if (await blockPerson(p.owner)) location.hash = 'parties'; }, true]])));
-      v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${team ? 'the Herae team' : p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private', p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · ')));
+      v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${team ? 'the Herae team' : p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private'].filter(Boolean).join(' · ')), el('p', { style: 'margin:0 0 8px' }, partyState(p)));
       if (p.filmTitle || p.filmUrl) v.append(el('p', { class: 'p-film' }, '🎬 ', p.filmTitle || 'The film', p.filmUrl ? el('a', { href: p.filmUrl, target: '_blank', rel: 'noopener noreferrer', style: 'margin-left:8px' }, 'Open it ↗') : null));
       if (p.description) v.append(el('p', {}, p.description));
       const actions = el('div', { class: 'h-row', style: 'flex-wrap:wrap;margin:var(--h-4) 0' }); v.append(actions);
