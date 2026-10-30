@@ -194,6 +194,7 @@
           <input type="checkbox" id="discoverable" role="switch">
         </div>
         <p class="wp-adult" id="adultNote">By turning this on and saving, you confirm you’re 18 or older.</p>
+        <p class="wp-adult">When you save, your browser asks to allow notifications, so likes and matches reach you on this device.</p>
         <fieldset class="wp-radios" id="showMeSet"><legend>Show me</legend>
           <label><input type="radio" name="scope" value="everyone"> <span>No preference</span></label>
           <label><input type="radio" name="scope" value="men"> <span>Men</span></label>
@@ -429,6 +430,11 @@
       if (!canGoLive()) { $('discoverable').checked = false; return; }
       state.discoverable = 1; if (!state.adult_confirmed_at) confirmAdult = true;
     };
+    // Is the extension on this device? It already notifies there; web push as well would double every alert.
+    const extHere = new Promise((resolve) => {
+      const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(true); } };
+      window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
+    });
     $('form').onsubmit = async (e) => {
       e.preventDefault(); pendingAdds.forEach((add) => add());
       // Switched on (by default or by them) but not yet live: go live with this save, if the profile can be.
@@ -437,6 +443,11 @@
         else if (firstTime) return;
         else $('discoverable').checked = false;
       }
+      // Founder 10-30: anyone in matching gets notifications on this device. Started on this tap, before the save, because
+      // the browser only shows its prompt right after a click; the page waits for their answer before moving on.
+      const pushing = $('discoverable').checked
+        ? extHere.then((ext) => (ext ? null : webPushState().then((st) => (st === 'off' ? enableWebPush() : null)))).catch(() => null) : null;
+      const pushAnswered = () => Promise.race([pushing, new Promise((r) => setTimeout(r, 30_000))]);
       $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, watchlist: state.watchlist || [], creators: state.creators, languages: state.languages,
@@ -446,7 +457,7 @@
         const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
         state = r.profile; confirmAdult = false; dirty = false; render(); say('Saved.');
         if (pendingVis) { apiRequest('/api/photos/visibility', { method: 'PUT', body: JSON.stringify({ visibility: pendingVis }) }).catch(() => {}); pendingVis = null; }
-        if (firstTime && state.discoverable) { location.href = 'social.html#discover'; return; }   // the quickest path: straight to people
+        if (firstTime && state.discoverable) { await pushAnswered(); location.href = 'social.html#discover'; return; }   // the quickest path: straight to people
         if (firstTime) { firstTime = false; setWizard(false); }
         meter();
         // The next step, right where the person is looking: discovery on → go and see who's here.
