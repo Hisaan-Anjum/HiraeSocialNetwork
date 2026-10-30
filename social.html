@@ -32,6 +32,8 @@
   /* Film Night (10-30) */
   .fn-box { border: 1px solid var(--h-line-strong); border-radius: 16px; padding: 16px; margin: var(--h-4) 0; text-align: left; background: linear-gradient(135deg, rgba(99, 102, 241, .14), rgba(236, 72, 153, .08)); }
   .fn-box h2 { margin: 0 0 4px; }
+  .fn-hosted { border-color: rgba(167, 139, 250, .65); background: linear-gradient(135deg, rgba(99, 102, 241, .28), rgba(236, 72, 153, .18)); }
+  .fn-hosted > .hb { margin-top: 4px; }
   .fn-box > p { margin: 0 0 8px; font-size: var(--h-size-sm); }
   .fn-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--h-line); }
   .fn-row .hb { flex: none; }
@@ -447,12 +449,13 @@
           } else if (st === 'on') { fine.hidden = true; hero.append(el('p', { class: 'dz-empty-on' }, '✓ Notifications on')); if (widenBtn) hero.append(widenBtn); }
           else fallback();   // blocked or unsupported (iPhone Safari): email is the channel
         }).catch(fallback);
-        const fnSlot = el('div'); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
+        const hostSlot = el('div'); const fnSlot = el('div');
+        hostedByPeople().then((c) => { if (c) hostSlot.append(c); }); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
         const link = (href, text) => el('a', { href, class: 'dz-empty-link' }, text);
         v.append(el('div', { class: 'h-empty h-stack dz-empty' },
           el('h2', {}, 'You’re in.'),
           el('p', { class: 'dz-empty-lede' }, 'We’ll ping you the moment someone who loves your films joins.'),
-          hero, fnSlot,
+          hero, hostSlot, fnSlot,
           el('div', { class: 'dz-empty-wait' }, el('span', { class: 'muted' }, 'While you wait'),
             el('div', { class: 'dz-empty-links' }, partyLink, link('contacts.html', 'Invite someone you know'), link('watch-profile.html', 'Add films to your profile'))),
           fine,
@@ -932,6 +935,20 @@
         el('div', { class: 'sub' }, [p.filmTitle ? `🎬 ${p.filmTitle}` : '', `${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
           p.startsAt ? when(p.startsAt) : '', p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
       el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));
+    // Parties people host come first (founder 10-30). None yet: an invitation to be the first (zero dead ends).
+    async function hostedByPeople() {
+      let r; try { r = await apiRequest('/api/parties/featured'); } catch (e) { return null; }
+      const box = el('section', { class: 'fn-box fn-hosted', 'aria-label': 'Hosted by people here' }, el('h2', {}, 'Hosted by people here'));
+      if (!r.parties.length) {
+        box.append(el('p', { class: 'muted' }, 'Nobody’s hosting right now. Pick a film and be the first: people here will hear about it.'),
+          el('button', { type: 'button', class: 'hb hb-primary', onclick: () => editParty() }, 'Host a party'));
+        return box;
+      }
+      r.parties.forEach((p) => box.append(el('div', { class: 'fn-row' }, el('div', { class: 'row-main' }, el('strong', {}, p.filmTitle || p.title),
+        el('div', { class: 'sub' }, [`Hosted by ${p.owner}`, `${p.members} in`, p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · '))),
+      el('a', { class: 'hb hb-primary', href: `#parties/${p.id}` }, p.admission === 'open' ? 'Join' : 'See it'))));
+      return box;
+    }
     // Film Night (film-night.js): the fixed place and time to find someone, shown wherever the page would otherwise be
     // empty (founder 10-30: zero dead ends). Times read in the viewer's own zone.
     async function filmNightCards() {
@@ -955,7 +972,8 @@
       const v = $('v-parties'); v.innerHTML = '';
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between;flex-wrap:wrap' }, el('h1', {}, 'Watch parties'),
         el('button', { type: 'button', class: 'hb hb-primary', onclick: () => editParty() }, 'Start a party')));
-      const fnSlot = el('div'); v.append(fnSlot); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
+      const hostSlot = el('div'); const fnSlot = el('div'); v.append(hostSlot, fnSlot);
+      hostedByPeople().then((c) => { if (c) hostSlot.append(c); }); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
       let mine; try { mine = await apiRequest('/api/parties/mine'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       v.append(el('h2', { style: 'margin-top:var(--h-5)' }, 'Your parties'));
       if (mine.parties.length) { const ul = el('ul', { class: 'h-list' }); mine.parties.forEach((p) => ul.append(partyRow(p))); v.append(ul); }
