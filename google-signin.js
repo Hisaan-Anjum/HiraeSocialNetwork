@@ -83,7 +83,7 @@
         + '  <div class="gsu-hint" id="gsuHint">3–32 characters — lowercase letters, numbers and underscores.</div>'
         // The same question as the sign-up page (founder 10-23: Google sign-ups must be able to choose too).
         + '  <fieldset class="gsu-mode"><legend>Who do you want to watch with?</legend>'
-        + '    <label class="gsu-opt"><input type="radio" name="gsuMode" value="public"><span><b>🌍 Meet new people too</b><small>Matched with people who love the same films. Both must say yes. 18+.</small></span></label>'
+        + '    <label class="gsu-opt"><input type="radio" name="gsuMode" value="public"><span><b>🎬 Find film friends too</b><small>People who love the same films, to watch with. Both must say yes. 18+.</small></span></label>'
         + '    <label class="gsu-opt"><input type="radio" name="gsuMode" value="private"><span><b>🔒 Just people I invite</b><small>Only someone you send your link to can find you.</small></span></label>'
         + '  </fieldset>'
         + '  <button class="btn btn-primary gsu-go" id="gsuGo">Create my account</button>'
