@@ -117,7 +117,7 @@
         <small>Set up your watch profile: three quick steps, about a minute.</small><span class="wp-fork-go">Start →</span></button>
     </div>
     <div class="wp-meter" id="meter" hidden><div class="wp-meter-bar"><i id="meterFill"></i></div><span id="meterText"></span></div>
-    <ol class="wp-steps" id="steps" hidden><li data-s="1">You</li><li data-s="2">Your taste</li><li data-s="3">Go live</li></ol>
+    <ol class="wp-steps" id="steps" hidden><li data-s="1">You</li><li data-s="2">Your taste</li><li data-s="3">Meet people</li></ol>
     <div id="loading" class="h-skeleton" style="height:240px" aria-hidden="true"></div>
 
     <form id="form" hidden novalidate>
@@ -148,7 +148,7 @@
             <input class="hi" id="musicIn" maxlength="60" placeholder="e.g. Arijit Singh, lo-fi"><button type="button" class="hb hb-secondary" id="musicAdd">Add</button></div>
         </fieldset>
         <fieldset><legend>Your watchlist <span class="faint">(what you want to watch next)</span></legend>
-          <p class="faint" style="margin:0 0 8px;font-size:13px">People who want the same films come first, and if you’re in Discover we’ll tell you when a public watch party is showing one.</p>
+          <p class="faint" style="margin:0 0 8px;font-size:13px">People who want the same films come first, and if you’re meeting people, we’ll tell you when a public watch party is showing one.</p>
           <div class="h-chips" id="wantList"></div>
           <div class="wp-add"><label class="sr-only" for="wantIn">Add to your watchlist</label>
             <input class="hi" id="wantIn" maxlength="60" placeholder="e.g. Dune: Part Two"><button type="button" class="hb hb-secondary" id="wantAdd">Add</button></div>
@@ -162,7 +162,7 @@
              wizard in one box (one question at a time, Skip or Next), folding to a one-line summary when done. -->
         <fieldset class="wp-vibe" id="vibe"><legend class="sr-only">Your vibe (optional)</legend>
           <div class="wp-vq-head"><span>✨ Quick vibe check <span class="wp-vq-opt">optional</span></span><span class="wp-vq-count" id="vibeCount" aria-live="polite"></span></div>
-          <p class="wp-vibe-sub">People you’d click with show up first in Discover.</p>
+          <p class="wp-vibe-sub">People you’d click with show up first for you.</p>
           <div class="wp-vq" data-q="1"><h3 class="wp-vibe-h">Your personality <span class="faint">(up to 3)</span></h3><div class="h-chips" id="personality"></div></div>
           <div class="wp-vq" data-q="2" hidden><h3 class="wp-vibe-h">In your free time <span class="faint">(up to 3)</span></h3><div class="h-chips" id="hobbies"></div></div>
           <div class="wp-vq" data-q="3" hidden><h3 class="wp-vibe-h">What you do</h3><div class="h-chips" id="work" role="group" aria-label="What you do"></div></div>
@@ -186,7 +186,7 @@
       </section>
 
       <section class="h-section wp-step" data-step="3" aria-labelledby="s-disc">
-        <h2 id="s-disc">Go live</h2>
+        <h2 id="s-disc">Start meeting people</h2>
         <div class="h-switch wp-golive">
           <label for="discoverable"><strong>Let people with similar taste find me</strong>
             <span class="muted">Others who are also discoverable can see your taste and say they'd like to watch together.
@@ -201,15 +201,15 @@
           <label><input type="radio" name="scope" value="women"> <span>Women</span></label>
         </fieldset>
         <fieldset class="wp-radios" id="photoVisSet"><legend>Who can see my photos <span class="faint">(you can also set each photo in step 1)</span></legend>
-          <label><input type="radio" name="pvis" value="public"> <span>Everyone in Discover<br><span class="faint">Signed-in adults who are also looking. Never the open web.</span></span></label>
-          <label><input type="radio" name="pvis" value="matches"> <span>Only people I match with<br><span class="faint">Recommended. Strangers in Discover see "photos after you match".</span></span></label>
+          <label><input type="radio" name="pvis" value="public"> <span>Everyone meeting people on Herae<br><span class="faint">Signed-in adults who are also looking. Never the open web.</span></span></label>
+          <label><input type="radio" name="pvis" value="matches"> <span>Only people I match with<br><span class="faint">Recommended. People you haven’t matched with see "photos after you match".</span></span></label>
           <label><input type="radio" name="pvis" value="matches_friends"> <span>My matches and my friends</span></label>
           <label><input type="radio" name="pvis" value="approved"> <span>Only people I allow, one by one<br><span class="faint">Allow someone from your chat with them (⋯ → Show my photos).</span></span></label>
         </fieldset>
         <fieldset class="wp-radios" id="pageLinkSet"><legend>Show my Herae page on my buddy card</legend>
           <label><input type="radio" name="plink" value="none"> <span>Nobody</span></label>
           <label><input type="radio" name="plink" value="matches"> <span>My matches</span></label>
-          <label><input type="radio" name="plink" value="discover"> <span>Everyone in Discover</span></label>
+          <label><input type="radio" name="plink" value="discover"> <span>Everyone meeting people on Herae</span></label>
           <p class="h-help">Your page shows your films, reviews and moments. Each moment still follows its own privacy, so nothing private is ever shown.</p>
         </fieldset>
         <details class="wp-more"><summary>Who I see, and privacy</summary>
@@ -447,7 +447,10 @@
       // the browser only shows its prompt right after a click; the page waits for their answer before moving on.
       const pushing = $('discoverable').checked
         ? extHere.then((ext) => (ext ? null : webPushState().then((st) => (st === 'off' ? enableWebPush() : null)))).catch(() => null) : null;
-      const pushAnswered = () => Promise.race([pushing, new Promise((r) => setTimeout(r, 30_000))]);
+      const pushAnswered = async () => {   // their answer, or 15 s; after 1.5 s still open, say where the browser's box is
+        const hint = setTimeout(() => say('One more tap: choose Allow in your browser’s box (top left), so likes reach you on this device.'), 1500);
+        await Promise.race([pushing, new Promise((r) => setTimeout(r, 15_000))]); clearTimeout(hint);
+      };
       $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, watchlist: state.watchlist || [], creators: state.creators, languages: state.languages,
@@ -491,7 +494,7 @@
     // ── Guided first time: three short steps; afterwards the same sections on one page ──
     function setWizard(on) {
       $('form').classList.toggle('wizard', on); $('steps').hidden = !on; $('meter').hidden = on;
-      $('intro').textContent = on ? (wantPublic ? 'Three quick steps, then you’ll see who’s here.' : 'Three quick steps, then you’ll see who’s here. Turn Discover off on step 3 to keep it private.') : 'Private until you turn discovery on. Change anything, any time.';
+      $('intro').textContent = on ? (wantPublic ? 'Three quick steps, then you’ll see who’s here.' : 'Three quick steps, then you’ll see who’s here. Switch off meeting people on step 3 to keep it private.') : 'Private until you turn discovery on. Change anything, any time.';
       // First visit after choosing "meet new people": the fork first, the steps only once they pick "Meet people".
       // ?meet=1: they already chose to meet people (Discover's "Set up my profile", the top bar) — no fork, straight in.
       let chose = new URLSearchParams(location.search).get('meet') === '1'; try { chose = chose || sessionStorage.getItem('herae_fork') === 'meet'; } catch (e) { /* storage blocked */ }
@@ -499,7 +502,7 @@
       // goes to Discover's one-tap switch, since there's nothing left to fill in.
       const gate = new URLSearchParams(location.search).get('gate') === '1';
       const fork = wantPublic && !chose && (on || gate);
-      if (!on) { $('forkMeet').querySelector('small').textContent = 'Your profile is ready — turn on Discover in one tap.'; $('forkMeet').querySelector('.wp-fork-go').textContent = 'Turn it on →'; }
+      if (!on) { $('forkMeet').querySelector('small').textContent = 'Your profile is ready. Start meeting people in one tap.'; $('forkMeet').querySelector('.wp-fork-go').textContent = 'Turn it on →'; }
       document.querySelector('main h1').textContent = fork ? 'Who do you want to watch with?' : 'Your watch profile';
       $('fork').hidden = !fork; $('form').hidden = fork; $('steps').hidden = !on || fork; $('intro').hidden = fork; if (fork) $('blocksSec').hidden = true;
       // The choice is recorded on the account too, so the extension and other devices never ask again (founder 10-24).
@@ -590,10 +593,10 @@
     }
     let replaceAt = null;
     const PV_SHORT = { public: '🌐 Everyone', matches: '🔒 Matches', matches_friends: '🔒 Friends', approved: '🔒 Allowed' };
-    const PV_LONG = { public: 'everyone in Discover', matches: 'only my matches', matches_friends: 'my matches and friends', approved: 'only people I allow' };
+    const PV_LONG = { public: 'everyone meeting people on Herae', matches: 'only my matches', matches_friends: 'my matches and friends', approved: 'only people I allow' };
     async function photoPrivacy(p, i) {
       const dlg = document.createElement('dialog'); dlg.className = 'h-dialog'; document.body.append(dlg);
-      const opts = [['', 'My general setting', 'What you chose in step 3'], ['public', 'Everyone in Discover', 'Shown on your card to adults who are also looking'], ['matches', 'Only my matches', ''], ['matches_friends', 'My matches and friends', ''], ['approved', 'Only people I allow', 'Allow someone from your chat with them']];
+      const opts = [['', 'My general setting', 'What you chose in step 3'], ['public', 'Everyone meeting people on Herae', 'Shown on your card to adults who are also looking'], ['matches', 'Only my matches', ''], ['matches_friends', 'My matches and friends', ''], ['approved', 'Only people I allow', 'Allow someone from your chat with them']];
       dlg.innerHTML = `<h2>Who can see photo ${i + 1}</h2><div class="wp-radios" style="margin:var(--h-3) 0"></div><div class="h-row" style="justify-content:flex-end"><button type="button" class="hb hb-quiet">Cancel</button><button type="button" class="hb hb-primary">Save</button></div>`;
       const box = dlg.querySelector('.wp-radios');
       for (const [v, t, sub] of opts) { const l = document.createElement('label'); l.innerHTML = `<input type="radio" name="pv1" value="${v}"> <span>${t}${sub ? `<br><span class="faint">${sub}</span>` : ''}</span>`; if ((p.visibility || '') === v) l.querySelector('input').checked = true; box.append(l); }

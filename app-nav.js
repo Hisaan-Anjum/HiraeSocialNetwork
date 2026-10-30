@@ -23,11 +23,11 @@
   refresh();
   const at = (p, h) => page === p && (!h || hash === h || (h === 'discover' && !hash));
   const TOP = [['Home', 'memories.html', 'home', () => /^(memories|movie|post|review|session|search)\.html$/.test(page)],
-    ['Watch buddies', 'social.html#discover', 'discover', () => page === 'social.html' && hash !== 'friends'],
-    ['Friends', 'contacts.html', 'friends', () => page === 'contacts.html' || at('social.html', 'friends') || page === 'user.html']];   // Parties lives under Watch buddies
-  const BOTTOM = [['Home', 'memories.html', 'home', TOP[0][3]], ['Discover', 'social.html#discover', 'discover', () => at('social.html', 'discover') || at('social.html', 'matches') || at('social.html', 'parties')],
+    ['People', 'social.html#discover', 'discover', () => page === 'social.html' && hash !== 'friends'],
+    ['Friends', 'contacts.html', 'friends', () => page === 'contacts.html' || at('social.html', 'friends') || page === 'user.html']];   // Watch parties live under People
+  const BOTTOM = [['Home', 'memories.html', 'home', TOP[0][3]], ['People', 'social.html#discover', 'discover', () => at('social.html', 'discover') || at('social.html', 'matches') || at('social.html', 'parties')],
     ['Chats', 'social.html#chats', 'chats', () => at('social.html', 'chats')], ['Friends', 'contacts.html', 'friends', TOP[2][3]],
-    ['Me', 'watch-profile.html', 'me', () => /^(watch-profile|billing|upgrade|refer)\.html$/.test(page)]];
+    ['Profile', 'watch-profile.html', 'me', () => /^(watch-profile|billing|upgrade|refer)\.html$/.test(page)]];
 
   const css = `
   body.has-app-nav > .topbar, body.has-app-nav > header.h-topbar, body.has-app-nav .topbar:not(.an-top) { display: none !important; }
@@ -77,7 +77,7 @@
     body.has-app-nav.in-thread .an-bottom { display: none; } body.has-app-nav.in-thread { padding-bottom: 0; }
   }
   @media (max-width: 760px) {
-    .an-links { display: none; } .an-top { height: 56px; } .an-connect { top: 56px; font-size: 13px; padding: 8px 12px; }
+    .an-links { display: none; } .an-top { height: 56px; } .an-connect { font-size: 13px; padding: 8px 12px; }   /* no top offset (10-30): left from the sticky days, it slid every banner 56 px down onto the tab row */
     .an-bottom { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
       background: rgba(15, 23, 42, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(148, 163, 184, .16); }
     .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #94A3B8; font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
@@ -158,14 +158,14 @@
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
       invite_first: ['Your first night is two steps away: add Herae to Chrome, then send your person your link.', 'Show me', 'memories.html'],
       no_profile: ['Find someone to watch with tonight — set up your profile in a minute.', 'Set up', 'watch-profile.html?start=public&meet=1'],
-      discovery_off: ['Your profile is ready — turn on Discover to meet people who love the same films.', 'Turn it on', 'social.html#discover'],
-      browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} in Discover.`, 'See who', 'social.html#discover']
-        : ['You’re in Discover. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
+      discovery_off: ['Your profile is ready. Start meeting people who love the same films.', 'Start', 'social.html#discover'],
+      browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} on Herae now.`, 'See who', 'social.html#discover']
+        : ['You’re meeting people. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
       liked: [`${st.likedBy === 1 ? 'Someone wants' : `${st.likedBy} people want`} to watch with you. Say yes back and you’re matched.`, 'See who', 'social.html#discover'],
       say_hi: [`You have ${st.unchatted === 1 ? 'a match' : st.unchatted + ' matches'} waiting for a hello.`, 'Say hi', 'social.html#matches'],
       matched: ['Ready to watch? Suggest a film to your match.', 'Open chats', 'social.html#chats'],
       // Persistent (founder 10-22): even someone with a partner always has one tap to more people to watch with.
-      connected: ['Find someone new to watch with — people who love the same films are in Discover.', 'Find someone', 'social.html#discover'],
+      connected: ['Find someone new to watch with: people who love the same films are here.', 'Find someone', 'social.html#discover'],
       founding: ['Founding price until 31 October: a whole year of Herae for both of you for $29 (less in some countries), and it stays that price while you keep it.', 'See the offer', 'upgrade.html?utm_source=app&utm_medium=founding_bar'],
     }[step];
     if (!MSG) return;

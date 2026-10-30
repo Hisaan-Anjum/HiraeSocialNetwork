@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>People — Herae</title>
+<title>Find someone to watch with — Herae</title>
 <meta name="robots" content="noindex">
 <meta name="herae-memories-site" content="1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -22,8 +22,10 @@
     /* phones: the global bottom bar is the main nav; these become a row of pills under the header */
     .s-tabs { top: 56px; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--h-line); }
     .s-tabs::-webkit-scrollbar { display: none; }
-    .s-tabs { gap: 6px; padding: 10px 12px; }
-    .s-tab { min-height: 36px; padding: 0 12px; border: 1px solid var(--h-line-strong); border-radius: 999px; font-size: 14px; }
+    /* "Watch parties" (10-30) made the row wider than a 390 px phone: tighter pills fit it there; narrower phones scroll,
+       and the fade at the right edge says so instead of a pill cut in half. */
+    .s-tabs { gap: 4px; padding: 10px 10px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent); }
+    .s-tab { min-height: 36px; padding: 0 10px; border: 1px solid var(--h-line-strong); border-radius: 999px; font-size: 13.5px; }
     .s-tab[aria-selected="true"] { background: #F8FAFC; color: #0F172A; border-color: #F8FAFC; }
     main.h-page { padding-bottom: 96px; }
   }
@@ -223,11 +225,11 @@
     <a class="hb hb-quiet" href="watch-profile.html">Profile &amp; privacy</a>
   </header>
   <nav class="s-tabs" role="tablist" aria-label="People">
-    <button class="s-tab" role="tab" id="t-discover" aria-controls="v-discover" data-tab="discover">Discover</button>
+    <button class="s-tab" role="tab" id="t-discover" aria-controls="v-discover" data-tab="discover">New people</button>
     <button class="s-tab" role="tab" id="t-matches" aria-controls="v-matches" data-tab="matches">Matches<span class="s-badge" id="b-matches" hidden></span></button>
     <button class="s-tab" role="tab" id="t-chats" aria-controls="v-chats" data-tab="chats">Chats<span class="s-badge" id="b-chats" hidden></span></button>
     <button class="s-tab" role="tab" id="t-friends" aria-controls="v-friends" data-tab="friends" hidden>Friends<span class="s-badge" id="b-friends" hidden></span></button>
-    <button class="s-tab" role="tab" id="t-parties" aria-controls="v-parties" data-tab="parties">Parties</button>
+    <button class="s-tab" role="tab" id="t-parties" aria-controls="v-parties" data-tab="parties">Watch parties</button>
   </nav>
   <main class="h-page" id="main">
     <section id="v-discover" role="tabpanel" aria-labelledby="t-discover" hidden></section>
@@ -380,20 +382,20 @@
       // First visit: a tutorial card leads the deck (founder 10-23: "the tutorial card should just be the tutorial") —
       // swiping or tapping it only dismisses it; it is never a person.
       let coached = true; try { coached = !!localStorage.getItem('hz_swipe_coach'); } catch (e) { /* storage blocked: no tutorial */ }
-      if (!coached && deck.length && !first) deck.unshift({ tutorial: true, username: '__tutorial', name: 'How Discover works' });   // an emailed card comes first
+      if (!coached && deck.length && !first) deck.unshift({ tutorial: true, username: '__tutorial', name: 'How it works' });   // an emailed card comes first
       if (r.reason === 'not_discoverable') {
         // One tap to go live, right here (founder 10-23: a finished profile must never be sent back to "set up").
         const prof = await apiRequest('/api/profile/watch').then((x) => x.profile).catch(() => null);
         const ready = prof && prof.exists && prof.gender && ((prof.genres || []).length || (prof.favorite_titles || []).length || (prof.watchlist || []).length);
-        const go = el('button', { type: 'button', class: 'hb hb-primary' }, 'Turn on Discover');
+        const go = el('button', { type: 'button', class: 'hb hb-primary' }, 'Start meeting people');
         const age = el('p', { class: 'muted', style: 'font-size:13px;margin:0' }, 'By turning it on, you confirm you’re 18 or older.');
         go.onclick = async () => {
           go.setAttribute('aria-busy', 'true');
-          try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discoverable: true, ...(prof && prof.adult_confirmed_at ? {} : { confirm_adult: true }) }) }); toast('You’re in Discover.'); renderDiscover(); }
+          try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discoverable: true, ...(prof && prof.adult_confirmed_at ? {} : { confirm_adult: true }) }) }); toast('You’re in. People with your taste can see you now.'); renderDiscover(); }
           catch (e) { go.removeAttribute('aria-busy'); toast(e.message || 'Could not turn it on.'); }
         };
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
-          el('p', {}, ready ? 'Your profile is ready. Turn on Discover to see people with similar taste, and to be seen by them. Nobody can message you until you both say yes.'
+          el('p', {}, ready ? 'Your profile is ready. Start meeting people to see who shares your taste, and to be seen by them. Nobody can message you until you both say yes.'
             : 'Tell Herae what you love to watch (it takes about a minute), then you’ll see people with similar taste. Nobody can message you until you both say yes.'),
           ready ? (prof.adult_confirmed_at ? null : age) : null,
           ready ? go : el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile')));
@@ -487,7 +489,7 @@
       return card;
     }
     function tutorialCard(behind) {
-      return el('article', behind ? { class: 'd-card behind', 'aria-hidden': 'true' } : { class: 'd-card enter d-tut', tabindex: '0', 'aria-label': 'How Discover works' },
+      return el('article', behind ? { class: 'd-card behind', 'aria-hidden': 'true' } : { class: 'd-card enter d-tut', tabindex: '0', 'aria-label': 'How it works' },
         el('div', { class: 'd-art', 'aria-hidden': 'true' }), el('div', { class: 'd-shade' }),
         el('div', { class: 'd-tut-in' }, el('span', { class: 'd-badge hot' }, svgEl(ICON.spark), 'How it works'),
           el('h2', {}, 'Who would you watch with?'),
@@ -515,7 +517,7 @@
     }
     // Everything on their profile, for the ˄ button.
     function details(c) {
-      if (c.tutorial) { dialog('How Discover works', [el('p', {}, 'Each card is someone who loves films like you do. Swipe right (or ♥) if you’d watch with them, left (or ✕) to skip. If you both say yes, it’s a match and you can chat and pick a film. Nobody can message you before that.')], [['Got it', 'hb-primary', true]]); return; }
+      if (c.tutorial) { dialog('How it works', [el('p', {}, 'Each card is someone who loves films like you do. Swipe right (or ♥) if you’d watch with them, left (or ✕) to skip. If you both say yes, it’s a match and you can chat and pick a film. Nobody can message you before that.')], [['Got it', 'hb-primary', true]]); return; }
       const dl = el('dl', { class: 'd-meta' });
       const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
       add('Why you’re seeing them', (c.why || []).join(' · ')); add('About', c.bio);
@@ -575,7 +577,9 @@
         const go = el('button', { type: 'button', class: 'an-connect-cta', onclick: async () => { go.disabled = true; const ok = await enableWebPush(); if (ok) { bar.remove(); toast('Done. You’ll get a notification on this device.'); } else pushBar(text); } }, 'Turn on');
         bar.append(go);
       }
-      bar.append(no); document.body.prepend(bar); trackEvent('web_push', { action: st === 'off' ? 'shown' : 'blocked_shown' });
+      bar.append(no);
+      const head = document.querySelector('.an-top'); if (head) head.after(bar); else document.body.prepend(bar);   // under the header, like app-nav's banners
+      trackEvent('web_push', { action: st === 'off' ? 'shown' : 'blocked_shown' });
     }
     // "It's a match!" — both faces, a heartbeat, confetti; one tap to say hi.
     function matchMoment(c, conversationId) {
@@ -625,8 +629,8 @@
       let r; try { r = await apiRequest('/api/discover/matches'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       if (!r.matches.length) {
         v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Your matches land here'),
-          el('p', {}, 'When you and someone in Discover both want to watch together, you’ll see them here and can say hi.'),
-          el('a', { class: 'hb hb-primary', href: '#discover' }, 'Go to Discover')));
+          el('p', {}, 'When you and someone you found here both want to watch together, you’ll see them here and can say hi.'),
+          el('a', { class: 'hb hb-primary', href: '#discover' }, 'Find people')));
         return;
       }
       // New ones first, as faces (one tap = say hi); then everyone, as a list.
@@ -877,7 +881,7 @@
     }
 
     async function unmatchWith(other, name = other) {
-      const ok = await dialog(`Unmatch ${name}?`, el('p', { class: 'muted' }, 'You won’t be able to message each other or match again through Discover. The messages so far stay visible to each of you. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Unmatch', 'hb-danger', true]]);
+      const ok = await dialog(`Unmatch ${name}?`, el('p', { class: 'muted' }, 'You won’t be able to message each other or match again. The messages so far stay visible to each of you. This doesn’t block them.'), [['Cancel', 'hb-quiet', false], ['Unmatch', 'hb-danger', true]]);
       if (!ok) return;
       const r = await apiRequest('/api/discover/matches'); const m = r.matches.find((x) => x.person.username === other);
       if (m) await apiRequest(`/api/discover/matches/${m.id}/unmatch`, { method: 'POST' });
@@ -954,7 +958,7 @@
     }
     async function renderParty(id, token) {
       const v = $('v-parties'); v.innerHTML = '';
-      const back = el('a', { class: 'hb hb-quiet', href: '#parties' }, '← Parties');
+      const back = el('a', { class: 'hb hb-quiet', href: '#parties' }, '← Watch parties');
       let p; try { p = (await apiRequest(`/api/parties/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`)).party; }
       catch (e) { v.append(back, el('p', { class: 'h-empty' }, 'This party isn’t available. The link may have changed, or it has ended.')); return; }
       const act = async (path, body, done) => { try { await apiRequest(`/api/parties/${id}${path}`, { method: 'POST', body: JSON.stringify(body || {}) }); if (done) toast(done); renderParty(id, token); }
