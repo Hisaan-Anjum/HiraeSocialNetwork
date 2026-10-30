@@ -29,6 +29,13 @@
     .s-tab[aria-selected="true"] { background: #F8FAFC; color: #0F172A; border-color: #F8FAFC; }
     main.h-page { padding-bottom: 96px; }
   }
+  /* Film Night (10-30) */
+  .fn-box { border: 1px solid var(--h-line-strong); border-radius: 16px; padding: 16px; margin: var(--h-4) 0; text-align: left; background: linear-gradient(135deg, rgba(99, 102, 241, .14), rgba(236, 72, 153, .08)); }
+  .fn-box h2 { margin: 0 0 4px; }
+  .fn-box > p { margin: 0 0 8px; font-size: var(--h-size-sm); }
+  .fn-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--h-line); }
+  .fn-row .hb { flex: none; }
+  .fn-alone { border: 1px dashed var(--h-line-strong); border-radius: 12px; padding: 12px 14px; }
   /* deck */
   #v-discover { overflow-x: clip; }   /* a card mid-swipe must not make the page scroll sideways */
   /* ── Discover: one tall card at a time, Tinder-style (founder 10-22: "beautiful, elegant, modern, addictive") ── */
@@ -305,6 +312,12 @@
     const atLeast = (v, min) => { const a = v.split('.').map(Number); const b = min.split('.').map(Number);
       for (let i = 0; i < 3; i++) if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0); return true; };
     async function needExtension(why) {
+      // A phone can't add the extension: no "Add to Chrome" that goes nowhere, and a way to carry on from the computer.
+      if (/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent)) {
+        const copy = await dialog('Watching runs on a computer', el('p', { class: 'muted' }, 'Herae plays the film in Chrome on a laptop or desktop. Open this page there, signed in with this account.'), [['Not now', 'hb-quiet', false], ['Copy this page’s link', 'hb-primary', true]]);
+        if (copy) { try { await navigator.clipboard.writeText(location.href); toast('Link copied. Open it on your computer.'); } catch (e) { prompt('Copy this link:', location.href); } }
+        return;
+      }
       const go = await dialog('Herae needs to be in Chrome on this computer', el('p', { class: 'muted' }, why), [['Not now', 'hb-quiet', false], ['Add Herae to Chrome', 'hb-primary', true]]);
       if (go) window.open('https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=social', '_blank', 'noopener');
     }
@@ -434,11 +447,12 @@
           } else if (st === 'on') { fine.hidden = true; hero.append(el('p', { class: 'dz-empty-on' }, '✓ Notifications on')); if (widenBtn) hero.append(widenBtn); }
           else fallback();   // blocked or unsupported (iPhone Safari): email is the channel
         }).catch(fallback);
+        const fnSlot = el('div'); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
         const link = (href, text) => el('a', { href, class: 'dz-empty-link' }, text);
         v.append(el('div', { class: 'h-empty h-stack dz-empty' },
           el('h2', {}, 'You’re in.'),
           el('p', { class: 'dz-empty-lede' }, 'We’ll ping you the moment someone who loves your films joins.'),
-          hero,
+          hero, fnSlot,
           el('div', { class: 'dz-empty-wait' }, el('span', { class: 'muted' }, 'While you wait'),
             el('div', { class: 'dz-empty-links' }, partyLink, link('contacts.html', 'Invite someone you know'), link('watch-profile.html', 'Add films to your profile'))),
           fine,
@@ -918,11 +932,30 @@
         el('div', { class: 'sub' }, [p.filmTitle ? `🎬 ${p.filmTitle}` : '', `${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
           p.startsAt ? when(p.startsAt) : '', p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
       el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));
+    // Film Night (film-night.js): the fixed place and time to find someone, shown wherever the page would otherwise be
+    // empty (founder 10-30: zero dead ends). Times read in the viewer's own zone.
+    async function filmNightCards() {
+      let r; try { r = await apiRequest('/api/parties/film-nights'); } catch (e) { return null; }
+      if (!r.nights.length) return null;
+      const box = el('section', { class: 'fn-box', 'aria-label': 'Film Night' }, el('h2', {}, 'Film Night'),
+        el('p', { class: 'muted' }, 'Every Friday: one free film, with anyone who loves films. No subscription needed.'));
+      r.nights.forEach((n) => {
+        const city = n.title.split('·').pop().trim();
+        const local = new Date(n.startsAt.replace(' ', 'T') + 'Z').toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
+        const go = !r.canJoin ? el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile')
+          : n.joined ? el('a', { class: 'hb hb-secondary', href: `#parties/${n.id}` }, 'You’re in')
+          : el('button', { type: 'button', class: 'hb hb-primary', onclick: async (e) => { e.target.disabled = true; try { await apiRequest(`/api/parties/${n.id}/join`, { method: 'POST', body: '{}' }); location.hash = `parties/${n.id}`; } catch (err) { e.target.disabled = false; toast(err.message || 'Could not join.'); } } }, 'Join');
+        box.append(el('div', { class: 'fn-row' }, el('div', { class: 'row-main' }, el('strong', {}, n.filmTitle),
+          el('div', { class: 'sub' }, `${local} · 8 pm in ${city}${n.members ? ` · ${n.members} in` : ''}`)), go));
+      });
+      return box;
+    }
     async function renderParties(id, token) {
       if (id) return renderParty(Number(id), token);
       const v = $('v-parties'); v.innerHTML = '';
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between;flex-wrap:wrap' }, el('h1', {}, 'Watch parties'),
         el('button', { type: 'button', class: 'hb hb-primary', onclick: () => editParty() }, 'Start a party')));
+      const fnSlot = el('div'); v.append(fnSlot); filmNightCards().then((c) => { if (c) fnSlot.append(c); });
       let mine; try { mine = await apiRequest('/api/parties/mine'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       v.append(el('h2', { style: 'margin-top:var(--h-5)' }, 'Your parties'));
       if (mine.parties.length) { const ul = el('ul', { class: 'h-list' }); mine.parties.forEach((p) => ul.append(partyRow(p))); v.append(ul); }
@@ -957,13 +990,13 @@
       const v = $('v-parties'); v.innerHTML = '';
       const back = el('a', { class: 'hb hb-quiet', href: '#parties' }, '← Watch parties');
       let p; try { p = (await apiRequest(`/api/parties/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`)).party; }
-      catch (e) { v.append(back, el('p', { class: 'h-empty' }, 'This party isn’t available. The link may have changed, or it has ended.')); return; }
+      catch (e) { v.append(back, el('p', { class: 'h-empty' }, 'This party isn’t available. The link may have changed, or it has ended.'), el('p', {}, el('a', { class: 'hb hb-primary', href: '#parties' }, 'See what’s on'), ' ', el('a', { class: 'hb hb-quiet', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile'))); return; }
       const act = async (path, body, done) => { try { await apiRequest(`/api/parties/${id}${path}`, { method: 'POST', body: JSON.stringify(body || {}) }); if (done) toast(done); renderParty(id, token); }
         catch (e) { toast(e.message || 'Could not do that.'); renderParty(id, token); } };
-      const mod = p.access === 'moderator'; const inside = mod || p.access === 'member';
+      const mod = p.access === 'moderator'; const inside = mod || p.access === 'member'; const team = p.owner === 'herae';
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between' }, back,
-        p.role === 'owner' ? null : moreMenu([['Report this party', () => reportPerson(p.owner, 'party', String(p.id))], ['Block the host', async () => { if (await blockPerson(p.owner)) location.hash = 'parties'; }, true]])));
-      v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private', p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · ')));
+        p.role === 'owner' || team ? null : moreMenu([['Report this party', () => reportPerson(p.owner, 'party', String(p.id))], ['Block the host', async () => { if (await blockPerson(p.owner)) location.hash = 'parties'; }, true]])));
+      v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${team ? 'the Herae team' : p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private', p.startsAt ? when(p.startsAt) : ''].filter(Boolean).join(' · ')));
       if (p.filmTitle || p.filmUrl) v.append(el('p', { class: 'p-film' }, '🎬 ', p.filmTitle || 'The film', p.filmUrl ? el('a', { href: p.filmUrl, target: '_blank', rel: 'noopener noreferrer', style: 'margin-left:8px' }, 'Open it ↗') : null));
       if (p.description) v.append(el('p', {}, p.description));
       const actions = el('div', { class: 'h-row', style: 'flex-wrap:wrap;margin:var(--h-4) 0' }); v.append(actions);
@@ -989,8 +1022,23 @@
         if (!ack.handled) return needExtension('Herae didn’t answer. Make sure it’s added to Chrome and you’re signed in with this account.');
         toast(ack.error || okText);
       };
-      if (p.role !== 'owner' && p.hostWatching) actions.prepend(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => partyHandOff({ target: p.owner, mode: 'join' }, `Asked ${p.owner} to let you in. When they do, Herae asks you to confirm — keep its window open.`) }, 'Join the watch'));
-      if (p.role !== 'owner' && !p.hostWatching) actions.append(el('span', { class: 'muted', style: 'font-size:var(--h-size-sm)' }, `${p.owner} hasn’t started watching yet.`));
+      if (team) {
+        // Film Night has no host at the door: join whoever's watching, else start with whoever's here, else say what
+        // happens next and offer a way to bring someone (founder 10-30: zero dead ends). The page keeps itself current.
+        const film = p.filmUrl ? { url: p.filmUrl } : {};
+        const watching = p.watching || []; const online = p.online || [];
+        if (watching.length) actions.prepend(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => partyHandOff({ target: watching[0], mode: 'join' }, `Asked ${watching[0]} to let you in. When they do, Herae asks you to confirm.`) }, `Ask to join ${watching[0]}`));
+        else if (online.length) actions.prepend(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => partyHandOff({ target: online[0], title: p.title, ...film }, `Inviting ${online[0]}… Herae is opening for you.`) }, `Start watching with ${online[0]}`));
+        else {
+          const others = p.members - 1;
+          const link = `${location.origin}${location.pathname}#parties/${p.id}`;
+          v.append(el('div', { class: 'fn-alone' }, el('p', { style: 'margin:0 0 8px' }, others > 0 ? `${others} other ${others === 1 ? 'person is' : 'people are'} in, not online right now. This page updates by itself, and we’ll notify you an hour before it starts.` : 'You’re the first one in. This page updates by itself, and we’ll notify you an hour before it starts.'),
+            el('button', { type: 'button', class: 'hb hb-secondary', onclick: async () => { try { await navigator.clipboard.writeText(link); toast('Link copied. Send it to someone who loves films.'); } catch (e) { prompt('Copy this link:', link); } } }, 'Bring a friend')));
+          setTimeout(() => { if (location.hash.replace(/^#/, '').split('/').slice(0, 2).join('/') === `parties/${id}` && !document.querySelector('dialog[open]')) renderParty(id, token); }, 30000);
+        }
+      }
+      if (!team && p.role !== 'owner' && p.hostWatching) actions.prepend(el('button', { type: 'button', class: 'hb hb-primary', onclick: () => partyHandOff({ target: p.owner, mode: 'join' }, `Asked ${p.owner} to let you in. When they do, Herae asks you to confirm — keep its window open.`) }, 'Join the watch'));
+      if (!team && p.role !== 'owner' && !p.hostWatching) actions.append(el('span', { class: 'muted', style: 'font-size:var(--h-size-sm)' }, `${p.owner} hasn’t started watching yet.`));
       if (p.role !== 'owner') actions.append(el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => {
         if (await dialog(`Leave ${p.title}?`, el('p', { class: 'muted' }, 'You can come back with the invite link while there’s room.'), [['Stay', 'hb-quiet', false], ['Leave', 'hb-danger', true]])) { await act('/leave'); location.hash = 'parties'; } } }, 'Leave party'));
       if (mod) {
@@ -1016,6 +1064,9 @@
           if (p.role === 'owner') items.push(p.hostWatching
             ? ['Add to my watch', () => partyHandOff({ target: m.username, mode: 'add', title: p.title }, `Invited ${m.username} into your watch.`)]
             : ['Start watching with them', () => partyHandOff({ target: m.username, title: p.title }, `Inviting ${m.username}… Herae is opening for you.`)]);
+          if (team) items.push((p.watching || []).includes(m.username)
+            ? ['Ask to join them', () => partyHandOff({ target: m.username, mode: 'join' }, `Asked ${m.username} to let you in. When they do, Herae asks you to confirm.`)]
+            : ['Start watching with them', () => partyHandOff({ target: m.username, title: p.title, ...(p.filmUrl ? { url: p.filmUrl } : {}) }, `Inviting ${m.username}… Herae is opening for you.`)]);
           if (p.role === 'owner' && m.role !== 'owner') items.push([m.role === 'moderator' ? 'Remove as moderator' : 'Make moderator', () => act(`/moderators/${m.username}`, { moderator: m.role !== 'moderator' })]);
           if (mod && m.role !== 'owner' && (p.role === 'owner' || m.role === 'member')) items.push([`Remove from party`, async () => {
             if (await dialog(`Remove ${m.username}?`, el('p', { class: 'muted' }, 'They leave the party and can’t come back with the link or by asking.'), [['Cancel', 'hb-quiet', false], ['Remove', 'hb-danger', true]])) act(`/members/${m.username}/remove`, null, `${m.username} removed.`); }, true]);

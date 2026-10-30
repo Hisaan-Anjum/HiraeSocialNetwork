@@ -58,7 +58,7 @@
   .an-connect { position: relative; z-index: 45;   /* not sticky (10-28): stuck at the same top as the Discover tabs, it covered them on phones */ display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
     background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 600 14px/1.35 var(--font-sans, system-ui); }
   .an-connect span { flex: 1; }
-  .an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
@@ -150,6 +150,7 @@
     const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
     x.onclick = () => bar.remove(); bar.append(x);
     const head = document.querySelector('.an-top'); if (head) head.after(bar); else document.body.prepend(bar);
+    const browse = document.querySelector('.an-connect[data-step="browse"]'); if (browse) browse.remove();   // see connectBanner: one bar, not two
     if (typeof trackEvent === 'function') trackEvent('web_push', { action: state === 'off' ? 'shown' : 'blocked_shown' });
   }
   // "Connect fast" (founder 2026-10-22): until someone has a person to watch with, every app page shows the ONE next
@@ -199,7 +200,8 @@
     try { if (Date.now() - Number(localStorage.getItem(key) || 0) < 3600e3) return; } catch (e) { /* storage blocked: still show */ }   // "hide" lasts an hour, then it's back
     const [hPathQ, hTab] = href.split('#'); const hPath = hPathQ.split('?')[0]; const curTab = (location.hash.slice(1) || (hPath === 'social.html' ? 'discover' : '')).split('/')[0];
     if (location.pathname.endsWith(hPath) && (!hTab || curTab === hTab)) return;   // already there (#discover/<someone> is still Discover)
-    const bar = document.createElement('div'); bar.className = 'an-connect'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
+    if (step === 'browse' && document.getElementById('pushBar')) return;   // one bar on a phone: nothing to act on here, and notifications matter more
+    const bar = document.createElement('div'); bar.className = 'an-connect'; bar.dataset.step = step; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
     bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
     bar.querySelector('span').textContent = text; const a = bar.querySelector('a'); a.textContent = cta; a.href = href;
     const track = (action) => { if (typeof trackEvent === 'function') trackEvent('connect_nudge', { step, action }); };
