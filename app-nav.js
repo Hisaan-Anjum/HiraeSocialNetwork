@@ -127,10 +127,36 @@
     badges(); setInterval(badges, 60000);
     connectBanner();
   }
+  // Founder 10-30: anyone with a matching profile whose device can't get notifications sees this on every app page until
+  // they're on; ✕ hides it for this page only. Never where the extension runs (it notifies there; both would double).
+  async function pushBanner(st) {
+    if (!st || !st.matching || typeof webPushState !== 'function' || document.getElementById('pushBar')) return;
+    const ext = await new Promise((resolve) => {
+      const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(true); } };
+      window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
+    });
+    const state = ext ? 'ext' : await webPushState().catch(() => 'unsupported');
+    if ((state !== 'off' && state !== 'blocked') || document.getElementById('pushBar')) return;
+    const bar = document.createElement('div'); bar.className = 'an-connect'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
+    const text = document.createElement('span');
+    text.textContent = state === 'off' ? 'Turn on notifications so you know the moment someone likes you back.'
+      : 'Notifications are blocked for Herae in this browser. Open the site settings (the icon left of the address), set Notifications to Allow, then reload.';
+    bar.append(text);
+    if (state === 'off') {
+      const go = document.createElement('button'); go.type = 'button'; go.className = 'an-connect-cta'; go.textContent = 'Turn on';
+      go.onclick = async () => { go.disabled = true; const ok = await enableWebPush(); bar.remove(); if (!ok) pushBanner(st); };
+      bar.append(go);
+    }
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
+    x.onclick = () => bar.remove(); bar.append(x);
+    const head = document.querySelector('.an-top'); if (head) head.after(bar); else document.body.prepend(bar);
+    if (typeof trackEvent === 'function') trackEvent('web_push', { action: state === 'off' ? 'shown' : 'blocked_shown' });
+  }
   // "Connect fast" (founder 2026-10-22): until someone has a person to watch with, every app page shows the ONE next
   // step for where they are. Dismissing hides it for an hour; it is always there for everyone (founder 10-22: persistent).
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
+    pushBanner(st);
     // Nobody in between (founder 10-23): no partner and no profile → the choice, from every app page.
     // "Someone I already know" (the fork) holds off the choice for an hour — the server holds 3 days once an invite went out.
     let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 36e5; } catch (e) { /* storage blocked */ }

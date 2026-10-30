@@ -378,7 +378,6 @@
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       deck = r.cards; likedYou = r.likedYou || 0; widen = r.widen || 0; v.innerHTML = '';
-      if (!r.reason && deck.length) pushBar('Turn on notifications so you know the moment someone likes you back.');   // the empty Discover asks in its own hero
       // First visit: a tutorial card leads the deck (founder 10-23: "the tutorial card should just be the tutorial") —
       // swiping or tapping it only dismisses it; it is never a person.
       let coached = true; try { coached = !!localStorage.getItem('hz_swipe_coach'); } catch (e) { /* storage blocked: no tutorial */ }
@@ -560,11 +559,9 @@
         toast(`Your yes to ${c.name} didn't send${e && e.message ? ` (${e.message})` : ''}. Tap ♥ again.`);
       }
     }
-    // Founder 10-30: anyone using matching gets notifications on this device — asked on every Discover visit until on
-    // (✕ hides it for this visit only), so likes and matches reach them even when our email lands in Promotions. Not on
-    // a device with the extension: it already notifies there, and both would double every alert.
+    // After a yes: app-nav's notifications bar (every app page, founder 10-30) asks about THIS person instead. Not on a
+    // device with the extension: it already notifies there, and both would double every alert.
     async function pushBar(text) {
-      try { if (sessionStorage.getItem('hz_push_bar_x')) return; } catch (e) { /* storage blocked: still ask */ }
       if (await extVersion) return;
       const st = await webPushState().catch(() => 'unsupported');
       if (st !== 'off' && st !== 'blocked') return;   // on, or no push here (iPhone Safari outside a home-screen app): email
@@ -572,7 +569,7 @@
       const bar = el('div', { class: 'an-connect', id: 'pushBar', role: 'region', 'aria-label': 'Notifications' },
         el('span', {}, st === 'off' ? text
           : 'Notifications are blocked for Herae in this browser. Open the site settings (the icon left of the address), set Notifications to Allow, then reload.'));
-      const no = el('button', { type: 'button', class: 'an-connect-x', 'aria-label': 'Not now', onclick: () => { bar.remove(); try { sessionStorage.setItem('hz_push_bar_x', '1'); } catch (e) { /* fine */ } } }, '✕');
+      const no = el('button', { type: 'button', class: 'an-connect-x', 'aria-label': 'Hide for now', onclick: () => bar.remove() }, '✕');
       if (st === 'off') {
         const go = el('button', { type: 'button', class: 'an-connect-cta', onclick: async () => { go.disabled = true; const ok = await enableWebPush(); if (ok) { bar.remove(); toast('Done. You’ll get a notification on this device.'); } else pushBar(text); } }, 'Turn on');
         bar.append(go);
