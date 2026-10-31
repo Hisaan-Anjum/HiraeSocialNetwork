@@ -687,7 +687,7 @@
     let liveUp = false, onLive = null, liveDelay = 2000;
     (function live() {
       const auth = getAuth(); if (!auth || !auth.token) return;
-      let ws; try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?role=site&token=${encodeURIComponent(auth.token)}`); } catch (e) { return; }
+      let ws; try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?role=site`, ['herae.v1', `tok.${auth.token}`]); } catch (e) { return; }
       ws.onopen = () => { liveUp = true; liveDelay = 2000; };
       ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (err) { return; } if (onLive) onLive(m); if (/^chat_message|^match$|^social_news$/.test(m.type)) refreshBadges(); };
       ws.onclose = (e) => { liveUp = false; if (e.code === 4001) return; setTimeout(live, liveDelay); liveDelay = Math.min(liveDelay * 2, 60000); };
