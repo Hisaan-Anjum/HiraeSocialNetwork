@@ -252,7 +252,7 @@ async function loadSession() {
   // title already matches something on the list. Entirely optional; the page
   // works exactly as before if they ignore it (or aren't contacts).
   // After a real night (30+ min), ask once for a store rating (ratingAsk.js).
-  mountRatingAsk(document.getElementById('content'), detail);
+  if (!new URLSearchParams(window.location.search).get('rough')) mountRatingAsk(document.getElementById('content'), detail);
 
   mountSessionLink({
     mount: document.getElementById('sessionLinkMount'),
