@@ -40,12 +40,12 @@
     <article class="legal-doc">
       <div class="legal-eyebrow">Privacy</div>
       <h1>Privacy Policy</h1>
-      <div class="legal-updated">Last updated: 26 October 2026</div>
+      <div class="legal-updated">Last updated: 31 October 2026</div>
 
       <p class="legal-lede">Herae is an intimate product — it's where you keep movie nights, voice and video calls, and the little memories you make with the people closest to you. This policy explains, in plain language, exactly what we collect, what we deliberately <em>don't</em>, and why. It is written for how Herae actually works, not from a template.</p>
 
       <div class="legal-callout">
-        <p><strong>The short version.</strong> Your voice and video calls are peer-to-peer and are never recorded or stored by us. Your saved Moments are private by default. We use our own first-party analytics rather than shipping your behavior to third-party ad or tracking companies. We never sell your data.</p>
+        <p><strong>The short version.</strong> Your voice and video calls are encrypted in transit and aren't stored by us. The only recordings are Moments that you or the person you're watching with choose to save, and Herae shows the other person when that's happening. Your saved Moments are private by default. We use our own first-party analytics rather than shipping your behavior to third-party ad or tracking companies. We never sell your data.</p>
       </div>
 
       <h2>1. Who we are</h2>
@@ -82,7 +82,9 @@
 
       <h2>3. What we deliberately do NOT collect</h2>
       <ul>
-        <li><strong>Your calls.</strong> Voice, video, and chat during a session are peer-to-peer (WebRTC), encrypted in transit, and travel directly between participants. We do <strong>not</strong> record, store, or have access to their contents. When a direct connection can't be established, media may be relayed through a TURN server to keep the call working — but it is still end-to-end encrypted and is never stored.</li>
+        <li><strong>Your calls.</strong> Voice, video, and chat during a session are encrypted in transit using WebRTC's standard encryption. We don't store them. They normally travel directly between you and the person you're with, or through a relay server when a direct connection isn't possible; a relay can't read them. This is not end-to-end encryption in the strict sense: the keys are set up through our connection server, so we can't promise the same guarantees as an app built around it, although we don't read or keep your calls.</li>
+        <li><strong>Your IP address and the people you watch with.</strong> A direct connection shows each person's IP address to the other, which can reveal roughly where you are. Calls with friends connect directly. Calls with someone you matched with, or met in a watch party, go through a relay so neither of you sees the other's address. If the relay isn't available, or the other person is on a very old version, the call may connect directly instead so it still works.</li>
+        <li><strong>Moments and recordings.</strong> You or the person you're with can save a photo or a short clip of your time together, which can include both of your cameras and what's on screen. Herae shows the other person on their screen when you start recording, take a photo, or have AI Moments on. AI Moments is off by default, and it analyses video on your own device. Saved Moments are stored on our servers, private by default, and you can delete them.</li>
         <li><strong>Your general browsing.</strong> The extension only acts on the tab where you're actively watching together, to keep playback in sync. It is not a history tracker and does not report the pages you visit on your own. The one exception is described under "Which website a movie night used" above.</li>
         <li><strong>Third-party ad/tracking cookies.</strong> We don't run them. See our <a href="cookies.html">Cookie Policy</a>.</li>
         <li><strong>Payment card details.</strong> Herae is free to start; we don't process card data on our own servers.</li>
@@ -123,9 +125,11 @@
       <h2>9. Your rights &amp; choices</h2>
       <ul>
         <li><strong>Access &amp; correction</strong> — you can view and edit your profile, Moments, reviews, and comments in the app.</li>
+        <li><strong>A copy of your data</strong> — you can download everything we hold about you, as a file, from your profile page. <strong>Download my data</strong> is below your profile.</li>
+        <li><strong>Signing out</strong> — <strong>Sign out everywhere</strong> on your profile ends your sessions on all your devices.</li>
         <li><strong>Deletion</strong> — you can permanently delete your account (see the <a href="account-deletion.html">Account Deletion Policy</a>) or request help at <a href="mailto:privacy@herae.app">privacy@herae.app</a>.</li>
         <li><strong>Content takedown</strong> — see our <a href="takedown.html">Content Removal Policy</a> and <a href="dmca.html">DMCA Policy</a>.</li>
-        <li>Depending on where you live (e.g. the EEA/UK or California), you may have additional rights to access, port, or restrict processing of your data. Email us and we'll help.</li>
+        <li>Depending on where you live (e.g. the EEA/UK or California), you may have additional rights to restrict or object to processing of your data. Email us and we'll help.</li>
       </ul>
 
       <h2>10. Children</h2>

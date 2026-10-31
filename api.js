@@ -629,6 +629,21 @@ function deleteAccount(payload) {
   return apiRequest('/api/me', { method: 'DELETE', body: JSON.stringify(payload || {}) });
 }
 
+// Everything Herae holds about this account, handed over as a file.
+async function downloadMyData() {
+  const data = await apiRequest('/api/me/export');
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = `herae-data-${data.username}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// Ends every session on every device, this one included. Caller clears auth and redirects.
+function signOutEverywhere() {
+  return apiRequest('/api/logout-everywhere', { method: 'POST', body: '{}' });
+}
+
 // ── Contact management ───────────────────────────────────────────────
 // The same three endpoints the extension popup has always used — the site
 // now just drives them too, so there's one contacts system, not two.
