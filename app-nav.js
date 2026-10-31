@@ -166,7 +166,9 @@
     // Already chose (sign-up, the install guide, this site's choice screen — founder 10-24: never ask twice): "meet
     // someone new" goes straight to the profile steps, or Discover's one-tap switch for a saved profile; no choice screen.
     const onDiscover = page === 'social.html';
-    if (st.setupFirst && !skipped && !partyLink && page !== 'watch-profile.html' && !(st.chosen === 'meet' && st.step === 'discovery_off' && onDiscover)) {
+    // Your own profile holds Download my data, Sign out everywhere and Delete account: those are never behind a question.
+    const ownProfile = page === 'user.html' && new URLSearchParams(location.search).get('u') === (getAuth() || {}).username;
+    if (st.setupFirst && !skipped && !partyLink && !ownProfile && page !== 'watch-profile.html' && !(st.chosen === 'meet' && st.step === 'discovery_off' && onDiscover)) {
       location.replace(st.chosen === 'meet' ? (st.step === 'discovery_off' ? 'social.html#discover' : 'watch-profile.html?start=public&meet=1') : 'watch-profile.html?start=public&gate=1');
       return;
     }
