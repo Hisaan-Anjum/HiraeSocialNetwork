@@ -97,6 +97,7 @@
   .wp-skip { display: inline-block; margin: 6px 0 4px; font-size: 14px; color: var(--h-text-3); text-decoration: underline; }
   .wp-adult { margin: 10px 2px 22px; font-size: 13px; color: var(--h-text-2); }
 </style>
+  <link rel="manifest" href="/manifest.webmanifest"><!-- iPhone push needs Home Screen + this (11-01) -->
 </head>
 <body class="h2">
   <header class="h-topbar">
@@ -194,7 +195,6 @@
           <input type="checkbox" id="discoverable" role="switch">
         </div>
         <p class="wp-adult" id="adultNote">By turning this on and saving, you confirm you’re 18 or older.</p>
-        <p class="wp-adult">When you save, your browser asks to allow notifications, so likes and matches reach you on this device.</p>
         <fieldset class="wp-radios" id="showMeSet"><legend>Show me</legend>
           <p class="faint" style="margin:0 0 8px;font-size:13px">Everyone is what people here choose: it’s about the films, and it means more people to watch with.</p>
           <label><input type="radio" name="scope" value="everyone"> <span>Everyone</span></label>
@@ -431,11 +431,6 @@
       if (!canGoLive()) { $('discoverable').checked = false; return; }
       state.discoverable = 1; if (!state.adult_confirmed_at) confirmAdult = true;
     };
-    // Is the extension on this device? It already notifies there; web push as well would double every alert.
-    const extHere = new Promise((resolve) => {
-      const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(true); } };
-      window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
-    });
     $('form').onsubmit = async (e) => {
       e.preventDefault(); pendingAdds.forEach((add) => add());
       // Switched on (by default or by them) but not yet live: go live with this save, if the profile can be.
@@ -444,14 +439,8 @@
         else if (firstTime) return;
         else $('discoverable').checked = false;
       }
-      // Founder 10-30: anyone in matching gets notifications on this device. Started on this tap, before the save, because
-      // the browser only shows its prompt right after a click; the page waits for their answer before moving on.
-      const pushing = $('discoverable').checked
-        ? extHere.then((ext) => (ext ? null : webPushState().then((st) => (st === 'off' ? enableWebPush() : null)))).catch(() => null) : null;
-      const pushAnswered = async () => {   // their answer, or 15 s; after 1.5 s still open, say where the browser's box is
-        const hint = setTimeout(() => say('One more tap: choose Allow in your browser’s box (top left), so likes reach you on this device.'), 1500);
-        await Promise.race([pushing, new Promise((r) => setTimeout(r, 15_000))]); clearTimeout(hint);
-      };
+      // No browser notification box here (founder 11-01): fired cold on save, 5 of 6 said no, and a no is final. app-nav's
+      // red bar asks from its own button on the next page instead.
       $('save').setAttribute('aria-busy', 'true'); say('Saving…');
       try {
         const body = { display_name: state.display_name, genres: state.genres, favorite_titles: state.favorite_titles, watchlist: state.watchlist || [], creators: state.creators, languages: state.languages,
@@ -461,7 +450,7 @@
         const r = await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify(body) });
         state = r.profile; confirmAdult = false; dirty = false; render(); say('Saved.');
         if (pendingVis) { apiRequest('/api/photos/visibility', { method: 'PUT', body: JSON.stringify({ visibility: pendingVis }) }).catch(() => {}); pendingVis = null; }
-        if (firstTime && state.discoverable) { await pushAnswered(); location.href = 'social.html#discover'; return; }   // the quickest path: straight to people
+        if (firstTime && state.discoverable) { location.href = 'social.html#discover'; return; }   // the quickest path: straight to people
         if (firstTime) { firstTime = false; setWizard(false); }
         meter();
         // The next step, right where the person is looking: discovery on → go and see who's here.
