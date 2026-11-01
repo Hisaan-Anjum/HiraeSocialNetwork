@@ -68,6 +68,8 @@
   .an-connect span { flex: 1; }
   .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
+  .an-connect.an-push { background: #B91C1C; flex-wrap: wrap; } .an-connect.an-push button.an-connect-cta { color: #991B1B; }
+  .an-connect.an-push.is-on { background: #15803D; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
      every screen, Chats and Me included (the top tabs only had Home / Watch buddies / Friends). */
@@ -135,32 +137,65 @@
     badges(); setInterval(badges, 60000);
     connectBanner();
   }
-  // Founder 10-30: anyone with a matching profile whose device can't get notifications sees this on every app page until
-  // they're on; ✕ hides it for this page only. Never where the extension runs (it notifies there; both would double).
-  async function pushBanner(st) {
-    if (!st || !st.matching || typeof webPushState !== 'function' || document.getElementById('pushBar')) return;
+  // Founder 11-01 (emergency): people in matching weren't hearing about likes. 1 of 12 had push on; 5 had said no to the
+  // browser's own box, which a cold prompt on profile save fired, and a "no" there is final. So: a red bar at the very top
+  // of every app page, every visit, until this device can notify; ✕ hides it for this page view only. The browser's box
+  // only ever opens from its button (a soft ask first, research 11-01). Blocked → the same button (founder 11-01: a button
+  // that asks again, not long steps): it asks first, since Chrome lifts its own week-long block after repeated closes; only
+  // a real "Block" can't be asked again by any site (Chrome 151 has no <permission> element), and then one line says where.
+  // It turns itself on the moment they allow it (no reload). iPhone → Add to Home Screen (iOS push needs it). Never where the extension runs.
+  const isIos = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const unblockLine = () => (/Android/.test(navigator.userAgent) ? 'Your browser said no. Tap ⋮ → Settings → Site settings → Notifications → Herae → Allow.'
+    : 'Your browser said no. Click the icon left of the address and set Notifications to Allow.');
+  async function pushBanner(st, text) {
+    if (!st || !st.matching || typeof webPushState !== 'function') return;
     const ext = await new Promise((resolve) => {
       const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(true); } };
       window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
     });
-    const state = ext ? 'ext' : await webPushState().catch(() => 'unsupported');
-    if ((state !== 'off' && state !== 'blocked') || document.getElementById('pushBar')) return;
-    const bar = document.createElement('div'); bar.className = 'an-connect'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
-    const text = document.createElement('span');
-    text.textContent = state === 'off' ? 'Turn on notifications so you know the moment someone likes you back.'
-      : 'Notifications are blocked for Herae in this browser. Open the site settings (the icon left of the address), set Notifications to Allow, then reload.';
-    bar.append(text);
+    let state = ext ? 'ext' : await webPushState().catch(() => 'unsupported');
+    if (state === 'unsupported' && isIos && !matchMedia('(display-mode: standalone)').matches) state = 'ios';
+    if (state === 'ext' || state === 'on' || state === 'unsupported') return;
+    const old = document.getElementById('pushBar'); if (old) old.remove();
+    const bar = document.createElement('div'); bar.className = 'an-connect an-push'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
+    const msg = document.createElement('span'); bar.append(msg);
+    const waiting = Number(st.likedBy || 0);
+    const why = text || (waiting ? `${waiting === 1 ? 'Someone likes' : `${waiting} people like`} you on Herae. Turn on notifications so you don’t miss them.`
+      : 'Turn on notifications so you know the moment someone likes you or says hi.');
+    const button = (label, onclick) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'an-connect-cta'; b.textContent = label; b.onclick = onclick; bar.append(b); return b; };
+    const done = () => { bar.classList.add('is-on'); bar.textContent = ''; const s = document.createElement('span'); s.textContent = '✓ Notifications are on. You’ll hear about likes and messages on this device.'; bar.append(s); setTimeout(() => bar.remove(), 4000); };
     if (state === 'off') {
-      const go = document.createElement('button'); go.type = 'button'; go.className = 'an-connect-cta'; go.textContent = 'Turn on';
-      go.onclick = async () => { go.disabled = true; const ok = await enableWebPush(); bar.remove(); if (!ok) pushBanner(st); };
-      bar.append(go);
+      msg.textContent = why;
+      const go = button('Turn on notifications', async () => {
+        go.disabled = true;
+        if (await enableWebPush()) return done();
+        go.disabled = false;
+        if (Notification.permission === 'denied') return pushBanner(st, text);
+        // Closed the box, or Chrome showed only its quiet crossed-out bell in the address bar.
+        msg.textContent = 'Your browser hid the question. Click the bell in the address bar and choose Allow, or tap here again.';
+      });
+    } else if (state === 'blocked') {
+      msg.textContent = 'Notifications are blocked for Herae, so you’ll miss likes and messages.';
+      const go = button('Turn on notifications', async () => {
+        go.disabled = true;
+        if (await enableWebPush()) return done();
+        go.disabled = false; msg.textContent = unblockLine();
+      });
+      // Allowed in the site settings while this page is open: subscribe then and there.
+      navigator.permissions && navigator.permissions.query({ name: 'notifications' }).then((p) => {
+        p.onchange = async () => { if (p.state === 'granted' && await enableWebPush()) { trackEvent('web_push', { action: 'unblocked' }); done(); } };
+      }).catch(() => {});
+    } else {   // ios: Safari only allows web push for a site added to the Home Screen
+      msg.textContent = 'To get notifications on iPhone: tap Share ⬆, then “Add to Home Screen”, then open Herae from your Home Screen.';
     }
     const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
     x.onclick = () => bar.remove(); bar.append(x);
-    const head = document.querySelector('.an-top'); if (head) head.after(bar); else document.body.prepend(bar);
+    document.body.prepend(bar);   // the very top, above the sticky header (founder 11-01: a red bar at the top)
     const browse = document.querySelector('.an-connect[data-step="browse"]'); if (browse) browse.remove();   // see connectBanner: one bar, not two
-    if (typeof trackEvent === 'function') trackEvent('web_push', { action: state === 'off' ? 'shown' : 'blocked_shown' });
+    if (typeof trackEvent === 'function') trackEvent('web_push', { action: { off: 'shown', blocked: 'blocked_shown', ios: 'ios_shown' }[state] });
   }
+  // Discover's "after a yes" asks about THAT person through the same bar.
+  window.heraePushBar = async (text) => { try { pushBanner(await apiRequest('/api/profile/watch/connect-state'), text); } catch (e) { /* signed out or offline */ } };
   // "Connect fast" (founder 2026-10-22): until someone has a person to watch with, every app page shows the ONE next
   // step for where they are. Dismissing hides it for an hour; it is always there for everyone (founder 10-22: persistent).
   async function connectBanner() {

@@ -933,7 +933,9 @@ async function enableWebPush() {
   try {
     const { key } = await apiRequest('/api/push/key');
     if (!key) return false;
-    if (await Notification.requestPermission() !== 'granted') { trackEvent('web_push', { action: 'declined' }); return false; }
+    const answer = await Notification.requestPermission();
+    // 'default' = closed the box, or Chrome showed only its quiet bell: the box can still come back, unlike 'denied'.
+    if (answer !== 'granted') { trackEvent('web_push', { action: answer === 'denied' ? 'declined' : 'dismissed' }); return false; }
     const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
     await navigator.serviceWorker.ready;
     const raw = atob(key.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (key.length % 4)) % 4));
