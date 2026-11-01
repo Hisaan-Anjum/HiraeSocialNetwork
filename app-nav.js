@@ -150,10 +150,15 @@
   async function pushBanner(st, text) {
     if (!st || !st.matching || typeof webPushState !== 'function') return;
     const ext = await new Promise((resolve) => {
-      const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(true); } };
+      const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(e.data); } };
       window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
     });
-    let state = ext ? 'ext' : await webPushState().catch(() => 'unsupported');
+    // The extension notifies on its devices, unless Chrome blocks its notifications (it says so from 2.7.52). Then the site's
+    // own push takes over: Chrome's page shows that block as "Blocked by an extension" and won't let anyone change it there,
+    // and with the extension silenced the two can't double an alert.
+    const extOff = !!ext && ext.notify === 'denied';
+    if (extOff && typeof trackEvent === 'function') trackEvent('web_push', { action: 'ext_off_shown' });
+    let state = ext && !extOff ? 'ext' : await webPushState().catch(() => 'unsupported');
     if (state === 'unsupported' && isIos && !matchMedia('(display-mode: standalone)').matches) state = 'ios';
     if (state === 'ext' || state === 'on' || state === 'unsupported') return;
     const old = document.getElementById('pushBar'); if (old) old.remove();
