@@ -23,7 +23,7 @@
   "audience": "Long-distance couples first; also friends and family who watch together from different places, and people looking for someone who loves the same films to watch with",
   "platforms": "Google Chrome on desktop and laptop computers (Windows, macOS, Linux, ChromeOS)",
   "limitations": [
-    "Desktop Chrome only: Herae does not run on phones, tablets or smart TVs",
+    "Watching together needs Chrome on a desktop or laptop computer; on phones the Herae website installs as an app for meeting film friends, chats, watch parties and notifications, but it does not sync video on phones, tablets or smart TVs",
     "Each person needs their own access to the streaming service; Herae does not provide, host or stream any video",
     "Herae cannot make a title available in a country where the streaming service does not offer it"
   ],
