@@ -58,6 +58,8 @@ if (auth) {
 
 // Founder 11-01: people never find their Herae page. Tonight's moments and reviews land there, so this is the moment to
 // point at it: one card under the moments, outside #content so a re-render can't drop it. A link, not a second window.
+// A night with one partner points at the page you share (their profile holds your memories together, memories/section.js);
+// a group night, or before the night has loaded, points at your own.
 function mountYourPage(after, username) {
   if (!after || document.querySelector('.review-your-page')) return;
   const card = document.createElement('div');
@@ -65,10 +67,19 @@ function mountYourPage(after, username) {
   card.innerHTML = `<div class="plan-next-title">Tonight is on your Herae page</div>
     <div class="review-your-page-body">Your moments, reviews and the people you watch with, all in one place.</div>
     <div class="review-your-page-actions">
-      <a class="btn btn-gold" href="user.html?u=${encodeURIComponent(username)}&from=review">Open your page</a>
+      <a class="btn btn-gold review-your-page-link" href="user.html?u=${encodeURIComponent(username)}&from=review">Open your page</a>
       <a class="btn btn-ghost" href="social.html?from=review#discover">Meet film friends</a>
     </div>`;
   after.insertAdjacentElement('afterend', card);
+}
+function pointYourPageAt(others) {
+  const card = document.querySelector('.review-your-page');
+  if (!card || others.length !== 1) return;
+  card.querySelector('.plan-next-title').textContent = `Tonight is on your page with ${others[0]}`;
+  card.querySelector('.review-your-page-body').textContent = 'Your moments together, your timeline and everything you have watched, in one place.';
+  const link = card.querySelector('.review-your-page-link');
+  link.href = `user.html?u=${encodeURIComponent(others[0])}&from=review`;
+  link.textContent = `Open your page with ${others[0]}`;
 }
 
 // The only two things a link/unlink changes on this page: the banner across
@@ -127,6 +138,7 @@ async function loadSession() {
 
   registerSessionForPanel(detail);
   const others = detail.participants.filter((p) => p !== auth.username);
+  pointYourPageAt(others);
   const partnerName = others.length ? others.join(' & ') : 'your partner';
   const myReview = detail.reviews.find((r) => r.username === auth.username);
   // Every OTHER participant's review, not just one — a session can have
