@@ -69,7 +69,7 @@
   .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
   .an-connect.an-push { background: #B91C1C; flex-wrap: wrap; } .an-connect.an-push button.an-connect-cta { color: #991B1B; }
-  .an-connect.an-push.is-on { background: #15803D; }
+  .an-connect.an-push.is-on { background: #15803D; } .an-connect-x.an-push-later { width: auto; padding: 0 12px; border-radius: 999px; font-weight: 600; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
      every screen, Chats and Me included (the top tabs only had Home / Watch buddies / Friends). */
@@ -145,10 +145,19 @@
   // a real "Block" can't be asked again by any site (Chrome 151 has no <permission> element), and then one line says where.
   // It turns itself on the moment they allow it (no reload). iPhone → Add to Home Screen (iOS push needs it). Never where the extension runs.
   const isIos = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  // Phones (founder 11-01): push in a phone browser is unreliable, so every phone is first asked to install the app; a
+  // "Not now" (7 days) turns the bar into the notifications ask; inside the installed app it asks once for notifications.
+  const isPhone = isIos || /Android/.test(navigator.userAgent);
+  const inApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  let installEvt = null;   // Chrome on Android hands this over when the app can be installed; prompt() opens its own box
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; });
+  // Android Chrome only offers install for a site whose service worker is running (sw.js: push only, no caching).
+  if (isPhone && !inApp && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+  const installSaidNo = () => { try { return Date.now() - Number(localStorage.getItem('herae_install_no') || 0) < 7 * 864e5; } catch (e) { return false; } };
   const unblockLine = () => (/Android/.test(navigator.userAgent) ? 'Your browser said no. Tap ⋮ → Settings → Site settings → Notifications → Herae → Allow.'
     : 'Your browser said no. Click the icon left of the address and set Notifications to Allow.');
   async function pushBanner(st, text) {
-    if (!st || !st.matching || typeof webPushState !== 'function') return;
+    if (!st || !(st.matching || isPhone) || typeof webPushState !== 'function') return;
     const ext = await new Promise((resolve) => {
       const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(e.data); } };
       window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
@@ -158,10 +167,12 @@
     // and with the extension silenced the two can't double an alert.
     const extOff = !!ext && ext.notify === 'denied';
     if (extOff && typeof trackEvent === 'function') trackEvent('web_push', { action: 'ext_off_shown' });
+    const old = document.getElementById('pushBar'); if (old) old.remove();   // whatever comes next replaces it, or nothing does
     let state = ext && !extOff ? 'ext' : await webPushState().catch(() => 'unsupported');
-    if (state === 'unsupported' && isIos && !matchMedia('(display-mode: standalone)').matches) state = 'ios';
+    if (isPhone && !inApp && !installSaidNo()) state = 'install';
+    else if (state === 'unsupported' && isIos && !inApp) return;   // said no to installing: an iPhone browser can't notify, email does
     if (state === 'ext' || state === 'on' || state === 'unsupported') return;
-    const old = document.getElementById('pushBar'); if (old) old.remove();
+    if (document.getElementById('pushBar')) return;   // a second call raced this one
     const bar = document.createElement('div'); bar.className = 'an-connect an-push'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
     const msg = document.createElement('span'); bar.append(msg);
     const waiting = Number(st.likedBy || 0);
@@ -190,14 +201,29 @@
       navigator.permissions && navigator.permissions.query({ name: 'notifications' }).then((p) => {
         p.onchange = async () => { if (p.state === 'granted' && await enableWebPush()) { trackEvent('web_push', { action: 'unblocked' }); done(); } };
       }).catch(() => {});
-    } else {   // ios: Safari only allows web push for a site added to the Home Screen
-      msg.textContent = 'To get notifications on iPhone: tap Share ⬆, then “Add to Home Screen”, then open Herae from your Home Screen.';
+    } else {   // install: the phone's real app box on Android Chrome; on iPhone (and browsers without one) how to add it
+      const no = () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ }
+        trackEvent('web_push', { action: 'install_no' }); pushBanner(st, text); };
+      const installed = () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ }   // asked: next visits go to notifications
+        trackEvent('web_push', { action: 'install_yes' }); bar.classList.add('is-on'); bar.textContent = '';
+        const s = document.createElement('span'); s.textContent = '✓ Herae is on your home screen. Open it from there; it asks once for notifications.'; bar.append(s); };
+      msg.textContent = 'Get the Herae app so you never miss a like or a message.';
+      if (installEvt) {
+        const go = button('Install app', async () => { go.disabled = true; installEvt.prompt(); const { outcome } = await installEvt.userChoice; installEvt = null; if (outcome === 'accepted') installed(); else no(); });
+      } else {
+        msg.textContent = isIos ? 'Get the Herae app so you never miss a like or a message: tap Share ⬆, then “Add to Home Screen”.'
+          : 'Get the Herae app so you never miss a like or a message: tap ⋮, then “Install app” or “Add to Home screen”.';
+        button('Done', installed);
+      }
+      const later = document.createElement('button'); later.type = 'button'; later.className = 'an-connect-x an-push-later'; later.textContent = 'Not now'; later.onclick = no; bar.append(later);
     }
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
-    x.onclick = () => bar.remove(); bar.append(x);
+    if (state !== 'install') {
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
+      x.onclick = () => bar.remove(); bar.append(x);
+    }
     document.body.prepend(bar);   // the very top, above the sticky header (founder 11-01: a red bar at the top)
     const browse = document.querySelector('.an-connect[data-step="browse"]'); if (browse) browse.remove();   // see connectBanner: one bar, not two
-    if (typeof trackEvent === 'function') trackEvent('web_push', { action: { off: 'shown', blocked: 'blocked_shown', ios: 'ios_shown' }[state] });
+    if (typeof trackEvent === 'function') trackEvent('web_push', { action: { off: 'shown', blocked: 'blocked_shown', install: 'install_shown' }[state] });
   }
   // Discover's "after a yes" asks about THAT person through the same bar.
   window.heraePushBar = async (text) => { try { pushBanner(await apiRequest('/api/profile/watch/connect-state'), text); } catch (e) { /* signed out or offline */ } };
