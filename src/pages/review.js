@@ -52,7 +52,23 @@ if (auth) {
   // the extension, or with the feature switched off.
   mountAiMoments(document.getElementById('aiMomentsMount'),
     { sessionId: getSessionIdFromUrl() });
+  mountYourPage(document.getElementById('aiMomentsMount'), auth.username);
   loadSession();
+}
+
+// Founder 11-01: people never find their Herae page. Tonight's moments and reviews land there, so this is the moment to
+// point at it: one card under the moments, outside #content so a re-render can't drop it. A link, not a second window.
+function mountYourPage(after, username) {
+  if (!after || document.querySelector('.review-your-page')) return;
+  const card = document.createElement('div');
+  card.className = 'plan-next review-your-page';
+  card.innerHTML = `<div class="plan-next-title">Tonight is on your Herae page</div>
+    <div class="review-your-page-body">Your moments, reviews and the people you watch with, all in one place.</div>
+    <div class="review-your-page-actions">
+      <a class="btn btn-gold" href="user.html?u=${encodeURIComponent(username)}&from=review">Open your page</a>
+      <a class="btn btn-ghost" href="social.html?from=review#discover">Meet film friends</a>
+    </div>`;
+  after.insertAdjacentElement('afterend', card);
 }
 
 // The only two things a link/unlink changes on this page: the banner across

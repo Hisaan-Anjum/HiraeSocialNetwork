@@ -2959,3 +2959,8 @@ body.cd-open { overflow: hidden; }
 
 /* Connected H lock-up (symbol + wordmark, vector). Height-driven so it never stretches. */
 .brand-lockup { display: block; height: 28px; width: auto; }
+
+/* Review: the Herae page card (founder 11-01) */
+.review-your-page-body { color: var(--ink-dim); font-size: 14px; margin-bottom: 12px; }
+.review-your-page-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.review-your-page-actions .btn { flex: 1 1 160px; text-align: center; }

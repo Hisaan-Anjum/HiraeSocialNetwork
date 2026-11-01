@@ -6,6 +6,14 @@
 (function () {
   if (typeof getAuth !== 'function' || !getAuth()) return;
   const me = getAuth().username;
+  try {
+    const page = location.pathname.replace(/^\/|\.html$/g, '') || 'index';
+    const key = `herae_visit_${page}`; const day = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem(key) !== day && typeof trackEvent === 'function') {
+      localStorage.setItem(key, day);
+      trackEvent('site_visit', { page, from: new URLSearchParams(location.search).get('from') || '' });
+    }
+  } catch (e) { /* storage blocked: unmeasured, never broken */ }
   const I = {   // 24×24 stroke icons
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
     discover: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
