@@ -74,6 +74,12 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
       </div>
       ${isPublic ? '' : `<div class="share-note" id="shareNote">This moment is <strong>${escapeHtml(moment.privacy || 'private')}</strong>, so its link only opens for people allowed to see it. Posting the photo or video itself works either way.
         ${canOpenUp ? '<button class="btn btn-ghost share-open-up" data-share="open-up">Let anyone with the link see it</button>' : ''}</div>`}
+      ${onPhone ? `
+      <div class="share-list">
+        <button class="share-row is-primary" data-share="native"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Share</span></button>
+        ${linkOnly ? '' : '<button class="share-row" data-share="download"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span>Download</span></button>'}
+        <button class="share-row" data-share="copy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><span>Copy link</span></button>
+      </div>` : `
       <div class="share-grid">
         ${linkOnly ? '' : `
         <button class="share-opt" data-share="instagram"><span class="share-ico">📸</span><span>Instagram</span></button>
@@ -83,7 +89,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
         <button class="share-opt" data-share="telegram"><span class="share-ico">✈️</span><span>Telegram</span></button>
         <button class="share-opt" data-share="copy"><span class="share-ico">📋</span><span>Copy Link</span></button>
         ${linkOnly ? '' : '<button class="share-opt" data-share="download"><span class="share-ico">⬇</span><span>Download</span></button>'}
-      </div>
+      </div>`}
       ${stored && !onPhone && phoneShareLink ? `
       <button class="btn btn-primary share-phone-btn" data-share="phone">📱 Send to my phone — post it to your Story or TikTok</button>
       <div class="share-phone" id="sharePhone" hidden>
@@ -152,7 +158,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
   // downloads" on phones.
   let readyFile = null;
   const platformBtns = overlay.querySelectorAll(
-    '.share-opt[data-share="instagram"],.share-opt[data-share="tiktok"],.share-opt[data-share="facebook"],.share-opt[data-share="whatsapp"],.share-opt[data-share="telegram"]'
+    `.share-opt[data-share="instagram"],.share-opt[data-share="tiktok"],.share-opt[data-share="facebook"],.share-opt[data-share="whatsapp"],.share-opt[data-share="telegram"]${linkOnly ? '' : ',.share-row[data-share="native"]'}`
   );
   platformBtns.forEach((b) => { b.disabled = true; });
   setStatus('Preparing your media…');
@@ -302,6 +308,20 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
 
     if (action === 'close') { close(); return; }
     if (action === 'copy') { copyLink(); return; }
+    // Phones: the system share sheet does every app at once. The file when it can travel, else the link; called straight
+    // from the tap (readyFile is ready before the button is enabled) so the tap's activation is intact.
+    if (action === 'native') {
+      const done = (r) => { if (r === 'shared') { setStatus('Shared ✓', 'ok'); trackEvent && trackEvent('moment_shared', { platform: 'native', method: 'share_sheet' }); } };
+      if (!linkOnly) {
+        shareFileToApp(`${caption} ${link}`).then((r) => {
+          if (r !== 'unsupported') return done(r);
+          if (navigator.share) navigator.share({ url: link, text: caption, title: 'Herae.app' }).then(() => done('shared')).catch(() => {});
+          else copyLink();
+        });
+      } else if (navigator.share) navigator.share({ url: link, text: caption, title: 'Herae.app' }).then(() => done('shared')).catch(() => {});
+      else copyLink();
+      return;
+    }
 
     if (action === 'open-up') {
       btn.disabled = true;

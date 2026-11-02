@@ -918,7 +918,12 @@ function trackEvent(name, props = {}, { keepalive = false } = {}) {
 // browser) | 'unsupported' (no push here, e.g. iPhone Safari outside a home-screen app, or push not configured).
 async function webPushState() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'unsupported';
-  let key = null; try { key = (await apiRequest('/api/push/key')).key; } catch (e) { return 'unsupported'; }
+  let key = null; try { key = sessionStorage.getItem('herae_push_key'); } catch (e) { /* storage blocked */ }
+  // The key never changes within a visit: fetched once, so the bars don't wait on the network on every page (11-02).
+  if (key === null) {
+    try { key = (await apiRequest('/api/push/key')).key || ''; } catch (e) { return 'unsupported'; }
+    try { sessionStorage.setItem('herae_push_key', key); } catch (e) { /* storage blocked */ }
+  }
   if (!key) return 'unsupported';
   if (Notification.permission === 'denied') return 'blocked';
   const reg = await navigator.serviceWorker.getRegistration('/');
