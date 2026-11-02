@@ -63,10 +63,8 @@ async function mountOwnChooser(container, profile) {
     <p class="ms-chooser-sub">Open a relationship to relive your movie nights together.</p>
     <div class="ms-chooser-grid">
       ${contacts.map((c) => `
-        <a class="ms-chooser-card" href="user.html?u=${encodeURIComponent(c.username)}">
-          ${renderAvatar({ username: c.username, avatarUrl: c.avatarUrl }, { size: 'lg' })}
-          <span class="ms-chooser-name">${escapeHtml(profile.username)} & ${escapeHtml(c.username)}</span>
-          <span class="ms-chooser-open">Open memories ${icon('arrowRight', 16)}</span>
+        <a class="ms-chooser-card" href="user.html?u=${encodeURIComponent(c.username)}" aria-label="Open memories with ${escapeHtml(c.username)}">
+          <span class="ms-chooser-name">${escapeHtml(c.username)}</span>
         </a>`).join('')}
     </div>`;
   container.appendChild(wrap);
