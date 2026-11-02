@@ -18,7 +18,7 @@ import { initSearch } from '../components/search.js';
 
 const {
   requireAuth, logout, getContacts, requestContact, acceptContactRequest, removeContact,
-  getSharedHistory, deleteSharedHistory,
+  getSharedHistory, deleteSharedHistory, openChatWith,
 } = window;
 
 const CHUNK = 24; // rows revealed per scroll step
@@ -96,6 +96,11 @@ async function onActionClick(e) {
     return;
   }
   const { contactAction, contactId, contactName } = btn.dataset;
+  if (contactAction === 'message') {
+    btn.disabled = true;
+    try { await openChatWith(contactName); } catch (err) { btn.disabled = false; btn.textContent = 'Try again'; }
+    return;
+  }
 
   // Removing an accepted contact is the one action here that can cost
   // somebody something. Declining or cancelling a REQUEST is not — there is
@@ -208,7 +213,7 @@ function revealMore() {
   if (!listEl) return;
   const next = allContacts.slice(shown, shown + CHUNK);
   listEl.insertAdjacentHTML('beforeend', next.map((c) => renderContactRow(c, {
-    actions: `<div class="contact-actions">${actionBtn('remove', c, '✕')}</div>`,
+    actions: `<div class="contact-actions">${actionBtn('message', c, 'Message', 'btn-primary btn-message')}${actionBtn('remove', c, '✕')}</div>`,
   })).join(''));
   shown += next.length;
   if (shown >= allContacts.length) {

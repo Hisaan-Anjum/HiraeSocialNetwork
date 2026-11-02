@@ -31,7 +31,7 @@ import { lockScroll } from '../lib/scrollLock.js';
 
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
-  requestContact, acceptContactRequest, removeContact,
+  requestContact, acceptContactRequest, removeContact, openChatWith,
   deleteAccount, clearAuth, signOutEverywhere,
 } = window;
 
@@ -194,6 +194,7 @@ function renderHeader(profile) {
         </div>
         <div class="profile-actions" id="profileActions">
           ${profile.isMe ? '<span class="profile-you-badge">This is you</span>' : ''}
+          ${profile.contact.status === 'accepted' ? '<button class="btn btn-primary" data-action="message">Message</button>' : ''}
           ${conf ? `<button class="btn ${conf.cls}" id="contactActionBtn" data-action="${conf.action}">${conf.label}</button>` : ''}
           ${profile.contact.status === 'pending_incoming'
             ? `<button class="btn btn-ghost" id="contactDeclineBtn" data-action="decline">Decline</button>` : ''}
@@ -321,6 +322,10 @@ async function runContactAction(action, btn) {
   // `btn` is optional — the default header passes its button (to disable it),
   // but the relationship banner's "Remove contact" calls this without one.
   if (btn) btn.disabled = true;
+  if (action === 'message') {   // founder 11-02: straight into your chat with them
+    try { await openChatWith(target); } catch (err) { alert(err.message); if (btn) btn.disabled = false; }
+    return;
+  }
   try {
     if (action === 'request') await requestContact(target);
     else if (action === 'accept') await acceptContactRequest(state.profile.contact.id);

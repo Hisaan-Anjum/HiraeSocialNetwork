@@ -135,6 +135,11 @@ async function mountRelationship(container, profile, opts = {}) {
               <span class="ms-action-title">Watch Together</span>
               <span class="ms-action-sub">Start a session</span>
             </button>
+            <button class="ms-action-tile" data-ms="message">
+              <span class="ms-action-ico">💬</span>
+              <span class="ms-action-title">Message</span>
+              <span class="ms-action-sub">Open your chat</span>
+            </button>
             <button class="ms-action-tile" data-ms="sharecard">
               <span class="ms-action-ico">💞</span>
               <span class="ms-action-title">Share Card</span>
@@ -158,6 +163,7 @@ async function mountRelationship(container, profile, opts = {}) {
     if (act === 'sharecard') return shareRelationshipCard();
     if (act === 'dates') return openDates();
     if (act === 'watch') return startSession();
+    if (act === 'message') return window.openChatWith(username).catch((err) => toast(err.message || 'Couldn’t open your chat. Try again.'));
     if (act === 'remove') return onRemoveContact && onRemoveContact();
   }
 

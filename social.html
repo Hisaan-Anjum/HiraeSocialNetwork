@@ -228,6 +228,13 @@
   .row-main { flex: 1; min-width: 0; }
   .row-main strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tap-row { cursor: pointer; }
+  .c-search { position: relative; margin: 0 0 var(--h-4); }
+  .c-search-in { border-radius: 999px; padding-left: 44px; background: var(--h-surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m13 13 4 4'/%3E%3C/svg%3E") no-repeat 16px center; }
+  .c-results { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px); margin: 0; padding: var(--h-1); list-style: none; max-height: min(55vh, 420px);
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: var(--h-surface-2); border: 1px solid var(--h-line-strong); border-radius: 16px; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
+  .c-results > li[role=option] { display: flex; align-items: center; gap: var(--h-3); min-height: 56px; padding: 6px var(--h-2); border-radius: 12px; cursor: pointer; }
+  .c-results > li[aria-selected="true"], .c-results > li[role=option]:hover { background: var(--h-surface-3); }
+  .c-results-empty { padding: var(--h-3); color: var(--h-text-2); font-size: var(--h-size-sm); }
   .row-main .sub { font-size: var(--h-size-sm); color: var(--h-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .new-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--h-coral); flex: none; }
   menu.h-menu { position: absolute; right: 0; top: 100%; margin: 4px 0 0; padding: var(--h-1); list-style: none; background: var(--h-surface-2); border: 1px solid var(--h-line-strong); border-radius: var(--h-r-md); z-index: 10; min-width: 180px; }
@@ -293,10 +300,13 @@
     // the letter avatar. Strangers get { locked: true } and never an image.
     const photoInfo = new Map();
     const photosOf = (u) => { if (!photoInfo.has(u)) photoInfo.set(u, apiRequest(`/api/photos/of/${encodeURIComponent(u)}`).catch(() => ({ photos: [], count: 0, locked: true }))); return photoInfo.get(u); };
+    // Row photos load as rows scroll into view (founder 11-02: lists load lazily), not all at once.
+    const seen = 'IntersectionObserver' in window ? new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { seen.unobserve(e.target); e.target.__load(); } }, { rootMargin: '200px 0px' }) : null;
     function photoAvatar(username, person) {
       const a = avatar(person);
-      photosOf(username).then(async (r) => { if (!r.photos.length) return; const src = await apiImage(r.photos[0].url); if (!src) return;
+      a.__load = () => photosOf(username).then(async (r) => { if (!r.photos.length) return; const src = await apiImage(r.photos[0].url); if (!src) return;
         a.textContent = ''; a.removeAttribute('aria-hidden'); const img = document.createElement('img'); img.src = src; img.alt = ''; a.append(img); });
+      if (seen) seen.observe(a); else a.__load();
       return a;
     }
     async function showPhotos(username, name) {
@@ -681,11 +691,15 @@
       clearInterval(pollTimer);
       if (id) return renderThread(Number(id));
       const v = $('v-chats');
+      if (!v.querySelector('h1')) { v.innerHTML = ''; v.append(el('h1', {}, 'Chats'), el('p', { class: 'muted' }, 'Loading your chats…')); }   // something on screen at once
+      // A refresh never wipes what someone is typing into the search (the list polls every 15 s).
+      const typing = $('chatSearch') && ($('chatSearch').value || document.activeElement === $('chatSearch'));
+      if (typing && !id) { pollTimer = setInterval(() => { if (location.hash === '#chats') renderChats(); }, 15000); return; }
       // Fetch first, then replace (founder 10-23: "chats sometimes disappear" — a slow or failed refresh blanked the list).
       let r, up; try { [r, up] = await Promise.all([apiRequest('/api/chats'), apiRequest('/api/proposals/upcoming').catch(() => ({ upcoming: [] }))]); }
       catch (e) { if (!v.querySelector('.h-list')) { v.innerHTML = ''; v.append(el('h1', {}, 'Chats'), el('p', { class: 'h-empty' }, e.message || 'Could not load.')); } return; }
       if (location.hash !== '#chats') return;
-      v.innerHTML = ''; v.classList.remove('c-view'); v.append(el('h1', {}, 'Chats'));
+      v.innerHTML = ''; v.classList.remove('c-view'); v.append(el('h1', {}, 'Chats'), chatSearch(r.conversations));
       // ── E. Upcoming watches: accepted suggestions, each starts with one tap ──
       if ((up.upcoming || []).length) {
         v.append(el('p', { class: 'mx-h' }, 'Upcoming watches'));
@@ -706,6 +720,60 @@
       }
       v.append(ul);
       pollTimer = setInterval(() => { if (location.hash === '#chats') renderChats(); }, 15000);
+    }
+    // Founder 11-02: one search for everyone you can message. Your matches' chats first, then friends' chats, then friends you
+    // haven't messaged yet; filters as you type; the list scrolls without a scroll ever counting as a tap. Friends are
+    // fetched only once someone searches (lazy). Only your own matches and friends are ever searched.
+    let friendsOnce = null;
+    function chatSearch(conversations) {
+      const input = el('input', { class: 'hi c-search-in', id: 'chatSearch', type: 'search', placeholder: 'Search your matches and friends', autocomplete: 'off',
+        role: 'combobox', 'aria-expanded': 'false', 'aria-controls': 'chatResults', 'aria-autocomplete': 'list' });
+      const list = el('ul', { class: 'c-results', id: 'chatResults', role: 'listbox', hidden: '' });
+      const box = el('div', { class: 'c-search', role: 'search' }, el('label', { class: 'sr-only', for: 'chatSearch' }, 'Search chats'), input, list);
+      let items = [], active = -1, down = null;
+      const pick = async (x) => {
+        if (x.conversationId) { location.hash = `chats/${x.conversationId}`; return; }
+        try { await openChatWith(x.username); } catch (e) { toast(e.message || 'Couldn’t open that chat.'); }
+      };
+      const all = async () => {
+        const inChats = new Set(conversations.map((c) => c.with.username));
+        const rank = (c) => (c.relation === 'match' ? 0 : 1);
+        const out = conversations.filter((c) => c.canSend || c.last).sort((a, b) => rank(a) - rank(b))
+          .map((c) => ({ username: c.with.username, name: c.with.name, person: c.with, conversationId: c.id, sub: c.relation === 'match' ? 'Match' : 'Friend' }));
+        if (!friendsOnce) friendsOnce = apiRequest('/api/contacts').then((f) => f.contacts).catch(() => []);
+        for (const f of await friendsOnce) if (!inChats.has(f.username)) out.push({ username: f.username, name: f.username, person: f, sub: 'Friend · say hi' });
+        return out;
+      };
+      const draw = async () => {
+        const q = input.value.trim().toLowerCase();
+        if (!q) { list.hidden = true; input.setAttribute('aria-expanded', 'false'); return; }
+        const pool = await all(); if (q !== input.value.trim().toLowerCase()) return;   // a newer keystroke won
+        const hit = (x) => [x.name, x.username].some((t) => String(t || '').toLowerCase().includes(q));
+        const starts = (x) => [x.name, x.username].some((t) => String(t || '').toLowerCase().startsWith(q));
+        items = pool.filter(hit).sort((a, b) => Number(starts(b)) - Number(starts(a)));   // stable: group order kept within each
+        active = items.length ? 0 : -1; list.textContent = '';
+        if (!items.length) list.append(el('li', { class: 'c-results-empty' }, 'No match or friend by that name.'));
+        items.forEach((x, i) => list.append(el('li', { role: 'option', id: `cr-${i}`, 'aria-selected': String(i === active), 'data-i': String(i) },
+          photoAvatar(x.username, x.person), el('div', { class: 'row-main' }, el('strong', {}, x.name), el('div', { class: 'sub' }, x.sub)))));
+        list.hidden = false; input.setAttribute('aria-expanded', 'true');
+      };
+      input.oninput = draw;
+      input.onkeydown = (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault(); if (!items.length) return; active = (active + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+          list.querySelectorAll('[role=option]').forEach((o, i) => o.setAttribute('aria-selected', String(i === active)));
+          input.setAttribute('aria-activedescendant', `cr-${active}`); list.querySelector(`#cr-${active}`).scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter' && items[active]) { e.preventDefault(); pick(items[active]); }
+        else if (e.key === 'Escape') { input.value = ''; draw(); }
+      };
+      // A tap opens the chat; a scroll (finger moved, or the list moved) never does.
+      list.onpointerdown = (e) => { down = { y: e.clientY, x: e.clientX, top: list.scrollTop }; };
+      list.onclick = (e) => {
+        const li = e.target.closest('[data-i]'); if (!li) return;
+        if (down && (Math.abs(e.clientY - down.y) > 10 || Math.abs(e.clientX - down.x) > 10 || Math.abs(list.scrollTop - down.top) > 4)) return;
+        pick(items[Number(li.dataset.i)]);
+      };
+      return box;
     }
     async function renderThread(id) {
       const v = $('v-chats'); v.innerHTML = '';

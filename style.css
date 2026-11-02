@@ -2186,7 +2186,7 @@ html { scroll-behavior: smooth; }
 
 /* Three actions now (Watch Together / Share Card / Important Dates) — a 3-up
    row on desktop keeps them one balanced band rather than a 2+1 orphan. */
-.rel-actions { grid-template-columns: repeat(3, minmax(132px, 156px)); }
+.rel-actions { grid-template-columns: repeat(2, minmax(140px, 172px)); }   /* 2×2: Watch, Message, Share Card, Dates */
 /* Watch Together is the primary act on a contact's profile, so it carries the
    filled treatment while the other two stay secondary. */
 .ms-action-tile.ms-action-primary {
@@ -2197,8 +2197,8 @@ html { scroll-behavior: smooth; }
 .ms-action-primary .ms-action-title { color: #fff; }
 .ms-action-primary .ms-action-sub { color: rgba(255, 255, 255, .78); }
 .ms-action-primary:hover { border-color: transparent; filter: brightness(1.06); }
-@media (max-width: 900px) { .rel-actions { grid-template-columns: repeat(3, minmax(110px, 1fr)); } }
-@media (max-width: 640px) { .rel-actions { grid-template-columns: 1fr 1fr; } .ms-action-primary { grid-column: 1 / -1; } }
+@media (max-width: 900px) { .rel-actions { grid-template-columns: repeat(2, minmax(110px, 1fr)); } }
+@media (max-width: 640px) { .rel-actions { grid-template-columns: 1fr 1fr; } }
 .sl-option-seen { margin-left: auto; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
 .sl-hint {
   display: block; width: 100%; margin-top: 10px; padding: 9px 14px; border-radius: 12px; cursor: pointer;

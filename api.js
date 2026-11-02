@@ -631,6 +631,12 @@ function deleteAccount(payload) {
 
 
 // Ends every session on every device, this one included. Caller clears auth and redirects.
+// Founder 11-02: "Message" on a friend (Friends page, their Herae page) opens the chat with them. The server opens one only
+// for friends or matches, never across a block (server/src/chats.js).
+async function openChatWith(username) {
+  const c = await apiRequest(`/api/chats/with/${encodeURIComponent(username)}`, { method: 'POST' });
+  window.location.href = `social.html#chats/${c.id}`;
+}
 function signOutEverywhere() {
   return apiRequest('/api/logout-everywhere', { method: 'POST', body: '{}' });
 }
