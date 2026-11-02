@@ -160,3 +160,32 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 .wp-me-name { font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .wp-me .wp-me-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; } .wp-me .wp-me-meta b { margin-right: 0; font-weight: 500; }
 .wp-me .wp-me-name { font-size: 30px; }
+
+/* ── Founder 11-02, round 4: the reference, measured at 390 px. Last in the file so it wins. ── */
+.profile-header .profile-header-inner, .wp-me, .watch-link {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3CradialGradient id='c' cx='400' cy='0' r='260' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23EC4899' stop-opacity='.9'/%3E%3Cstop offset='.32' stop-color='%23A21CAF' stop-opacity='.55'/%3E%3Cstop offset='.68' stop-color='%236D28D9' stop-opacity='.28'/%3E%3Cstop offset='1' stop-color='%236D28D9' stop-opacity='0'/%3E%3C/radialGradient%3E%3Cfilter id='b' x='-40%25' y='-40%25' width='180%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3C/filter%3E%3Cfilter id='s' x='-40%25' y='-40%25' width='180%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='7'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M140 -20C250 30 330 100 420 125V-20Z' fill='url(%23c)' filter='url(%23b)'/%3E%3Cpath d='M195 -20C285 40 350 112 420 152' stroke='%23EC4899' stroke-opacity='.32' stroke-width='16' fill='none' filter='url(%23s)'/%3E%3Cpath d='M250 -20C320 62 372 135 420 205' stroke='%230C0A12' stroke-opacity='.55' stroke-width='26' fill='none' filter='url(%23b)'/%3E%3Cpath d='M300 -20C352 84 392 165 420 265' stroke='%23C026D3' stroke-opacity='.24' stroke-width='22' fill='none' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(160deg, #18151F 0%, #121019 60%, #0F0D15 100%) !important;
+  border: 1px solid rgba(255, 255, 255, .09) !important; border-radius: 18px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), inset 0 0 0 1px rgba(236, 72, 153, .04), 0 18px 40px -18px rgba(0, 0, 0, .8) !important;
+  backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); padding: 18px !important; }
+:root[data-theme="light"] .profile-header .profile-header-inner, :root[data-theme="light"] .wp-me, :root[data-theme="light"] .watch-link {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3CradialGradient id='c' cx='400' cy='0' r='260' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23EC4899' stop-opacity='.35'/%3E%3Cstop offset='.32' stop-color='%23A21CAF' stop-opacity='.2'/%3E%3Cstop offset='.68' stop-color='%236D28D9' stop-opacity='.28'/%3E%3Cstop offset='1' stop-color='%236D28D9' stop-opacity='0'/%3E%3C/radialGradient%3E%3Cfilter id='b' x='-40%25' y='-40%25' width='180%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3C/filter%3E%3Cfilter id='s' x='-40%25' y='-40%25' width='180%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='7'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M140 -20C250 30 330 100 420 125V-20Z' fill='url(%23c)' filter='url(%23b)'/%3E%3Cpath d='M195 -20C285 40 350 112 420 152' stroke='%23EC4899' stroke-opacity='.32' stroke-width='16' fill='none' filter='url(%23s)'/%3E%3Cpath d='M250 -20C320 62 372 135 420 205' stroke='%23FFFFFF' stroke-opacity='.5' stroke-width='26' fill='none' filter='url(%23b)'/%3E%3Cpath d='M300 -20C352 84 392 165 420 265' stroke='%23C026D3' stroke-opacity='.24' stroke-width='22' fill='none' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(160deg, #FFFFFF, #F7F5FC) !important;
+  border-color: rgba(17, 12, 34, .08) !important; box-shadow: 0 1px 2px rgba(17, 12, 34, .06), 0 12px 32px -18px rgba(17, 12, 34, .25) !important; }
+.profile-header .profile-avatar, .profile-header .profile-avatar-wrap > .avatar { width: 78px !important; height: 78px !important; font-size: 28px !important; }
+.profile-header .profile-name { font-size: 26px !important; font-weight: 700 !important; letter-spacing: -.02em; }
+.profile-header .profile-meta, .profile-header .profile-presence, .profile-header .profile-joined { font-size: 13px !important; }
+.profile-header .profile-stats { margin: 16px 0 14px !important; }
+.profile-header .profile-stat { font-size: 12px !important; gap: 2px !important; }
+.profile-header .profile-stat-num { font-size: 24px !important; font-weight: 700 !important; line-height: 1.15; }
+.profile-header .profile-stat svg, .profile-header .profile-stat::before { width: 18px !important; height: 18px !important; }
+.profile-header .profile-actions > * { min-height: 36px !important; padding: 8px 16px !important; font-size: 13px !important; font-weight: 600 !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03)) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 999px !important; }
+.profile-edit-pill { top: 16px !important; right: 16px !important; width: auto !important; height: 28px !important; padding: 0 12px !important; gap: 6px !important;
+  font-size: 12px !important; font-weight: 600 !important; border-radius: 999px !important; }
+.profile-edit-pill svg { width: 13px !important; height: 13px !important; }
+.profile-edit-pill .label, .profile-edit-pill span { display: inline !important; }
+.profile-header .profile-header-inner:has(.profile-edit-pill) .profile-name { padding-right: 104px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.watch-link-ill { width: 40px !important; height: 40px !important; flex: none; }
+.watch-link-title { font-size: 16px !important; font-weight: 700 !important; letter-spacing: -.01em; }
+.watch-link-sub, .watch-link-note { font-size: 13px !important; line-height: 1.5 !important; }
+.watch-link-url { height: 40px !important; border-radius: 12px !important; font-size: 13px !important; }
+.watch-link-go { width: 56px !important; min-width: 56px !important; height: 40px !important; border-radius: 12px !important; padding: 0 !important; background: linear-gradient(120deg, #6366F1, #EC4899) !important; }
