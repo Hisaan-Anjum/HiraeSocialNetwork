@@ -218,3 +218,8 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
   .profile-edit-pill svg { width: 14px !important; height: 14px !important; }
   .profile-header .profile-header-inner:has(.profile-edit-pill) .profile-name { padding-right: 40px !important; }
 }
+/* Herae page header (any visitor, before or after a contact request): the photo is always a fixed circle, the name gets the rest. */
+.profile-header .profile-avatar-wrap { width: 84px !important; height: 84px !important; justify-self: start; align-self: center; flex: none; }
+.profile-header .profile-avatar-wrap > .avatar, .profile-header .profile-avatar-wrap > .profile-avatar, .profile-header .profile-avatar-wrap > img { width: 78px !important; height: 78px !important; max-width: 78px; border-radius: 50% !important; }
+.profile-header .profile-contact-note { grid-column: 1 / -1 !important; font-size: 13px; text-align: center; }
+.profile-header .profile-header-inner { grid-template-columns: 84px minmax(0, 1fr) !important; }
