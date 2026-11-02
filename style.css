@@ -6,19 +6,19 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-0: #0f172a;
-  --bg-1: #111827;
-  --bg-2: #1e293b;
-  --card: #1e293b;
+  --bg-0: #0B0B0F;
+  --bg-1: #111117;
+  --bg-2: #17171F;
+  --card: #14141B;
   --ink: #f8fafc;
-  --ink-dim: #94a3b8;
-  --ink-faint: #64748b;
+  --ink-dim: #A1A1AA;
+  --ink-faint: #71717A;
   --purple: #6366f1;
   --purple-deep: #4338ca;
   --gold: #F472B6;        /* "memories" accent: was gold, now the brand pink (lightened for AA on navy) */
   --gold-deep: #DB2777;
   --rating: #FBBF24;      /* star ratings stay amber: a convention, not brand */
-  --border: rgba(167, 139, 250, 0.18);
+  --border: rgba(255, 255, 255, 0.08);
 }
 
 /* The site is dark-only, but a <select>'s open list is drawn by the browser: white by default, so our light text
@@ -942,9 +942,9 @@ a:hover { text-decoration: underline; }
   border-radius: 8px; box-shadow: 0 30px 90px rgba(0,0,0,0.6);
   transform-origin: center center;
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: zoom-in; touch-action: none; user-select: none; -webkit-user-drag: none;
+  cursor: zoom-in; touch-action: pan-y; user-select: none; -webkit-user-drag: none;   /* a finger on the photo still scrolls to the comments (founder 11-02); pinch still zooms */
 }
-.mv-image.mv-zoomed { cursor: grab; transition: none; }
+.mv-image.mv-zoomed { cursor: grab; transition: none; touch-action: none; }
 .mv-image.mv-zoomed:active { cursor: grabbing; }
 .mv-video {
   max-width: 100%; max-height: 100%; display: block;
@@ -3009,3 +3009,42 @@ body.cd-open { overflow: hidden; }
 .review-your-page-body { color: var(--ink-dim); font-size: 14px; margin-bottom: 12px; }
 .review-your-page-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .review-your-page-actions .btn { flex: 1 1 160px; text-align: center; }
+
+/* ── Theme 2026-11 (founder 11-02 references): near-black, glass cards with a pink/violet glow in one corner,
+   the brand gradient only on primary actions. Shared by every page that loads style.css. ── */
+body { background: radial-gradient(1100px 560px at 100% -8%, rgba(236, 72, 153, .16), transparent 60%),
+  radial-gradient(900px 520px at -12% 4%, rgba(99, 102, 241, .14), transparent 60%), #0B0B0F; background-attachment: fixed; }
+.feed-card, .moment-card, .post-detail-card, .watch-link, .profile-header .profile-header-inner, .danger-zone-inner, .mvp-card {
+  background: radial-gradient(420px 200px at 100% 0%, rgba(236, 72, 153, .12), transparent 62%),
+    radial-gradient(360px 200px at 78% 0%, rgba(99, 102, 241, .22), transparent 66%), linear-gradient(160deg, rgba(49, 46, 129, .55), rgba(15, 23, 42, .65)) !important;
+  border: 1px solid rgba(255, 255, 255, .08) !important; border-radius: 24px !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px rgba(0, 0, 0, .35); }
+.btn-primary, .btn-gold { background: linear-gradient(90deg, #6366F1, #EC4899) !important; border: 0 !important; border-radius: 999px !important; color: #fff !important; }
+.btn-ghost, .btn:not(.btn-primary):not(.btn-gold):not(.btn-danger) { background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .12); border-radius: 999px; }
+.profile-header .profile-stats { flex-wrap: nowrap; gap: 14px; }
+.profile-header .profile-stats .profile-stat + .profile-stat { border-left: 1px solid rgba(255, 255, 255, .08); padding-left: 14px; }
+.profile-header .profile-actions .btn { flex: 1; justify-content: center; }
+.privacy-badge, .theme-badge { border-radius: 999px; }
+/* Herae page header: a card with breathing room, not full-bleed (founder 11-02). */
+.profile-header:not(.profile-header-feed) { background: none !important; border: 0 !important; padding: 16px 16px 4px; max-width: 1120px; margin: 0 auto; }
+.memories-section, #memoriesSection { padding-left: 16px; padding-right: 16px; }
+/* Header card layout (founder 11-02 mock-up): photo + name, then three stats with icons and dividers, then one wide pill. */
+.profile-header .profile-header-inner { display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "av name" "av meta" "stats stats" "act act"; column-gap: 20px; row-gap: 4px; align-items: center; }
+.profile-header .profile-headtext { display: contents; }
+.profile-header .profile-avatar-wrap { grid-area: av; }
+.profile-header .profile-avatar { box-shadow: 0 0 0 3px #0B0B0F, 0 0 0 6px transparent; background-clip: padding-box; outline: 3px solid transparent; border: 3px solid transparent; background-image: none; }
+.profile-header .profile-avatar-wrap::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; background: linear-gradient(135deg, #6366F1, #EC4899); z-index: -1; }
+.profile-header .profile-avatar-wrap { position: relative; isolation: isolate; }
+.profile-header .profile-name { grid-area: name; align-self: end; }
+.profile-header .profile-meta { grid-area: meta; align-self: start; flex-direction: column; align-items: flex-start; gap: 2px; margin: 4px 0 0; }
+.profile-header .profile-stats { grid-area: stats; display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 0 !important; margin: 18px 0 14px; }
+.profile-header .profile-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13px; color: #CBD5E1; text-transform: capitalize; padding: 0 !important; border: 0 !important; }
+.profile-header .profile-stat + .profile-stat { border-left: 1px solid rgba(255, 255, 255, .1) !important; }
+.profile-header .profile-stat-num { font-size: 26px; font-weight: 800; color: #F8FAFC; }
+.profile-header .profile-stat::before { content: ''; width: 20px; height: 20px; margin-bottom: 4px; background: #A5B4FC; order: -1;
+  -webkit-mask: var(--stat-ico) center / contain no-repeat; mask: var(--stat-ico) center / contain no-repeat; }
+.profile-header .profile-stat:nth-child(1) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M7 4l13 8-13 8z'/%3E%3C/svg%3E"); }
+.profile-header .profile-stat:nth-child(2) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M6 3h12v18l-6-4-6 4z'/%3E%3C/svg%3E"); }
+.profile-header .profile-stat:nth-child(3) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z'/%3E%3C/svg%3E"); }
+.profile-header .profile-actions { grid-area: act; display: flex; gap: 10px; }
+.profile-header .profile-actions > * { flex: 1; justify-content: center; text-align: center; border-radius: 999px !important; padding: 13px 18px !important; }

@@ -37,7 +37,7 @@
   --light-bg: #F8FAFC; --light-surface: #FFFFFF; --light-muted: #F1F5F9; --light-border: #E2E8F0;
   --light-text: #0F172A; --light-text-2: #64748B; --light-text-3: #94A3B8;
   /* dark neutrals */
-  --dark-bg: #0F172A; --dark-surface: #111827; --dark-surface-2: #1E293B; --dark-border: #334155;
+  --dark-bg: #0B0B0F; --dark-surface: #14141B; --dark-surface-2: #1C1C25; --dark-border: #2A2A34;
   --dark-text: #F8FAFC; --dark-text-2: #94A3B8; --dark-text-3: #64748B;
 
   /* ── Product aliases (dark by default) ───────────────────────────── */

@@ -112,18 +112,20 @@
   .an-lock-btn:disabled { opacity: .6; }
   .an-lock small { display: block; margin-top: 14px; font-size: 13px; line-height: 1.45; color: #94A3B8; }
   .an-lock small:empty { display: none; }
+  .an-top { background: rgba(11, 11, 15, .85) !important; border-bottom-color: rgba(255, 255, 255, .06) !important; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
      every screen, Chats and Me included (the top tabs only had Home / Watch buddies / Friends). */
   @media (min-width: 761px) {
     .an-links { display: none; }
     .an-bottom { display: flex; position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 50; gap: 4px; padding: 6px;
-      border-radius: 18px; background: rgba(15, 23, 42, .92); border: 1px solid rgba(148, 163, 184, .22); box-shadow: 0 12px 32px rgba(2, 6, 23, .55); backdrop-filter: blur(12px); }
+      border-radius: 18px; background: rgba(16, 16, 22, .92); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 12px 32px rgba(2, 6, 23, .55); backdrop-filter: blur(12px); }
     body .an-bottom a { display: flex; flex-direction: column; align-items: center; gap: 3px; box-sizing: border-box; width: 80px; min-width: 0; min-height: 0; padding: 8px 0; margin: 0; border-radius: 12px;
       color: #94A3B8; font: 600 12px var(--font-sans, system-ui); text-decoration: none; position: relative; }
     .an-bottom a:hover { color: #F8FAFC; background: rgba(148, 163, 184, .1); }
     .an-bottom a svg { width: 22px; height: 22px; }
-    .an-bottom a[aria-current="page"] { color: #F8FAFC; background: rgba(99, 102, 241, .18); } .an-bottom a[aria-current="page"] svg { color: #A5B4FC; }
+    .an-bottom a[aria-current="page"] { color: #F8FAFC; background: none; } .an-bottom a[aria-current="page"] svg { color: #A78BFA; }
+    .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 26%; right: 26%; bottom: 2px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); }
     .an-bottom .an-badge { top: 4px; right: calc(50% - 22px); }
     body.has-app-nav { padding-bottom: 100px; }
     body.has-app-nav.in-thread .an-bottom { display: none; } body.has-app-nav.in-thread { padding-bottom: 0; }
@@ -131,7 +133,7 @@
   @media (max-width: 760px) {
     .an-links { display: none; } .an-top { height: 56px; } .an-connect { font-size: 13px; padding: 8px 12px; }   /* no top offset (10-30): left from the sticky days, it slid every banner 56 px down onto the tab row */
     .an-bottom { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
-      background: rgba(15, 23, 42, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(148, 163, 184, .16); }
+      background: rgba(16, 16, 22, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(148, 163, 184, .16); }
     .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #94A3B8; font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
     .an-bottom a svg { width: 23px; height: 23px; }
     .an-bottom a[aria-current="page"] { color: #F8FAFC; } .an-bottom a[aria-current="page"] svg { color: #A5B4FC; }
