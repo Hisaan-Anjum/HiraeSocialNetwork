@@ -213,3 +213,8 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 .danger-zone-inner h3 { font-size: 15px !important; } .danger-zone-inner p { font-size: 13px !important; }
 @media (max-width: 760px) { .an-top { height: 56px !important; } }
 .avatar-edit-btn { width: 36px !important; height: 36px !important; min-width: 36px !important; min-height: 36px !important; max-height: 36px !important; aspect-ratio: 1 / 1; border-radius: 50% !important; padding: 0 !important; }
+@media (max-width: 640px) {
+  .profile-edit-pill { width: 32px !important; height: 32px !important; padding: 0 !important; justify-content: center !important; font-size: 0 !important; gap: 0 !important; border-radius: 50% !important; top: 14px !important; right: 14px !important; }
+  .profile-edit-pill svg { width: 14px !important; height: 14px !important; }
+  .profile-header .profile-header-inner:has(.profile-edit-pill) .profile-name { padding-right: 40px !important; }
+}
