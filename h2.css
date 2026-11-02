@@ -224,3 +224,4 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 .profile-header .profile-contact-note { grid-column: 1 / -1 !important; font-size: 13px; text-align: center; }
 .profile-header .profile-header-inner { grid-template-columns: 84px minmax(0, 1fr) !important; }
 .profile-header .profile-avatar-wrap { display: grid !important; place-items: center !important; } .profile-header .profile-avatar-wrap > .avatar, .profile-header .profile-avatar-wrap > .profile-avatar, .profile-header .profile-avatar-wrap > img { margin: 0 !important; grid-area: 1 / 1; }
+.profile-header .profile-contact-note { grid-column: 1 / -1 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center !important; justify-self: stretch; font-size: 13px; }

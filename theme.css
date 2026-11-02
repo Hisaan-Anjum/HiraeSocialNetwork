@@ -173,3 +173,6 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 }
 /* "Recommended together" flag sits on artwork: a dark glass pill with white text in both themes. */
 .recommendation-card-flag { background: rgba(15, 15, 22, .72) !important; color: #FFFFFF !important; backdrop-filter: blur(6px); }
+/* Founder 11-02: the friends grid sits centred when it fits (it still scrolls when it doesn't); the request note on one centred line. */
+.ms-chooser-grid { justify-content: safe center !important; }
+.profile-header .profile-contact-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center !important; justify-self: center; }
