@@ -158,3 +158,18 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 .ms-chooser-track { position: relative; height: 3px; margin: 10px auto 0; width: 64px; border-radius: 3px; background: rgba(255, 255, 255, .10); overflow: hidden; }
 :root[data-theme="light"] .ms-chooser-track { background: rgba(17, 12, 34, .10); }
 .ms-chooser-track span { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); transition: left .12s linear; }
+
+/* Founder 11-02: film page on phones fits the screen; text on the always-dark film hero stays light in light mode. */
+.movie-hero-info { min-width: 0; flex: 1 1 auto; }
+.movie-hero .movie-title, .movie-hero h1, .movie-hero h2 { color: #F8FAFC !important; overflow-wrap: anywhere; }
+.movie-hero .movie-meta { color: #CBD5E1 !important; }
+.movie-modal-actions { flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .movie-hero { padding: 40px 16px 24px !important; }
+  .movie-hero-inner { gap: 16px !important; align-items: flex-end; }
+  .movie-poster { width: 104px !important; }
+  .movie-title { font-size: 22px !important; line-height: 1.2; }
+  .movie-modal-actions .btn { flex: 1 1 auto; min-width: 0; }
+}
+/* "Recommended together" flag sits on artwork: a dark glass pill with white text in both themes. */
+.recommendation-card-flag { background: rgba(15, 15, 22, .72) !important; color: #FFFFFF !important; backdrop-filter: blur(6px); }
