@@ -3392,3 +3392,4 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .profile-header .profile-avatar-wrap > .avatar, .profile-header .profile-avatar-wrap > .profile-avatar, .profile-header .profile-avatar-wrap > img { width: 78px !important; height: 78px !important; max-width: 78px; border-radius: 50% !important; }
 .profile-header .profile-contact-note { grid-column: 1 / -1 !important; font-size: 13px; text-align: center; }
 .profile-header .profile-header-inner { grid-template-columns: 84px minmax(0, 1fr) !important; }
+.profile-header .profile-avatar-wrap { display: grid !important; place-items: center !important; } .profile-header .profile-avatar-wrap > .avatar, .profile-header .profile-avatar-wrap > .profile-avatar, .profile-header .profile-avatar-wrap > img { margin: 0 !important; grid-area: 1 / 1; }
