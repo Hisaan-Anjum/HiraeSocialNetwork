@@ -68,16 +68,50 @@
   .an-connect span { flex: 1; }
   .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
-  .an-connect.an-push { background: #B91C1C; flex-wrap: wrap; } .an-connect.an-push button.an-connect-cta { color: #991B1B; }
-  .an-connect.an-push.is-on { background: #15803D; } .an-ios-tip { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; max-width: 300px;
+  /* The push / install bar (founder 11-02): refined red, sticky above the header; phones get icon + two lines + full-width actions. */
+  .an-push { position: sticky; top: 0; z-index: 60; color: #fff; font-family: var(--font-sans, system-ui);
+    background: linear-gradient(135deg, #E0284A 0%, #B4153A 100%); box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 6px 18px rgba(127, 18, 46, .35); }
+  .an-push.is-on { background: linear-gradient(135deg, #16A34A, #15803D); box-shadow: 0 6px 18px rgba(21, 128, 61, .3); }
+  .an-push-in { display: flex; align-items: center; gap: 14px; padding: 10px max(16px, calc((100vw - 1120px) / 2)); }
+  .an-push-ico { flex: none; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-size: 19px; background: rgba(255,255,255,.16); }
+  .an-push-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .an-push-txt b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+  .an-push-txt span { font-size: 13px; line-height: 1.35; color: rgba(255,255,255,.86); }
+  .an-push-acts { flex: none; display: flex; align-items: center; gap: 8px; }
+  .an-push-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 0; font: 700 14px var(--font-sans, system-ui); cursor: pointer; white-space: nowrap; }
+  .an-push-btn.is-primary { background: #fff; color: #B4153A; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+  .an-push-btn.is-ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.7); }
+  .an-push-btn.is-quiet { background: transparent; color: rgba(255,255,255,.88); font-weight: 600; padding: 0 8px; }
+  .an-push-btn:disabled { opacity: .6; }
+  .an-push-x { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; }
+  .an-top { top: var(--push-h, 0px); }
+  @media (max-width: 760px) {
+    .an-push-in { flex-wrap: wrap; gap: 10px 12px; padding: 12px 16px; }
+    .an-push-txt { flex: 1 1 calc(100% - 52px); }
+    .an-push-acts { flex: 1 1 100%; }
+    .an-push-btn.is-primary { flex: 1; height: 42px; font-size: 15px; }
+    .an-push-btn.is-ghost { flex: 1; height: 42px; }
+  }
+  .an-ios-tip { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; max-width: 300px;
     padding: 14px 18px; border-radius: 16px; background: #fff; color: #111827; font: 700 15px/1.35 var(--font-sans, system-ui); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
   .an-ios-tip::after { content: ''; position: absolute; left: 50%; bottom: -9px; margin-left: -9px; border: 9px solid transparent; border-bottom: 0; border-top-color: #fff; }
-  .an-connect.an-push.an-push-sheet { position: fixed; z-index: 95; left: 16px; right: 16px; top: 30%; padding: 22px; border-radius: 20px; flex-direction: column;
-    text-align: center; font-size: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
-  .an-connect.an-push.an-push-sheet button.an-connect-cta { padding: 12px 22px; font-size: 16px; }
-  .an-ios-tip.an-tip-top { top: 12px; bottom: auto; left: auto; right: 10px; transform: none; }
+  .an-ios-tip.an-tip-top { top: calc(var(--push-h, 0px) + 12px); bottom: auto; left: auto; right: 10px; transform: none; max-width: 230px; }   /* under the bar, pointing up at Chrome's ⋮ */
   .an-ios-tip.an-tip-top::after { bottom: auto; top: -9px; left: auto; right: 14px; border: 9px solid transparent; border-top: 0; border-bottom-color: #fff; }
-  .an-connect-x.an-push-later { width: auto; padding: 0 12px; border-radius: 999px; font-weight: 600; }
+  /* The installed app's notifications popup: locks everything until it's on. */
+  html.an-locked, html.an-locked body { overflow: hidden !important; }
+  .an-lock { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 24px; background: rgba(2, 6, 23, .82);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-family: var(--font-sans, system-ui); }
+  .an-lock-card { width: 100%; max-width: 360px; padding: 32px 24px 24px; border-radius: 28px; text-align: center; color: #fff;
+    background: linear-gradient(180deg, #1E1B4B, #111827); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 30px 80px rgba(0,0,0,.55); }
+  .an-lock-ico { width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 24px; display: grid; place-items: center; font-size: 38px;
+    background: linear-gradient(135deg, #E0284A, #B4153A); box-shadow: 0 12px 30px rgba(224, 40, 74, .45); }
+  .an-lock h2 { margin: 0 0 8px; font-size: 24px; letter-spacing: -.02em; }
+  .an-lock p { margin: 0 0 22px; font-size: 15px; line-height: 1.5; color: #CBD5E1; }
+  .an-lock-btn { width: 100%; height: 52px; border: 0; border-radius: 16px; font: 700 16px var(--font-sans, system-ui); color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #E0284A, #B4153A); box-shadow: 0 10px 24px rgba(224, 40, 74, .35); }
+  .an-lock-btn:disabled { opacity: .6; }
+  .an-lock small { display: block; margin-top: 14px; font-size: 13px; line-height: 1.45; color: #94A3B8; }
+  .an-lock small:empty { display: none; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
      every screen, Chats and Me included (the top tabs only had Home / Watch buddies / Friends). */
@@ -144,6 +178,8 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu) { close(); btn.focus(); } });
     mark(); window.addEventListener('hashchange', () => { mark(); });
     badges(); setInterval(badges, 60000);
+    pushLock();
+    if (typeof webPushState === 'function') webPushState().catch(() => {});   // warms the push key alongside connect-state
     connectBanner();
   }
   // Founder 11-01 (emergency): people in matching weren't hearing about likes. 1 of 12 had push on; 5 had said no to the
@@ -192,11 +228,21 @@
   const installSaidNo = () => { try { return Date.now() - Number(localStorage.getItem('herae_install_no') || 0) < 7 * 864e5; } catch (e) { return false; } };
   const unblockLine = () => (/Android/.test(navigator.userAgent) ? 'Your browser said no. Tap ⋮ → Settings → Site settings → Notifications → Herae → Allow.'
     : 'Your browser said no. Click the icon left of the address and set Notifications to Allow.');
+  // The bars (founder 11-02: persistent, fast, beautiful on phones): sticky at the very top, above the sticky header, which
+  // (and Discover's tabs) move down by the bar's height (--push-h). Icon, a short title and line, one clear button.
+  const keepTop = (bar) => {
+    const set = () => document.documentElement.style.setProperty('--push-h', `${bar.isConnected ? bar.offsetHeight : 0}px`);
+    set(); if (window.ResizeObserver) new ResizeObserver(set).observe(bar);
+    new MutationObserver(() => { if (!bar.isConnected) set(); }).observe(document.body, { childList: true });
+  };
+  const pushOn = () => window.dispatchEvent(new Event('herae:push-on'));   // Discover's button shows ✓ at once
   async function pushBanner(st, text) {
     if (!st || !(st.matching || isPhone) || typeof webPushState !== 'function') return;
     lastSt = st;
+    if (isPhone && inApp) return;   // the installed app asks with its own popup (pushLock)
     if (isPhone && !inApp && await appInstalled()) return;   // the app asks there, not this browser
-    const ext = await new Promise((resolve) => {
+    // Phones can't run the extension: no 1.5 s wait for its answer there.
+    const ext = isPhone ? false : await new Promise((resolve) => {
       const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(e.data); } };
       window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
     });
@@ -213,55 +259,91 @@
     else if (state === 'unsupported' && isIos && !inApp) return;   // said no to installing: an iPhone browser can't notify, email does
     if (state === 'ext' || state === 'on' || state === 'unsupported') return;
     if (document.getElementById('pushBar')) return;   // a second call raced this one
-    const bar = document.createElement('div'); bar.className = 'an-connect an-push'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
-    const msg = document.createElement('span'); bar.append(msg);
+    const bar = document.createElement('div'); bar.className = 'an-push'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
+    bar.innerHTML = '<div class="an-push-in"><span class="an-push-ico" aria-hidden="true"></span><div class="an-push-txt"><b></b><span></span></div><div class="an-push-acts"></div></div>';
+    const ico = bar.querySelector('.an-push-ico'), title = bar.querySelector('.an-push-txt b'), msg = bar.querySelector('.an-push-txt span'), acts = bar.querySelector('.an-push-acts');
+    const say = (i, t, m) => { ico.textContent = i; title.textContent = t; msg.textContent = m; };   // text only, never markup
+    const button = (label, onclick, kind = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = `an-push-btn ${kind}`; b.textContent = label; b.onclick = onclick; acts.append(b); return b; };
+    const settle = (i, t, m) => { bar.classList.add('is-on'); acts.textContent = ''; say(i, t, m); setTimeout(() => bar.remove(), 3500); };
+    const installedNote = () => { markInstalled(); trackEvent('web_push', { action: 'install_yes' }); settle('✓', 'Herae is on your home screen', 'Open it from there. It asks once for notifications.'); };
+    const done = () => { pushOn(); settle('✓', 'Notifications are on', 'You’ll hear about likes and messages on this device.'); };
     const waiting = Number(st.likedBy || 0);
-    const why = text || (waiting ? `${waiting === 1 ? 'Someone likes' : `${waiting} people like`} you on Herae. Turn on notifications so you don’t miss them.`
-      : 'Turn on notifications so you know the moment someone likes you or says hi.');
-    const button = (label, onclick) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'an-connect-cta'; b.textContent = label; b.onclick = onclick; bar.append(b); return b; };
-    const installedNote = () => { markInstalled(); trackEvent('web_push', { action: 'install_yes' }); bar.classList.add('is-on'); bar.textContent = '';
-      const s = document.createElement('span'); s.textContent = '✓ Herae is on your home screen. Open it from there; it asks once for notifications.'; bar.append(s); };
-    const done = () => { bar.classList.add('is-on'); bar.textContent = ''; const s = document.createElement('span'); s.textContent = '✓ Notifications are on. You’ll hear about likes and messages on this device.'; bar.append(s); setTimeout(() => bar.remove(), 4000); };
     if (state === 'off') {
-      msg.textContent = why;
+      if (text) say('🔔', 'Turn on notifications', text);
+      else if (waiting) say('💜', waiting === 1 ? 'Someone likes you' : `${waiting} people like you`, 'Turn on notifications so you don’t miss them.');
+      else say('🔔', 'Turn on notifications', 'Know the moment someone likes you or says hi.');
       const go = button('Turn on notifications', async () => {
         go.disabled = true;
         if (await enableWebPush()) return done();
         go.disabled = false;
         if (Notification.permission === 'denied') return pushBanner(st, text);
         // Closed the box, or Chrome showed only its quiet crossed-out bell in the address bar.
-        msg.textContent = 'Your browser hid the question. Click the bell in the address bar and choose Allow, or tap here again.';
-      });
+        msg.textContent = 'Your browser hid the question. Tap the bell in the address bar and choose Allow, or try again.';
+      }, 'is-primary');
     } else if (state === 'blocked') {
-      msg.textContent = 'Notifications are blocked for Herae, so you’ll miss likes and messages.';
+      say('🔕', 'Notifications are blocked', 'You’ll miss likes and messages.');
       const go = button('Turn on notifications', async () => {
         go.disabled = true;
         if (await enableWebPush()) return done();
         go.disabled = false; msg.textContent = unblockLine();
-      });
+      }, 'is-primary');
       // Allowed in the site settings while this page is open: subscribe then and there.
       navigator.permissions && navigator.permissions.query({ name: 'notifications' }).then((p) => {
         p.onchange = async () => { if (p.state === 'granted' && await enableWebPush()) { trackEvent('web_push', { action: 'unblocked' }); done(); } };
       }).catch(() => {});
-    } else {   // install: the phone's real app box on Android Chrome; on iPhone (and browsers without one) how to add it
+    } else {   // install: the phone's real app box on Android Chrome; on iPhone, Safari's Share button
       const no = () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ }
         trackEvent('web_push', { action: 'install_no' }); pushBanner(st, text); };
-      msg.textContent = 'Get the Herae app so you never miss a like or a message.';
-      const go = button('Install app', async () => { go.disabled = true; const r = await runInstall(); go.disabled = false; if (r === true) installedNote(); else if (r === false) no(); });
-      const later = document.createElement('button'); later.type = 'button'; later.className = 'an-connect-x an-push-later'; later.textContent = 'Not now'; later.onclick = no; bar.append(later);
+      say('📲', 'Get the Herae app', 'Never miss a like or a message.');
+      const go = button('Install app', async () => { go.disabled = true; const r = await runInstall(); go.disabled = false; if (r === true) installedNote(); else if (r === false) no(); }, 'is-primary');
+      button('Not now', no, 'is-quiet');
     }
     if ((state === 'off' || state === 'blocked') && isPhone && !inApp && !isIos) {
-      const again = button('Install app', async () => { again.disabled = true; const r = await runInstall(); again.disabled = false; if (r === true) installedNote(); });
+      const again = button('Install app', async () => { again.disabled = true; const r = await runInstall(); again.disabled = false; if (r === true) installedNote(); }, 'is-ghost');
     }
-    if (state !== 'install') {
-      const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
-      x.onclick = () => bar.remove(); bar.append(x);
+    // Desktop can tuck it away for this page; on phones, once the install was turned down, it stays (founder 11-02).
+    if (state !== 'install' && !isPhone) {
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'an-push-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
+      x.onclick = () => bar.remove(); bar.querySelector('.an-push-in').append(x);
     }
-    document.body.prepend(bar);   // the very top, above the sticky header (founder 11-01: a red bar at the top)
-    // Opening the installed app: the ask comes up front and centre, once per open (the box itself needs this one tap).
-    if (inApp && state === 'off') bar.classList.add('an-push-sheet');
+    document.body.prepend(bar); keepTop(bar);
     const browse = document.querySelector('.an-connect[data-step="browse"]'); if (browse) browse.remove();   // see connectBanner: one bar, not two
     if (typeof trackEvent === 'function') trackEvent('web_push', { action: { off: 'shown', blocked: 'blocked_shown', install: 'install_shown' }[state] });
+  }
+  // The installed app on a phone (founder 11-02): until notifications are on, a popup that locks the whole app, shown the
+  // instant it opens (no network needed to decide). Blocked → the one line to allow it; re-checked whenever they come back.
+  function pushLock() {
+    if (!(isPhone && inApp) || !('Notification' in window) || !('PushManager' in window) || typeof enableWebPush !== 'function') return;
+    if (Notification.permission === 'granted') {   // allowed already: make sure this device is subscribed, silently
+      webPushState().then((st) => { if (st === 'off') enableWebPush().then((ok) => ok && pushOn()); }).catch(() => {});
+      return;
+    }
+    if (document.getElementById('pushLock')) return;
+    const lock = document.createElement('div'); lock.id = 'pushLock'; lock.className = 'an-lock';
+    lock.setAttribute('role', 'dialog'); lock.setAttribute('aria-modal', 'true'); lock.setAttribute('aria-labelledby', 'pushLockT');
+    lock.innerHTML = '<div class="an-lock-card"><div class="an-lock-ico" aria-hidden="true">🔔</div><h2 id="pushLockT">Turn on notifications</h2>'
+      + '<p></p><button type="button" class="an-lock-btn">Turn on notifications</button><small></small></div>';
+    const p = lock.querySelector('p'), btn = lock.querySelector('button'), small = lock.querySelector('small');
+    const blocked = () => { p.textContent = 'Notifications are blocked for Herae.'; small.textContent = unblockLine(); btn.textContent = 'I’ve allowed it'; };
+    p.textContent = 'Herae tells you the moment someone likes you, messages you or is ready to watch.';
+    if (Notification.permission === 'denied') blocked();
+    // The popup lives outside <body>, so the whole page (and anything added to it later) is inert behind it.
+    const unlock = () => { lock.remove(); document.body.inert = false; document.documentElement.classList.remove('an-locked'); pushOn(); };
+    const check = async () => { if (Notification.permission === 'granted' && await enableWebPush()) { trackEvent('web_push', { action: 'on' }); unlock(); } };
+    btn.onclick = async () => {
+      btn.disabled = true;
+      if (Notification.permission === 'default' && await enableWebPush()) { btn.disabled = false; return unlock(); }
+      btn.disabled = false;
+      if (Notification.permission === 'denied') blocked(); else await check();
+    };
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && lock.isConnected) check(); });
+    navigator.permissions && navigator.permissions.query({ name: 'notifications' }).then((s) => { s.onchange = () => { if (lock.isConnected) check(); }; }).catch(() => {});
+    document.body.inert = true;   // nothing behind it can be reached
+    document.documentElement.classList.add('an-locked');
+    document.documentElement.append(lock);
+    if (typeof trackEvent === 'function') trackEvent('web_push', { action: Notification.permission === 'denied' ? 'blocked_shown' : 'shown' });
+    // Push not configured on this server: never trap anyone behind a popup that can't succeed.
+    webPushState().then((st) => { if (st === 'unsupported') unlock(); }).catch(() => {});
   }
   // Discover's "after a yes" asks about THAT person through the same bar.
   window.heraePushBar = async (text) => { try { pushBanner(await apiRequest('/api/profile/watch/connect-state'), text); } catch (e) { /* signed out or offline */ } };

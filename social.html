@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="h2.css">
 <style>
   body { margin: 0; min-height: 100dvh; }
-  .s-tabs { display: flex; gap: var(--h-1); padding: 0 max(var(--h-4), calc((100vw - 1120px) / 2)); border-bottom: 1px solid var(--h-line); position: sticky; top: 60px; background: var(--h-bg); z-index: 5; }
+  .s-tabs { display: flex; gap: var(--h-1); padding: 0 max(var(--h-4), calc((100vw - 1120px) / 2)); border-bottom: 1px solid var(--h-line); position: sticky; top: calc(60px + var(--push-h, 0px)); background: var(--h-bg); z-index: 5; }
   .s-tab { position: relative; min-height: var(--h-tap); padding: 0 var(--h-4); background: none; border: 0; color: var(--h-text-2); font: 600 var(--h-size-sm) var(--h-font-body); cursor: pointer; border-bottom: 2px solid transparent; }
   .s-tab[aria-selected="true"] { color: var(--h-text); border-bottom-color: var(--h-accent); }
   .s-badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--h-coral); color: #1b0d09; font-size: 11px; line-height: 18px; text-align: center; }
@@ -20,7 +20,7 @@
   .s-tab { white-space: nowrap; }
   @media (max-width: 640px) {
     /* phones: the global bottom bar is the main nav; these become a row of pills under the header */
-    .s-tabs { top: 56px; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--h-line); }
+    .s-tabs { top: calc(56px + var(--push-h, 0px)); gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--h-line); }
     .s-tabs::-webkit-scrollbar { display: none; }
     /* "Watch parties" (10-30) made the row wider than a 390 px phone: tighter pills fit it there; narrower phones scroll,
        and the fade at the right edge says so instead of a pill cut in half. */
@@ -455,15 +455,18 @@
         const fine = el('p', { class: 'muted dz-empty-fine' }, 'Our emails sometimes land in Gmail’s Promotions tab. Move one to Primary and you’ll see the rest.');
         const partyLink = el('a', { href: '#parties', class: 'dz-empty-link' }, 'Join a watch party');
         const fallback = () => { hero.textContent = ''; if (!widenBtn) partyLink.hidden = true; hero.append(widenBtn || el('a', { class: 'hb hb-primary dz-empty-cta', href: '#parties' }, 'Find a watch party')); };
+        // On already (or turned on by the bar or the app's popup while this is open): shown as done, never asked again.
+        const showOn = () => { fine.hidden = true; hero.textContent = ''; hero.append(el('p', { class: 'dz-empty-on' }, '✓ Notifications on'), widenBtn || ''); };
+        window.addEventListener('herae:push-on', () => { if (hero.isConnected) showOn(); }, { once: true });
         webPushState().then((st) => {
           if (st === 'off') {
             const b = el('button', { type: 'button', class: 'hb hb-primary dz-empty-cta', onclick: async () => {
               b.disabled = true; const ok = await enableWebPush();
-              if (ok) { fine.hidden = true; hero.textContent = ''; hero.append(el('p', { class: 'dz-empty-on' }, '✓ Notifications on'), widenBtn || ''); }
+              if (ok) showOn();
               else { b.disabled = false; toast('No problem, we’ll email you instead.'); }
             } }, '🔔 Turn on notifications');
             hero.append(b); trackEvent('web_push', { action: 'shown' });
-          } else if (st === 'on') { fine.hidden = true; hero.append(el('p', { class: 'dz-empty-on' }, '✓ Notifications on')); if (widenBtn) hero.append(widenBtn); }
+          } else if (st === 'on') showOn();
           else fallback();   // blocked or unsupported (iPhone Safari): email is the channel
         }).catch(fallback);
         const partySlot = el('div'); deckParties().then((c) => { if (c) partySlot.append(c); });
