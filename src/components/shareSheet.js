@@ -329,6 +329,8 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
         await setMomentPrivacy(moment.id, 'public', 'share');
         isPublic = true;
         moment.privacy = 'public';
+        // Every card for this moment on the page: its Edit form reads data-privacy (founder 11-02: it still said private).
+        document.querySelectorAll(`[data-moment-id="${moment.id}"]`).forEach((c) => { c.dataset.privacy = 'public'; const sel = c.querySelector('.privacy-select'); if (sel) sel.value = 'public'; });
         const note = overlay.querySelector('#shareNote');
         if (note) note.innerHTML = 'Anyone with the link can now see this moment. You can make it private again from its ⋯ menu.';
         setStatus('Done — the link now opens for anyone you send it to ✓', 'ok');

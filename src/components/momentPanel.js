@@ -53,6 +53,8 @@ export function momentViewerOpts(tile) {
 function buildPanel(m, session) {
   const seconds = m.durationMs ? Math.round(m.durationMs / 1000) : null;
   const reviews = session.reviews || [];
+  // The panel carries the moment's id and privacy like a card does, so Edit reads the real privacy, not "private".
+  host().dataset.momentId = m.id; host().dataset.privacy = m.privacy || 'private'; host().classList.add('mvp-card');
   host().innerHTML = `
     <div class="mvp-session-line">
       <a href="session.html?session=${encodeURIComponent(session.clientSessionId)}">

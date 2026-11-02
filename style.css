@@ -1557,9 +1557,27 @@ html { scroll-behavior: smooth; }
   border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
 }
 @media (max-width: 860px) {
-  .mv-overlay.has-panel { flex-direction: column; }
-  .mv-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); max-height: 46vh; }
+  /* Phones (founder 11-02: couldn't reach the comments): the whole viewer scrolls, the picture on top, the details as a
+     sheet under it, never a squeezed column. */
+  .mv-overlay.has-panel { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .mv-overlay.has-panel .mv-main { flex: none; min-height: 62vh; }
+  .mv-overlay.has-panel .mv-stage { min-height: 50vh; }
+  .mv-panel { width: 100%; max-height: none; overflow: visible; border: 0; border-radius: 22px 22px 0 0; margin-top: -8px;
+    padding: 20px 18px calc(28px + env(safe-area-inset-bottom)); background: #111827; box-shadow: 0 -12px 32px rgba(0,0,0,.35); }
 }
+/* Edit and Delete in the open moment are buttons you can see, not hidden behind ⋯ (founder 11-02). */
+.mv-panel .post-menu-btn { display: none; }
+.mv-panel .post-menu-list, .mv-panel .post-menu-list[hidden] { display: flex !important; position: static; gap: 8px; background: none; border: 0; box-shadow: none; padding: 0; margin-left: auto; }
+.mv-panel .post-menu-item { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,.04); font-size: 13px; white-space: nowrap; }
+/* Your header on Home and on Herae pages: the Profile tab's card (founder 11-02: "beautiful, make every banner like this"). */
+.profile-header .profile-header-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; text-align: left;
+  padding: 22px; border-radius: 22px; border: 1px solid rgba(129, 140, 248, .28); background: linear-gradient(160deg, rgba(49, 46, 129, .55), rgba(15, 23, 42, .6)); }
+.profile-header .profile-headtext { flex: 1; min-width: 180px; }
+.profile-header .profile-name { font-size: 30px; line-height: 1.1; margin: 0; }
+.profile-header .profile-meta { margin: 6px 0 10px; justify-content: flex-start; }
+.profile-header .profile-stats { justify-content: flex-start; gap: 22px; }
+.profile-header .profile-actions { flex-basis: 100%; display: flex; gap: 10px; justify-content: flex-start; }
+@media (max-width: 760px) { .profile-header .profile-header-inner { padding: 18px; } .profile-header .profile-avatar-wrap { flex: none; } }
 
 /* ── Search results page ── */
 .search-page-bar { display: flex; gap: 10px; margin-bottom: 30px; }

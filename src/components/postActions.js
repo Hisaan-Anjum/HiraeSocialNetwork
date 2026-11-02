@@ -63,7 +63,7 @@ function closeAllMenus(root) {
 // moment/review on a session card — the card itself, so the feed reflects
 // the deletion immediately without a full reload.
 function removeAndTidy(el) {
-  const card = el.closest('.feed-card, .moment-card, .post-detail-card');
+  const card = el.closest('.feed-card, .moment-card, .post-detail-card, .mvp-card');
   el.remove();
   if (!card) return;
   const stillHasContent = card.querySelector('.media-tile-img, .media-tile-video, .review-body');
@@ -104,7 +104,7 @@ export function attachPostActionHandlers(container, opts = {}) {
         if (postType === 'moment') {
           // The whole card in a single-moment context; just this tile in a
           // session carousel of several.
-          const tile = menu.closest('.carousel-item') || menu.closest('.moment-card, .post-detail-card');
+          const tile = menu.closest('.carousel-item') || menu.closest('.moment-card, .post-detail-card, .mvp-card');
           removeAndTidy(tile || menu);
         } else {
           removeAndTidy(menu.closest('.session-review, .review-block') || menu);
