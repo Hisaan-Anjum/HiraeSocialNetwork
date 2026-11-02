@@ -4,6 +4,17 @@
 // Pages keep their old header in the DOM (their scripts still bind to its buttons) but it is hidden.
 // Classic global script, loaded after api.js; does nothing for signed-out visitors.
 (function () {
+  // Theme (founder 11-02): Light / Dark / Auto from Account settings (localStorage 'herae_theme'; Auto follows the
+  // device). Runs first, before the auth check, so the page paints in the right theme; theme.css reads data-theme.
+  const applyTheme = () => {
+    let pref = 'auto';
+    try { pref = localStorage.getItem('herae_theme') || 'auto'; } catch (e) { /* storage blocked: Auto */ }
+    const light = pref === 'light' || (pref !== 'dark' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
+    document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  };
+  applyTheme();
+  window.heraeApplyTheme = applyTheme;
+  try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); } catch (e) { /* old browser: fixed until reload */ }
   if (typeof getAuth !== 'function' || !getAuth()) return;
   const me = getAuth().username;
   try {
@@ -40,28 +51,29 @@
   const css = `
   body.has-app-nav > .topbar, body.has-app-nav > header.h-topbar, body.has-app-nav .topbar:not(.an-top) { display: none !important; }
   .an-top { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 max(16px, calc((100vw - 1120px) / 2));
-    background: rgba(15, 23, 42, .86); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid rgba(148, 163, 184, .16);
+    background: var(--nav-bg, rgba(11, 11, 15, .86)); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--nav-line, rgba(255, 255, 255, .07));
     font-family: var(--font-sans, system-ui, sans-serif); }
   .an-brand { display: flex; align-items: center; margin-right: 16px; } .an-brand img { height: 26px; width: auto; display: block; }
+  :root[data-theme="light"] .an-brand img { content: url("herae-logo.svg"); }   /* the dark-ink lock-up on light */
   .an-links { display: flex; gap: 2px; flex: 1; }
-  .an-links a { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px; color: #94A3B8; font-weight: 600; font-size: 14.5px; text-decoration: none; position: relative; }
+  .an-links a { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px; color: var(--nav-ink, #94A3B8); font-weight: 600; font-size: 14.5px; text-decoration: none; position: relative; }
   .an-links a svg { width: 18px; height: 18px; }
-  .an-links a:hover { color: #F8FAFC; background: rgba(148, 163, 184, .1); }
-  .an-links a[aria-current="page"] { color: #F8FAFC; background: rgba(99, 102, 241, .16); }
+  .an-links a:hover { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-hover, rgba(148, 163, 184, .1)); }
+  .an-links a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-active, rgba(99, 102, 241, .16)); }
   .an-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-  .an-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #CBD5E1; background: none; border: 0; cursor: pointer; text-decoration: none; }
+  .an-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--nav-ink-on, #CBD5E1); background: none; border: 0; cursor: pointer; text-decoration: none; }
   .an-bell { position: relative; }   /* the bell's count sits on its corner */
-  .an-icon:hover { background: rgba(148, 163, 184, .12); color: #F8FAFC; } .an-icon svg { width: 20px; height: 20px; }
-  .an-menu-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; font: 600 14px var(--font-sans, inherit); cursor: pointer; }
+  .an-icon:hover { background: var(--nav-hover, rgba(148, 163, 184, .12)); color: var(--nav-ink-on, #F8FAFC); } .an-icon svg { width: 20px; height: 20px; }
+  .an-menu-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 11px; border-radius: 999px; border: 1px solid rgba(var(--fg-rgb, 255, 255, 255), .14); background: rgba(var(--fg-rgb, 255, 255, 255), .05); color: var(--nav-ink-on, #fff); font: 600 14px var(--font-sans, inherit); cursor: pointer; }
   .an-menu-btn svg { width: 20px; height: 20px; }
-  .an-menu-btn:hover, .an-menu-btn[aria-expanded="true"] { background: rgba(255,255,255,.14); }
+  .an-menu-btn:hover, .an-menu-btn[aria-expanded="true"] { background: rgba(var(--fg-rgb, 255, 255, 255), .1); }
   .an-menu-btn:focus-visible { outline: 2px solid #A78BFA; outline-offset: 2px; }
   @media (max-width: 640px) { .an-menu-btn { width: 40px; padding: 0; justify-content: center; } .an-menu-btn span { display: none; } }
-  .an-menu { position: absolute; right: max(16px, calc((100vw - 1120px) / 2)); top: 56px; min-width: 220px; padding: 6px; border-radius: 14px; background: #111827; border: 1px solid #334155;
-    box-shadow: 0 18px 48px rgba(2, 6, 23, .55); list-style: none; margin: 0; z-index: 60; }
-  .an-menu .an-who { padding: 10px 12px 8px; color: #94A3B8; font-size: 12.5px; border-bottom: 1px solid #1E293B; margin-bottom: 4px; } .an-menu .an-who b { display: block; color: #F8FAFC; font-size: 14px; }
-  .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: #E2E8F0; font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
-  .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: #1E293B; outline: none; }
+  .an-menu { position: absolute; right: max(16px, calc((100vw - 1120px) / 2)); top: 56px; min-width: 220px; padding: 6px; border-radius: 14px; background: var(--menu-bg, #111827); border: 1px solid var(--menu-line, #334155);
+    box-shadow: 0 18px 48px rgba(2, 6, 23, .35); list-style: none; margin: 0; z-index: 60; }
+  .an-menu .an-who { padding: 10px 12px 8px; color: var(--menu-ink-2, #94A3B8); font-size: 12.5px; border-bottom: 1px solid var(--menu-line, #1E293B); margin-bottom: 4px; } .an-menu .an-who b { display: block; color: var(--menu-ink, #F8FAFC); font-size: 14px; }
+  .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: var(--menu-ink, #E2E8F0); font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
+  .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: var(--menu-hover, #1E293B); outline: none; }
   .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: #EC4899; color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
   .an-connect { position: relative; z-index: 45;   /* not sticky (10-28): stuck at the same top as the Discover tabs, it covered them on phones */ display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
     background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 600 14px/1.35 var(--font-sans, system-ui); }
@@ -112,19 +124,18 @@
   .an-lock-btn:disabled { opacity: .6; }
   .an-lock small { display: block; margin-top: 14px; font-size: 13px; line-height: 1.45; color: #94A3B8; }
   .an-lock small:empty { display: none; }
-  .an-top { background: rgba(11, 11, 15, .85) !important; border-bottom-color: rgba(255, 255, 255, .06) !important; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
      every screen, Chats and Me included (the top tabs only had Home / Watch buddies / Friends). */
   @media (min-width: 761px) {
     .an-links { display: none; }
     .an-bottom { display: flex; position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 50; gap: 4px; padding: 6px;
-      border-radius: 18px; background: rgba(16, 16, 22, .92); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 12px 32px rgba(2, 6, 23, .55); backdrop-filter: blur(12px); }
+      border-radius: 20px; background: var(--nav-bg, rgba(16, 16, 22, .92)); border: 1px solid var(--nav-line, rgba(255, 255, 255, .08)); box-shadow: 0 14px 36px -8px rgba(2, 6, 23, .45); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); }
     body .an-bottom a { display: flex; flex-direction: column; align-items: center; gap: 3px; box-sizing: border-box; width: 80px; min-width: 0; min-height: 0; padding: 8px 0; margin: 0; border-radius: 12px;
-      color: #94A3B8; font: 600 12px var(--font-sans, system-ui); text-decoration: none; position: relative; }
-    .an-bottom a:hover { color: #F8FAFC; background: rgba(148, 163, 184, .1); }
+      color: var(--nav-ink, #94A3B8); font: 600 12px var(--font-sans, system-ui); text-decoration: none; position: relative; }
+    .an-bottom a:hover { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-hover, rgba(148, 163, 184, .1)); }
     .an-bottom a svg { width: 22px; height: 22px; }
-    .an-bottom a[aria-current="page"] { color: #F8FAFC; background: none; } .an-bottom a[aria-current="page"] svg { color: #A78BFA; }
+    .an-bottom a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); background: none; } .an-bottom a[aria-current="page"] svg { color: var(--nav-icon-on, #A5B4FC); }
     .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 26%; right: 26%; bottom: 2px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); }
     .an-bottom .an-badge { top: 4px; right: calc(50% - 22px); }
     body.has-app-nav { padding-bottom: 100px; }
@@ -133,10 +144,11 @@
   @media (max-width: 760px) {
     .an-links { display: none; } .an-top { height: 56px; } .an-connect { font-size: 13px; padding: 8px 12px; }   /* no top offset (10-30): left from the sticky days, it slid every banner 56 px down onto the tab row */
     .an-bottom { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
-      background: rgba(16, 16, 22, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(148, 163, 184, .16); }
-    .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #94A3B8; font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
+      background: var(--nav-bg, rgba(16, 16, 22, .94)); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-top: 1px solid var(--nav-line, rgba(148, 163, 184, .16)); }
+    .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--nav-ink, #94A3B8); font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
     .an-bottom a svg { width: 23px; height: 23px; }
-    .an-bottom a[aria-current="page"] { color: #F8FAFC; } .an-bottom a[aria-current="page"] svg { color: #A5B4FC; }
+    .an-bottom a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); } .an-bottom a[aria-current="page"] svg { color: var(--nav-icon-on, #A5B4FC); }
+    .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 30%; right: 30%; bottom: 5px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); }
     .an-bottom .an-badge { top: 4px; right: calc(50% - 22px); }
     body.has-app-nav { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
     body.has-app-nav.in-thread .an-bottom { display: none; } body.has-app-nav.in-thread { padding-bottom: 0; }

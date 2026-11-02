@@ -227,7 +227,19 @@ function renderHeader(profile) {
 function renderDangerZone(profile) {
   const zone = document.createElement('div');
   zone.className = 'danger-zone';
+  let themePref = 'auto';
+  try { themePref = localStorage.getItem('herae_theme') || 'auto'; } catch (e) { /* storage blocked: Auto */ }
   zone.innerHTML = `
+    <div class="danger-zone-inner settings-theme" style="margin-bottom:14px">
+      <div>
+        <h3>Appearance</h3>
+        <p>Light, dark, or Auto to match your device.</p>
+      </div>
+      <div class="theme-seg" role="radiogroup" aria-label="Theme">
+        ${[['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']].map(([v, l]) =>
+          `<button type="button" role="radio" data-theme-choice="${v}" aria-checked="${themePref === v}">${l}</button>`).join('')}
+      </div>
+    </div>
     <div class="danger-zone-inner" style="margin-bottom:14px">
       <div>
         <h3>Sign out everywhere</h3>
@@ -246,6 +258,13 @@ function renderDangerZone(profile) {
     </div>`;
   headerEl.appendChild(zone);
   zone.querySelector('#deleteAccountBtn').addEventListener('click', () => openDeleteModal(profile));
+  zone.querySelectorAll('[data-theme-choice]').forEach((btn) => btn.addEventListener('click', () => {
+    const v = btn.dataset.themeChoice;
+    try { localStorage.setItem('herae_theme', v); } catch (e) { /* storage blocked: this page only */ }
+    if (typeof window.heraeApplyTheme === 'function') window.heraeApplyTheme();
+    else document.documentElement.dataset.theme = v === 'auto' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : v;
+    zone.querySelectorAll('[data-theme-choice]').forEach((o) => o.setAttribute('aria-checked', String(o === btn)));
+  }));
   zone.querySelector('#signOutAllBtn').addEventListener('click', async (e) => {
     const b = e.currentTarget;
     if (!window.confirm('Sign out on every device, including this one?')) return;

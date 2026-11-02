@@ -1,4 +1,5 @@
 @import url("brand-tokens.css");
+@import url("theme.css");
 /* h2.css — Herae 2.0 components on the Connected H brand (brand/tokens/herae-tokens.css is the source of truth;
    these --h-* names map onto it so the 2.0 pages didn't need rewriting). Rebrand 2026-10-22: the earlier warm
    amber/ink direction is replaced by midnight navy + indigo, pink for the human "watch together" moments, DM Sans. */
@@ -8,9 +9,9 @@
   --h-bg: var(--hz-bg);
   --h-surface: var(--hz-surface);
   --h-surface-2: var(--hz-surface-2);
-  --h-surface-3: #273449;
-  --h-line: rgba(148, 163, 184, 0.16);
-  --h-line-strong: rgba(148, 163, 184, 0.32);
+  --h-surface-3: #262545;
+  --h-line: rgba(255, 255, 255, 0.08);
+  --h-line-strong: rgba(255, 255, 255, 0.16);
   --h-text: var(--hz-text);
   --h-text-2: #CBD5E1;
   --h-text-3: var(--hz-text-2);  /* ≥ 4.5:1 on navy for body-size text */
@@ -119,14 +120,29 @@
 .h2 .h-brand img { display: block; height: 26px; width: auto; }
 .h2 .h-brand { font-family: var(--h-font-display); font-size: var(--h-size-lg); font-weight: 600; color: var(--h-text); text-decoration: none; }
 
-/* Theme 2026-11 (founder 11-02): same near-black, glow and gradient as style.css. */
-body.h2 { background: radial-gradient(1100px 560px at 100% -8%, rgba(236, 72, 153, .16), transparent 60%),
-  radial-gradient(900px 520px at -12% 4%, rgba(99, 102, 241, .14), transparent 60%), #0B0B0F; background-attachment: fixed; }
-.h2 .hb-primary { background: linear-gradient(90deg, #6366F1, #EC4899); border: 0; border-radius: 999px; }
-.h2 .hb-secondary { border-radius: 999px; background: rgba(255, 255, 255, .04); }
-.wp-me { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 240' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%236366F1' stop-opacity='0'/%3E%3Cstop offset='.55' stop-color='%236366F1' stop-opacity='.35'/%3E%3Cstop offset='1' stop-color='%23EC4899' stop-opacity='.55'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M170 0C230 60 260 120 400 140V0z' fill='url(%23g)'/%3E%3Cpath d='M250 0c40 70 80 110 150 120V0z' fill='url(%23g)' opacity='.8'/%3E%3Cpath d='M320 0c20 40 40 60 80 70V0z' fill='%23EC4899' opacity='.35'/%3E%3C/svg%3E") right top / 75% 100% no-repeat, linear-gradient(160deg, rgba(67, 56, 202, .42), rgba(30, 27, 75, .55) 55%, rgba(17, 17, 27, .9)) !important; border-color: rgba(255, 255, 255, .08) !important; border-radius: 24px !important; }
+/* Theme 2026-11 (founder 11-02; tokens in theme.css, shared with style.css): same page, cards and actions. */
+body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: fixed; -webkit-font-smoothing: antialiased; }
+.h2 .h-card { background: var(--surface-post); border-color: var(--card-line); border-radius: 20px; box-shadow: var(--card-shadow); }
+.h2 .hb { border-radius: 999px; }
+.h2 .hb-primary { background: var(--grad-cta); border: 0; color: #fff; box-shadow: 0 10px 24px -10px rgba(79, 70, 229, .7), inset 0 1px 0 rgba(255, 255, 255, .16); }
+.h2 .hb-primary:hover { background: var(--grad-cta); filter: brightness(1.08); }
+.h2 .hb-secondary { background: rgba(var(--fg-rgb), .05); border-color: rgba(var(--fg-rgb), .14); }
+.h2 .hb-secondary:hover { background: rgba(var(--fg-rgb), .09); }
+.h2 .hi { border-radius: 14px; }
+/* Profile card: the header card from the mock-up (wave corner, three stats with dividers, one wide pill). */
+.wp-me { background: var(--wave) right top / clamp(200px, 64%, 380px) auto no-repeat, var(--hero-bg) !important; border: 1px solid var(--hero-line) !important;
+  border-radius: 24px !important; box-shadow: var(--card-shadow); }
 .wp-me { display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "av name" "av meta" "stats stats" "act act"; column-gap: 20px; }
-.wp-me-txt { display: contents; } .wp-me-av { grid-area: av; } .wp-me-name { grid-area: name; align-self: end; } .wp-me-meta { grid-area: meta; align-self: start; }
-.wp-me-stats { grid-area: stats; display: grid !important; grid-template-columns: repeat(3, 1fr); margin: 18px 0 14px; gap: 0 !important; text-align: center; }
-.wp-me-stats span + span { border-left: 1px solid rgba(255, 255, 255, .1); }
-.wp-me #mePage { grid-area: act; justify-content: center; text-align: center; padding: 13px 18px; }
+.wp-me-txt { display: contents; } .wp-me-av { grid-area: av; background: var(--grad-ring) !important; } .wp-me-name { grid-area: name; align-self: end; color: var(--h-text); }
+.wp-me-meta { grid-area: meta; align-self: start; color: var(--stat-label) !important; }
+.wp-me-meta b { color: var(--hz-success) !important; }
+.wp-me-stats { grid-area: stats; display: grid !important; grid-template-columns: repeat(3, 1fr); margin: 18px 0 14px; gap: 0 !important; text-align: center; color: var(--stat-label) !important; }
+.wp-me-stats b { color: var(--h-text) !important; font-weight: 750; letter-spacing: -0.02em; }
+.wp-me-stats span + span { border-left: 1px solid rgba(var(--fg-rgb), .1); }
+.wp-me #mePage { grid-area: act; justify-content: center; text-align: center; padding: 13px 18px; border-radius: 999px; background: var(--pill-bg); border: 1px solid var(--pill-line); color: var(--h-text); }
+/* Light theme: the few page colours that were tuned for dark only. */
+:root[data-theme="light"] .dz-btn:not(.yes) { background: #FFFFFF; border-color: rgba(15, 23, 42, .08); box-shadow: 0 12px 26px -12px rgba(49, 46, 129, .4); }
+:root[data-theme="light"] .dz-btn.undo { color: #B45309; } :root[data-theme="light"] .dz-btn.info { color: #2563EB; } :root[data-theme="light"] .dz-btn.no { color: #E11D48; }
+:root[data-theme="light"] .dz-tease { color: var(--h-text); }
+:root[data-theme="light"] .wp-fork-go { color: #4F46E5; }
+:root[data-theme="light"] .wp-vq-next { color: #BE185D; }

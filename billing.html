@@ -11,8 +11,8 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .bill-wrap { max-width: 560px; margin: 0 auto; padding: 32px 16px 64px; }
-  .bill-card { border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px;
-    background: rgba(255,255,255,0.03); }
+  .bill-card { border: 1px solid var(--card-line); border-radius: 20px; padding: 24px;
+    background: var(--surface-post); box-shadow: var(--card-shadow); }
   .bill-plan { font-size: 22px; font-weight: 800; }
   .bill-status { color: var(--ink-dim); font-size: 13.5px; margin-top: 4px; }
   .bill-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
@@ -23,8 +23,8 @@
   .bill-msg.ok { color: #4ade80; }
 
   /* Covered-person manager */
-  .cov { margin-top: 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
-    padding: 24px; background: rgba(255,255,255,0.03); }
+  .cov { margin-top: 20px; border: 1px solid rgba(var(--fg-rgb), 0.1); border-radius: 16px;
+    padding: 24px; background: rgba(var(--fg-rgb), 0.03); }
   .cov-head { font-size: 13px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
     color: var(--ink-dim); margin-bottom: 14px; }
   .cov-empty-title { font-size: 18px; font-weight: 800; }
@@ -42,18 +42,18 @@
   .cov-search { display: flex; gap: 8px; margin: 6px 0 14px; }
   .cov-search input, .cov-invite input {
     flex: 1; padding: 11px 13px; border-radius: 10px; font-family: inherit;
-    border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); background: rgba(var(--fg-rgb), 0.04);
     color: var(--ink); font-size: 14px; outline: none;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .cov-search input:focus, .cov-invite input:focus {
-    border-color: var(--purple); background: rgba(255,255,255,0.06);
+    border-color: var(--purple); background: rgba(var(--fg-rgb), 0.06);
     box-shadow: 0 0 0 3px rgba(99, 102, 241,0.15);
   }
   .cov-search input::placeholder { color: var(--ink-faint); }
   .cov-or { text-align: center; color: var(--ink-dim); font-size: 12px; margin: 12px 0; }
   .cov-contacts { display: flex; flex-wrap: wrap; gap: 8px; }
-  .cov-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.12);
+  .cov-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(var(--fg-rgb), 0.12);
     border-radius: 999px; padding: 5px 12px 5px 6px; cursor: pointer; font-size: 13px; background: transparent; color: var(--ink); }
   .cov-chip:hover { border-color: #818cf8; }
   .cov-chip .mini { width: 24px; height: 24px; border-radius: 50%; object-fit: cover;

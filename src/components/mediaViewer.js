@@ -15,6 +15,21 @@ import { lockScroll } from '../lib/scrollLock.js';
 
 const { mediaUrl } = window;
 
+// Line icons for the viewer controls (founder 11-02: compact glass icon buttons, not text glyphs).
+const svgI = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const MV_ICON = {
+  minus: svgI('<path d="M5 12h14"/>'),
+  plus: svgI('<path d="M12 5v14M5 12h14"/>'),
+  reset: svgI('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>'),
+  heart: svgI('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
+  full: svgI('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  close: svgI('<path d="M6 6l12 12M18 6 6 18"/>'),
+  play: svgI('<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>'),
+  pause: svgI('<path d="M8 5v14M16 5v14" stroke-width="3"/>'),
+  vol: svgI('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
+  mute: svgI('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>'),
+};
+
 const MIN_SCALE = 1;
 const MAX_SCALE = 6;
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
@@ -39,18 +54,18 @@ export function openMediaViewer(item, opts = {}) {
         <div class="mv-caption">${opts.caption ? escapeHtml(opts.caption) : ''}</div>
         <div class="mv-actions">
           ${isVideo ? '' : `
-            <button class="mv-btn" data-mv="zoom-out" aria-label="Zoom out" title="Zoom out">−</button>
+            <button class="mv-btn" data-mv="zoom-out" aria-label="Zoom out" title="Zoom out">${MV_ICON.minus}</button>
             <span class="mv-zoom-level" aria-live="off">100%</span>
-            <button class="mv-btn" data-mv="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
-            <button class="mv-btn" data-mv="zoom-reset" aria-label="Reset zoom" title="Reset zoom">⟲</button>
+            <button class="mv-btn" data-mv="zoom-in" aria-label="Zoom in" title="Zoom in">${MV_ICON.plus}</button>
+            <button class="mv-btn" data-mv="zoom-reset" aria-label="Reset zoom" title="Reset zoom">${MV_ICON.reset}</button>
           `}
           ${opts.actions ? opts.actions.map((a, i) => `
             <button class="mv-btn mv-btn-${escapeHtml(a.kind || 'default')}" data-mv="action" data-mv-action="${i}"
                     aria-label="${escapeHtml(a.label)}" title="${escapeHtml(a.title || a.label)}">${escapeHtml(a.label)}</button>
           `).join('') : ''}
-          ${opts.shareItem ? '<button class="mv-btn mv-btn-share" data-mv="share" aria-label="Share this moment" title="Share">❤ Share</button>' : ''}
-          <button class="mv-btn" data-mv="fullscreen" aria-label="Fullscreen" title="Fullscreen">⛶</button>
-          <button class="mv-btn mv-btn-close" data-mv="close" aria-label="Close" title="Close (Esc)">✕</button>
+          ${opts.shareItem ? `<button class="mv-btn mv-btn-share" data-mv="share" aria-label="Share this moment" title="Share">${MV_ICON.heart}<span>Share</span></button>` : ''}
+          <button class="mv-btn" data-mv="fullscreen" aria-label="Fullscreen" title="Fullscreen">${MV_ICON.full}</button>
+          <button class="mv-btn mv-btn-close" data-mv="close" aria-label="Close" title="Close (Esc)">${MV_ICON.close}</button>
         </div>
       </div>
       ${opts.nav ? `
@@ -64,13 +79,13 @@ export function openMediaViewer(item, opts = {}) {
                <video class="mv-video" src="${escapeHtml(mediaUrl(item.videoUrl))}" poster="${escapeHtml(mediaUrl(item.url))}"
                       autoplay playsinline preload="metadata"></video>
                <div class="mv-vc">
-                 <button class="mv-vc-btn" data-vc="play" aria-label="Pause">⏸</button>
+                 <button class="mv-vc-btn" data-vc="play" aria-label="Pause">${MV_ICON.pause}</button>
                  <span class="mv-vc-time mv-vc-current">0:00</span>
                  <input type="range" class="mv-vc-seek" min="0" max="1000" step="1" value="0" aria-label="Seek">
                  <span class="mv-vc-time mv-vc-duration">0:00</span>
-                 <button class="mv-vc-btn" data-vc="mute" aria-label="Mute">🔊</button>
+                 <button class="mv-vc-btn" data-vc="mute" aria-label="Mute">${MV_ICON.vol}</button>
                  <input type="range" class="mv-vc-vol" min="0" max="1" step="0.05" value="1" aria-label="Volume">
-                 <button class="mv-vc-btn" data-vc="fs" aria-label="Fullscreen">⛶</button>
+                 <button class="mv-vc-btn" data-vc="fs" aria-label="Fullscreen">${MV_ICON.full}</button>
                </div>
              </div>`
           : `<img class="mv-image" src="${escapeHtml(mediaUrl(item.url))}" alt="A captured moment" draggable="false">`}
@@ -359,7 +374,7 @@ function setupVideoControls(overlay, video, durationMsHint) {
   });
 
   const paintPlay = () => {
-    playBtn.textContent = video.paused ? '▶' : '⏸';
+    playBtn.innerHTML = video.paused ? MV_ICON.play : MV_ICON.pause;
     playBtn.setAttribute('aria-label', video.paused ? 'Play' : 'Pause');
     wrap.classList.toggle('is-paused', video.paused);
   };
@@ -386,7 +401,7 @@ function setupVideoControls(overlay, video, durationMsHint) {
   });
 
   const paintMute = () => {
-    muteBtn.textContent = (video.muted || video.volume === 0) ? '🔇' : '🔊';
+    muteBtn.innerHTML = (video.muted || video.volume === 0) ? MV_ICON.mute : MV_ICON.vol;
     muteBtn.setAttribute('aria-label', video.muted ? 'Unmute' : 'Mute');
   };
   muteBtn.addEventListener('click', () => { video.muted = !video.muted; });

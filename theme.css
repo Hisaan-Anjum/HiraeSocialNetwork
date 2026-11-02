@@ -1,0 +1,93 @@
+/* theme.css — Theme 2026-11 (founder 11-02 references): one set of tokens, a dark and a light value for each.
+ * Dark is a near-black page with BLUISH indigo surfaces (#312E81 family, never violet/magenta); pink only in the
+ * corner waves and the primary gradient. Light is the same system on a cool off-white page.
+ * The theme is chosen by data-theme on <html> (app-nav.js applies the saved Light / Dark / Auto choice early);
+ * without the attribute a page stays dark. Imported by style.css (Vite) and by the verbatim-copied h2.css. */
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: dark;
+  --font-sans: "Inter", "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --fg-rgb: 255, 255, 255;            /* translucent lines/tints are drawn in the foreground colour, so they flip with it */
+  --page-bg: #0B0B0F;
+  --page-glow: radial-gradient(900px 520px at 0% -12%, rgba(79, 70, 229, .14), transparent 62%);
+  --surface-post: #15152A;            /* posts: ONE plain solid colour (founder 11-02) */
+  --surface-raised: #1B1A34;          /* menus, sheets, popovers */
+  --hero-bg: linear-gradient(160deg, #262262 0%, #19183D 46%, #111024 100%);
+  --hero-line: rgba(129, 140, 248, .2);
+  --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%234F46E5' stop-opacity='0'/%3E%3Cstop offset='.6' stop-color='%236366F1' stop-opacity='.55'/%3E%3Cstop offset='1' stop-color='%23EC4899' stop-opacity='.8'/%3E%3C/linearGradient%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='1.4'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E%3Cpath d='M30 0C90 72 160 152 300 204V0Z' fill='url(%23a)' opacity='0.38'/%3E%3Cpath d='M126 0C168 56 214 106 300 130V0Z' fill='url(%23a)' opacity='0.5'/%3E%3Cpath d='M206 0C230 32 258 54 300 62V0Z' fill='%23EC4899' opacity='0.3'/%3E%3C/g%3E%3Cpath d='M126 0C168 56 214 106 300 130M30 0C90 72 160 152 300 204' fill='none' stroke='%23fff' stroke-opacity='0.08'/%3E%3C/svg%3E");
+  --card-line: rgba(255, 255, 255, .07);
+  --card-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px -16px rgba(0, 0, 0, .7);
+  --grad-cta: linear-gradient(100deg, #4F46E5 0%, #6440E0 55%, #BE2A7E 100%);   /* white text ≥ 4.5:1 at every stop */
+  --grad-ring: linear-gradient(135deg, #6366F1, #A78BFA 50%, #EC4899);
+  --glass: rgba(14, 14, 24, .58);
+  --glass-hover: rgba(30, 28, 60, .78);
+  --glass-line: rgba(255, 255, 255, .16);
+  --field-bg: rgba(255, 255, 255, .04);
+  --nav-bg: rgba(11, 11, 15, .86); --nav-line: rgba(255, 255, 255, .07); --nav-ink: #8E95B2; --nav-ink-on: #F8FAFC;
+  --nav-hover: rgba(148, 163, 184, .1); --nav-active: rgba(99, 102, 241, .16); --nav-icon-on: #A5B4FC;
+  --menu-bg: #17162E; --menu-line: rgba(255, 255, 255, .1); --menu-hover: rgba(99, 102, 241, .16); --menu-ink: #E2E8F0; --menu-ink-2: #94A3B8;
+  --c-indigo-ink: #C7D2FE; --c-indigo-soft: #A5B4FC; --c-lilac-ink: #D9C9FF; --c-red-ink: #FCA5A5; --c-green-ink: #6EE7B7;
+  --stat-label: #B4BAD3;
+  --pill-bg: rgba(255, 255, 255, .06); --pill-line: rgba(255, 255, 255, .14);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fg-rgb: 15, 23, 42;
+  --page-bg: #F4F5FB;
+  --page-glow: radial-gradient(900px 520px at 0% -12%, rgba(99, 102, 241, .09), transparent 62%);
+  --surface-post: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --hero-bg: linear-gradient(160deg, #E9EBFF 0%, #F5F5FF 50%, #FFFFFF 100%);
+  --hero-line: rgba(99, 102, 241, .16);
+  --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%234F46E5' stop-opacity='0'/%3E%3Cstop offset='.6' stop-color='%236366F1' stop-opacity='.55'/%3E%3Cstop offset='1' stop-color='%23EC4899' stop-opacity='.8'/%3E%3C/linearGradient%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='1.4'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E%3Cpath d='M30 0C90 72 160 152 300 204V0Z' fill='url(%23a)' opacity='0.22'/%3E%3Cpath d='M126 0C168 56 214 106 300 130V0Z' fill='url(%23a)' opacity='0.3'/%3E%3Cpath d='M206 0C230 32 258 54 300 62V0Z' fill='%23EC4899' opacity='0.26'/%3E%3C/g%3E%3Cpath d='M126 0C168 56 214 106 300 130M30 0C90 72 160 152 300 204' fill='none' stroke='%23fff' stroke-opacity='0.7'/%3E%3C/svg%3E");
+  --card-line: rgba(15, 23, 42, .08);
+  --card-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 12px 32px -18px rgba(49, 46, 129, .28);
+  --glass-hover: rgba(49, 46, 129, .7);
+  --field-bg: #FFFFFF;
+  --nav-bg: rgba(255, 255, 255, .88); --nav-line: rgba(15, 23, 42, .08); --nav-ink: #64748B; --nav-ink-on: #0F172A;
+  --nav-hover: rgba(15, 23, 42, .05); --nav-active: rgba(99, 102, 241, .1); --nav-icon-on: #4F46E5;
+  --menu-bg: #FFFFFF; --menu-line: #E2E8F0; --menu-hover: #EEF0FF; --menu-ink: #1E293B; --menu-ink-2: #64748B;
+  --c-indigo-ink: #4338CA; --c-indigo-soft: #4F46E5; --c-lilac-ink: #5B21B6; --c-red-ink: #B91C1C; --c-green-ink: #047857;
+  --stat-label: #475569;
+  --pill-bg: rgba(255, 255, 255, .78); --pill-line: rgba(79, 70, 229, .18);
+  /* style.css names */
+  --bg-0: #F4F5FB; --bg-1: #FFFFFF; --bg-2: #EEF0F7; --card: #FFFFFF;
+  --ink: #0F172A; --ink-dim: #475569; --ink-faint: #5B6478;
+  --gold: #BE185D; --gold-deep: #9D174D; --rating: #B45309;
+  --border: rgba(15, 23, 42, .1);
+  --brand-primary-soft: #4F46E5;
+  /* h2.css names */
+  --h-bg: #F4F5FB; --h-surface: #FFFFFF; --h-surface-2: #F1F3F9; --h-surface-3: #E2E6F0;
+  --h-line: rgba(15, 23, 42, .1); --h-line-strong: rgba(15, 23, 42, .2);
+  --h-text: #0F172A; --h-text-2: #334155; --h-text-3: #475569;
+  --h-accent-hover: #4F46E5; --h-coral: #BE185D; --h-focus: #4F46E5;
+  --h-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 10px 28px -16px rgba(49, 46, 129, .25);
+}
+
+/* Browser surfaces carry the palette too. */
+::selection { background: rgba(99, 102, 241, .38); color: inherit; }
+html { scrollbar-color: rgba(var(--fg-rgb), .22) transparent; }
+input, textarea { caret-color: var(--brand-primary); }
+:focus-visible { outline: 2px solid var(--c-indigo-soft); outline-offset: 2px; }
+
+/* Surfaces that stay dark in both themes: the media viewer, the recap player, the featured-film card and captions
+   laid over photos all sit on film or photo, not on the page. */
+.mv-overlay, .ms-player, .hero-card, .carousel-item-caption {
+  color-scheme: dark; --fg-rgb: 255, 255, 255;
+  --bg-0: #0B0B0F; --bg-1: #111117; --bg-2: #1A1A2E; --card: #15152A; --surface-post: #15152A; --surface-raised: #1B1A34;
+  --ink: #F8FAFC; --ink-dim: #A6ADC8; --ink-faint: #7E86A6; --border: rgba(255, 255, 255, .08); --card-line: rgba(255, 255, 255, .07);
+  --gold: #F472B6; --brand-primary-soft: #A5B4FC; --field-bg: rgba(255, 255, 255, .04);
+  --c-indigo-ink: #C7D2FE; --c-indigo-soft: #A5B4FC; --c-lilac-ink: #D9C9FF; --c-red-ink: #FCA5A5; --c-green-ink: #6EE7B7;
+  --menu-bg: #17162E; --menu-line: rgba(255, 255, 255, .1); --menu-hover: rgba(99, 102, 241, .16); --menu-ink: #E2E8F0; --menu-ink-2: #94A3B8;
+}
+:root { --ring-gap: #1D1B47; }
+:root[data-theme="light"] { --ring-gap: #F1F2FF; }
