@@ -276,4 +276,15 @@ export async function buildStoryManifest({ summary, descriptor }) {
   };
 }
 
+// A saved manifest keeps its chosen scenes, but private media links are signed for 2 hours (moments privacy, 10-22),
+// so a replay swaps in fresh links from the feed and drops any moment that is gone or no longer visible. Reusing the
+// saved links is why every story opened a second time showed blank photos and videos (founder 11-02).
+export async function refreshManifestMedia(manifest, { summary, descriptor }) {
+  const reg = STORY_REGISTRY[descriptor.type];
+  const fresh = new Map((await fetchPairMoments(summary.them, reg ? reg.range(descriptor.key, summary) : null)).map((m) => [m.id, toScene(m)]));
+  const scenes = (manifest.scenes || []).filter((sc) => fresh.has(sc.id))
+    .map((sc) => ({ ...sc, url: fresh.get(sc.id).url, videoUrl: fresh.get(sc.id).videoUrl }));
+  return { ...manifest, scenes };
+}
+
 export { MANIFEST_VERSION, MONTH_NAMES, parseTs };

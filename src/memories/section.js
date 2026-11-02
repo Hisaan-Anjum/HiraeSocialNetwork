@@ -11,7 +11,7 @@
 
 import { escapeHtml } from '../lib/util.js';
 import { renderAvatar } from '../components/avatar.js';
-import { buildStoryManifest, MANIFEST_VERSION } from './engine.js';
+import { buildStoryManifest, refreshManifestMedia, MANIFEST_VERSION } from './engine.js';
 import { playStory } from './player.js';
 import { openStorySelector } from './selector.js';
 import { openImportantDates } from './dates.js';
@@ -131,7 +131,7 @@ async function mountRelationship(container, profile, opts = {}) {
           </div>
           <div class="rel-actions">
             <button class="ms-action-tile ms-action-primary" data-ms="watch">
-              <span class="ms-action-ico">▶</span>
+              <span class="ms-action-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span>
               <span class="ms-action-title">Watch Together</span>
               <span class="ms-action-sub">Start a session</span>
             </button>
@@ -248,9 +248,10 @@ async function mountRelationship(container, profile, opts = {}) {
         if (cached?.story?.manifest
             && cached.story.contentVersion === summary.contentVersion
             && cached.story.manifest.v === MANIFEST_VERSION) {
-          manifest = cached.story.manifest;
+          manifest = await refreshManifestMedia(cached.story.manifest, { summary, descriptor });
+          if (!manifest.scenes.length) manifest = null;   // every moment gone: build a new one
         }
-      } catch (e) { /* fall through to generation */ }
+      } catch (e) { manifest = null; /* fall through to generation */ }
 
       if (!manifest) {
         manifest = await buildStoryManifest({ summary, descriptor });
@@ -346,7 +347,7 @@ async function mountRelationship(container, profile, opts = {}) {
   // The "Share Card" tile → a beautiful relationship card image, built instantly
   // from the summary (no network) and handed to the Share sheet.
   async function shareRelationshipCard() {
-    const card = await buildRelationshipCard(summary);
+    const card = await buildRelationshipCard(summary, { themAvatarUrl: profile.avatarUrl });
     if (card) openShareSheet(card); else toast("Couldn't build the card — try again.");
     trackEvent?.('story_shared', { platform: 'card' });
   }
