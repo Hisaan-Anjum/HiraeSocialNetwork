@@ -189,3 +189,13 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 .watch-link-sub, .watch-link-note { font-size: 13px !important; line-height: 1.5 !important; }
 .watch-link-url { height: 40px !important; border-radius: 12px !important; font-size: 13px !important; }
 .watch-link-go { width: 56px !important; min-width: 56px !important; height: 40px !important; border-radius: 12px !important; padding: 0 !important; background: linear-gradient(120deg, #6366F1, #EC4899) !important; }
+/* Founder 11-02: "Watch something together" is plain (same solid surface as posts); sizes in the reference's proportions. */
+.watch-link { background: var(--surface-post, #15152A) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05) !important; }
+:root[data-theme="light"] .watch-link { background: #FFFFFF !important; }
+.watch-link-ill { width: 36px !important; height: 36px !important; }
+.watch-link-ill svg { width: 20px !important; height: 20px !important; }
+.watch-link-title { font-size: 15px !important; }
+.watch-link-sub, .watch-link-note { font-size: 12.5px !important; }
+.watch-link-url, .watch-link-who { font-size: 13px !important; }
+.watch-link-go svg { width: 18px !important; height: 18px !important; }
