@@ -150,10 +150,9 @@ async function loadHero() {
   }
 }
 
-// One batch of recommendations, fetched once up front and cycled through
-// for the feed's periodic interleave — these are admin-curated and few
-// (see server/src/recommendations.js), so re-cycling after exhausting a
-// ~20-card batch reads as "recommended again" rather than broken pagination.
+// One batch of recommendations, fetched once up front for the feed's periodic
+// interleave. Each card shows once: the server already leaves out the header's
+// film, and founder 11-02 wants no film twice on a page, so no re-cycling.
 async function primeRecommendations() {
   try {
     const { recommendations } = await getRecommendations();
@@ -162,8 +161,8 @@ async function primeRecommendations() {
 }
 
 function nextRecommendation() {
-  if (!state.recBuffer.length) return null;
-  const rec = state.recBuffer[state.recIndex % state.recBuffer.length];
+  if (state.recIndex >= state.recBuffer.length) return null;
+  const rec = state.recBuffer[state.recIndex];
   state.recIndex += 1;
   return rec;
 }
