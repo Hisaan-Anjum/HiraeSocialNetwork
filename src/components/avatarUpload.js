@@ -21,7 +21,7 @@ export function mountAvatarControls(wrap, currentAvatarUrl, onChange = () => {})
   ui.className = 'avatar-controls';
   ui.innerHTML = `
     <input type="file" class="avatar-file-input" accept="image/*" hidden>
-    <button class="avatar-edit-btn" type="button" aria-label="Change profile picture" title="Change profile picture">📷</button>
+    <button class="avatar-edit-btn" type="button" aria-label="Change profile picture" title="Change profile picture"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
     <div class="avatar-menu" hidden>
       <button class="avatar-menu-item" data-action="pick" type="button">🖼️ ${hasAvatar ? 'Replace picture' : 'Upload picture'}</button>
       <button class="avatar-menu-item avatar-menu-item-danger" data-action="remove" type="button" ${hasAvatar ? '' : 'hidden'}>🗑️ Remove picture</button>
