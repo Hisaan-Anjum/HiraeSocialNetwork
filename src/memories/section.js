@@ -64,6 +64,7 @@ async function mountOwnChooser(container, profile) {
     <div class="ms-chooser-grid">
       ${contacts.map((c) => `
         <a class="ms-chooser-card" href="user.html?u=${encodeURIComponent(c.username)}" aria-label="Open memories with ${escapeHtml(c.username)}">
+          ${renderAvatar({ username: c.username, avatarUrl: c.avatarUrl }, { size: 'sm' })}
           <span class="ms-chooser-name">${escapeHtml(c.username)}</span>
         </a>`).join('')}
     </div>`;

@@ -139,8 +139,9 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
   gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
 .ms-chooser-grid::-webkit-scrollbar { display: none; }
 @media (min-width: 760px) { .ms-chooser-grid { grid-auto-columns: calc((100% - 30px) / 4) !important; } }
-.ms-chooser-card { scroll-snap-align: start; display: flex !important; align-items: center; justify-content: center; min-height: 56px; padding: 12px 14px !important;
-  border-radius: 16px !important; text-align: center; flex-direction: row !important; gap: 0 !important; }
+.ms-chooser-card { scroll-snap-align: start; display: flex !important; align-items: center; justify-content: flex-start; min-height: 60px; padding: 10px 12px !important;
+  border-radius: 16px !important; text-align: left; flex-direction: row !important; gap: 10px !important; min-width: 0; }
+.ms-chooser-card .avatar, .ms-chooser-card [class*='avatar'] { width: 36px !important; height: 36px !important; min-width: 36px; font-size: 14px !important; flex: none; }
 .ms-chooser-name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 /* Camera button: a true circle. */
 .avatar-edit-btn { aspect-ratio: 1 / 1; flex: none !important; min-width: 0 !important; box-sizing: border-box; }
@@ -151,3 +152,6 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 .profile-header .profile-stat svg, .profile-header .profile-stat::before { width: 20px !important; height: 20px !important; }
 .watch-link-title { font-size: 18px !important; font-weight: 700 !important; letter-spacing: -.01em; }
 .watch-link p, .watch-link-sub, .watch-link-text { font-size: 14px !important; line-height: 1.5; color: var(--ink-dim, #A1A1AA); }
+/* Type scale from the references: page and section headings calm and compact. */
+.ms-block-head h2, main h1, main > h2, .h-page h1, .page-title, .section-title, .chats-title { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -.01em; line-height: 1.25; }
+.ms-chooser-sub, .wp-intro { font-size: 14px !important; }
