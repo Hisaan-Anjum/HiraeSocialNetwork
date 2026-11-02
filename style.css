@@ -3412,3 +3412,9 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 :root:not([data-theme="light"]) .carousel-item-caption .moment-description { color: #E9E7F2 !important; }
 .carousel-item:has(.carousel-item-caption .moment-description) { padding-bottom: 16px !important; } .carousel-item-caption { margin: 8px 0 0 2px !important; }
 .carousel-item-caption { margin: 5px 0 0 2px !important; padding: 4px 11px !important; } .carousel-item-caption .moment-description { line-height: 1.25 !important; font-size: 12px !important; }
+/* Long captions (founder 11-02): wrap to at most 2 lines under the photo; the photo gives up exactly that room, so nothing is ever
+   clipped; the full caption is in the open moment. Short captions stay a compact one-line label. */
+.carousel-item:has(.carousel-item-caption .moment-description) .media-tile { height: calc(100% - 46px) !important; }
+.carousel-item-caption { border-radius: 12px !important; max-width: calc(100% - 4px) !important; }
+.carousel-item-caption .moment-description { white-space: normal !important; display: -webkit-box !important; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden; overflow-wrap: anywhere; }
