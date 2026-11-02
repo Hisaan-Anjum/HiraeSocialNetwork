@@ -102,7 +102,7 @@
   .an-menu-btn svg { width: 20px; height: 20px; }
   .an-menu-btn:hover, .an-menu-btn[aria-expanded="true"] { background: rgba(var(--fg-rgb, 255, 255, 255), .1); }
   .an-menu-btn:focus-visible { outline: 2px solid #A78BFA; outline-offset: 2px; }
-  @media (max-width: 640px) { .an-menu-btn { width: 40px; padding: 0; justify-content: center; } .an-menu-btn span { display: none; } }
+  .an-menu-btn { width: 40px; padding: 0; justify-content: center; } .an-menu-btn span { display: none; }   /* icon only everywhere (founder 11-02); aria-label names it */
   .an-menu { position: absolute; right: max(16px, calc((100vw - 1120px) / 2)); top: 56px; min-width: 220px; padding: 6px; border-radius: 14px; background: var(--menu-bg, #111827); border: 1px solid var(--menu-line, #334155);
     box-shadow: 0 18px 48px rgba(2, 6, 23, .35); list-style: none; margin: 0; z-index: 60; }
   .an-menu .an-who { padding: 10px 12px 8px; color: var(--menu-ink-2, #94A3B8); font-size: 12.5px; border-bottom: 1px solid var(--menu-line, #1E293B); margin-bottom: 4px; } .an-menu .an-who b { display: block; color: var(--menu-ink, #F8FAFC); font-size: 14px; }

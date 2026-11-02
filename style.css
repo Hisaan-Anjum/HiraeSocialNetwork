@@ -3368,3 +3368,17 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .watch-link-sub, .watch-link-note { font-size: 12.5px !important; }
 .watch-link-url, .watch-link-who { font-size: 13px !important; }
 .watch-link-go svg { width: 18px !important; height: 18px !important; }
+/* Founder 11-02: every panel in the reference's proportions (390 px phone): compact type, 16-18 px padding, 18 px radius. */
+.an-connect:not(.an-push) { padding: 10px 16px !important; gap: 10px !important; font-size: 13px !important; font-weight: 500 !important; line-height: 1.4 !important; }
+.an-connect:not(.an-push) .an-connect-cta { padding: 7px 14px !important; font-size: 13px !important; min-height: 32px; }
+.an-connect:not(.an-push) .an-connect-x { width: 30px !important; height: 30px !important; font-size: 13px !important; }
+.feed-card, .moment-card, .post-detail-card { border-radius: 18px !important; padding: 16px !important; }
+.feed-card .feed-card-head, .moment-card .moment-people { font-size: 14px !important; }
+.feed-card .feed-card-headtext, .feed-card .moment-date, .moment-card .moment-date { font-size: 12.5px !important; }
+.feed-card .moment-description, .moment-card .moment-description { font-size: 13.5px !important; }
+.feed-card .reaction-row, .moment-card .reaction-row { font-size: 13px !important; }
+.ms-chooser-card { border-radius: 14px !important; }
+.danger-zone-inner { border-radius: 18px !important; padding: 16px !important; }
+.danger-zone-inner h3 { font-size: 15px !important; } .danger-zone-inner p { font-size: 13px !important; }
+@media (max-width: 760px) { .an-top { height: 56px !important; } }
+.avatar-edit-btn { width: 36px !important; height: 36px !important; min-width: 36px !important; min-height: 36px !important; max-height: 36px !important; aspect-ratio: 1 / 1; border-radius: 50% !important; padding: 0 !important; }
