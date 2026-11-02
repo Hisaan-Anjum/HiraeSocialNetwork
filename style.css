@@ -3394,3 +3394,21 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .profile-header .profile-header-inner { grid-template-columns: 84px minmax(0, 1fr) !important; }
 .profile-header .profile-avatar-wrap { display: grid !important; place-items: center !important; } .profile-header .profile-avatar-wrap > .avatar, .profile-header .profile-avatar-wrap > .profile-avatar, .profile-header .profile-avatar-wrap > img { margin: 0 !important; grid-area: 1 / 1; }
 .profile-header .profile-contact-note { grid-column: 1 / -1 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center !important; justify-self: stretch; font-size: 13px; }
+/* Founder 11-02: a caption is a frosted label on the photo's bottom-left corner, not a muddy fade; the same in both themes. */
+.carousel-item-caption { left: 12px !important; right: auto !important; bottom: 12px !important; max-width: calc(100% - 24px);
+  padding: 7px 12px !important; border-radius: 999px !important; background: rgba(12, 12, 20, .62) !important;
+  backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .28); }
+.carousel-item-caption .moment-description { color: #FFFFFF !important; font-size: 12.5px !important; font-weight: 600; letter-spacing: .01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.carousel-item-caption .inline-editor { min-width: 220px; }
+/* Caption as a tidy label under the photo (the frame is taller than the photo, so on-photo placement can't be trusted). */
+.carousel-item-caption { position: static !important; display: inline-flex !important; align-items: center; margin: 10px 0 0 2px; max-width: 100%;
+  background: rgba(var(--fg-rgb, 255, 255, 255), .06) !important; border: 1px solid rgba(var(--fg-rgb, 255, 255, 255), .10) !important;
+  box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; padding: 6px 12px !important; }
+:root[data-theme="light"] .carousel-item-caption { background: #F1F0F7 !important; border-color: #E5E3EF !important; }
+.carousel-item-caption .moment-description { color: inherit !important; }
+:root[data-theme="light"] .carousel-item-caption .moment-description { color: #1F1B2E !important; }
+:root:not([data-theme="light"]) .carousel-item-caption .moment-description { color: #E9E7F2 !important; }
+.carousel-item:has(.carousel-item-caption .moment-description) { padding-bottom: 16px !important; } .carousel-item-caption { margin: 8px 0 0 2px !important; }
+.carousel-item-caption { margin: 5px 0 0 2px !important; padding: 4px 11px !important; } .carousel-item-caption .moment-description { line-height: 1.25 !important; font-size: 12px !important; }
