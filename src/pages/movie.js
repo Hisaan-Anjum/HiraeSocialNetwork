@@ -4,6 +4,7 @@
 // recommendations.js's GET /:id) linking to other movie pages.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { renderErrorState } from '../components/skeleton.js';
 import { attachCarouselHandlers } from '../components/carousel.js';
@@ -45,8 +46,8 @@ async function load() {
     // about any one contact — adding has to ask who it's for.
     const actionsHtml = `
       <div class="movie-modal-actions">
-        <button class="btn btn-primary" id="movieAddWatchlist">❤️ Add to…</button>
-        ${(rec.watchLinks || []).length ? '<button class="btn btn-ghost" id="movieFindOn">▶ Find it on…</button>' : ''}
+        <button class="btn btn-primary" id="movieAddWatchlist">${icon('heart', 17)} Add to…</button>
+        ${(rec.watchLinks || []).length ? `<button class="btn btn-ghost" id="movieFindOn">${icon('play', 16)} Find it on…</button>` : ''}
         <span class="movie-modal-msg" id="movieActionMsg"></span>
       </div>`;
     contentEl.innerHTML = renderMovieDetail(rec, { similar, actionsHtml });
@@ -57,7 +58,7 @@ async function load() {
       const { openAddTo } = await import('../watchlist/addTo.js');
       openAddTo({ movie: rec, onDone: (kind, who) => {
         const msg = document.getElementById('movieActionMsg');
-        if (msg && kind === 'shared' && who) msg.textContent = `Added to your list with ${who} 💜`;
+        if (msg && kind === 'shared' && who) msg.textContent = `Added to your list with ${who}`;
       } });
     });
     document.getElementById('movieFindOn')?.addEventListener('click', async () => {

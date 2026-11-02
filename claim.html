@@ -37,7 +37,7 @@
   <div class="claim-wrap">
     <img src="herae-symbol.svg" alt="Herae" class="login-logo" style="margin:0 auto 20px">
     <div class="claim-card">
-      <div id="state"><div class="claim-title">Activating your invite…</div><p>One moment 💛</p></div>
+      <div id="state"><div class="claim-title">Activating your invite…</div><p>One moment</p></div>
     </div>
   </div>
 
@@ -58,7 +58,7 @@
     if (!token) { state.innerHTML = '<div class="claim-title">Invalid invite</div><p>This invite link is missing its code.</p><a class="btn btn-ghost" href="memories.html">Go to Herae</a>'; return; }
     try {
       const r = await apiRequest('/api/subscription/covered/claim', { method: 'POST', body: JSON.stringify({ token }) });
-      state.innerHTML = '<div class="claim-title">💛 You\'re covered!</div><p><strong>' + esc(r.owner) + '</strong> added you to Herae Together. Unlimited movie nights, calls and memories are now active for both of you.</p><a class="btn btn-primary" href="memories.html">Open Herae</a>';
+      state.innerHTML = '<div class="claim-title">You\'re covered!</div><p><strong>' + esc(r.owner) + '</strong> added you to Herae Together. Unlimited movie nights, calls and memories are now active for both of you.</p><a class="btn btn-primary" href="memories.html">Open Herae</a>';
     } catch (e) {
       state.innerHTML = '<div class="claim-title">This invite can\'t be used</div><p>' + esc(e.message || 'The invite is no longer valid.') + '</p><a class="btn btn-ghost" href="memories.html">Go to Herae</a>';
     }

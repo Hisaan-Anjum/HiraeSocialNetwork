@@ -101,7 +101,7 @@
     border: 1px solid rgba(129, 140, 248, .28); background: linear-gradient(160deg, rgba(49, 46, 129, .55), rgba(15, 23, 42, .6)); }
   .wp-me-av { width: 84px; height: 84px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #8B5CF6, #EC4899); flex: none; }
   .wp-me-av img, .wp-me-av span { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: grid; place-items: center;
-    background: #1E1B4B; color: #fff; font: 700 30px var(--font-sans, system-ui); }
+    background: var(--brand-gradient-cta); color: #fff; font: 600 30px var(--font-sans, system-ui); }
   .wp-me-txt { flex: 1; min-width: 180px; }
   .wp-me-name { margin: 0; font-size: 30px; line-height: 1.1; }
   .wp-me-meta { margin: 6px 0 10px; color: #94A3B8; font-size: 14px; } .wp-me-meta b { color: #34D399; font-weight: 600; margin-right: 12px; }
@@ -131,10 +131,10 @@
          it is one tap away, not a box beside the form: once "Meet people" is chosen only the three steps remain. -->
     <div class="wp-fork" id="fork" hidden>
       <a class="wp-fork-tile known" id="forkKnown" href="memories.html">
-        <span class="wp-fork-ico" aria-hidden="true">💞</span><b>Watch with someone I already know</b>
+        <span class="wp-fork-ico" aria-hidden="true"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9-9.4C2 7.3 4.3 4.5 7.4 4.5c1.9 0 3.5 1 4.6 2.6 1.1-1.6 2.7-2.6 4.6-2.6 3.1 0 5.4 2.8 4.4 6.1C19.5 15.4 12 20 12 20z"/></svg></span><b>Watch with someone I already know</b>
         <small>Send them your link and press play together. No profile needed.</small><span class="wp-fork-go">Get my link →</span></a>
       <button type="button" class="wp-fork-tile meet" id="forkMeet">
-        <span class="wp-fork-ico" aria-hidden="true">🎬</span><b>Find film friends</b>
+        <span class="wp-fork-ico" aria-hidden="true"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.7c1.9.7 3.1 2.4 3.5 5.3"/></svg></span><b>Find film friends</b>
         <small>People who love the same films, to watch with. Three quick steps, about a minute.</small><span class="wp-fork-go">Start →</span></button>
     </div>
     <div class="wp-meter" id="meter" hidden><div class="wp-meter-bar"><i id="meterFill"></i></div><span id="meterText"></span></div>
@@ -182,7 +182,7 @@
         <!-- Founder 10-24: personality, free time and work — optional, dating-app style, and small: a nested three-question
              wizard in one box (one question at a time, Skip or Next), folding to a one-line summary when done. -->
         <fieldset class="wp-vibe" id="vibe"><legend class="sr-only">Your vibe (optional)</legend>
-          <div class="wp-vq-head"><span>✨ Quick vibe check <span class="wp-vq-opt">optional</span></span><span class="wp-vq-count" id="vibeCount" aria-live="polite"></span></div>
+          <div class="wp-vq-head"><span>Quick vibe check <span class="wp-vq-opt">optional</span></span><span class="wp-vq-count" id="vibeCount" aria-live="polite"></span></div>
           <p class="wp-vibe-sub">People you’d click with show up first for you.</p>
           <div class="wp-vq" data-q="1"><h3 class="wp-vibe-h">Your personality <span class="faint">(up to 3)</span></h3><div class="h-chips" id="personality"></div></div>
           <div class="wp-vq" data-q="2" hidden><h3 class="wp-vibe-h">In your free time <span class="faint">(up to 3)</span></h3><div class="h-chips" id="hobbies"></div></div>
@@ -266,7 +266,7 @@
         <input class="hi" id="blockIn" maxlength="64" placeholder="username" autocomplete="off"><button class="hb hb-danger" type="submit">Block</button></form>
       </details>
     </section>
-    <a class="wp-settings" id="settingsLink" href="#">⚙️ Account settings: sign out everywhere, delete account →</a>
+    <a class="wp-settings" id="settingsLink" href="#">Account settings: sign out everywhere, delete account →</a>
   </main>
 
   <dialog class="h-dialog" id="cropDlg" aria-labelledby="cropTitle">
@@ -312,9 +312,9 @@
       gaming: 'Gaming', reading: 'Reading', fitness: 'Fitness', travel: 'Travel', cooking: 'Cooking', music_making: 'Making music', art: 'Art', outdoors: 'Outdoors', cafes: 'Cafés', pets: 'Pets', sports: 'Sports', photography: 'Photography',
       student: 'Student', tech: 'Tech', healthcare: 'Healthcare', education: 'Education', business: 'Business', creative: 'Creative', engineering: 'Engineering', law: 'Law', hospitality: 'Hospitality', trades: 'Trades', public_service: 'Public service', other: 'Something else',
       homebody: 'Homebody', adventurous: 'Adventurous', deep_talks: 'Loves deep talks', jokester: 'Jokester', calm: 'Calm', chatty: 'Chatty', romantic: 'Romantic', curious: 'Curious', planner: 'Planner', spontaneous: 'Spontaneous' };
-    const WORK_EMOJI = { student: '🎓', tech: '💻', healthcare: '🩺', education: '🍎', business: '💼', creative: '🎬', engineering: '🛠️', law: '⚖️', hospitality: '🍽️', trades: '🔧', public_service: '🏛️', other: '✨' };
-    const HOBBY_EMOJI = { gaming: '🎮', reading: '📚', fitness: '🏋️', travel: '✈️', cooking: '🍳', music_making: '🎸', art: '🎨', outdoors: '🥾', cafes: '☕', pets: '🐾', sports: '⚽', photography: '📷' };
-    const VIBE_EMOJI = { homebody: '🏠', adventurous: '🧗', deep_talks: '💬', jokester: '😂', calm: '🌿', chatty: '🗣️', romantic: '💘', curious: '🔍', planner: '📅', spontaneous: '⚡' };
+    const WORK_EMOJI = {};   // founder 11-02: no emoji as UI; chips are text only
+    const HOBBY_EMOJI = {};
+    const VIBE_EMOJI = {};
     let state, options, dirty = false, firstTime = false;
     let photos = [], pendingVis = null, step = 1;
     const say = (t) => { $('status').textContent = t; };
@@ -324,9 +324,9 @@
       vibeQ = q;
       document.querySelectorAll('#vibe .wp-vq').forEach((el) => { el.hidden = Number(el.dataset.q) !== q; });
       $('vibeBar').hidden = q > 3; $('vibeDone').hidden = q <= 3;
-      $('vibeCount').textContent = q <= 3 ? `Question ${q} of 3` : 'Done ✓';
+      $('vibeCount').textContent = q <= 3 ? `Question ${q} of 3` : 'Done';
       $('vibePrev').hidden = q <= 1;
-      $('vibeNext').textContent = q === 3 ? 'Finish vibe ✓' : 'Next question →';
+      $('vibeNext').textContent = q === 3 ? 'Finish vibe' : 'Next question →';
       if (q > 3) {
         const picked = [...state.personality.map((v) => `${VIBE_EMOJI[v] || ''} ${LABEL[v] || v}`), ...state.hobbies.map((v) => `${HOBBY_EMOJI[v] || ''} ${LABEL[v] || v}`),
           ...(state.work ? [`${WORK_EMOJI[state.work] || ''} ${LABEL[state.work] || state.work}`] : [])];
@@ -383,7 +383,7 @@
       chips($('traits'), options.traits, state.traits, 5, 'traits');
       chips($('personality'), options.personality || [], state.personality, 3, 'personality');
       $('personality').querySelectorAll('button').forEach((b, i) => { const e = document.createElement('span'); e.className = 'e'; e.setAttribute('aria-hidden', 'true');
-        e.textContent = VIBE_EMOJI[(options.personality || [])[i]] || '✨'; b.prepend(e); });
+        e.textContent = VIBE_EMOJI[(options.personality || [])[i]] || ''; b.prepend(e); });
       state.hobbies = state.hobbies || [];
       chips($('hobbies'), options.hobbies || [], state.hobbies, 3, 'hobbies');
       $('hobbies').querySelectorAll('button').forEach((b, i) => { const e = document.createElement('span'); e.className = 'e'; e.setAttribute('aria-hidden', 'true');
@@ -580,11 +580,11 @@
           const img = document.createElement('img'); img.src = p.src; img.alt = i === 0 ? 'Your main photo' : `Photo ${i + 1}`; cell.append(img);
           img.draggable = false; cell.ondragstart = (e) => e.preventDefault();   // the browser's own image drag would cancel ours
           cell.dataset.i = i; cell.title = 'Tap to replace · drag to reorder'; dragOrTap(cell, i);
-          const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'rm'; rm.textContent = '✕'; rm.setAttribute('aria-label', `Remove photo ${i + 1}`);
+          const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'rm'; rm.innerHTML = window.hIcon ? window.hIcon('x', 14) : '×'; rm.setAttribute('aria-label', `Remove photo ${i + 1}`);
           rm.onclick = async () => { await apiRequest(`/api/photos/mine/${p.id}`, { method: 'DELETE' }); photos.splice(i, 1); renderPhotos(); meter(); };
           cell.append(rm);
           const pv = document.createElement('button'); pv.type = 'button'; pv.className = 'pv';
-          pv.textContent = p.visibility ? PV_SHORT[p.visibility] : '◐ Default'; pv.setAttribute('aria-label', `Who can see photo ${i + 1}: ${p.visibility ? PV_LONG[p.visibility] : 'my general setting'}. Change`);
+          pv.textContent = p.visibility ? PV_SHORT[p.visibility] : 'Default'; pv.setAttribute('aria-label', `Who can see photo ${i + 1}: ${p.visibility ? PV_LONG[p.visibility] : 'my general setting'}. Change`);
           pv.onclick = () => photoPrivacy(p, i); cell.append(pv);
           if (i === 0) { const b = document.createElement('span'); b.className = 'main'; b.textContent = 'Main'; cell.append(b); }
           else { const mk = document.createElement('button'); mk.type = 'button'; mk.className = 'mk'; mk.textContent = 'Make main';
@@ -616,7 +616,7 @@
       cell.onpointercancel = () => { start = null; moving = false; cell.classList.remove('dragging'); cell.style.transform = ''; };
     }
     let replaceAt = null;
-    const PV_SHORT = { public: '🌐 Everyone', matches: '🔒 Matches', matches_friends: '🔒 Friends', approved: '🔒 Allowed' };
+    const PV_SHORT = { public: 'Everyone', matches: 'Matches', matches_friends: 'Friends', approved: 'Allowed' };
     const PV_LONG = { public: 'everyone meeting people on Herae', matches: 'only my matches', matches_friends: 'my matches and friends', approved: 'only people I allow' };
     async function photoPrivacy(p, i) {
       const dlg = document.createElement('dialog'); dlg.className = 'h-dialog'; document.body.append(dlg);

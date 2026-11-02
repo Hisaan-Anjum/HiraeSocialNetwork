@@ -6,6 +6,7 @@
 // browser first, so uploads stay tiny.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatDate } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
@@ -55,8 +56,8 @@ export function openImportantDates({ username, dates = [], onChange }) {
   overlay.innerHTML = `
     <div class="modal-card ms-dates" role="dialog" aria-modal="true" aria-label="Important dates">
       <div class="ms-sel-head">
-        <h2>📅 Important Dates</h2>
-        <button class="share-close" data-dt="close" aria-label="Close">✕</button>
+        <h2>Important dates</h2>
+        <button class="share-close" data-dt="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
       <div class="ms-dates-body" id="msDatesBody"></div>
       <div class="ms-dates-foot">
@@ -71,21 +72,21 @@ export function openImportantDates({ username, dates = [], onChange }) {
 
   function renderList() {
     if (!list.length) {
-      body.innerHTML = `<div class="ms-dates-empty">No dates yet. Add the moments that matter — your first date, a trip, a birthday — and they'll live in your timeline forever. 💜</div>`;
+      body.innerHTML = `<div class="ms-dates-empty">No dates yet. Add the moments that matter — your first date, a trip, a birthday — and they'll live in your timeline forever.</div>`;
       return;
     }
     body.innerHTML = `<div class="ms-dates-list">${list
       .slice().sort((a, b) => (a.date < b.date ? -1 : 1))
       .map((d) => `
         <div class="ms-date-row" data-id="${d.id}">
-          ${d.coverUrl ? `<div class="ms-date-cover" style="background-image:url('${escapeHtml(d.coverUrl)}')"></div>` : `<div class="ms-date-emoji">${escapeHtml(d.emoji || '📅')}</div>`}
+          ${d.coverUrl ? `<div class="ms-date-cover" style="background-image:url('${escapeHtml(d.coverUrl)}')"></div>` : `<div class="ms-date-emoji">${d.emoji ? escapeHtml(d.emoji) : icon('calendar', 22)}</div>`}
           <div class="ms-date-main">
             <div class="ms-date-title">${escapeHtml(d.emoji || '')} ${escapeHtml(d.title)}</div>
             <div class="ms-date-sub">${escapeHtml(formatDate(d.date))}${d.description ? ` · ${escapeHtml(d.description)}` : ''}</div>
           </div>
           <div class="ms-date-actions">
-            <button class="ms-icon-btn" data-dt="edit" data-id="${d.id}" aria-label="Edit">✎</button>
-            <button class="ms-icon-btn" data-dt="del" data-id="${d.id}" aria-label="Delete">🗑</button>
+            <button class="ms-icon-btn" data-dt="edit" data-id="${d.id}" aria-label="Edit">${icon('edit', 16)}</button>
+            <button class="ms-icon-btn" data-dt="del" data-id="${d.id}" aria-label="Delete">${icon('trash', 16)}</button>
           </div>
         </div>`).join('')}</div>`;
   }

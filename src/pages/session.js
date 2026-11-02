@@ -90,7 +90,7 @@ async function showPublicOrLogin() {
 
 async function load() {
   if (!sid) {
-    contentEl.innerHTML = renderEmptyState('🤔', 'No session specified.');
+    contentEl.innerHTML = renderEmptyState('info', 'No session specified.');
     return;
   }
   contentEl.innerHTML = renderFeedSkeletons(1);

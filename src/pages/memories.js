@@ -217,7 +217,7 @@ async function loadMore(isFirstPage = false) {
     allSessionsSeen = allSessionsSeen.concat(batch);
 
     if (isFirstPage && !batch.length) {
-      contentEl.innerHTML = renderEmptyState('🎞️',
+      contentEl.innerHTML = renderEmptyState('film',
         'No moments yet — capture one on your next watch together, or write a review after your session ends.');
       sentinelEl.classList.add('hidden');
       return;
@@ -237,7 +237,7 @@ async function loadMore(isFirstPage = false) {
     else contentEl.insertAdjacentHTML('beforeend', html.join(''));
 
     if (state.ownDone && state.feedDone) {
-      sentinelEl.textContent = "You're all caught up 💜";
+      sentinelEl.textContent = "You're all caught up";
     } else {
       sentinelEl.textContent = 'Loading more…';
     }

@@ -10,6 +10,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { icon } from '../lib/icons.js';
 import { renderAvatar } from '../components/avatar.js';
 import { buildStoryManifest, refreshManifestMedia, MANIFEST_VERSION } from './engine.js';
 import { playStory } from './player.js';
@@ -28,7 +29,7 @@ const {
 function showLoading(message) {
   const el = document.createElement('div');
   el.className = 'ms-loading';
-  el.innerHTML = `<div class="ms-loading-inner"><div class="ms-loading-heart">❤️</div><div class="ms-loading-msg">${escapeHtml(message)}</div></div>`;
+  el.innerHTML = `<div class="ms-loading-inner"><div class="ms-loading-heart">${icon('heart', 28)}</div><div class="ms-loading-msg">${escapeHtml(message)}</div></div>`;
   document.body.appendChild(el);
   return { setMsg(m) { el.querySelector('.ms-loading-msg').textContent = m; }, close() { el.remove(); } };
 }
@@ -58,14 +59,14 @@ async function mountOwnChooser(container, profile) {
   const wrap = document.createElement('section');
   wrap.className = 'ms-section ms-chooser';
   wrap.innerHTML = `
-    <div class="ms-block-head"><h2>❤️ Memories</h2></div>
+    <div class="ms-block-head"><h2>Memories</h2></div>
     <p class="ms-chooser-sub">Open a relationship to relive your movie nights together.</p>
     <div class="ms-chooser-grid">
       ${contacts.map((c) => `
         <a class="ms-chooser-card" href="user.html?u=${encodeURIComponent(c.username)}">
           ${renderAvatar({ username: c.username, avatarUrl: c.avatarUrl }, { size: 'lg' })}
           <span class="ms-chooser-name">${escapeHtml(profile.username)} & ${escapeHtml(c.username)}</span>
-          <span class="ms-chooser-open">Open memories →</span>
+          <span class="ms-chooser-open">Open memories ${icon('arrowRight', 16)}</span>
         </a>`).join('')}
     </div>`;
   container.appendChild(wrap);
@@ -119,9 +120,9 @@ async function mountRelationship(container, profile, opts = {}) {
                 <span class="rel-name-me">${escapeHtml(s.me)}</span>
               </h1>
               <div class="rel-meta">
-                <span>💜 Together for ${escapeHtml(monthsText(s.monthsTogether))}</span>
+                <span class="rel-together">${icon('heart', 16)} Together for ${escapeHtml(monthsText(s.monthsTogether))}</span>
               </div>
-              <div><span class="rel-label">${escapeHtml(s.label?.emoji || '❤️')} ${escapeHtml(s.label?.text || '')}</span></div>
+              <div><span class="rel-label">${icon('sparkle', 14)} ${escapeHtml(s.label?.text || '')}</span></div>
               <div class="rel-stats">
                 <div class="profile-stat"><span class="profile-stat-num">${st.movieNights || 0}</span> movie nights</div>
                 <div class="profile-stat"><span class="profile-stat-num">${st.estimatedHours || 0}</span> hours</div>
@@ -131,22 +132,22 @@ async function mountRelationship(container, profile, opts = {}) {
           </div>
           <div class="rel-actions">
             <button class="ms-action-tile ms-action-primary" data-ms="watch">
-              <span class="ms-action-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span>
+              <span class="ms-action-ico">${icon('play', 22)}</span>
               <span class="ms-action-title">Watch Together</span>
               <span class="ms-action-sub">Start a session</span>
             </button>
             <button class="ms-action-tile" data-ms="message">
-              <span class="ms-action-ico">💬</span>
+              <span class="ms-action-ico">${icon('chat', 22)}</span>
               <span class="ms-action-title">Message</span>
               <span class="ms-action-sub">Open your chat</span>
             </button>
             <button class="ms-action-tile" data-ms="sharecard">
-              <span class="ms-action-ico">💞</span>
+              <span class="ms-action-ico">${icon('share', 22)}</span>
               <span class="ms-action-title">Share Card</span>
               <span class="ms-action-sub">Post your story</span>
             </button>
             <button class="ms-action-tile" data-ms="dates">
-              <span class="ms-action-ico">📅</span>
+              <span class="ms-action-ico">${icon('calendar', 22)}</span>
               <span class="ms-action-title">Important Dates</span>
               <span class="ms-action-sub">${s.importantDates?.length ? `${s.importantDates.length} saved` : 'Add events'}</span>
             </button>
@@ -175,8 +176,8 @@ async function mountRelationship(container, profile, opts = {}) {
     const r = await handOffToExtension('', username, { timeoutMs: 900 });
     if (r.handled && r.error) return toast(r.error);
     if (r.handled && r.offline) return toast(offlineNote(username, r));
-    if (r.handled) return toast(`Starting a session — inviting ${username} 💜`);
-    toast('Install or sign in to the Herae extension to start a session 💜');
+    if (r.handled) return toast(`Starting a session — inviting ${username}`);
+    toast('Install or sign in to the Herae extension to start a session');
   }
 
   function renderSection() {
@@ -184,21 +185,21 @@ async function mountRelationship(container, profile, opts = {}) {
     section.innerHTML = `
       <div class="ms-block">
         <div class="ms-block-head">
-          <h2>❤️ Memories</h2>
-          <button class="ms-link-btn" data-ms="browse">Browse stories →</button>
+          <h2>Memories</h2>
+          <button class="ms-link-btn" data-ms="browse">Browse stories ${icon('arrowRight', 15)}</button>
         </div>
         ${renderFeatured(s)}
       </div>
 
       ${s.timeline?.length ? `
         <div class="ms-block">
-          <div class="ms-block-head"><h2>❤️ Relationship Timeline</h2></div>
+          <div class="ms-block-head"><h2>Relationship timeline</h2></div>
           <div class="ms-timeline">
             ${s.timeline.slice().reverse().map((t) => `
               <div class="ms-tl-card">
                 <div class="ms-tl-card-emoji">${escapeHtml(t.emoji)}</div>
                 <div class="ms-tl-card-title">${escapeHtml(t.title)}</div>
-                ${t.subtitle ? `<div class="ms-tl-card-sub">${escapeHtml(t.subtitle)}</div>` : ''}
+                ${t.subtitle ? `<div class="ms-tl-card-sub">${escapeHtml(t.subtitle).replace(/(\d)★/g, (_, n) => `${n} ${icon('star', 12, 'is-on')}`)}</div>` : ''}
                 <div class="ms-tl-card-date">${escapeHtml(t.date)}</div>
               </div>`).join('')}
           </div>
@@ -209,7 +210,7 @@ async function mountRelationship(container, profile, opts = {}) {
   function renderFeatured(s) {
     if (!s.featured) {
       return `<div class="ms-empty">
-        <div class="ms-empty-emoji">❤️</div>
+        <div class="ms-empty-emoji">${icon('heart', 28)}</div>
         <div class="ms-empty-title">Keep making memories together.</div>
         <div class="ms-empty-sub">Once you've shared enough special moments, your first story will be ready.</div>
       </div>`;
@@ -223,9 +224,9 @@ async function mountRelationship(container, profile, opts = {}) {
     return `
       <div class="ms-featured" data-ms="play-featured" role="button" tabindex="0">
         <div class="ms-featured-kicker">Featured Story</div>
-        <div class="ms-featured-title">${escapeHtml(f.emoji)} ${escapeHtml(f.title)}</div>
+        <div class="ms-featured-title">${escapeHtml(f.title)}</div>
         <div class="ms-featured-stats">${stats.map((x) => `<span>${escapeHtml(x)}</span>`).join('')}</div>
-        <button class="btn btn-primary ms-play-btn">▶ Play Story</button>
+        <button class="btn btn-primary ms-play-btn">${icon('play', 16)} Play story</button>
       </div>`;
   }
 
@@ -257,7 +258,7 @@ async function mountRelationship(container, profile, opts = {}) {
         manifest = await buildStoryManifest({ summary, descriptor });
         if (!manifest) {
           loading.close();
-          toast('Not enough moments for this story yet — keep making memories 💜');
+          toast('Not enough moments for this story yet — keep making memories');
           return;
         }
         // Persist the manifest so the next open is instant (fire-and-forget).

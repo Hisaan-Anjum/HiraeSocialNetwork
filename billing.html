@@ -134,16 +134,16 @@
       return;
     }
     if (s.source === 'comp') {
-      planStatus.textContent = `Herae Together is on for you: unlimited until ${fmtDate(s.compUntil)}. 💛`;
+      planStatus.textContent = `Herae Together is on for you: unlimited until ${fmtDate(s.compUntil)}.`;
       actions.appendChild(linkButton('See plans', 'upgrade.html', false));
       return;
     }
     if (s.source === 'partner') {
-      planStatus.textContent = `You're covered by ${s.coveredBy || 'a partner'}'s Herae Together. 💛`;
+      planStatus.textContent = `You're covered by ${s.coveredBy || 'a partner'}'s Herae Together.`;
       return;
     }
     if (s.source === 'special') {
-      planStatus.textContent = 'Complimentary — unlimited access, on us. 💛';
+      planStatus.textContent = 'Complimentary — unlimited access, on us.';
       return;
     }
     const bits = [];
@@ -154,7 +154,7 @@
 
     // Plus owners can move up to Together (the upgrade page runs the checkout;
     // the webhook then supersedes this Plus subscription automatically).
-    if (s.plan === 'plus') actions.appendChild(linkButton('✨ Upgrade to Herae Together', 'upgrade.html', true));
+    if (s.plan === 'plus') actions.appendChild(linkButton('Upgrade to Herae Together', 'upgrade.html', true));
 
     apiRequest('/api/subscription/manage')
       .then(({ urls }) => { if (urls && urls.update_payment_method) actions.appendChild(linkButton('Update payment method', urls.update_payment_method, false)); })
@@ -169,7 +169,7 @@
   async function cancelSub() {
     if (!confirm('Cancel your Herae plan? You keep unlimited access until the end of the period you have already paid for.')) return;
     say('Cancelling…');
-    try { await apiRequest('/api/subscription/cancel', { method: 'POST' }); say('Your plan will end when the current period is over. You keep unlimited access until then. 💛', 'ok'); }
+    try { await apiRequest('/api/subscription/cancel', { method: 'POST' }); say('Your plan will end when the current period is over. You keep unlimited access until then.', 'ok'); }
     catch (e) { say(e.message || 'Could not cancel — please try again.', 'err'); }
   }
 
@@ -192,7 +192,7 @@
     const hint = c.canChange ? '' : '<div class="cov-hint">You can change who\'s covered again on ' + esc((c.changeAllowedAt||'').slice(0,10)) + '.</div>';
     return '<div class="cov-person">' + avatarBig(p) +
       '<div><div class="cov-name">' + esc(p.username) + '</div><div class="cov-user">@' + esc(p.username) + '</div>' +
-      '<div class="cov-badge">Covered by your Herae Together plan 💛</div></div></div>' +
+      '<div class="cov-badge">Covered by your Herae Together plan</div></div></div>' +
       '<div class="cov-hint">Unlimited access is active for both of you.</div>' +
       '<div class="cov-actions">' +
         '<a class="btn btn-ghost" href="user.html?u=' + encodeURIComponent(p.username) + '">View profile</a>' +
@@ -209,7 +209,7 @@
     if (chg && !chg.disabled) chg.addEventListener('click', () => { covered = Object.assign({}, covered, { covered: null, coveredProfile: null }); renderCovered(window.__status); });
   }
   function emptyHtml(){
-    return '<div class="cov-empty-title">💛 Share Herae Together</div>' +
+    return '<div class="cov-empty-title">Share Herae Together</div>' +
       '<div class="cov-empty-sub">One subscription gives unlimited movie nights, calls and memories for you and one person you choose.</div>' +
       '<div class="cov-empty-desc">Choose someone now, or invite them whenever you\'re ready.</div>' +
       '<div class="cov-search"><input type="text" id="covUser" placeholder="Enter a Herae username" autocapitalize="none" autocomplete="off"><button class="btn btn-primary" id="covAdd" style="width:auto">Add</button></div>' +
@@ -238,7 +238,7 @@
   function addByUsername(u){ u = (u || '').trim(); if (!u) return; act(() => apiRequest('/api/subscription/covered', { method: 'POST', body: JSON.stringify({ username: u }) })); }
   function inviteHtml(c){
     const url = location.origin + '/claim.html?token=' + encodeURIComponent(c.inviteToken);
-    return '<div class="cov-empty-title">Invite link ready 💛</div>' +
+    return '<div class="cov-empty-title">Invite link ready</div>' +
       '<div class="cov-empty-desc">Send this to the person you want to cover. When they open it and sign in (or sign up), they\'re covered automatically.</div>' +
       '<div class="cov-invite"><input type="text" id="covLink" readonly value="' + esc(url) + '"><button class="btn btn-primary" id="covCopy" style="width:auto">Copy</button></div>' +
       '<div class="cov-actions" style="margin-top:14px"><button class="btn btn-ghost" id="covCancelInvite">Cancel invite</button></div>' +
@@ -247,7 +247,7 @@
   function wireInvite(){
     el('covCopy').addEventListener('click', async () => {
       const inp = el('covLink'); inp.select();
-      try { await navigator.clipboard.writeText(inp.value); cmsg('Link copied 💛', 'ok'); } catch (e) { try { document.execCommand('copy'); cmsg('Link copied 💛', 'ok'); } catch (_) {} }
+      try { await navigator.clipboard.writeText(inp.value); cmsg('Link copied', 'ok'); } catch (e) { try { document.execCommand('copy'); cmsg('Link copied', 'ok'); } catch (_) {} }
     });
     el('covCancelInvite').addEventListener('click', () => act(() => apiRequest('/api/subscription/covered', { method: 'DELETE' })));
   }
@@ -266,7 +266,7 @@
     // Just paid? Wait for the (authoritative) webhook rather than flashing "Free".
     if (justUpgraded && !s.unlimited) {
       planName.textContent = 'Finalizing your upgrade…';
-      planStatus.textContent = 'This takes a few seconds — hang tight. 💛';
+      planStatus.textContent = 'This takes a few seconds — hang tight.';
       for (let i = 0; i < 6 && !s.unlimited; i++) { await sleep(2000); try { s = await apiRequest('/api/subscription/status'); } catch (e) {} }
     }
 

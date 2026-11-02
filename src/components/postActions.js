@@ -9,6 +9,7 @@
 // or media, and their handler is already delegated off the same container.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { renderStars, renderStarPicker } from './starRating.js';
 import { renderUserLink } from './userLink.js';
@@ -17,7 +18,7 @@ const { updateMoment, deleteMoment, updateReview, deleteReview, setMomentPrivacy
 
 // Same labels as the card's own control, so the two never disagree about
 // what 'contacts' means.
-const EDIT_PRIVACY_LABELS = { public: '🌐 Public', contacts: '👥 Contacts', private: '🔒 Just us' };
+const EDIT_PRIVACY_LABELS = { public: 'Public', contacts: 'Contacts', private: 'Just us' };
 
 // `canEdit` comes from the server on every moment/review (see
 // hydrateMoments) — the menu simply isn't rendered without it. The routes
@@ -26,10 +27,10 @@ export function renderPostMenu(type, id, canEdit) {
   if (!canEdit) return '';
   return `
     <div class="post-menu" data-post-type="${type}" data-post-id="${id}">
-      <button class="post-menu-btn" aria-label="More actions" aria-haspopup="true" aria-expanded="false">⋯</button>
+      <button class="post-menu-btn" aria-label="More actions" aria-haspopup="true" aria-expanded="false">${icon('more', 18)}</button>
       <div class="post-menu-list" hidden>
-        <button class="post-menu-item" data-action="edit">✏️ Edit</button>
-        <button class="post-menu-item post-menu-item-danger" data-action="delete">🗑️ Delete</button>
+        <button class="post-menu-item" data-action="edit">${icon('edit', 17)} Edit</button>
+        <button class="post-menu-item post-menu-item-danger" data-action="delete">${icon('trash', 17)} Delete</button>
       </div>
     </div>`;
 }

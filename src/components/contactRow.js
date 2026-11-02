@@ -8,6 +8,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
+import { icon } from '../lib/icons.js';
 import { renderAvatar, profileHref } from './avatar.js';
 import { renderUserLink } from './userLink.js';
 
@@ -26,7 +27,7 @@ export function renderContactRow(c, opts = {}) {
       <div class="contact-name">${opts.actions ? renderUserLink(c.username) : escapeHtml(c.username)}</div>
       <div class="contact-status ${statusCls}">${escapeHtml(status)}</div>
     </div>
-    ${opts.actions || '<div class="contact-arrow">→</div>'}`;
+    ${opts.actions || `<div class="contact-arrow">${icon('chevronRight', 18)}</div>`}`;
 
   // With actions present the row can't itself be an <a> — a button inside a
   // link is both invalid and unclickable-feeling — so the username inside

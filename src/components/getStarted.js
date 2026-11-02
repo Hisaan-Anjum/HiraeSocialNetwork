@@ -9,6 +9,7 @@
 // request fails the step still says what to do, it just has no link to copy.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { mountPlanNext } from './planNext.js';
 
@@ -48,7 +49,7 @@ async function copyText(text) {
 function step(n, done, title, body) {
   return `
     <li class="gs-step${done ? ' is-done' : ''}">
-      <span class="gs-num" aria-hidden="true">${done ? '✓' : n}</span>
+      <span class="gs-num" aria-hidden="true">${done ? icon('check', 14) : n}</span>
       <div class="gs-body">
         <div class="gs-title">${title}</div>
         ${body}
@@ -86,13 +87,13 @@ export async function mountGetStarted(el) {
   const inviteBody = invite
     ? `<p class="gs-text">Send them this link however you normally talk. They'll add Herae too, but they don't need an account.</p>
        <div class="gs-share">
-         <a class="btn btn-gold gs-share-btn" href="https://wa.me/?text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener">Send on WhatsApp</a>
-         <a class="btn btn-ghost gs-share-btn" href="mailto:?subject=${encodeURIComponent('Movie night?')}&body=${encodeURIComponent(shareText)}">Email it</a>
-         <button type="button" class="btn btn-ghost gs-share-btn gs-native" hidden>Share…</button>
+         <a class="btn btn-gold gs-share-btn" href="https://wa.me/?text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener">${icon('chat', 16)} WhatsApp</a>
+         <a class="btn btn-ghost gs-share-btn gs-sec" href="mailto:?subject=${encodeURIComponent('Movie night?')}&body=${encodeURIComponent(shareText)}">${icon('mail', 16)} Email</a>
+         <button type="button" class="btn btn-ghost gs-share-btn gs-sec gs-native" hidden>${icon('share', 16)} Share</button>
        </div>
        <div class="gs-link-row">
          <code class="gs-link">${escapeHtml(invite.url)}</code>
-         <button type="button" class="btn btn-ghost gs-copy">Copy link</button>
+         <button type="button" class="btn btn-ghost gs-copy">${icon('copy', 15)} Copy</button>
        </div>
        <form class="gs-email" novalidate>
          <label class="gs-email-label" for="gsEmail">Or let Herae email them the setup</label>
@@ -138,8 +139,8 @@ export async function mountGetStarted(el) {
     copyBtn.addEventListener('click', async () => {
       const ok = await copyText(invite.url);
       if (ok) sent('copy');
-      copyBtn.textContent = ok ? '✓ Copied' : 'Press Ctrl+C';
-      setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 1800);
+      copyBtn.textContent = ok ? 'Copied' : 'Press Ctrl+C';
+      setTimeout(() => { copyBtn.innerHTML = `${icon('copy', 15)} Copy`; }, 1800);
     });
   }
   // Connected but no night yet → pick the evening now (PMF.md 2026-10-05: "we haven't had a free evening yet").

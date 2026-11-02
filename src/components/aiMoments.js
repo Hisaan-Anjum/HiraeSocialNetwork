@@ -15,6 +15,7 @@
 // rather than an anxious one.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { openMediaViewer } from './mediaViewer.js';
 
@@ -150,9 +151,9 @@ function badgeHtml(moment) {
   if (state === 'finishing') return progressHtml(moment);
   if (state === 'failed') return '<span class="aim-duration">Photo</span>';
   return `
-    <span class="aim-play" aria-hidden="true"><span class="aim-play-glyph">▶</span></span>
+    <span class="aim-play" aria-hidden="true"><span class="aim-play-glyph">${icon('play', 18)}</span></span>
     <span class="aim-duration aim-duration-video">
-      <span class="aim-duration-icon" aria-hidden="true">▶</span>${escapeHtml(formatDuration(moment.durationMs))}
+      <span class="aim-duration-icon" aria-hidden="true">${icon('play', 12)}</span>${escapeHtml(formatDuration(moment.durationMs))}
     </span>`;
 }
 
@@ -177,7 +178,7 @@ function waitingOverlayHtml(moment) {
           <div class="aim-making-label aim-making-label-lg${pct >= 100 ? ' is-complete' : ''}">${escapeHtml(makingLabel(pct))}</div>
           <div class="aim-wait-sub">It will start playing on its own. You can close this and come back.</div>
         </div>
-        <button type="button" class="aim-wait-close" aria-label="Close">✕</button>
+        <button type="button" class="aim-wait-close" aria-label="Close">${icon('x', 18)}</button>
       </div>
     </div>`;
 }
@@ -208,9 +209,9 @@ const CORRECTION_CHIPS = Object.freeze([
 function calibButtonsHtml() {
   return `
     <button type="button" class="aim-calib-btn" data-aim-verdict="confirm"
-      title="Herae read this one right" aria-label="Herae read this one right">👍</button>
+      title="Herae read this one right" aria-label="Herae read this one right">${icon('thumbUp', 18)}</button>
     <button type="button" class="aim-calib-btn" data-aim-verdict="reject"
-      title="That is not what this was" aria-label="That is not what this was">👎</button>`;
+      title="That is not what this was" aria-label="That is not what this was">${icon('thumbDown', 18)}</button>`;
 }
 
 function calibHtml(moment) {
@@ -253,7 +254,7 @@ function cardHtml(moment) {
            aria-label="${escapeHtml(thumbLabel(moment))}">
         ${moment.poster
           ? `<img src="${escapeHtml(moment.poster)}" alt="${escapeHtml(moment.label)}" loading="lazy">`
-          : '<div class="aim-thumb-empty">✨</div>'}
+          : `<div class="aim-thumb-empty">${icon('sparkle', 22)}</div>`}
         ${badgeHtml(moment)}
       </div>
       <div class="aim-body">
@@ -264,9 +265,9 @@ function cardHtml(moment) {
         <div class="aim-when">${escapeHtml(formatClock(moment.at))}${calibHtml(moment)}</div>
         <input class="aim-caption" type="text" maxlength="300" placeholder="Add a caption (optional)">
         <div class="aim-privacy" role="group" aria-label="Who can see this">
-          <button type="button" class="aim-chip is-active" data-aim-privacy="private">🔒 Just us</button>
-          <button type="button" class="aim-chip" data-aim-privacy="contacts">👥 Contacts</button>
-          <button type="button" class="aim-chip" data-aim-privacy="public">🌐 Public</button>
+          <button type="button" class="aim-chip is-active" data-aim-privacy="private">${icon('lock', 15)} Just us</button>
+          <button type="button" class="aim-chip" data-aim-privacy="contacts">${icon('users', 15)} Contacts</button>
+          <button type="button" class="aim-chip" data-aim-privacy="public">${icon('globe', 15)} Public</button>
         </div>
         <div class="aim-actions">
           <button type="button" class="btn btn-ghost aim-delete">Delete</button>
@@ -314,7 +315,7 @@ function otherNightsHtml(others) {
            data-aim-other="1">
           <span class="aim-other-when">${escapeHtml(formatNight(o.at))}</span>
           <span class="aim-other-count">${o.count === 1 ? '1 moment' : `${o.count} moments`}</span>
-          <span class="aim-other-go" aria-hidden="true">→</span>
+          <span class="aim-other-go" aria-hidden="true">${icon('arrowRight', 16)}</span>
         </a>`).join('')}
     </div>`;
 }
@@ -334,14 +335,14 @@ function panelHtml(moments, others) {
     <div class="aim-panel" id="aiMomentsPanel">
       <div class="aim-head">
         <div>
-          <div class="aim-heading">Herae caught ${moments.length === 1 ? 'a moment' : `${moments.length} moments`} from tonight 💜</div>
+          <div class="aim-heading">Herae caught ${moments.length === 1 ? 'a moment' : `${moments.length} moments`} from tonight</div>
           <div class="aim-sub">
             Found on your computer, and still only on your computer.
             <strong>Tap any moment to see it full screen.</strong>
             Keep the ones you want. Nothing is lost if you leave: the rest wait on this computer for a while, then delete themselves.
           </div>
           <div class="aim-keep-all-row">
-            <button type="button" class="btn btn-gold aim-keep-all">💾 Keep ${moments.length === 1 ? 'it' : `all ${moments.length}`}</button>
+            <button type="button" class="btn btn-gold aim-keep-all">${icon('save', 16)} Keep ${moments.length === 1 ? 'it' : `all ${moments.length}`}</button>
             <label class="aim-auto"><input type="checkbox" class="aim-auto-box"${autoKeepOn() ? ' checked' : ''}>
               Keep them for me after every night <span>(private: only the two of you see them)</span></label>
           </div>
@@ -440,7 +441,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     // commonest reason to want it back is the most banal: the wrong icon.
     // Without this the only honest options are to leave a wrong answer in the
     // profile or to retune the whole thing, and both are worse than the slip.
-    row.innerHTML = '<span class="aim-calib-done">✓ Noted</span>'
+    row.innerHTML = '<span class="aim-calib-done">Noted</span>'
       + '<button type="button" class="aim-calib-undo" data-aim-undo="1">Undo</button>';
     // ── …but "Noted" has to be true ──────────────────────────────────
     // The extension refuses a verdict it cannot attach to a real reading, and
@@ -606,7 +607,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
       return;
     }
     queuedKeeps.delete(id);
-    statusEl.textContent = '✓ Kept';
+    statusEl.textContent = 'Kept';
     if (window.trackEvent) window.trackEvent('ai_moment_kept', {});
     removeCard(card);
   }
@@ -809,7 +810,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
       if (!card) return;
       const statusEl = card.querySelector('.aim-status');
       if (e.data.ok) {
-        if (statusEl) statusEl.textContent = '✓ Kept';
+        if (statusEl) statusEl.textContent = 'Kept';
         removeCard(card);
         return;
       }
@@ -955,7 +956,7 @@ export async function mountAiMoments(mountEl, { sessionId } = {}) {
     }
     keepingAll = false;
     const still = mountEl.querySelectorAll('.aim-card:not(.aim-card-out)').length;
-    if (btn) { btn.textContent = still ? 'Saving the rest as they finish…' : '✓ All kept'; }
+    if (btn) { btn.textContent = still ? 'Saving the rest as they finish…' : 'All kept'; }
   }
   mountEl.addEventListener('click', (e) => {
     if (e.target.closest('.aim-keep-all')) keepAll();

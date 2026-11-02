@@ -36,7 +36,7 @@
       <a class="btn btn-ghost" id="save" download>Save to my phone</a>
     </div>
     <div class="ph-msg" id="msg" aria-live="polite"></div>
-    <p class="ph-tip" id="tip" hidden>Tap <b>Share</b>, then pick Instagram (Story or Reel), TikTok, WhatsApp or anywhere else. Tag your person 💜</p>
+    <p class="ph-tip" id="tip" hidden>Tap <b>Share</b>, then pick Instagram (Story or Reel), TikTok, WhatsApp or anywhere else. Tag your person</p>
   </div>
 <script>
 'use strict';
@@ -90,7 +90,7 @@
   shareBtn.addEventListener('click', function () {
     if (!file) return;
     navigator.share({ files: [file] })
-      .then(function () { say('Shared 💜', 'ok'); })
+      .then(function () { say('Shared', 'ok'); })
       .catch(function (e) { if (!e || e.name !== 'AbortError') say('Sharing did not open. Use "Save to my phone" instead.', 'bad'); });
   });
 })();

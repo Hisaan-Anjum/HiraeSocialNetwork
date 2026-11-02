@@ -2,6 +2,7 @@
 // poster, title, year. Filled by "Add to… → My watchlist" (addTo.js). On your own page each film can be removed.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { openMovieModal } from '../components/movieDetail.js';
 import { openAddMovie } from './addMovie.js';
@@ -21,25 +22,25 @@ export function mountPersonalWatchlist(container, { username, isMe, name, data }
 
   function render() {
     panel.innerHTML = `
-      <div class="wl-head"><h2>📌 ${isMe ? 'My watchlist' : `${escapeHtml(name)}’s watchlist`}</h2>
+      <div class="wl-head"><h2>${isMe ? 'My watchlist' : `${escapeHtml(name)}’s watchlist`}</h2>
         ${items.length ? `<span class="wl-count">${items.length} film${items.length === 1 ? '' : 's'}</span>` : ''}</div>
       ${items.length ? `<ul class="wl-list">${items.map((it, i) => {
         const m = it.film;
         const stars = [1, 2, 3, 4, 5].map((n) => isMe
-          ? `<button class="wl-star${it.rating >= n ? ' is-on' : ''}" data-pw="rate" data-i="${i}" data-rating="${n}" aria-label="Rate ${n} of 5">★</button>`
-          : `<span class="wl-star${it.rating >= n ? ' is-on' : ''}" aria-hidden="true">★</span>`).join('');
+          ? `<button class="wl-star${it.rating >= n ? ' is-on' : ''}" data-pw="rate" data-i="${i}" data-rating="${n}" aria-label="Rate ${n} of 5">${icon('star', 16)}</button>`
+          : `<span class="wl-star${it.rating >= n ? ' is-on' : ''}" aria-hidden="true">${icon('star', 14)}</span>`).join('');
         return `<li class="wl-item${it.watched ? ' is-watched' : ''}">
           <span class="wl-art" ${m ? `data-pw="open" data-movie="${m.id}" role="button" tabindex="0"` : ''}
-            style="${m && m.posterUrl ? `background-image:url('${m.posterUrl}')` : ''}">${!m || !m.posterUrl ? '<span class="recommendation-card-placeholder">🎬</span>' : ''}</span>
+            style="${m && m.posterUrl ? `background-image:url('${m.posterUrl}')` : ''}">${!m || !m.posterUrl ? `<span class="recommendation-card-placeholder">${icon('film', 28)}</span>` : ''}</span>
           <div class="wl-main">
             <div class="wl-title" ${m ? `data-pw="open" data-movie="${m.id}" role="button" tabindex="0"` : ''}>${escapeHtml(it.title)}</div>
-            <div class="wl-meta">${m && m.releaseYear ? m.releaseYear : ''}${it.watched ? ' · ✓ Watched' : ''}</div>
+            <div class="wl-meta">${m && m.releaseYear ? m.releaseYear : ''}${it.watched ? ' · Watched' : ''}</div>
             ${isMe || it.rating ? `<div class="wl-stars" role="group" aria-label="Rating">${stars}</div>` : ''}
             ${it.note ? `<div class="wl-comment">“${escapeHtml(it.note)}”</div>` : ''}
             ${isMe ? `<div class="wl-actions">
-              <button class="wl-chip" data-pw="watched" data-i="${i}">${it.watched ? '✓ Watched' : 'Mark watched'}</button>
+              <button class="wl-chip" data-pw="watched" data-i="${i}">${it.watched ? icon('check', 14) + ' Watched' : 'Mark watched'}</button>
               <button class="wl-chip" data-pw="note" data-i="${i}">${it.note ? 'Edit note' : 'Add note'}</button>
-              ${m && (m.watchLinks || []).length ? `<button class="wl-chip wl-chip-go" data-pw="watch" data-i="${i}">▶ Watch now</button>` : ''}
+              ${m && (m.watchLinks || []).length ? `<button class="wl-chip wl-chip-go" data-pw="watch" data-i="${i}">${icon('play', 14)} Watch now</button>` : ''}
               <button class="wl-chip" data-pw="remove" data-i="${i}">Remove</button></div>` : ''}
           </div></li>`;
       }).join('')}</ul>`

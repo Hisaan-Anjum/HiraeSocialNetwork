@@ -13,6 +13,7 @@
 // just reads as a missing contact.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, debounce } from '../lib/util.js';
 import { renderAvatar } from '../components/avatar.js';
 import { lockScroll } from '../lib/scrollLock.js';
@@ -28,8 +29,8 @@ export function openPickContact({ movie, onAdded }) {
   overlay.innerHTML = `
     <div class="modal-card pc-card" role="dialog" aria-modal="true" aria-label="Add to a shared watchlist">
       <div class="ms-sel-head">
-        <h2>❤️ Add to a shared watchlist</h2>
-        <button class="share-close" data-pc="close" aria-label="Close">✕</button>
+        <h2>Add to a shared watchlist</h2>
+        <button class="share-close" data-pc="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
       <div class="pc-movie">${escapeHtml(movie.title)}</div>
       <input type="search" class="pc-search" id="pcSearch" placeholder="Search your contacts…" autocomplete="off">
@@ -66,7 +67,7 @@ export function openPickContact({ movie, onAdded }) {
       <button type="button" class="pc-row${has ? ' is-on' : ''}" data-pc="add" data-user="${escapeHtml(c.username)}" ${has ? 'disabled' : ''}>
         ${renderAvatar({ username: c.username, avatarUrl: c.avatarUrl }, { size: 'sm' })}
         <span class="pc-name">${escapeHtml(c.username)}</span>
-        <span class="pc-state">${has ? '✓ already on your list' : '＋ Add'}</span>
+        <span class="pc-state">${has ? icon('check', 14) + ' already on your list' : icon('plus', 14) + ' Add'}</span>
       </button>`;
   }
 
@@ -111,7 +112,7 @@ export function openPickContact({ movie, onAdded }) {
     if (!contacts.length) {
       body.innerHTML = searchEl.value.trim()
         ? `<div class="pc-empty">No contacts match “${escapeHtml(searchEl.value.trim())}”.</div>`
-        : `<div class="pc-empty">You don't have any contacts yet. Add someone on the Contacts page and you'll be able to build a watchlist together. 💜</div>`;
+        : `<div class="pc-empty">You don't have any contacts yet. Add someone on the Contacts page and you'll be able to build a watchlist together.</div>`;
       return;
     }
 

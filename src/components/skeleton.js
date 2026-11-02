@@ -1,3 +1,4 @@
+import { icon as ico } from '../lib/icons.js';
 // skeleton.js — loading placeholders shown while the first page (or the
 // next page, during infinite scroll) is in flight. Shape roughly matches a
 // session/review card so the layout doesn't jump once real content arrives.
@@ -20,10 +21,10 @@ export function renderFeedSkeletons(count = 3) {
   `).join('');
 }
 
-export function renderEmptyState(icon, message) {
-  return `<div class="empty-state"><div class="icon">${icon}</div><div class="msg">${message}</div></div>`;
+export function renderEmptyState(name, message) {
+  return `<div class="empty-state"><div class="icon">${ico(name, 28)}</div><div class="msg">${message}</div></div>`;
 }
 
 export function renderErrorState(message) {
-  return renderEmptyState('😕', message);
+  return renderEmptyState('info', message);
 }

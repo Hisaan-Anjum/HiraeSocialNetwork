@@ -53,7 +53,7 @@
         if (!ev) return;
         if (ev.name === 'checkout.completed') {
           done = true;
-          show('Payment received 💛', 'Your plan switches on within a minute. <a href="billing.html?upgraded=1">See your plan</a>');
+          show('Payment received', 'Your plan switches on within a minute. <a href="billing.html?upgraded=1">See your plan</a>');
         } else if (ev.name === 'checkout.closed' && !done) {
           show('Checkout closed', 'Nothing was charged. <a href="pricing.html">Back to plans</a>');
         } else if (ev.name === 'checkout.error') {

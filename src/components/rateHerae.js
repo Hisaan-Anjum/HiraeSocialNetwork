@@ -19,7 +19,7 @@ export function mountRateHerae(anchor, { durationMs } = {}) {
   const card = document.createElement('div');
   card.className = 'rate-herae';
   card.innerHTML = `
-    <div class="rate-herae-title">⭐ Did Herae make tonight easier?</div>
+    <div class="rate-herae-title">Did Herae make tonight easier?</div>
     <div class="rate-herae-sub">Ratings are how other long-distance couples find Herae in the Chrome Web Store. If tonight worked, a quick rating helps more than you'd think.</div>
     <div class="rate-herae-row">
       <a class="btn btn-gold rate-herae-go" href="${STORE_REVIEWS}" target="_blank" rel="noopener">Rate Herae</a>
@@ -28,7 +28,7 @@ export function mountRateHerae(anchor, { durationMs } = {}) {
     </div>`;
   anchor.after(card);
   track('shown');
-  card.querySelector('.rate-herae-go').addEventListener('click', () => { track('rate'); done('rate'); card.querySelector('.rate-herae-sub').textContent = 'Thank you, it really helps. 💜'; });
+  card.querySelector('.rate-herae-go').addEventListener('click', () => { track('rate'); done('rate'); card.querySelector('.rate-herae-sub').textContent = 'Thank you, it really helps.'; });
   card.querySelector('.rate-herae-issue').addEventListener('click', () => { track('issue'); done('issue'); });
   card.querySelector('.rate-herae-later').addEventListener('click', () => { track('dismiss'); done('dismiss'); card.remove(); });
   return card;

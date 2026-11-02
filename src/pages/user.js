@@ -118,7 +118,7 @@ async function mountWatchlistColumn() {
   let shared = 0; try { shared = ((await window.getWatchlist(profile.username)).items || []).length; } catch (e) { /* show both anyway */ }
   if (mine !== watchlistMount) return;
   const tabs = document.createElement('div'); tabs.className = 'wl-tabs'; tabs.setAttribute('role', 'tablist');
-  tabs.innerHTML = `<button type="button" role="tab" data-tab="shared">❤️ Together</button><button type="button" role="tab" data-tab="personal">📌 ${escapeHtml(name)}’s list</button>`;
+  tabs.innerHTML = `<button type="button" role="tab" data-tab="shared">Together</button><button type="button" role="tab" data-tab="personal">${escapeHtml(name)}’s list</button>`;
   const sharedPane = document.createElement('div'); sharedPane.dataset.pane = 'shared';
   const personalPane = document.createElement('div'); personalPane.dataset.pane = 'personal';
   watchlistEl.append(tabs, sharedPane, personalPane);
@@ -164,8 +164,8 @@ if (auth) {
 const CONTACT_ACTIONS = {
   none: { label: '＋ Request contact', cls: 'btn-primary', action: 'request' },
   pending_outgoing: { label: 'Cancel request', cls: 'btn-ghost', action: 'cancel', note: 'Request sent — waiting for them to accept.' },
-  pending_incoming: { label: '✓ Accept request', cls: 'btn-primary', action: 'accept', note: 'They asked to connect with you.' },
-  accepted: { label: 'Remove contact', cls: 'btn-ghost', action: 'remove', note: '💜 You’re contacts.' },
+  pending_incoming: { label: 'Accept request', cls: 'btn-primary', action: 'accept', note: 'They asked to connect with you.' },
+  accepted: { label: 'Remove contact', cls: 'btn-ghost', action: 'remove', note: 'You’re contacts.' },
   self: null,
 };
 
@@ -387,7 +387,7 @@ async function init() {
   }
   if (!target) {
     headerEl.innerHTML = '';
-    contentEl.innerHTML = renderEmptyState('🤔', 'No profile specified.');
+    contentEl.innerHTML = renderEmptyState('info', 'No profile specified.');
     sentinelEl.classList.add('hidden');
     return;
   }
@@ -449,7 +449,7 @@ async function loadMore(isFirstPage = false) {
 
     if (isFirstPage && !grouped.length) {
       const isMe = state.profile?.isMe;
-      contentEl.innerHTML = renderEmptyState('🎞️', isMe
+      contentEl.innerHTML = renderEmptyState('film', isMe
         ? "You haven't captured anything yet — start a watch session from the Herae extension."
         : `Nothing from ${escapeHtml(target)} is visible to you yet.`);
       sentinelEl.classList.add('hidden');
@@ -462,7 +462,7 @@ async function loadMore(isFirstPage = false) {
     else contentEl.insertAdjacentHTML('beforeend', html);
 
     if (state.done) {
-      sentinelEl.textContent = "That's everything 💜";
+      sentinelEl.textContent = "That's everything";
     } else if (!sentinelEl.querySelector('button')) {
       sentinelEl.textContent = 'Loading more…';
     }

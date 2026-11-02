@@ -87,7 +87,7 @@
   function heraeCatalogPick({ withUser = '', withName = '', title = 'Pick a film or series' } = {}) {
     return new Promise((resolve) => {
       const dlg = document.createElement('dialog'); dlg.className = 'fp-dlg'; dlg.setAttribute('aria-label', title);
-      dlg.innerHTML = `<div class="fp-head"><h2>🍿 ${esc(title)}</h2><button type="button" class="fp-x" aria-label="Close">✕</button></div>
+      dlg.innerHTML = `<div class="fp-head"><h2>${esc(title)}</h2><button type="button" class="fp-x" aria-label="Close">${window.hIcon ? window.hIcon('x', 18) : '×'}</button></div>
         <input type="search" class="fp-search" placeholder="Search films and series…" autocomplete="off" aria-label="Search the catalogue">
         <div class="fp-kick"></div><div class="fp-grid" role="list"></div>`;
       // Its own modal: showModal() stacks it above an open dialog, and returns focus there on close.
@@ -99,7 +99,7 @@
       dlg.querySelector('.fp-x').onclick = finish;
       dlg.addEventListener('click', (e) => { if (e.target === dlg) finish(); });
       const card = (m) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fp-card'; b.setAttribute('role', 'listitem');
-        b.innerHTML = `<span class="fp-art"${m.posterUrl ? ` style="background-image:url('${esc(m.posterUrl)}')"` : ''}>${m.posterUrl ? '' : '🎬'}</span>
+        b.innerHTML = `<span class="fp-art"${m.posterUrl ? ` style="background-image:url('${esc(m.posterUrl)}')"` : ''}>${m.posterUrl ? '' : (window.hIcon ? window.hIcon('film', 22) : '')}</span>
           <span class="fp-name">${esc(m.title)}</span>${m.releaseYear ? `<span class="fp-year">${esc(m.releaseYear)}</span>` : ''}`;
         b.onclick = () => { chosen = m; finish(); }; return b; };
       const page = async (fresh) => {

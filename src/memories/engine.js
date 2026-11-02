@@ -71,7 +71,7 @@ export const STORY_REGISTRY = {
       return { start: new Date(Date.UTC(y, 0, 1)), end: new Date(Date.UTC(y + 1, 0, 1)) };
     },
     title(key) { return String(key).startsWith('valentine') ? "Valentine's Together" : 'Christmas Together'; },
-    subtitle(key) { return String(key).startsWith('valentine') ? '❤️' : '🎄'; },
+    subtitle(key) { return String(key).startsWith('valentine') ? 'Valentine’s' : 'Holidays'; },
   },
   important_date: {
     range(key, summary) {
@@ -99,7 +99,7 @@ function emotionalTitle(type, key, summary, feel) {
   const pool = [base];
   if (feel.videoHeavy) pool.push('Caught on Camera', 'Our Little Movies');
   if (feel.movieHeavy) pool.push('Movie Marathon Month', 'Nothing But Movie Nights');
-  if (feel.cozy) pool.push('🌙 Cozy Nights', 'Just the Two of Us');
+  if (feel.cozy) pool.push('Cozy Nights', 'Just the Two of Us');
   if (feel.laughs) pool.push("The Month We Couldn't Stop Laughing");
   return Math.random() < 0.55 ? base : pick(pool);
 }
@@ -244,10 +244,10 @@ export async function buildStoryManifest({ summary, descriptor }) {
   const comments = shuffle(allComments).slice(0, 3);
 
   const endings = [
-    'Here’s to the next chapter 💜',
+    'Here’s to the next chapter',
     'And the story continues…',
     'More memories, coming soon.',
-    'Same time next month? ❤️',
+    'Same time next month?',
     'To be continued, together.',
   ];
 

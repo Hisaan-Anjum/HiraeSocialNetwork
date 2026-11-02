@@ -182,7 +182,7 @@ document.addEventListener('submit', async (e) => {
     });
     const body = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(body.error || 'Could not send it. Try again.');
-    msg.textContent = 'Sent. Open it on your computer 💜';
+    msg.textContent = 'Sent. Open it on your computer.';
     msg.style.color = '#86efac';
   } catch (err) {
     btn.disabled = false;
@@ -195,7 +195,7 @@ async function load() {
   const contentEl = document.getElementById('content');
   const { type, id } = getParams();
   if (!id) {
-    contentEl.innerHTML = renderEmptyState('🤔', 'No post specified.');
+    contentEl.innerHTML = renderEmptyState('info', 'No post specified.');
     return;
   }
 

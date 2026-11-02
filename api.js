@@ -165,7 +165,7 @@ async function injectSubscriptionNav() {
     a.setAttribute('data-herae-plan', '1');
     a.className = 'plan-pill' + (s.unlimited ? ' plan-pill-paid' : '');
     a.title = 'Your Herae plan';
-    a.textContent = s.unlimited ? (s.plan === 'together' ? '✨ Together' : '✨ Plus') : 'Free plan';
+    a.textContent = s.unlimited ? (s.plan === 'together' ? 'Together' : 'Plus') : 'Free plan';
     right.insertBefore(a, right.firstChild);
   }
 }

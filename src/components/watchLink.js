@@ -1,3 +1,7 @@
+import { icon, PATHS } from '../lib/icons.js';
+
+// The card's mark: the line clapperboard drawn in the brand gradient (founder 11-02 mock-up), never a cartoon.
+const ILL = `<div class="watch-link-ill" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="url(#wlg)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="wlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818CF8"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>${PATHS.film}</svg></div>`;
 // watchLink.js — "Watch something together now": paste a movie / video link, pick your person, press Watch together.
 //
 // From a real customer (CUSTOMER_TALKS.md 2026-10-08, Jana): "I wanted to copy the link of the movie from Chrome,
@@ -18,13 +22,14 @@ export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
     let invite = null; try { invite = window.getMyInvite ? await window.getMyInvite() : null; } catch (e) { /* none */ }
     const b = document.createElement('section'); b.className = 'watch-link';
     b.innerHTML = `
-      <div class="watch-link-title">🍿 Watch something together</div>
+      ${ILL}
+      <div class="watch-link-title">Watch something together</div>
       <div class="watch-link-sub">First, send your partner your link. They add Herae (free, no account needed) and you're connected. Then you can paste any movie link here and Herae opens it for both of you, in sync, with your call beside it.</div>
       ${invite && invite.url ? `<div class="watch-link-row"><input type="text" class="watch-link-url" readonly value="${escapeHtml(invite.url)}" aria-label="Your invite link"><button type="button" class="btn btn-gold watch-link-copy">Copy link</button></div>` : ''}
       <div class="watch-link-note" role="status"></div>`;
     anchor.after(b);
     const c = b.querySelector('.watch-link-copy');
-    if (c) c.addEventListener('click', async () => { let ok = false; try { await navigator.clipboard.writeText(invite.url); ok = true; } catch (e) { /* insecure */ } c.textContent = ok ? '✓ Copied' : 'Select and copy'; setTimeout(() => { c.textContent = 'Copy link'; }, 1800); });
+    if (c) c.addEventListener('click', async () => { let ok = false; try { await navigator.clipboard.writeText(invite.url); ok = true; } catch (e) { /* insecure */ } c.textContent = ok ? 'Copied' : 'Select and copy'; setTimeout(() => { c.textContent = 'Copy link'; }, 1800); });
     return b;
   }
   const track = (result) => { try { window.trackEvent && window.trackEvent('watch_link_start', { result }); } catch (e) { /* best-effort */ } };
@@ -34,12 +39,13 @@ export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
     ? `<select class="watch-link-who" aria-label="Who to watch with">${contacts.map((c) => `<option value="${escapeHtml(c.username)}">${escapeHtml(c.username)}</option>`).join('')}</select>`
     : `<input type="hidden" class="watch-link-who" value="${escapeHtml(contacts[0].username)}">`;
   box.innerHTML = `
-    <div class="watch-link-title">🍿 Watch something together now</div>
+    ${ILL}
+    <div class="watch-link-title">Watch something together now</div>
     <div class="watch-link-sub">Paste the link to the movie or video (Netflix, Prime Video, YouTube or almost any site)${contacts.length > 1 ? ' and pick who to watch with' : ` and we'll invite ${escapeHtml(contacts[0].username)}`}. Herae opens it, keeps you both in sync, and puts your call beside it.</div>
     <form class="watch-link-row" novalidate>
       <input type="url" class="watch-link-url" placeholder="https://… paste the movie link" aria-label="Movie or video link" required>
+      <button type="submit" class="watch-link-go" aria-label="Watch together" title="Watch together">${icon('arrowRight', 22)}</button>
       ${pick}
-      <button type="submit" class="btn btn-gold">Watch together</button>
     </form>
     <div class="watch-link-note" role="status"></div>`;
   anchor.after(box);

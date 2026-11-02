@@ -62,9 +62,9 @@
       <fieldset class="mode-pick" id="modePick">
         <legend>Who do you want to watch with?</legend>
         <label class="mode-opt"><input type="radio" name="mode" value="public" checked>
-          <span><b>🎬 Find film friends too</b><small>Public. Find people who love the same films and shows to watch with, and join watch parties like Friday’s free Film Night. You choose what’s shown, and nobody can message you unless you both say yes. 18+.</small></span></label>
+          <span><b>Find film friends too</b><small>Public. Find people who love the same films and shows to watch with, and join watch parties like Friday’s free Film Night. You choose what’s shown, and nobody can message you unless you both say yes. 18+.</small></span></label>
         <label class="mode-opt"><input type="radio" name="mode" value="private">
-          <span><b>🔒 Just people I invite</b><small>Private. Only someone you send your link to can find you — your partner or friends you already have.</small></span></label>
+          <span><b>Just people I invite</b><small>Private. Only someone you send your link to can find you — your partner or friends you already have.</small></span></label>
       </fieldset>
 
       <!-- Above the form on purpose: Google sign-up is one click versus three
@@ -197,8 +197,8 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
           if (usernameEl.value.toLowerCase().trim() !== v) return;
-          if (d.username === true) { usernameStatus.textContent = '✓ available'; usernameStatus.className = 'field-status ok'; }
-          else if (d.username === false) { usernameStatus.textContent = '✕ that username is taken'; usernameStatus.className = 'field-status bad'; }
+          if (d.username === true) { usernameStatus.textContent = 'Available'; usernameStatus.className = 'field-status ok'; }
+          else if (d.username === false) { usernameStatus.textContent = 'That username is taken'; usernameStatus.className = 'field-status bad'; }
           else { usernameStatus.textContent = ''; usernameStatus.className = 'field-status'; }
         })
         .catch(function () { usernameStatus.textContent = ''; usernameStatus.className = 'field-status'; });
@@ -213,8 +213,8 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
           if (emailEl.value.toLowerCase().trim() !== v) return;
-          if (d.email === true) { emailStatus.textContent = '✓ looks good'; emailStatus.className = 'field-status ok'; }
-          else if (d.email === false) { emailStatus.textContent = '✕ an account with that email already exists'; emailStatus.className = 'field-status bad'; }
+          if (d.email === true) { emailStatus.textContent = 'Looks good'; emailStatus.className = 'field-status ok'; }
+          else if (d.email === false) { emailStatus.textContent = 'An account with that email already exists'; emailStatus.className = 'field-status bad'; }
           else { emailStatus.textContent = ''; emailStatus.className = 'field-status'; }
         })
         .catch(function () { emailStatus.textContent = ''; emailStatus.className = 'field-status'; });

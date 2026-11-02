@@ -7,6 +7,7 @@
 // controls: tap right/left to move, hold to pause, Esc to close.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
@@ -23,7 +24,7 @@ function buildScenes(m) {
     duration: 3200,
     html: `
       <div class="ms-scene ms-title ms-intro-${m.variant?.intro || 'fade'}">
-        <div class="ms-title-emoji">${escapeHtml(m.emoji || '❤️')}</div>
+        <div class="ms-title-emoji">${icon('heart', 34)}</div>
         <div class="ms-title-names">${names}</div>
         <h1 class="ms-title-main">${escapeHtml(m.title)}</h1>
         ${m.subtitle ? `<div class="ms-title-sub">${escapeHtml(m.subtitle)}</div>` : ''}
@@ -39,14 +40,14 @@ function buildScenes(m) {
       html: `
         <div class="ms-scene ms-stats">
           <div class="ms-stat-lead">
-            <div class="ms-stat-emoji">${escapeHtml(lead.emoji)}</div>
+            <div class="ms-stat-emoji">${icon({ 'Movie Nights': 'play', Memories: 'bookmark', 'Video Moments': 'video' }[lead.label] || 'clock', 30)}</div>
             <div class="ms-stat-num" data-count="${lead.value}">${lead.value}</div>
             <div class="ms-stat-label">${escapeHtml(lead.label)}</div>
           </div>
           ${rest.length ? `<div class="ms-stat-row">${rest.map((s, i) => `
             <div class="ms-stat-mini" style="animation-delay:${0.4 + i * 0.18}s">
               <span class="ms-stat-mini-num">${s.value}</span>
-              <span class="ms-stat-mini-label">${escapeHtml(s.emoji)} ${escapeHtml(s.label)}</span>
+              <span class="ms-stat-mini-label">${escapeHtml(s.label)}</span>
             </div>`).join('')}</div>` : ''}
         </div>`,
     });
@@ -122,12 +123,12 @@ function buildScenes(m) {
             <div class="ms-top-item" style="animation-delay:${0.3 + i * 0.25}s">
               ${anyArt ? `<span class="ms-top-poster${s.posterUrl ? '' : ' is-blank'}"
                     style="${s.posterUrl ? `background-image:url('${escapeHtml(s.posterUrl)}')` : ''}"
-                >${s.posterUrl ? '' : '🎬'}</span>` : ''}
+                >${s.posterUrl ? '' : icon('film', 20)}</span>` : ''}
               <span class="ms-top-info">
                 <span class="ms-top-title">${escapeHtml(s.title)}</span>
                 ${s.year ? `<span class="ms-top-year">${escapeHtml(String(s.year))}</span>` : ''}
               </span>
-              <span class="ms-top-rating">${'★'.repeat(Math.round(s.rating))}<span class="ms-top-num">${s.rating}</span></span>
+              <span class="ms-top-rating">${icon('star', 14, 'is-on').repeat(Math.round(s.rating))}<span class="ms-top-num">${s.rating}</span></span>
             </div>`).join('')}
         </div>`,
     });
@@ -156,7 +157,7 @@ function buildScenes(m) {
     duration: 3600,
     html: `
       <div class="ms-scene ms-ending ms-end-${m.variant?.endingStyle || 'heart'}">
-        <div class="ms-end-mark">${m.variant?.endingStyle === 'sparkle' ? '✨' : m.variant?.endingStyle === 'stars' ? '🌟' : '❤️'}</div>
+        <div class="ms-end-mark">${icon(m.variant?.endingStyle === 'sparkle' ? 'sparkle' : m.variant?.endingStyle === 'stars' ? 'star' : 'heart', 40)}</div>
         <div class="ms-end-msg">${escapeHtml(m.ending)}</div>
         <div class="ms-end-names">${names}</div>
         <div class="ms-end-brand">herae.app</div>
@@ -186,10 +187,10 @@ export function playStory(manifest, opts = {}) {
   overlay.innerHTML = `
     <div class="ms-progress">${scenes.map(() => '<div class="ms-seg"><i></i></div>').join('')}</div>
     <div class="ms-topbar">
-      <div class="ms-topbar-title">${escapeHtml(manifest.emoji)} ${escapeHtml(manifest.title)}</div>
+      <div class="ms-topbar-title">${escapeHtml(manifest.title)}</div>
       <div class="ms-topbar-actions">
         ${opts.onShare ? '<button class="ms-btn" data-ms="share" aria-label="Share this story">Share</button>' : ''}
-        <button class="ms-btn ms-btn-icon" data-ms="close" aria-label="Close">✕</button>
+        <button class="ms-btn ms-btn-icon" data-ms="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
     </div>
     <div class="ms-stage"></div>

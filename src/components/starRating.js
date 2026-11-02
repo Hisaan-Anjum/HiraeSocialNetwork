@@ -1,11 +1,12 @@
 // starRating.js — a small 1-5 star display (read-only) and an interactive
 // picker (review.html's "rate this session" control).
 'use strict';
+import { icon } from '../lib/icons.js';
 
 export function renderStars(rating, { size = 'md' } = {}) {
   if (!rating) return '';
   const full = Math.round(rating);
-  const stars = Array.from({ length: 5 }, (_, i) => (i < full ? '★' : '☆')).join('');
+  const stars = Array.from({ length: 5 }, (_, i) => (i < full ? icon('star', 14, 'is-on') : icon('star', 14))).join('');
   // data-rating carries the value in machine-readable form so the inline
   // review editor (see postActions.js) can seed its star picker from what's
   // already rendered instead of re-fetching the review just to learn it.
@@ -19,7 +20,7 @@ export function renderStarPicker(container, initial, onChange) {
   let value = initial || 0;
   container.innerHTML = `
     <div class="star-picker" role="radiogroup" aria-label="Rating">
-      ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-picker-btn" data-value="${n}" aria-label="${n} star${n > 1 ? 's' : ''}">★</button>`).join('')}
+      ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-picker-btn" data-value="${n}" aria-label="${n} star${n > 1 ? 's' : ''}">${icon('star', 26)}</button>`).join('')}
     </div>
   `;
   const buttons = [...container.querySelectorAll('.star-picker-btn')];

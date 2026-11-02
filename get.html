@@ -86,7 +86,7 @@
     if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v)) { note.textContent = 'That email doesn’t look right.'; input.focus(); return; }
     btn.disabled = true; btn.textContent = 'Sending…';
     fetch('/api/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, src: src }) })
-      .then(function (r) { if (!r.ok) throw new Error('x'); document.getElementById('f').outerHTML = '<p class="done">Sent ✓ Open it on your laptop tonight.</p>'; note.textContent = ''; })
+      .then(function (r) { if (!r.ok) throw new Error('x'); document.getElementById('f').outerHTML = '<p class="done">Sent. Open it on your laptop tonight.</p>'; note.textContent = ''; })
       .catch(function () { btn.disabled = false; btn.textContent = 'Email me the link'; note.textContent = 'Couldn’t send it. Try again in a moment.'; });
   });
   if (navigator.share) {

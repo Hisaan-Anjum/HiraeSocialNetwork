@@ -9,6 +9,7 @@
 // never leak into the next thing opened.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { openShareSheet } from './shareSheet.js';
 import { lockScroll } from '../lib/scrollLock.js';
@@ -69,8 +70,8 @@ export function openMediaViewer(item, opts = {}) {
         </div>
       </div>
       ${opts.nav ? `
-        <button class="mv-nav mv-nav-prev" data-mv="prev" aria-label="Previous moment" title="Previous (←)">‹</button>
-        <button class="mv-nav mv-nav-next" data-mv="next" aria-label="Next moment" title="Next (→)">›</button>
+        <button class="mv-nav mv-nav-prev" data-mv="prev" aria-label="Previous moment" title="Previous (←)">${icon('chevronLeft', 22)}</button>
+        <button class="mv-nav mv-nav-next" data-mv="next" aria-label="Next moment" title="Next (→)">${icon('chevronRight', 22)}</button>
         <div class="mv-counter" aria-live="polite">${opts.nav.index + 1} of ${opts.nav.total}</div>
       ` : ''}
       <div class="mv-stage">

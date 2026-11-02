@@ -10,6 +10,7 @@
 // the click; a video is watched in the viewer, at size, with real controls.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { openMediaViewer } from './mediaViewer.js';
 
 const { momentImageUrl } = window;
@@ -33,7 +34,7 @@ export function renderMediaTile(moment, opts = {}) {
          data-duration-ms="${moment.durationMs || ''}"
          role="button" tabindex="0" aria-label="Play video moment">
       <img src="${momentImageUrl(moment.url)}" alt="A captured video moment" class="media-tile-poster" loading="lazy" decoding="async">
-      <button class="media-tile-play" aria-label="Play video moment" tabindex="-1">▶</button>
+      <button class="media-tile-play" aria-label="Play video moment" tabindex="-1">${icon('play', 22)}</button>
       ${seconds ? `<span class="media-tile-duration">${seconds}s</span>` : ''}
     </div>
   `;

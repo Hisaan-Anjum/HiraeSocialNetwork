@@ -10,6 +10,7 @@
 // partner's changes land the next time anything is touched.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatDate } from '../lib/util.js';
 import { openAddMovie } from './addMovie.js';
 import { openMovieModal } from '../components/movieDetail.js';
@@ -101,7 +102,7 @@ export function mountWatchlist(container, { profile }) {
     const unwatched = items.filter((i) => !i.watched).length;
     return `
       <div class="wl-head">
-        <h2>❤️ Shared Watchlist</h2>
+        <h2>Shared watchlist</h2>
         ${items.length ? `<span class="wl-count">${unwatched} to watch</span>` : ''}
       </div>
       ${inner}
@@ -115,7 +116,7 @@ export function mountWatchlist(container, { profile }) {
         <span class="wl-grip" aria-hidden="true">⠿</span>
         <span class="wl-art" data-wl="open" data-movie="${m.id}" role="button" tabindex="0"
               style="${m.posterUrl ? `background-image:url('${m.posterUrl}')` : ''}">
-          ${!m.posterUrl ? '<span class="recommendation-card-placeholder">🎬</span>' : ''}
+          ${!m.posterUrl ? `<span class="recommendation-card-placeholder">${icon('film', 28)}</span>` : ''}
         </span>
         <div class="wl-main">
           <div class="wl-title" data-wl="open" data-movie="${m.id}" role="button" tabindex="0">${escapeHtml(m.title)}</div>
@@ -125,21 +126,21 @@ export function mountWatchlist(container, { profile }) {
           <div class="wl-stars" role="group" aria-label="Rate this movie">
             ${[1, 2, 3, 4, 5].map((n) => `
               <button class="wl-star${it.rating >= n ? ' is-on' : ''}" data-wl="rate" data-id="${it.id}" data-rating="${n}"
-                      aria-label="${n} star${n === 1 ? '' : 's'}">★</button>`).join('')}
-            ${it.rating ? `<button class="wl-clear" data-wl="rate" data-id="${it.id}" data-rating="0" aria-label="Clear rating">✕</button>` : ''}
+                      aria-label="${n} star${n === 1 ? '' : 's'}">${icon('star', 16)}</button>`).join('')}
+            ${it.rating ? `<button class="wl-clear" data-wl="rate" data-id="${it.id}" data-rating="0" aria-label="Clear rating">${icon('x', 14)}</button>` : ''}
           </div>
           ${!it.rating && it.sessionRating ? `
             <div class="wl-derived" title="Averaged across everyone who reviewed those nights">
-              ★ ${it.sessionRating} from ${it.sessionCount} movie night${it.sessionCount === 1 ? '' : 's'}
+              ${icon('star', 13)} ${it.sessionRating} from ${it.sessionCount} movie night${it.sessionCount === 1 ? '' : 's'}
             </div>` : ''}
           ${it.rating && it.sessionCount ? `
-            <div class="wl-derived">🍿 Watched ${it.sessionCount} time${it.sessionCount === 1 ? '' : 's'} together</div>` : ''}
+            <div class="wl-derived">${icon('play', 13)} Watched ${it.sessionCount} time${it.sessionCount === 1 ? '' : 's'} together</div>` : ''}
           ${it.comment ? `<div class="wl-comment">“${escapeHtml(it.comment)}”</div>` : ''}
           <div class="wl-actions">
-            <button class="wl-chip" data-wl="watched" data-id="${it.id}">${it.watched ? '✓ Watched' : 'Mark watched'}</button>
+            <button class="wl-chip" data-wl="watched" data-id="${it.id}">${it.watched ? icon('check', 14) + ' Watched' : 'Mark watched'}</button>
             <button class="wl-chip" data-wl="comment" data-id="${it.id}">${it.comment ? 'Edit note' : 'Add note'}</button>
-            ${hasWatchLinks(m) ? `<button class="wl-chip wl-chip-go" data-wl="start" data-id="${it.id}">▶ Watch now</button>` : ''}
-            <button class="wl-chip wl-chip-danger" data-wl="remove" data-id="${it.id}" aria-label="Remove">✕</button>
+            ${hasWatchLinks(m) ? `<button class="wl-chip wl-chip-go" data-wl="start" data-id="${it.id}">${icon('play', 14)} Watch now</button>` : ''}
+            <button class="wl-chip wl-chip-danger" data-wl="remove" data-id="${it.id}" aria-label="Remove">${icon('x', 14)}</button>
           </div>
         </div>
       </li>`;
@@ -150,7 +151,7 @@ export function mountWatchlist(container, { profile }) {
     panel.innerHTML = wrap(items.length
       ? `<ul class="wl-list" id="wlList">${items.map(renderItem).join('')}</ul>`
       : `<div class="wl-empty">
-           <div class="wl-empty-emoji">🍿</div>
+           <div class="wl-empty-emoji">${icon('film', 28)}</div>
            <div class="wl-empty-title">Nothing on your list yet.</div>
            <div class="wl-empty-sub">Add a film you both want to see — it'll be waiting here for movie night.</div>
          </div>`);
@@ -269,9 +270,9 @@ export function mountWatchlist(container, { profile }) {
 
           if (r.handled && r.offline) return toast(offlineNote(username, r));
           toast(
-            r.switched ? `Switched you both to “${it.movie.title}” on ${link.name} 💜`
-              : r.handled ? `Opening “${it.movie.title}” on ${link.name} — inviting ${username} 💜`
-                : `Opening “${it.movie.title}” on ${link.name} — start the party from the Herae extension 💜`,
+            r.switched ? `Switched you both to “${it.movie.title}” on ${link.name}`
+              : r.handled ? `Opening “${it.movie.title}” on ${link.name} — inviting ${username}`
+                : `Opening “${it.movie.title}” on ${link.name} — start the party from the Herae extension`,
           );
         },
       });

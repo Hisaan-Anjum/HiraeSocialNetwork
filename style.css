@@ -1567,14 +1567,14 @@ html { scroll-behavior: smooth; }
 .mv-panel .post-menu-list, .mv-panel .post-menu-list[hidden] { display: flex !important; position: static; gap: 8px; background: none; border: 0; box-shadow: none; padding: 0; margin-left: auto; }
 .mv-panel .post-menu-item { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border); background: rgba(var(--fg-rgb), .04); font-size: 13px; white-space: nowrap; }
 /* Your header on Home and on Herae pages: the Profile tab's card (founder 11-02: "beautiful, make every banner like this"). */
-.profile-header .profile-header-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; text-align: left;
+.profile-header:not(.rel-header) .profile-header-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; text-align: left;
   padding: 22px; border-radius: 22px; border: 1px solid rgba(129, 140, 248, .28); background: linear-gradient(160deg, rgba(49, 46, 129, .55), rgba(15, 23, 42, .6)); }
-.profile-header .profile-headtext { flex: 1; min-width: 180px; }
-.profile-header .profile-name { font-size: 30px; line-height: 1.1; margin: 0; }
-.profile-header .profile-meta { margin: 6px 0 10px; justify-content: flex-start; }
-.profile-header .profile-stats { justify-content: flex-start; gap: 22px; }
-.profile-header .profile-actions { flex-basis: 100%; display: flex; gap: 10px; justify-content: flex-start; }
-@media (max-width: 760px) { .profile-header .profile-header-inner { padding: 18px; } .profile-header .profile-avatar-wrap { flex: none; } }
+.profile-header:not(.rel-header) .profile-headtext { flex: 1; min-width: 180px; }
+.profile-header:not(.rel-header) .profile-name { font-size: 30px; line-height: 1.1; margin: 0; }
+.profile-header:not(.rel-header) .profile-meta { margin: 6px 0 10px; justify-content: flex-start; }
+.profile-header:not(.rel-header) .profile-stats { justify-content: flex-start; gap: 22px; }
+.profile-header:not(.rel-header) .profile-actions { flex-basis: 100%; display: flex; gap: 10px; justify-content: flex-start; }
+@media (max-width: 760px) { .profile-header:not(.rel-header) .profile-header-inner { padding: 18px; } .profile-header:not(.rel-header) .profile-avatar-wrap { flex: none; } }
 
 /* ── Search results page ── */
 .search-page-bar { display: flex; gap: 10px; margin-bottom: 30px; }
@@ -3040,8 +3040,8 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .profile-header:not(.profile-header-feed) { background: none !important; border: 0 !important; padding: 16px 16px 4px; max-width: 1120px; margin: 0 auto; }
 .memories-section, #memoriesSection { padding-left: 16px; padding-right: 16px; }
 /* Header card layout (founder 11-02 mock-up): photo + name, then three stats with icons and dividers, then one wide pill. */
-.profile-header .profile-header-inner { display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "av name" "av meta" "stats stats" "act act"; column-gap: 20px; row-gap: 4px; align-items: center; padding: 24px 22px 22px !important; }
-.profile-header .profile-headtext { display: contents; }
+.profile-header:not(.rel-header) .profile-header-inner { display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "av name" "av meta" "stats stats" "act act"; column-gap: 20px; row-gap: 4px; align-items: center; padding: 24px 22px 22px !important; }
+.profile-header:not(.rel-header) .profile-headtext { display: contents; }
 .profile-header .profile-avatar-wrap { grid-area: av; position: relative; isolation: isolate; }
 .profile-header .profile-avatar { border: 3px solid transparent; box-shadow: 0 0 0 3px var(--ring-gap, #1D1B47); background-image: none; }
 .profile-header .profile-avatar-wrap::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; background: var(--grad-ring); z-index: -1; }
@@ -3114,3 +3114,218 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .profile-header .profile-header-inner, .wp-me, .watch-link { backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, .10) !important; border-radius: 28px !important; padding: 26px 24px 22px !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 48px -20px rgba(0, 0, 0, .7) !important; }
+
+/* ── Founder 11-02, round 3: one line-icon set (src/lib/icons.js), the couple header and the Memories list. ── */
+.ico { display: inline-block; flex: none; vertical-align: -0.2em; }
+.avatar { color: #fff; font-weight: 600; }
+/* Couple header: centred overlapping avatars with gradient rings, names, "Together for…", a quiet badge, three stats
+   with line icons and dividers, then the four actions as glass tiles. Its own layout — the person header's grid
+   rules are scoped away from it (.profile-header:not(.rel-header)). */
+.rel-header .rel-header-inner { display: flex !important; flex-direction: column; align-items: center; text-align: center;
+  gap: 20px; padding: 28px 20px 18px; border-radius: 24px; border: 1px solid var(--card-line); max-width: 760px; margin: 0 auto; }
+.rel-header .rel-identity { flex-direction: column; align-items: center; gap: 12px; width: 100%; flex: none; text-align: center; }
+.rel-header .rel-avatars-wrap { gap: 10px; }
+.rel-header .rel-avatars .avatar { width: 88px; height: 88px; font-size: 32px; padding: 3px; border: 2.5px solid transparent; box-shadow: none;
+  background: var(--brand-gradient-cta) content-box, linear-gradient(var(--ring-gap), var(--ring-gap)) padding-box, var(--grad-ring) border-box; }
+.rel-header .rel-avatars .avatar-img { inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); border-radius: 50%; }
+.rel-header .rel-avatars .avatar + .avatar { margin-left: -18px; }
+.rel-header .rel-presence { font-size: 12.5px; font-weight: 500; padding: 4px 10px; }
+.rel-header .rel-idtext { width: 100%; text-align: center; }
+.rel-header .rel-names { display: block; margin: 0 0 6px; font-size: clamp(24px, 7vw, 30px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.rel-header .rel-name-line { display: inline; }
+.rel-header .rel-name-them, .rel-header .rel-name-me { font-size: inherit; color: var(--ink); }
+.rel-header .rel-amp { font-size: inherit; color: var(--ink-faint); font-weight: 500; margin: 0 .25em; }
+.rel-header .rel-meta { justify-content: center; margin: 0 0 10px; font-size: 14px; color: var(--ink-dim); }
+.rel-together { display: inline-flex; align-items: center; gap: 6px; }
+.rel-together .ico { color: #EC4899; }
+.rel-header .rel-label { gap: 6px; padding: 5px 12px; font-size: 12.5px; font-weight: 600; color: var(--c-indigo-ink);
+  background: rgba(99, 102, 241, .14); border: 1px solid rgba(129, 140, 248, .28); box-shadow: none; }
+.rel-header .rel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 18px 0 0; width: 100%; }
+.rel-header .rel-stats .profile-stat:nth-child(2) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5V12l3 2'/%3E%3C/svg%3E"); }
+.rel-header .rel-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
+.rel-header .ms-action-tile { align-items: center; text-align: center; gap: 2px; padding: 14px 10px; border-radius: 18px; box-shadow: none; transform: none;
+  background: rgba(var(--fg-rgb), .05); border: 1px solid rgba(var(--fg-rgb), .1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.rel-header .ms-action-tile:hover { background: rgba(var(--fg-rgb), .09); border-color: rgba(var(--fg-rgb), .18); box-shadow: none; transform: none; }
+.rel-header .ms-action-ico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; margin: 0 0 6px; color: var(--c-indigo-soft); background: rgba(99, 102, 241, .14); font-size: 0; }
+.rel-header .ms-action-title { font-size: 14px; font-weight: 600; }
+.rel-header .ms-action-sub { font-size: 12px; }
+.rel-header .ms-action-tile.ms-action-primary { background: var(--grad-cta); border-color: transparent; }
+.rel-header .ms-action-primary .ms-action-ico { color: #fff; background: rgba(255, 255, 255, .18); }
+.rel-header .rel-remove { grid-column: 1 / -1; justify-self: center; font-size: 13px; font-weight: 500; color: var(--ink-faint); padding: 6px 10px; text-decoration: none; }
+.rel-header .rel-remove:hover { color: var(--c-red-ink); text-decoration: none; }
+@media (max-width: 640px) { .rel-header .rel-actions { grid-template-columns: 1fr 1fr; } .rel-header .rel-header-inner { padding: 24px 16px 14px; } }
+/* Memories list on a Herae page: compact rows (avatar, names, Open memories), like a social app's list. */
+.ms-chooser .ms-chooser-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.ms-chooser .ms-chooser-card { flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; text-align: left;
+  background: var(--surface-post); border: 1px solid var(--card-line); }
+.ms-chooser .ms-chooser-card:hover { transform: none; border-color: rgba(129, 140, 248, .35); }
+.ms-chooser .ms-chooser-card .avatar { width: 44px; height: 44px; font-size: 16px; }
+.ms-chooser .ms-chooser-name { flex: 1; min-width: 0; font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-chooser .ms-chooser-open { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.ms-chooser .ms-chooser-sub { font-size: 14px; }
+.rel-header .rel-stats .profile-stat:nth-child(3) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M6 3h12v18l-6-4-6 4z'/%3E%3C/svg%3E"); }
+/* Watch something together (mock-up): the clapperboard mark on the left, title and text beside it, then the link field
+   with the square gradient arrow inline on its right; the who-picker (2+ partners) sits under them. */
+.watch-link { display: grid; grid-template-columns: 56px 1fr; column-gap: 16px; align-items: start; padding: 22px 20px 18px !important; border-radius: 24px !important; border: 1px solid var(--card-line) !important; }
+.watch-link > * { grid-column: 1 / -1; }
+.watch-link > .watch-link-ill { grid-column: 1; grid-row: 1 / span 2; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(99, 102, 241, .14); border: 1px solid rgba(129, 140, 248, .22); }
+.watch-link > .watch-link-title, .watch-link > .watch-link-sub { grid-column: 2; }
+.watch-link-title { font-size: 18px !important; font-weight: 600 !important; margin: 4px 0 6px !important; }
+.watch-link-sub { font-size: 14px; line-height: 1.55; margin-bottom: 16px; }
+.watch-link-row { display: grid !important; grid-template-columns: 1fr auto; gap: 10px !important; }
+.watch-link-row > .watch-link-who { grid-column: 1 / -1; justify-self: start; min-width: 160px; }
+.watch-link-url { height: 50px; }
+.watch-link-go { width: 56px; height: 50px; border: 0; border-radius: 14px; display: grid; place-items: center; color: #fff; cursor: pointer; background: var(--grad-cta); }
+.watch-link-go:hover { filter: brightness(1.08); } .watch-link-go:disabled { opacity: .6; }
+.watch-link-go:focus-visible { outline: 2px solid var(--c-indigo-soft); outline-offset: 2px; }
+.watch-link-row > button:not(.watch-link-go) { height: 50px; }
+@media (max-width: 480px) { .watch-link { grid-template-columns: 48px 1fr; column-gap: 14px; } .watch-link > .watch-link-ill { width: 48px; height: 48px; } }
+
+/* Icons in rows and buttons: one size grid, centred with their label. */
+.like-btn, .comment-toggle-btn { display: inline-flex !important; align-items: center; gap: 6px; color: var(--ink-dim); font-weight: 500; }
+.like-icon { display: inline-grid; place-items: center; }
+.like-btn-active, .like-btn-active .like-icon { color: #EC4899; }
+.like-btn-active .ico { fill: currentColor; }
+.comment-actions .icon-btn { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: var(--ink-faint); }
+.comment-actions .icon-btn:hover { color: var(--ink); background: rgba(var(--fg-rgb), .07); }
+.empty-state .icon { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; color: var(--c-indigo-soft); background: rgba(99, 102, 241, .12); font-size: 0; }
+.star-rating { display: inline-flex; gap: 1px; vertical-align: -2px; } .star-rating .ico { color: rgba(var(--fg-rgb), .3); } .star-rating .ico.is-on { color: var(--rating, #F5B83D); fill: currentColor; }
+.star-picker-btn { display: inline-grid; place-items: center; color: rgba(var(--fg-rgb), .35); } .star-picker-btn-active { color: var(--rating, #F5B83D); } .star-picker-btn-active .ico { fill: currentColor; }
+.wl-star.is-on .ico, .wl-star-btn.is-on .ico, [data-wl="rate"].is-on .ico, .ms-top-rating .ico { fill: currentColor; }
+.share-ico, .at-e, .ms-type-emoji, .ms-loading-heart, .ms-empty-emoji, .wl-empty-emoji, .ms-title-emoji, .ms-end-mark, .ms-stat-emoji { display: inline-grid; place-items: center; line-height: 1; }
+.share-ico, .at-e { width: 40px; height: 40px; border-radius: 50%; color: var(--c-indigo-soft); background: rgba(99, 102, 241, .12); font-size: 0; }
+.btn:has(> .ico), .hb:has(> .ico) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.post-menu-item, .avatar-menu-item, .wl-chip, .aim-chip, .btn-inline, .ms-link-btn, .rel-together, .movie-rating, .recommendation-card-rating, .hero-card-badge, .feed-card-watched, .review-content-banner, .mvp-duration, .plan-next-title, .sl-linked-text, .wl-derived, .wl-add-on, .pc-state { display: inline-flex; align-items: center; gap: 6px; }
+.post-menu-item, .avatar-menu-item { display: flex; width: 100%; }
+.ico-w { display: inline-grid; place-items: center; vertical-align: -0.2em; }
+.recommendation-card-placeholder { color: rgba(var(--fg-rgb), .45); }
+
+/* Open moment (founder 11-02): the viewer follows the theme. Light mode = a light page with light glass controls and a
+   light details sheet; only the video's own control strip stays dark glass because it sits on the film. */
+.mv-panel { background: var(--surface-post) !important; border-left: 1px solid var(--card-line); padding: 20px; }
+@media (max-width: 860px) { .mv-panel { box-shadow: 0 -1px 0 var(--card-line), 0 -12px 32px rgba(0, 0, 0, .18); border-left: 0; } }
+:root[data-theme="light"] .mv-overlay { background: rgba(244, 245, 251, .97); color: var(--ink); }
+:root[data-theme="light"] .mv-overlay:fullscreen { background: #F4F5FB; }
+:root[data-theme="light"] .mv-actions { background: rgba(255, 255, 255, .82); border-color: rgba(15, 23, 42, .1); box-shadow: 0 1px 2px rgba(15, 23, 42, .06); }
+:root[data-theme="light"] .mv-btn { color: #334155; }
+:root[data-theme="light"] .mv-btn:hover { background: rgba(15, 23, 42, .07); color: #0F172A; }
+:root[data-theme="light"] .mv-btn-close, :root[data-theme="light"] .mv-btn-share { background: rgba(15, 23, 42, .06); }
+:root[data-theme="light"] .mv-btn-close:hover { background: rgba(220, 38, 38, .12); color: #B91C1C; }
+:root[data-theme="light"] .mv-zoom-level { color: #475569; }
+:root[data-theme="light"] .mv-nav, :root[data-theme="light"] .mv-counter { background: rgba(255, 255, 255, .86); color: #0F172A; border-color: rgba(15, 23, 42, .1); }
+:root[data-theme="light"] .mv-hint, :root[data-theme="light"] .mv-caption { color: #64748B; }
+.mv-nav { font-size: 0; } .mv-nav-prev, .mv-nav-next { padding: 0; }
+/* Panel: title line, then people + Edit/Delete on one row, then quiet meta, caption, likes/comments, comment field. */
+.mvp-session-line { margin: 0 0 14px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.mvp-session-line a { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); text-decoration: none; }
+.mvp-session-line a .ico { color: var(--ink-faint); }
+.mvp-session-line a:hover { color: var(--c-indigo-soft); }
+.mvp-head { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; font-weight: 600; font-size: 14.5px; min-height: 36px; }
+.mvp-head .moment-people { flex: 1; min-width: 0; color: var(--ink); }
+.mv-panel .post-menu-list, .mv-panel .post-menu-list[hidden] { gap: 6px; flex: none; }
+.mv-panel .post-menu-item { display: inline-flex !important; width: auto !important; align-items: center; gap: 6px; height: 34px; padding: 0 12px !important; font-size: 13px; font-weight: 500;
+  color: var(--ink-dim); border: 1px solid rgba(var(--fg-rgb), .12) !important; background: transparent !important; }
+.mv-panel .post-menu-item:hover { color: var(--ink); background: rgba(var(--fg-rgb), .06) !important; }
+.mv-panel .post-menu-item-danger { color: var(--c-red-ink) !important; }
+.mvp-meta { gap: 6px 10px; margin: 0 0 14px; font-size: 12.5px; color: var(--ink-faint); }
+.mvp-meta .theme-badge, .mvp-meta .privacy-badge { height: 24px; padding: 0 10px; display: inline-flex; align-items: center; border-radius: 999px; font-size: 12px; font-weight: 500;
+  text-transform: capitalize; letter-spacing: 0; color: var(--ink-dim); background: rgba(var(--fg-rgb), .06); border: 1px solid rgba(var(--fg-rgb), .1); }
+.mvp-meta .mvp-duration, .mvp-meta .moment-date { font-size: 12.5px; font-weight: 500; color: var(--ink-faint); }
+.mv-panel .reaction-row, .post-detail-card .reaction-row, .feed-card .reaction-row, .moment-card .reaction-row { display: flex; align-items: center; gap: 4px; padding: 8px 0; margin: 0;
+  border-top: 1px solid var(--card-line); border-bottom: 0; }
+.like-btn, .comment-toggle-btn { height: 36px; padding: 0 10px !important; border-radius: 999px !important; background: transparent !important; border: 0 !important; font-size: 14px; }
+.like-btn:hover, .comment-toggle-btn:hover { background: rgba(var(--fg-rgb), .06) !important; color: var(--ink); }
+.comment-empty { font-size: 13px; color: var(--ink-faint); font-style: normal; margin: 4px 0 10px; }
+.comment-input-row { align-items: center; gap: 8px; margin-top: 8px; }
+.comment-input { height: 44px; padding: 0 16px !important; border-radius: 999px !important; font-size: 14px !important; border: 1px solid rgba(var(--fg-rgb), .12) !important; background: var(--field-bg) !important; color: var(--ink); }
+.comment-submit-btn { height: 44px; padding: 0 20px !important; border-radius: 999px !important; font-size: 14px !important; font-weight: 600 !important; background: var(--grad-cta) !important; color: #fff !important; border: 0 !important; }
+/* Feed cards: the caption sits under its picture, aligned with it — no strip over the photo, no box. */
+.carousel-item-caption { position: static !important; background: none !important; padding: 10px 2px 0 !important; border-radius: 0; text-align: left; color: var(--ink-dim); pointer-events: auto; }
+.carousel-item-caption .moment-description { font-size: 14px; line-height: 1.45; color: var(--ink-dim); }
+.carousel-item-open svg, .carousel-arrow svg { display: block; }
+.carousel-arrow { font-size: 0 !important; display: grid !important; place-items: center; }
+.review-open-link { display: inline-flex; align-items: center; gap: 4px; }
+.session-carousel-media { box-shadow: 0 10px 28px -14px rgba(0, 0, 0, .55) !important; }
+:root[data-theme="light"] .session-carousel-media { box-shadow: 0 8px 22px -14px rgba(15, 23, 42, .28) !important; }
+/* Friends (mock-up): one list, not a stack of cards — avatar, name, quiet status line, small actions on the right. */
+.contacts-list { gap: 0 !important; background: var(--surface-post); border: 1px solid var(--card-line); border-radius: 20px; padding: 4px 0; overflow: hidden; }
+.contacts-list:empty { display: none; }
+.contacts-list .contact-row { background: none !important; border: 0 !important; border-radius: 0 !important; padding: 12px 16px !important; box-shadow: none !important; transform: none !important; }
+.contacts-list .contact-row + .contact-row { border-top: 1px solid var(--card-line) !important; }
+.contacts-list .contact-row:hover { background: rgba(var(--fg-rgb), .03) !important; }
+.contacts-list .contact-name { font-weight: 600; font-size: 15px; }
+.contacts-list .contact-status { font-size: 13px; color: var(--ink-faint); }
+.contact-actions { display: flex; align-items: center; gap: 8px; }
+.contact-actions .btn-sm { height: 34px; padding: 0 14px !important; font-size: 13px !important; font-weight: 600; }
+.contact-actions [data-contact-action="remove"] { width: 34px; padding: 0 !important; display: inline-grid !important; place-items: center; border-radius: 50% !important; color: var(--ink-faint); }
+.contact-arrow { color: var(--ink-faint); display: grid; place-items: center; }
+.page-title { font-size: 28px !important; font-weight: 700 !important; letter-spacing: -0.02em; color: var(--ink); }
+.page-sub { margin-bottom: 20px; }
+/* Home (founder 11-02, live phone): the header card and "Watch something together" share one width and margins; the
+   card is the inner glass panel, so the outer band carries no border and never clips (the picture menu escapes it). */
+.profile-header-feed { border: 0 !important; overflow: visible !important; background: none !important; margin-bottom: 16px !important; padding: 0 !important; }
+.watch-link { margin: 0 0 24px !important; background: var(--surface-post) !important; border: 1px solid var(--card-line) !important; box-shadow: none !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+/* The name never breaks inside a word: one line, ellipsis only when it truly doesn't fit. On phones the Edit pill is an
+   icon-only circle, so the name keeps its room. */
+.profile-header .profile-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; word-break: normal; min-width: 0; }
+.profile-header .profile-name .user-link { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 520px) {
+  .profile-edit-pill { width: 38px; height: 38px; padding: 0 !important; justify-content: center; font-size: 0 !important; gap: 0 !important; top: 16px !important; right: 16px !important; }
+  .profile-edit-pill svg { width: 16px; height: 16px; }
+  .profile-header .profile-header-inner:has(.profile-edit-pill) .profile-name { padding-right: 46px !important; }
+}
+/* The picture menu: a glass popover above the card's content, opening to the right of the avatar, fully on screen. */
+.profile-header .profile-avatar-wrap { z-index: 6; }
+.avatar-controls .avatar-menu { left: 0; right: auto; top: calc(100% + 8px); z-index: 80; min-width: 210px; padding: 6px; border-radius: 16px;
+  background: var(--menu-bg); border: 1px solid var(--menu-line); box-shadow: 0 18px 44px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.avatar-controls .avatar-menu-item { height: 42px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--menu-ink); white-space: nowrap; }
+.avatar-controls .avatar-menu-item-danger { color: var(--c-red-ink); }
+/* First night in three steps (founder 11-02, live phone): same width and plain surface as the other Home cards; small
+   step circles; text wraps inside; one primary pill per step, compact outline pills beside it; field + button on one line. */
+#getStarted { max-width: none !important; margin: 0 0 24px !important; }
+.gs-card { background: var(--surface-post) !important; border: 1px solid var(--card-line) !important; border-radius: 24px !important; padding: 22px 20px !important; overflow: hidden; box-shadow: none; }
+.gs-head h2 { font-size: 18px !important; font-weight: 600 !important; line-height: 1.3; }
+.gs-hide { font-size: 13px; font-weight: 500; white-space: nowrap; }
+.gs-steps { gap: 20px; grid-template-columns: minmax(0, 1fr); } .gs-step { min-width: 0; }
+.gs-step { gap: 12px; }
+.gs-num { flex: none; width: 26px !important; height: 26px !important; border-radius: 50% !important; display: grid !important; place-items: center; font-size: 12.5px !important; font-weight: 600 !important;
+  color: var(--c-indigo-soft) !important; background: rgba(99, 102, 241, .12) !important; border: 1px solid rgba(129, 140, 248, .3) !important; margin-top: 1px; }
+.gs-title { font-size: 15px; font-weight: 600; margin-top: 2px; }
+.gs-text { font-size: 14px; overflow-wrap: anywhere; }
+.gs-cta, .gs-share-btn, .gs-copy, .gs-email-send { height: 38px; padding: 0 16px !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 999px !important; display: inline-flex !important; align-items: center; gap: 6px; white-space: nowrap; box-shadow: none !important; }
+.gs-cta { margin-top: 12px; }
+.gs-share { gap: 8px; margin: 12px 0 10px; align-items: center; }
+.gs-sec, .gs-copy, .gs-email-send { padding: 0 13px !important; background: transparent !important; border: 1px solid rgba(var(--fg-rgb), .16) !important; color: var(--ink) !important; }
+.gs-link-row, .gs-email-row { display: flex !important; flex-wrap: nowrap !important; gap: 8px; align-items: center; }
+.gs-link { flex: 1 1 0; width: 0; min-width: 0; height: 38px; display: flex; align-items: center; padding: 0 14px !important; border-radius: 999px !important; background: var(--field-bg) !important; border: 1px solid rgba(var(--fg-rgb), .12) !important; font-size: 13px; }
+.gs-email-input { flex: 1 1 0 !important; width: 0; min-width: 0; height: 38px; padding: 0 14px !important; border-radius: 999px !important; background: var(--field-bg) !important; border: 1px solid rgba(var(--fg-rgb), .12) !important; }
+.gs-email-label { font-size: 13.5px !important; }
+:root[data-theme="light"] .profile-edit-pill { background: rgba(255, 255, 255, .72); border-color: rgba(15, 23, 42, .12); color: #0F172A; }
+.plan-next-pick { min-width: 0; max-width: 100%; flex: 1 1 200px; }
+.plan-next-input { width: 100%; min-width: 0; max-width: 100%; height: 40px; border-radius: 999px; padding: 0 14px; color-scheme: inherit; }
+.plan-next-row > * { min-width: 0; max-width: 100%; }
+/* Every Home card: one width, one margin, one plain surface (founder 11-02). */
+.plan-next:not(.gs-steps .plan-next), .rate-herae { margin: 0 0 24px !important; padding: 20px !important; border-radius: 24px !important; background: var(--surface-post) !important; border: 1px solid var(--card-line) !important; }
+.rate-herae-title, .plan-next-title { font-size: 16px !important; font-weight: 600 !important; }
+/* Share sheet: pills only (founder 11-02 shape system), the line icons at 1.8 stroke, no heavy glow. */
+.share-row { height: 52px !important; border-radius: 999px !important; font-weight: 500; }
+.share-row svg { stroke-width: 1.8 !important; width: 20px !important; height: 20px !important; }
+.share-row.is-primary { box-shadow: none !important; background: var(--grad-cta) !important; font-weight: 600; }
+.share-opt { border-radius: 20px; font-weight: 500; }
+.share-opt:hover { transform: none; }
+.share-close { width: 36px; height: 36px; border-radius: 50% !important; display: grid !important; place-items: center; padding: 0 !important; font-size: 0 !important; }
+/* Search fields (mock-up): a soft pill with the line search icon. */
+.contacts-search { height: 42px; border-radius: 999px !important; padding: 0 16px 0 40px !important; border: 1px solid rgba(var(--fg-rgb), .12) !important; background: var(--field-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E95B2' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 14px center / 18px no-repeat !important; color: var(--ink); font-size: 14px; }
+/* Friends: invite link + Copy on one line, pills (founder 11-02). */
+.invite-inline-row { display: flex !important; flex-wrap: nowrap !important; gap: 8px; align-items: center; }
+.invite-link { flex: 1 1 0 !important; width: 0; min-width: 0; height: 40px; display: flex; align-items: center; padding: 0 14px !important; border-radius: 999px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.invite-mini { flex: none !important; height: 40px; padding: 0 16px !important; border-radius: 999px !important; font-weight: 600; font-size: 13.5px; }
+.add-contact-row input, #addContactForm input { border-radius: 999px !important; }
+.ms-tl-card-sub .ico.is-on { color: var(--rating, #F5B83D); fill: currentColor; vertical-align: -1px; }
+/* Confirm dialog: follows the theme, pill buttons, a soft scrim. */
+.cd-card { background: var(--surface-raised) !important; border: 1px solid var(--card-line) !important; border-radius: 24px !important; box-shadow: 0 24px 60px rgba(0, 0, 0, .3) !important; color: var(--ink); }
+:root[data-theme="light"] .cd-backdrop { background: rgba(15, 23, 42, .35); }
+.cd-actions .btn { border-radius: 999px !important; height: 42px; font-weight: 600; }

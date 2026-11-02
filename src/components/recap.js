@@ -11,6 +11,7 @@
 // instant, private).
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 
 const { mediaUrl } = window;
@@ -218,7 +219,7 @@ export function renderRecapCard(recap) {
     <div class="recap-card" data-recap role="button" tabindex="0" aria-label="Open your Moments Recap">
       <div class="recap-card-media">
         <img src="${recap.url}" alt="Your Moments Recap" class="recap-card-img">
-        <div class="recap-card-play">✨</div>
+        <div class="recap-card-play">${icon('play', 22)}</div>
       </div>
       <div class="recap-card-body">
         <div class="recap-card-kicker">Featured · auto-generated</div>

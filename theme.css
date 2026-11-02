@@ -91,7 +91,7 @@ input, textarea { caret-color: var(--brand-primary); }
 
 /* Surfaces that stay dark in both themes: the media viewer, the recap player, the featured-film card and captions
    laid over photos all sit on film or photo, not on the page. */
-.mv-overlay, .ms-player, .hero-card, .carousel-item-caption {
+.ms-player, .hero-card, .movie-hero {
   color-scheme: dark; --fg-rgb: 255, 255, 255;
   --bg-0: #0B0B0F; --bg-1: #111117; --bg-2: #1A1A2E; --card: #15152A; --surface-post: #15152A; --surface-raised: #1B1A34;
   --ink: #F8FAFC; --ink-dim: #A6ADC8; --ink-faint: #7E86A6; --border: rgba(255, 255, 255, .08); --card-line: rgba(255, 255, 255, .07);
@@ -104,15 +104,30 @@ input, textarea { caret-color: var(--brand-primary); }
 
 /* ── Founder 11-02, round 2: exactly the mock-up. ── */
 /* The corner: a blurred magenta band swept in from the top edge down the right side, two arcs, on dark frosted glass. */
-.profile-header .profile-header-inner, .wp-me, .watch-link {
+.profile-header .profile-header-inner, .wp-me {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.75' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.45' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.35' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.16' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(30, 27, 66, .78) 0%, rgba(17, 16, 34, .80) 55%, rgba(11, 11, 18, .82) 100%) !important; position: relative; }
-:root[data-theme="light"] .profile-header .profile-header-inner, :root[data-theme="light"] .wp-me, :root[data-theme="light"] .watch-link {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.45' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.45' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.35' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.16' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(255, 255, 255, .92), rgba(243, 242, 255, .9)) !important; }
+:root[data-theme="light"] .profile-header .profile-header-inner, :root[data-theme="light"] .wp-me {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.24' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.2' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.18' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.1' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(255, 255, 255, .92), rgba(243, 242, 255, .9)) !important; }
 .profile-edit-pill { position: absolute; top: 20px; right: 20px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, .22); background: rgba(10, 10, 18, .35); backdrop-filter: blur(10px); color: inherit; font-weight: 600; font-size: 14px; text-decoration: none; }
 .profile-header .profile-name { padding-right: 132px; }
 /* One shape system: every text button is a pill, every icon-only button the same circle. */
 .btn, .hb, button.btn, a.btn, .an-connect-cta, .watch-link button, .watch-link select, .watch-link input, .back-link, .btn-back, [class*="back"] > .btn { border-radius: 999px !important; }
-.mv-btn:not(.mv-btn-share), .post-menu-btn, .an-connect-x:not(.an-push-later), .carousel-item-open, .avatar-edit-btn, .an-menu-btn, .an-icon-btn { border-radius: 50% !important; width: 38px !important; height: 38px !important; padding: 0 !important; display: inline-grid !important; place-items: center; }
+.mv-btn:not(.mv-btn-share), .post-menu-btn, .an-connect-x:not(.an-push-later), .carousel-item-open, .avatar-edit-btn, .an-icon-btn { border-radius: 50% !important; width: 38px !important; height: 38px !important; padding: 0 !important; display: inline-grid !important; place-items: center; }
 .mv-btn-share { border-radius: 999px !important; height: 38px; padding: 0 14px !important; }
 .mv-panel .post-menu-btn { display: none !important; }
+@media (max-width: 640px) { .an-menu-btn { border-radius: 50% !important; width: 40px !important; height: 40px !important; padding: 0 !important; } }
+.an-menu-btn { border-radius: 999px !important; }
+/* Couple header: the card is the inner glass panel; the outer band stays clear. */
+.rel-header { background: none !important; border: 0 !important; } .rel-header::after { display: none; }
+/* The Edit pill's room is only needed when the pill is there. */
+.profile-header .profile-name { padding-right: 0; }
+.profile-header .profile-header-inner:has(.profile-edit-pill) .profile-name { padding-right: 132px; }
+/* The line icon set (src/lib/icons.js, window.hIcon): sits on the text baseline, never squashed. */
+.ico { display: inline-block; flex: none; vertical-align: -0.2em; }
+.ico-w { display: inline-grid; place-items: center; vertical-align: -0.2em; }
+:root[data-theme="light"] .profile-header .profile-header-inner, :root[data-theme="light"] .wp-me { box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 28px -18px rgba(49, 46, 129, .22) !important; border-color: rgba(15, 23, 42, .08) !important; }
+/* The film banner sits on the film's own picture: dark in both themes, rounded off where the light page begins. */
+:root[data-theme="light"] .movie-hero { border-radius: 0 0 24px 24px; overflow: hidden; }
+/* Two names older components use (AI Moments panel, confirm dialog) that were never defined: map them to the theme. */
+:root, :root[data-theme="light"] { --surface: var(--surface-post); --line: var(--card-line); }

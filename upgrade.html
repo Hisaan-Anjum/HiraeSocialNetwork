@@ -35,7 +35,7 @@
   .plan-cycle { color: var(--ink-dim); font-size: 12px; font-weight: 500; }
   .plan-feats { list-style: none; padding: 0; margin: 14px 0 18px; font-size: 13px; color: var(--ink); }
   .plan-feats li { padding: 5px 0 5px 22px; position: relative; }
-  .plan-feats li::before { content: "💛"; position: absolute; left: 0; font-size: 12px; }
+  .plan-feats li::before { content: ""; position: absolute; left: 2px; top: .45em; width: 9px; height: 5px; border-left: 1.8px solid currentColor; border-bottom: 1.8px solid currentColor; transform: rotate(-45deg); color: var(--c-indigo-soft, #A5B4FC); }
   .plan-card .btn {
     margin-top: auto; width: 100%; padding: 13px 14px; border-radius: 12px;
     font-size: 14px; font-weight: 700; letter-spacing: -.01em;
@@ -93,7 +93,7 @@
     <div class="up-head">
       <a href="memories.html" class="login-back">← Back to Herae</a>
       <img src="herae-symbol.svg" alt="Herae" class="login-logo" style="margin:14px auto 0">
-      <div class="up-title">Unlimited movie nights, together 💛</div>
+      <div class="up-title">Unlimited movie nights, together</div>
       <div class="up-sub">Free includes your first two movie nights, then 4 hours of synced watching a month — plus voice, video &amp; chat. Upgrade for unlimited time.</div>
       <div class="cycle-toggle" id="cycleToggle">
         <button data-cycle="month" class="active">Monthly</button>
@@ -228,26 +228,26 @@
     const own = (status && status.source === 'own') ? status.plan : null;
     if (own === 'together') {
       cTog.classList.add('current');
-      bTog.disabled = true; bTog.textContent = '✓ Your plan';
+      bTog.disabled = true; bTog.textContent = 'Your plan';
       bPlus.disabled = true; bPlus.textContent = 'Included in Together';
       box.style.display = 'block';
-      box.innerHTML = "✓ You're already enjoying <strong>Herae Together</strong>. <a href='billing.html'>Manage plan &amp; who's covered →</a>";
+      box.innerHTML = "You're already enjoying <strong>Herae Together</strong>. <a href='billing.html'>Manage plan &amp; who's covered →</a>";
     } else if (own === 'plus') {
       cPlus.classList.add('current');
-      bPlus.disabled = true; bPlus.textContent = '✓ Current Plan';
+      bPlus.disabled = true; bPlus.textContent = 'Current plan';
       bTog.textContent = 'Upgrade to Herae Together';
       box.style.display = 'block';
-      box.innerHTML = "✓ You're on <strong>Herae Plus</strong>. <a href='billing.html'>Manage billing →</a>";
+      box.innerHTML = "You're on <strong>Herae Plus</strong>. <a href='billing.html'>Manage billing →</a>";
     } else if (status && status.source === 'partner') {
       bPlus.disabled = true; bTog.disabled = true;
       bPlus.textContent = 'Covered by your partner'; bTog.textContent = 'Covered by your partner';
       box.style.display = 'block';
-      box.innerHTML = "💛 You're covered by <strong>" + esc(status.coveredBy || 'someone') + "</strong>'s Herae Together — you already have unlimited access, nothing to buy.";
+      box.innerHTML = "You're covered by <strong>" + esc(status.coveredBy || 'someone') + "</strong>'s Herae Together — you already have unlimited access, nothing to buy.";
     } else if (status && status.source === 'special') {
       bPlus.disabled = true; bTog.disabled = true;
       bPlus.textContent = 'Complimentary access'; bTog.textContent = 'Complimentary access';
       box.style.display = 'block';
-      box.innerHTML = "💛 You have complimentary <strong>Herae Plus</strong> — unlimited, on us. Nothing to buy.";
+      box.innerHTML = "You have complimentary <strong>Herae Plus</strong> — unlimited, on us. Nothing to buy.";
     }
   }
 

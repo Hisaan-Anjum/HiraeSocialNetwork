@@ -62,7 +62,7 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Could not confirm your email.');
-        title.textContent = 'Email confirmed 💜';
+        title.textContent = 'Email confirmed';
         message.textContent = 'Thanks — your email is verified.';
       } catch (err) {
         title.textContent = 'Couldn\'t confirm your email';

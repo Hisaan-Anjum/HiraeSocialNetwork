@@ -5,6 +5,7 @@
 // drifting apart as two copies.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatDuration } from '../lib/util.js';
 import { renderCarousel, attachCarouselHandlers } from './carousel.js';
 import { lockScroll } from '../lib/scrollLock.js';
@@ -27,7 +28,7 @@ export function renderSimilarGrid(similar, { inModal = false } = {}) {
   if (!similar.length) return '';
   const inner = (m) => `
     <div class="movie-similar-art" style="${m.posterUrl ? `background-image:url('${m.posterUrl}')` : ''}">
-      ${!m.posterUrl ? '<span class="recommendation-card-placeholder">🎬</span>' : ''}
+      ${!m.posterUrl ? `<span class="recommendation-card-placeholder">${icon('film', 32)}</span>` : ''}
     </div>
     <div class="movie-similar-name">${escapeHtml(m.title)}</div>`;
   return `
@@ -73,7 +74,7 @@ export function renderMovieDetail(rec, { similar = [], actionsHtml = '', inModal
         <div class="movie-hero-info">
           <div class="movie-title">${escapeHtml(rec.title)}</div>
           <div class="movie-meta">${escapeHtml(movieMetaLine(rec))}</div>
-          ${rec.rating ? `<div class="movie-rating">★ ${rec.rating.toFixed(1)} / 10</div>` : ''}
+          ${rec.rating ? `<div class="movie-rating">${icon('star', 15)} ${rec.rating.toFixed(1)} / 10</div>` : ''}
           <div class="region-off" data-region ${rec.availableHere === false ? '' : 'hidden'}>Not available in your region</div>
           ${actionsHtml}
         </div>
@@ -98,7 +99,7 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
   overlay.className = 'modal-overlay movie-modal-overlay';
   overlay.innerHTML = `
     <div class="modal-card movie-modal" role="dialog" aria-modal="true" aria-label="Movie details">
-      <button class="share-close movie-modal-close" data-mm="close" aria-label="Close">✕</button>
+      <button class="share-close movie-modal-close" data-mm="close" aria-label="Close">${icon('x', 18)}</button>
       <div class="movie-modal-body" id="movieModalBody">
         <div class="spinner-text">Loading…</div>
       </div>
@@ -137,8 +138,8 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
     const added = typeof alreadyAdded === 'function' ? alreadyAdded(rec.id) : alreadyAdded;
     // "Add to…" is offered on every film (founder 10-23); "Find it on" only with links.
     const actions = `<div class="movie-modal-actions">
-           <button class="btn btn-primary" data-mm="add">${onAdd && added ? '✓ On your list together · Add to…' : '❤️ Add to…'}</button>
-           ${canWatch ? '<button class="btn btn-ghost" data-mm="watch">▶ Find it on…</button>' : ''}
+           <button class="btn btn-primary" data-mm="add">${onAdd && added ? 'On your list together · Add to…' : icon('heart', 17) + ' Add to…'}</button>
+           ${canWatch ? `<button class="btn btn-ghost" data-mm="watch">${icon('play', 16)} Find it on…</button>` : ''}
            <span class="movie-modal-msg" id="movieModalMsg"></span>
          </div>`;
     body.innerHTML = renderMovieDetail(rec, { similar, actionsHtml: actions, inModal: true });

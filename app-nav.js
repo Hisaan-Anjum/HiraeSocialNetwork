@@ -35,8 +35,42 @@
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    heart: '<path d="M12 20s-7.5-4.6-9-9.4C2 7.3 4.3 4.5 7.4 4.5c1.9 0 3.5 1 4.6 2.6 1.1-1.6 2.7-2.6 4.6-2.6 3.1 0 5.4 2.8 4.4 6.1C19.5 15.4 12 20 12 20z"/>',
+    bellOff: '<path d="M8.5 5.3A6 6 0 0 1 18 11v4M6 11v5l-1.5 2H17M10 20a2 2 0 0 0 4 0M3 3l18 18"/>',
+    phone: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+    sparkle: '<path d="M12 3.5c.6 3.9 2.6 5.9 6.5 6.5-3.9.6-5.9 2.6-6.5 6.5-.6-3.9-2.6-5.9-6.5-6.5 3.9-.6 5.9-2.6 6.5-6.5zM18.5 15.5c.3 1.6 1 2.3 2.5 2.5-1.5.2-2.2.9-2.5 2.5-.3-1.6-1-2.3-2.5-2.5 1.5-.2 2.2-.9 2.5-2.5z"/>',
+    film: '<rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="m3.5 9 1-4.2 15.8-1.8.4 3.8L4 9"/><path d="m8.6 4.4 2.2 3.4M14 3.8l2.2 3.4M10.5 12.5v5l4-2.5z"/>',
+    eye: '<path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.7c1.9.7 3.1 2.4 3.5 5.3"/>',
+    userPlus: '<circle cx="10" cy="8" r="4"/><path d="M3 21c1-4 3.8-6 7-6 1.6 0 3 .4 4.2 1.2M19 14v6M16 17h6"/>',
+    play: '<path d="M7 4.5v15l12.5-7.5z"/>',
+    arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.2"/>',
+    lock: '<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+    star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+    tv: '<rect x="3" y="5" width="18" height="12.5" rx="2"/><path d="M8.5 21h7"/>',
+    camera: '<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2.5h6L16.5 7h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/>',
+    calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+    arrowLeft: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    chevronLeft: '<path d="m15 5-7 7 7 7"/>',
+    chevronRight: '<path d="m9 5 7 7-7 7"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+    share: '<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>',
+    copy: '<rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/>',
+    more: '<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
+    send: '<path d="M20.5 3.5 10 14M20.5 3.5 14 20.5l-4-6.5-6.5-4z"/>',
+    edit: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+    trash: '<path d="M4 7h16M9.5 7V4.5h5V7M6 7l1 13h10l1-13M10 11v5.5M14 11v5.5"/>',
+    link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',
+    globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5z"/>',
   };
   const svg = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+  // The same line icons for pages' inline scripts (social.html, notifications.html): window.hIcon('heart', 18).
+  window.hIcon = (k, size = 20) => svg(k).replace('<svg ', `<svg class="ico" width="${size}" height="${size}" `);
   let page, hash;   // re-read on every check: social.html changes tab by hash without reloading
   const refresh = () => { page = location.pathname.replace(/^.*\//, '') || 'memories.html'; hash = location.hash.replace(/^#/, '').split('/')[0]; };
   refresh();
@@ -75,27 +109,28 @@
   .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: var(--menu-ink, #E2E8F0); font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
   .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: var(--menu-hover, #1E293B); outline: none; }
   .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: #EC4899; color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
+  .an-bell .an-badge { top: 3px; right: 1px; min-width: 16px; height: 16px; padding: 0 4px; font: 600 10px/16px var(--font-sans, system-ui); box-shadow: 0 0 0 2px var(--page-bg, #0B0B0F); }
   .an-connect { position: relative; z-index: 45;   /* not sticky (10-28): stuck at the same top as the Discover tabs, it covered them on phones */ display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
-    background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 600 14px/1.35 var(--font-sans, system-ui); }
+    background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 500 14px/1.35 var(--font-sans, system-ui); }
   .an-connect span { flex: 1; }
-  .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
-  .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
+  .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; }
   /* The push / install bar (founder 11-02): refined red, sticky above the header; phones get icon + two lines + full-width actions. */
   .an-push { position: sticky; top: 0; z-index: 60; color: #fff; font-family: var(--font-sans, system-ui);
-    background: linear-gradient(135deg, #E0284A 0%, #B4153A 100%); box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 6px 18px rgba(127, 18, 46, .35); }
-  .an-push.is-on { background: linear-gradient(135deg, #16A34A, #15803D); box-shadow: 0 6px 18px rgba(21, 128, 61, .3); }
+    background: linear-gradient(90deg, #DC2648 0%, #C21A42 100%); box-shadow: none; border-bottom: 1px solid rgba(0, 0, 0, .12); }
+  .an-push.is-on { background: linear-gradient(90deg, #16A34A, #15803D); box-shadow: none; }
   .an-push-in { display: flex; align-items: center; gap: 14px; padding: 10px max(16px, calc((100vw - 1120px) / 2)); }
-  .an-push-ico { flex: none; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-size: 19px; background: rgba(255,255,255,.16); }
+  .an-push-ico { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.16); } .an-push-ico svg { width: 19px; height: 19px; }
   .an-push-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .an-push-txt b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+  .an-push-txt b { font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; }
   .an-push-txt span { font-size: 13px; line-height: 1.35; color: rgba(255,255,255,.86); }
   .an-push-acts { flex: none; display: flex; align-items: center; gap: 8px; }
-  .an-push-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 0; font: 700 14px var(--font-sans, system-ui); cursor: pointer; white-space: nowrap; }
-  .an-push-btn.is-primary { background: #fff; color: #B4153A; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
-  .an-push-btn.is-ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.7); }
+  .an-push-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 0; font: 600 14px var(--font-sans, system-ui); cursor: pointer; white-space: nowrap; }
+  .an-push-btn.is-primary { background: #fff; color: #B4153A; box-shadow: none; }
+  .an-push-btn.is-ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.6); }
   .an-push-btn.is-quiet { background: transparent; color: rgba(255,255,255,.88); font-weight: 600; padding: 0 8px; }
   .an-push-btn:disabled { opacity: .6; }
-  .an-push-x { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; }
+  .an-push-x { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; } .an-push-x svg, .an-connect-x svg { width: 16px; height: 16px; }
   .an-top { top: var(--push-h, 0px); }
   @media (max-width: 760px) {
     .an-push-in { flex-wrap: wrap; gap: 10px 12px; padding: 12px 16px; }
@@ -114,13 +149,13 @@
   .an-lock { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 24px; background: rgba(2, 6, 23, .82);
     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-family: var(--font-sans, system-ui); }
   .an-lock-card { width: 100%; max-width: 360px; padding: 32px 24px 24px; border-radius: 28px; text-align: center; color: #fff;
-    background: linear-gradient(180deg, #1E1B4B, #111827); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 30px 80px rgba(0,0,0,.55); }
-  .an-lock-ico { width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 24px; display: grid; place-items: center; font-size: 38px;
-    background: linear-gradient(135deg, #E0284A, #B4153A); box-shadow: 0 12px 30px rgba(224, 40, 74, .45); }
-  .an-lock h2 { margin: 0 0 8px; font-size: 24px; letter-spacing: -.02em; }
-  .an-lock p { margin: 0 0 22px; font-size: 15px; line-height: 1.5; color: #CBD5E1; }
-  .an-lock-btn { width: 100%; height: 52px; border: 0; border-radius: 16px; font: 700 16px var(--font-sans, system-ui); color: #fff; cursor: pointer;
-    background: linear-gradient(135deg, #E0284A, #B4153A); box-shadow: 0 10px 24px rgba(224, 40, 74, .35); }
+    background: var(--menu-bg, #17162E); color: var(--menu-ink, #E2E8F0); border: 1px solid var(--menu-line, rgba(255,255,255,.1)); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+  .an-lock-ico { width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 24px; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, #E0284A, #B4153A); box-shadow: none; border-radius: 50%; } .an-lock-ico svg { width: 34px; height: 34px; }
+  .an-lock h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+  .an-lock p { margin: 0 0 22px; font-size: 15px; line-height: 1.5; color: var(--menu-ink-2, #A1A1AA); }
+  .an-lock-btn { width: 100%; height: 52px; border: 0; border-radius: 999px; font: 600 16px var(--font-sans, system-ui); color: #fff; cursor: pointer;
+    background: linear-gradient(90deg, #DC2648, #C21A42); box-shadow: none; }
   .an-lock-btn:disabled { opacity: .6; }
   .an-lock small { display: block; margin-top: 14px; font-size: 13px; line-height: 1.45; color: #94A3B8; }
   .an-lock small:empty { display: none; }
@@ -235,7 +270,7 @@
     for (let i = 0; !isIos && !installEvt && i < 15; i++) await new Promise((r) => setTimeout(r, 200));
     if (installEvt) { const e = installEvt; installEvt = null; e.prompt(); return (await e.userChoice).outcome === 'accepted'; }
     const tip = document.createElement('div'); tip.className = isIos ? 'an-ios-tip' : 'an-ios-tip an-tip-top'; tip.setAttribute('role', 'dialog');
-    tip.textContent = isIos ? 'Tap Share ⬆ below, then “Add to Home Screen”.' : 'Tap ⋮ above, then “Install app”.';
+    tip.textContent = isIos ? 'Tap Share below, then “Add to Home Screen”.' : 'Tap ⋮ above, then “Install app”.';
     tip.onclick = () => tip.remove(); document.body.append(tip); setTimeout(() => tip.remove(), 12000);
     return null;
   }
@@ -276,16 +311,16 @@
     const bar = document.createElement('div'); bar.className = 'an-push'; bar.id = 'pushBar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Notifications');
     bar.innerHTML = '<div class="an-push-in"><span class="an-push-ico" aria-hidden="true"></span><div class="an-push-txt"><b></b><span></span></div><div class="an-push-acts"></div></div>';
     const ico = bar.querySelector('.an-push-ico'), title = bar.querySelector('.an-push-txt b'), msg = bar.querySelector('.an-push-txt span'), acts = bar.querySelector('.an-push-acts');
-    const say = (i, t, m) => { ico.textContent = i; title.textContent = t; msg.textContent = m; };   // text only, never markup
+    const say = (i, t, m) => { ico.innerHTML = svg(i); title.textContent = t; msg.textContent = m; };   // i = an icon key; title/message stay text only
     const button = (label, onclick, kind = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = `an-push-btn ${kind}`; b.textContent = label; b.onclick = onclick; acts.append(b); return b; };
     const settle = (i, t, m) => { bar.classList.add('is-on'); acts.textContent = ''; say(i, t, m); setTimeout(() => bar.remove(), 3500); };
-    const installedNote = () => { markInstalled(); trackEvent('web_push', { action: 'install_yes' }); settle('✓', 'Herae is on your home screen', 'Open it from there. It asks once for notifications.'); };
-    const done = () => { pushOn(); settle('✓', 'Notifications are on', 'You’ll hear about likes and messages on this device.'); };
+    const installedNote = () => { markInstalled(); trackEvent('web_push', { action: 'install_yes' }); settle('check', 'Herae is on your home screen', 'Open it from there. It asks once for notifications.'); };
+    const done = () => { pushOn(); settle('check', 'Notifications are on', 'You’ll hear about likes and messages on this device.'); };
     const waiting = Number(st.likedBy || 0);
     if (state === 'off') {
-      if (text) say('🔔', 'Turn on notifications', text);
-      else if (waiting) say('💜', waiting === 1 ? 'Someone likes you' : `${waiting} people like you`, 'Turn on notifications so you don’t miss them.');
-      else say('🔔', 'Turn on notifications', 'Know the moment someone likes you or says hi.');
+      if (text) say('bell', 'Turn on notifications', text);
+      else if (waiting) say('heart', waiting === 1 ? 'Someone likes you' : `${waiting} people like you`, 'Turn on notifications so you don’t miss them.');
+      else say('bell', 'Turn on notifications', 'Know the moment someone likes you or says hi.');
       const go = button('Turn on notifications', async () => {
         go.disabled = true;
         if (await enableWebPush()) return done();
@@ -295,7 +330,7 @@
         msg.textContent = 'Your browser hid the question. Tap the bell in the address bar and choose Allow, or try again.';
       }, 'is-primary');
     } else if (state === 'blocked') {
-      say('🔕', 'Notifications are blocked', 'You’ll miss likes and messages.');
+      say('bellOff', 'Notifications are blocked', 'You’ll miss likes and messages.');
       const go = button('Turn on notifications', async () => {
         go.disabled = true;
         if (await enableWebPush()) return done();
@@ -308,7 +343,7 @@
     } else {   // install: the phone's real app box on Android Chrome; on iPhone, Safari's Share button
       const no = () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ }
         trackEvent('web_push', { action: 'install_no' }); pushBanner(st, text); };
-      say('📲', 'Get the Herae app', 'Never miss a like or a message.');
+      say('phone', 'Get the Herae app', 'Never miss a like or a message.');
       const go = button('Install app', async () => { go.disabled = true; const r = await runInstall(); go.disabled = false; if (r === true) installedNote(); else if (r === false) no(); }, 'is-primary');
       button('Not now', no, 'is-quiet');
     }
@@ -317,7 +352,7 @@
     }
     // Desktop can tuck it away for this page; on phones, once the install was turned down, it stays (founder 11-02).
     if (state !== 'install' && !isPhone) {
-      const x = document.createElement('button'); x.type = 'button'; x.className = 'an-push-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'an-push-x'; x.setAttribute('aria-label', 'Hide for now'); x.innerHTML = svg('x');
       x.onclick = () => bar.remove(); bar.querySelector('.an-push-in').append(x);
     }
     document.body.prepend(bar); keepTop(bar);
@@ -335,7 +370,7 @@
     if (document.getElementById('pushLock')) return;
     const lock = document.createElement('div'); lock.id = 'pushLock'; lock.className = 'an-lock';
     lock.setAttribute('role', 'dialog'); lock.setAttribute('aria-modal', 'true'); lock.setAttribute('aria-labelledby', 'pushLockT');
-    lock.innerHTML = '<div class="an-lock-card"><div class="an-lock-ico" aria-hidden="true">🔔</div><h2 id="pushLockT">Turn on notifications</h2>'
+    lock.innerHTML = '<div class="an-lock-card"><div class="an-lock-ico" aria-hidden="true">' + svg('bell') + '</div><h2 id="pushLockT">Turn on notifications</h2>'
       + '<p></p><button type="button" class="an-lock-btn">Turn on notifications</button><small></small></div>';
     const p = lock.querySelector('p'), btn = lock.querySelector('button'), small = lock.querySelector('small');
     const blocked = () => { p.textContent = 'Notifications are blocked for Herae.'; small.textContent = unblockLine(); btn.textContent = 'I’ve allowed it'; };
@@ -412,7 +447,7 @@
     if (location.pathname.endsWith(hPath) && (!hTab || curTab === hTab)) return;   // already there (#discover/<someone> is still Discover)
     if (step === 'browse' && document.getElementById('pushBar')) return;   // one bar on a phone: nothing to act on here, and notifications matter more
     const bar = document.createElement('div'); bar.className = 'an-connect'; bar.dataset.step = step; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Next step');
-    bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">✕</button>`;
+    bar.innerHTML = `<span></span><a class="an-connect-cta"></a><button type="button" class="an-connect-x" aria-label="Hide for now">${svg('x')}</button>`;
     bar.querySelector('span').textContent = text; const a = bar.querySelector('a'); a.textContent = cta; a.href = href;
     const track = (action) => { if (typeof trackEvent === 'function') trackEvent('connect_nudge', { step, action }); };
     bar.querySelector('button').onclick = () => { try { localStorage.setItem(key, String(Date.now())); } catch (e) { /* fine */ } bar.remove(); track('hide'); };

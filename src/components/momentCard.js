@@ -5,6 +5,7 @@
 // its own — see src/pages/memories.js).
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatDate } from '../lib/util.js';
 import { renderReactionRow } from './reactions.js';
 import { renderMediaTile } from './mediaTile.js';
@@ -12,17 +13,17 @@ import { renderUserLink, renderUserLinks } from './userLink.js';
 import { renderReviewBody, renderPostMenu } from './postActions.js';
 
 const THEME_LABELS = {
-  polaroid: '📷 Polaroid', grid: '🖼️ Cozy Grid', filmstrip: '🎞️ Filmstrip',
-  couple: '💕 Couple', family: '🏡 Family',
+  polaroid: 'Polaroid', grid: 'Cozy Grid', filmstrip: 'Filmstrip',
+  couple: 'Couple', family: 'Family',
 };
-const PRIVACY_LABELS = { public: '🌐 Public', contacts: '👥 Contacts', private: '🔒 Just us' };
+const PRIVACY_LABELS = { public: 'Public', contacts: 'Contacts', private: 'Just us' };
 
 function renderReviewBlock(review) {
   return `
     <div class="review-block">
       <div class="review-head-row">
         <span class="review-author">${renderUserLink(review.username)}</span>
-        <a class="review-open-link" href="post.html?type=review&id=${review.id}" title="Open this review on its own page">↗</a>
+        <a class="review-open-link" href="post.html?type=review&id=${review.id}" title="Open this review on its own page" aria-label="Open this review">${icon('external', 15)}</a>
         ${renderPostMenu('review', review.id, review.canEdit)}
       </div>
       ${renderReviewBody(review)}

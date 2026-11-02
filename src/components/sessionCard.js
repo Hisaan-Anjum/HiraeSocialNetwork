@@ -13,6 +13,7 @@
 // those regardless of endpoint.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatRelative, formatDate, sessionDisplayTitle } from '../lib/util.js';
 import { renderStars } from './starRating.js';
 import { renderReactionRow } from './reactions.js';
@@ -43,7 +44,7 @@ function renderReviewSummary(review) {
       ${renderReviewBody(review)}
       ${hasReactions
         ? renderReactionRow('review', review.id, review.likes, review.comments)
-        : `<a class="review-open-link" href="post.html?type=review&id=${review.id}">Open review ↗</a>`}
+        : `<a class="review-open-link" href="post.html?type=review&id=${review.id}">Open review ${icon('external', 14)}</a>`}
     </div>
   `;
 }
@@ -126,7 +127,7 @@ export function renderSessionCard(session) {
     <div class="carousel-item" data-moment-id="${m.id}">
       ${renderMediaTile(m, { className: 'session-carousel-media' })}
       <div class="carousel-item-bar">
-        <a class="carousel-item-open" href="session.html?session=${encodeURIComponent(session.clientSessionId)}" title="Open this session">↗</a>
+        <a class="carousel-item-open" href="session.html?session=${encodeURIComponent(session.clientSessionId)}" title="Open this session" aria-label="Open this session">${icon('external', 16)}</a>
         ${renderPostMenu('moment', m.id, m.canEdit)}
       </div>
       <div class="moment-description-slot carousel-item-caption" data-description="${escapeHtml(m.description || '')}">
@@ -157,7 +158,7 @@ export function renderSessionCard(session) {
         <div class="feed-card-headtext">
           <div class="feed-card-people">${peopleHtml}</div>
           <div class="feed-card-sub">watched <span class="feed-card-title-inline">${escapeHtml(title)}</span> <span class="feed-card-when">· ${formatRelative(session.lastActivityAt || session.startedAt)}</span></div>
-          ${watchedSub ? `<div class="feed-card-watched">📺 ${escapeHtml(watchedSub)}</div>` : ''}
+          ${watchedSub ? `<div class="feed-card-watched">${icon('tv', 15)} ${escapeHtml(watchedSub)}</div>` : ''}
         </div>
         ${session.averageRating ? `<div class="session-avg-rating">${renderStars(session.averageRating)}<span class="session-avg-num">${session.averageRating}</span></div>` : ''}
         <!-- ── Share a NIGHT, not just a frame of it ──────────────────
@@ -168,7 +169,7 @@ export function renderSessionCard(session) {
              gates by who may see it, so this adds a way to send a link and no
              new way to reach anything. -->
         <button class="session-share" data-session-share="${escapeHtml(session.clientSessionId)}"
-          type="button" title="Share this session" aria-label="Share this session">❤ Share</button>
+          type="button" title="Share this session" aria-label="Share this session">${icon('share', 16)} Share</button>
       </div>
 
       ${session.moments.length ? `
@@ -176,7 +177,7 @@ export function renderSessionCard(session) {
           ${renderCarousel(momentsHtml, { className: 'session-moments-carousel', mode: '3d' })}
         </div>
         ${momentReactions}
-      ` : `<div class="review-no-moments">No moments were captured this time — the review still counts 💜</div>`}
+      ` : `<div class="review-no-moments">No moments were captured this time — the review still counts</div>`}
 
       ${hasReviews ? `
         <div class="session-reviews">${session.reviews.map(renderReviewSummary).join('')}</div>

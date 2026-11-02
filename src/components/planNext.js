@@ -5,6 +5,7 @@
 // reminder an hour before. Shown at the end of a night (review page) and from the "movie night #2?" email (?plan=1).
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 
 const { apiRequest } = window;
@@ -52,9 +53,9 @@ export async function mountPlanNext(anchor, { partner, startedAt, via = 'review'
   // partnerEmailed=false: they joined as a guest (no account, no email) or turned these emails off — say so, and hand
   // the planner a one-tap way to tell them, instead of promising an invite that never arrives (2026-10-04).
   function renderPlanned(when, partnerEmailed = true) {
-    const shareText = `Movie night ${fmt(when)} (my time)? 🍿${shareLink ? ` Open this on your computer in Chrome when it's time: ${shareLink}` : ''}`;
+    const shareText = `Movie night ${fmt(when)} (my time)?${shareLink ? ` Open this on your computer in Chrome when it's time: ${shareLink}` : ''}`;
     card.innerHTML = `
-      <div class="plan-next-title">📅 ${first ? 'First' : 'Next'} movie night: ${escapeHtml(fmt(when))}</div>
+      <div class="plan-next-title">${icon('calendar', 18)} ${first ? 'First' : 'Next'} movie night: ${escapeHtml(fmt(when))}</div>
       <div class="plan-next-sub">${partnerEmailed
     ? "It's in both your inboxes as a calendar invite, in each of your own time zones, and you'll both get a reminder an hour before."
     : `It's in your inbox as a calendar invite, with a reminder an hour before. ${escapeHtml(partner)} doesn't get Herae emails, so send them the time:`}</div>
@@ -68,7 +69,7 @@ export async function mountPlanNext(anchor, { partner, startedAt, via = 'review'
       copy.addEventListener('click', async () => {
         let ok = false;
         try { await navigator.clipboard.writeText(shareText); ok = true; } catch (e) { /* insecure context */ }
-        copy.textContent = ok ? '✓ Copied' : 'Copy failed';
+        copy.textContent = ok ? 'Copied' : 'Copy failed';
         setTimeout(() => { copy.textContent = 'Copy message'; }, 1800);
       });
     }
@@ -77,7 +78,7 @@ export async function mountPlanNext(anchor, { partner, startedAt, via = 'review'
 
   function renderPicker() {
     card.innerHTML = `
-      <div class="plan-next-title">📅 Plan your ${which} movie night with ${escapeHtml(partner)}</div>
+      <div class="plan-next-title">${icon('calendar', 18)} Plan your ${which} movie night with ${escapeHtml(partner)}</div>
       <div class="plan-next-sub">${first
     ? 'Pick the evening now so it actually happens. It goes on your calendar with a reminder an hour before, and we\'ll make sure they get it too.'
     : 'Couples who keep it going pick the next night before they say goodnight. It goes on both your calendars, in each of your time zones.'}</div>

@@ -249,6 +249,32 @@
   .p-state.accepted { color: var(--h-ok); border-color: currentColor; }
   .c-sys { align-self: center; font-size: var(--h-size-xs); color: var(--h-text-3); }
   .sg-film { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--h-line); background: rgba(99, 102, 241, .12); font-weight: 700; }
+  /* Chat thread (founder 11-02, mock-up 5): the head stays put under the app bar, bubbles size to their text — received
+     on the left in grey, sent on the right in the brand purple with a small time and tick — and the bar has + and send. */
+  .c-view .c-head { top: calc(var(--push-h, 0px) + 60px); z-index: 30; margin: 0 calc(-1 * var(--h-4, 16px)); padding: 10px var(--h-4, 16px); background: var(--nav-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--nav-line); }
+  .c-view .c-head .c-back { width: 38px; height: 38px; min-height: 38px; display: grid; place-items: center; color: var(--h-text); background: transparent; border: 0; }
+  .c-view .c-who b { font-size: 16px; font-weight: 600; } .c-view .c-who span { font-size: 12.5px; }
+  .c-view .c-thread { gap: 4px; padding: 14px 0; align-items: flex-start; }
+  .c-view .c-msg { align-self: flex-start; width: fit-content; max-width: min(78%, 480px); font-size: 15px; line-height: 1.4; padding: 8px 12px 6px; border-radius: 18px; border-bottom-left-radius: 6px;
+    background: #24232E; color: #F1F1F5; margin-top: 2px; }
+  :root[data-theme="light"] .c-view .c-msg:not(.mine) { background: #ECEDF3; color: #0F172A; }
+  .c-view .c-msg.mine { align-self: flex-end; background: linear-gradient(135deg, #6366F1, #8B5CF6); color: #fff; border-radius: 18px; border-bottom-right-radius: 6px; }
+  .c-view .c-msg time { display: flex; align-items: center; justify-content: flex-end; gap: 3px; font-size: 11px; line-height: 1; opacity: .72; margin-top: 4px; }
+  .c-view .c-sys { align-self: center; font-size: 12px; color: var(--h-text-3); padding: 6px 12px; margin: 6px 0; text-align: center; }
+  .c-view .p-card { align-self: flex-start; width: min(78%, 420px); padding: 12px 14px; border-radius: 18px; border-bottom-left-radius: 6px; background: var(--surface-post); border: 1px solid var(--h-line); margin-top: 2px; }
+  .c-view .p-card.mine { align-self: flex-end; border-radius: 18px; border-bottom-right-radius: 6px; }
+  .c-view .p-card .p-title { font-family: var(--font-sans); font-size: 16px; font-weight: 600; margin-top: 4px; }
+  .c-view .p-card .p-meta { font-size: 13px; color: var(--h-text-3); margin: 2px 0 8px; }
+  .c-view .p-card .p-state { font-size: 11.5px; font-weight: 600; padding: 2px 8px; }
+  .c-view .p-card .hb { min-height: 34px; height: 34px; padding: 0 14px; font-size: 13px; }
+  .c-view .c-compose { gap: 8px; align-items: center; }
+  .c-view .c-compose textarea { min-height: 44px; font-size: 15px; padding: 11px 16px; border-radius: 22px; }
+  .c-view .c-ico { width: 44px; height: 44px; border: 1px solid var(--h-line); background: transparent; color: var(--h-text-2); }
+  .c-view .c-ico.send { background: var(--grad-cta); color: #fff; border: 0; box-shadow: none; }
+  .c-view .c-ico.send svg { width: 18px; height: 18px; }
+  @media (max-width: 760px) { .c-view .c-head { top: calc(var(--push-h, 0px) + 56px); } }
+  .c-search-in { height: 44px; border-radius: 999px !important; padding-left: 42px !important; background: var(--field-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E95B2' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 15px center / 18px no-repeat !important; }
+  #v-chats > h1, #v-matches > h1, #v-parties h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
 </style>
   <link rel="manifest" href="/manifest.webmanifest"><!-- iPhone push needs Home Screen + this (11-01) -->
 </head>
@@ -274,7 +300,7 @@
   <div id="live" class="sr-only" role="status" aria-live="polite"></div>
 
   <dialog class="h-dialog" id="dlg" aria-labelledby="dlgTitle">
-    <button type="button" class="dlg-x" id="dlgClose" aria-label="Close">✕</button>
+    <button type="button" class="dlg-x" id="dlgClose" aria-label="Close"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <h2 id="dlgTitle"></h2>
     <div id="dlgBody" style="margin:var(--h-3) 0 var(--h-5)"></div>
     <div class="h-row" style="justify-content:flex-end" id="dlgActions"></div>
@@ -288,6 +314,7 @@
   requireAuth();
   (() => {
     const $ = (id) => document.getElementById(id);
+    const ic = (k, n = 18) => { const w = document.createElement('span'); w.className = 'ico-w'; w.setAttribute('aria-hidden', 'true'); w.innerHTML = window.hIcon ? window.hIcon(k, n) : ''; return w; };   // the line icon set (app-nav.js)
     const el = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag);
       for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e[k] = v; else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v); }
       for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(String(k)));
@@ -466,7 +493,7 @@
         const partyLink = el('a', { href: '#parties', class: 'dz-empty-link' }, 'Join a watch party');
         const fallback = () => { hero.textContent = ''; if (!widenBtn) partyLink.hidden = true; hero.append(widenBtn || el('a', { class: 'hb hb-primary dz-empty-cta', href: '#parties' }, 'Find a watch party')); };
         // On already (or turned on by the bar or the app's popup while this is open): shown as done, never asked again.
-        const showOn = () => { fine.hidden = true; hero.textContent = ''; hero.append(el('p', { class: 'dz-empty-on' }, '✓ Notifications on'), widenBtn || ''); };
+        const showOn = () => { fine.hidden = true; hero.textContent = ''; hero.append(el('p', { class: 'dz-empty-on' }, ic('check', 16), ' Notifications on'), widenBtn || ''); };
         window.addEventListener('herae:push-on', () => { if (hero.isConnected) showOn(); }, { once: true });
         webPushState().then((st) => {
           if (st === 'off') {
@@ -474,7 +501,7 @@
               b.disabled = true; const ok = await enableWebPush();
               if (ok) showOn();
               else { b.disabled = false; toast('No problem, we’ll email you instead.'); }
-            } }, '🔔 Turn on notifications');
+            } }, ic('bell', 18), ' Turn on notifications');
             hero.append(b); trackEvent('web_push', { action: 'shown' });
           } else if (st === 'on') showOn();
           else fallback();   // blocked or unsupported (iPhone Safari): email is the channel
@@ -497,7 +524,7 @@
       const actions = el('div', { class: 'dz-actions' },
         iconBtn('undo', 'Undo last skip', ICON.undo, undo), iconBtn('no lg', 'Skip', ICON.no, () => decide(-1)),
         iconBtn('yes lg', 'Watch together?', ICON.heart, () => decide(1)), iconBtn('info', `More about ${c.name}`, ICON.up, () => details(c)));
-      const tease = likedYou > 0 ? el('p', { class: 'dz-tease', role: 'status' }, el('span', { 'aria-hidden': 'true' }, '👀'), ` ${likedYou === 1 ? 'Someone' : `${likedYou} people`} here already ${likedYou === 1 ? 'wants' : 'want'} to watch with you`) : null;
+      const tease = likedYou > 0 ? el('p', { class: 'dz-tease', role: 'status' }, ic('eye', 16), ` ${likedYou === 1 ? 'Someone' : `${likedYou} people`} here already ${likedYou === 1 ? 'wants' : 'want'} to watch with you`) : null;
       v.append(el('div', { class: 'dz' }, tease, stack, actions));
       dragify(card); if (viaKeys) card.focus({ preventScroll: true });   // keyboard users keep their place; a tap never draws a focus ring
     }
@@ -526,7 +553,7 @@
         behind ? null : el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
         el('div', { class: 'd-info' },
           badges.length ? el('div', { class: 'd-badges' }, ...badges) : null,
-          el('div', { class: 'd-name' }, el('h2', {}, c.name), c.premium ? el('span', { class: 'd-premium', title: 'Herae Premium member' }, '✦ Premium') : null,
+          el('div', { class: 'd-name' }, el('h2', {}, c.name), c.premium ? el('span', { class: 'd-premium', title: 'Herae Premium member' }, ic('sparkle', 13), ' Premium') : null,
             behind ? null : el('button', { type: 'button', class: 'd-infob', 'aria-label': `More about ${c.name}`, onclick: () => details(c) }, svgEl(ICON.up))),
           hidden > 0 ? el('div', { class: 'd-sub' }, svgEl(ICON.lock), `${hidden} more photo${hidden === 1 ? '' : 's'} after you match`) : null,
           c.bio ? el('p', { class: 'd-bio' }, c.bio) : null,
@@ -538,8 +565,8 @@
         el('div', { class: 'd-art', 'aria-hidden': 'true' }), el('div', { class: 'd-shade' }),
         el('div', { class: 'd-tut-in' }, el('span', { class: 'd-badge hot' }, svgEl(ICON.spark), 'How it works'),
           el('h2', {}, 'Who would you watch with?'),
-          el('div', { class: 'd-tut-row' }, el('span', {}, el('i', {}, '👉'), el('b', {}, 'Swipe right'), el('small', {}, 'or ♥ — “I’d watch with you”')),
-            el('span', {}, el('i', {}, '👈'), el('b', {}, 'Swipe left'), el('small', {}, 'or ✕ — skip'))),
+          el('div', { class: 'd-tut-row' }, el('span', {}, el('i', {}, ic('heart', 18)), el('b', {}, 'Swipe right'), el('small', {}, 'or the heart — “I’d watch with you”')),
+            el('span', {}, el('i', {}, ic('x', 18)), el('b', {}, 'Swipe left'), el('small', {}, 'or the cross — skip'))),
           el('p', {}, 'They only find out if you both say yes. Tap ˄ to see everything on someone’s profile.'),
           el('p', { class: 'd-tut-go' }, 'Swipe this card either way to start')));
     }
@@ -562,7 +589,7 @@
     }
     // Everything on their profile, for the ˄ button.
     function details(c) {
-      if (c.tutorial) { dialog('How it works', [el('p', {}, 'Each card is someone who loves films like you do. Swipe right (or ♥) if you’d watch with them, left (or ✕) to skip. If you both say yes, it’s a match and you can chat and pick a film. Nobody can message you before that.')], [['Got it', 'hb-primary', true]]); return; }
+      if (c.tutorial) { dialog('How it works', [el('p', {}, 'Each card is someone who loves films like you do. Swipe right (or tap the heart) if you’d watch with them, left (or tap the cross) to skip. If you both say yes, it’s a match and you can chat and pick a film. Nobody can message you before that.')], [['Got it', 'hb-primary', true]]); return; }
       const dl = el('dl', { class: 'd-meta' });
       const add = (k, val) => { if (val) dl.append(el('dt', {}, k), el('dd', {}, val)); };
       add('Why you’re seeing them', (c.why || []).join(' · ')); add('About', c.bio);
@@ -602,7 +629,7 @@
         // The card already moved on (optimistic); a yes that didn't arrive must not vanish with it (10-27: the founder's
         // yes to someone who'd liked him never reached the server). Put them back on top, and say so plainly.
         deck.unshift(c); likedYou = likedBefore; showCard();
-        toast(`Your yes to ${c.name} didn't send${e && e.message ? ` (${e.message})` : ''}. Tap ♥ again.`);
+        toast(`Your yes to ${c.name} didn't send${e && e.message ? ` (${e.message})` : ''}. Tap the heart again.`);
       }
     }
     // After a yes: app-nav's red notifications bar (every app page, founder 10-30, 11-01) asks about THIS person instead.
@@ -621,7 +648,7 @@
       const returnTo = document.activeElement;
       const close = () => { o.remove(); document.removeEventListener('keydown', onKey); if (returnTo && returnTo.focus) returnTo.focus(); };
       const onKey = (e) => { if (e.key === 'Escape') close(); };
-      const hi = el('button', { type: 'button', class: 'hb hb-primary', onclick: () => { close(); location.hash = `chats/${conversationId}`; } }, 'Say hi 👋');
+      const hi = el('button', { type: 'button', class: 'hb hb-primary', onclick: () => { close(); location.hash = `chats/${conversationId}`; } }, 'Say hi');
       const o = el('div', { class: 'mt', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'mtTitle' }, fx,
         el('div', { class: 'mt-in' }, el('p', { class: 'mt-kicker' }, 'Watch buddies'), el('h2', { id: 'mtTitle' }, 'It’s a match!'),
           el('div', { class: 'mt-pair' }, mine, el('span', { class: 'mt-heart', 'aria-hidden': 'true' }, svgEl(ICON.heart)), photoAvatar(c.username, c)),
@@ -707,7 +734,7 @@
       if ((up.upcoming || []).length) {
         v.append(el('p', { class: 'mx-h' }, 'Upcoming watches'));
         const ul = el('ul', { class: 'h-list' });
-        for (const p of up.upcoming) ul.append(el('li', {}, el('span', { class: 'h-avatar', 'aria-hidden': 'true' }, '🎬'),
+        for (const p of up.upcoming) ul.append(el('li', {}, el('span', { class: 'h-avatar', 'aria-hidden': 'true' }, ic('film', 18)),
           el('div', { class: 'row-main' }, el('strong', {}, p.title || 'Something to watch'), el('div', { class: 'sub' }, `With ${p.withName} · ${p.mode === 'scheduled' ? when(p.startAt) : 'Now'}`)),
           el('button', { type: 'button', class: 'hb hb-primary', onclick: () => startWatch(p, p.with, p.withName) }, 'Start')));
         v.append(ul);
@@ -792,12 +819,12 @@
         if (m.kind === 'proposal') return proposalCard(proposals.get(m.refId), m);
         if (m.kind === 'system') return el('div', { class: 'c-sys', 'data-id': m.id }, `${m.sender === me ? 'You' : otherName} ${m.body === 'accepted' ? 'accepted the watch suggestion' : 'declined the watch suggestion'} · ${when(m.createdAt)}`);
         return el('div', { class: `c-msg${m.sender === me ? ' mine' : ''}${pending === 'failed' ? ' failed' : ''}`, 'data-id': m.id || '' },
-          m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : msgTime(m.createdAt)));
+          m.body, el('time', {}, pending === 'sending' ? 'Sending…' : pending === 'failed' ? 'Not sent — tap to retry' : msgTime(m.createdAt), m.sender === me && !pending ? ic('check', 13) : null));   // one tick = sent (no read receipts)
       };
       const STATE = { pending: 'Waiting for an answer', accepted: 'Accepted', declined: 'Declined', cancelled: 'Cancelled', expired: 'Expired', completed: 'Done' };
       function proposalCard(p, m) {
         if (!p) return el('div', { class: 'c-sys', 'data-id': m.id }, 'A watch suggestion');
-        const card = el('div', { class: 'p-card', 'data-id': m.id, 'data-state': p.state, role: 'group', 'aria-label': `Watch suggestion: ${p.title || p.url}` }); card.__m = m;
+        const card = el('div', { class: `p-card${p.mine ? ' mine' : ''}`, 'data-id': m.id, 'data-state': p.state, role: 'group', 'aria-label': `Watch suggestion: ${p.title || p.url}` }); card.__m = m;
         const host = p.url ? (() => { try { return new URL(p.url).hostname.replace(/^www\./, ''); } catch (e) { return ''; } })() : '';
         card.append(el('div', { class: 'h-row', style: 'justify-content:space-between' },
             el('span', { class: 'faint', style: 'font-size:var(--h-size-xs)' }, p.mine ? 'You suggested a watch' : `${otherName} suggested a watch`),
@@ -823,7 +850,7 @@
       v.classList.add('c-view');
       const granted = (await photosOf(other)).grantedByMe;
       const head = el('div', { class: 'c-head' },
-        el('a', { class: 'hb hb-quiet c-back', href: '#chats', 'aria-label': 'Back to chats' }, '←'), (() => { const a = photoAvatar(other, { name: otherName, avatarUrl: page.withAvatar }); a.style.cursor = 'pointer'; a.onclick = () => showPhotos(other, otherName); return a; })(),
+        el('a', { class: 'hb hb-quiet c-back', href: '#chats', 'aria-label': 'Back to chats' }, ic('arrowLeft', 22)), (() => { const a = photoAvatar(other, { name: otherName, avatarUrl: page.withAvatar }); a.style.cursor = 'pointer'; a.onclick = () => showPhotos(other, otherName); return a; })(),
         el('div', { class: 'c-who' }, el('h1', { class: 'sr-only' }, `Chat with ${otherName}`), el('b', { 'aria-hidden': 'true' }, otherName), el('span', {}, page.relation === 'match' ? 'Match' : page.relation === 'friends' ? 'Friend' : '')),
         moreMenu([['See their photos', () => showPhotos(other, otherName)],
           ...(page.withPage ? [['See their Herae page', () => { location.href = `user.html?u=${encodeURIComponent(other)}`; }]] : []),
@@ -847,7 +874,7 @@
       input.oninput = grow;
       const SEND_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
       const send = el('button', { type: 'submit', class: 'c-ico send', disabled: !page.canSend, 'aria-label': 'Send' }); send.innerHTML = SEND_SVG;
-      const suggest = el('button', { type: 'button', class: 'c-ico', disabled: !page.canSend, onclick: () => suggestWatch(), 'aria-label': 'Suggest a watch', title: 'Suggest a watch' }, '🎬');
+      const suggest = el('button', { type: 'button', class: 'c-ico', disabled: !page.canSend, onclick: () => suggestWatch(), 'aria-label': 'Suggest a watch', title: 'Suggest a watch' }, ic('plus', 22));
       const form = el('form', { class: 'c-compose' }, suggest, input, send);
       v.append(form);
       // pre: a film already chosen elsewhere (the catalogue's "Add to… → Suggest it in a chat", founder 10-24) — the
@@ -873,7 +900,7 @@
         };
         t.addEventListener('input', () => { if (picked && t.value.trim() !== picked.title) setPick(null); });
         heraeTypeahead(t, (q) => apiRequest(`/api/recommendations?q=${encodeURIComponent(q)}&limit=8`).then((r) => (r.recommendations || []).map((m) => [m.title, m.releaseYear ? String(m.releaseYear) : '', m])), { onPick: (m) => setPick(m) });
-        const browse = el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { const m = await heraeCatalogPick({ withUser: other, withName: otherName, title: `Pick something to watch with ${otherName}` }); if (m) { t.value = m.title; setPick(m); } } }, '🍿 Browse the catalogue');
+        const browse = el('button', { type: 'button', class: 'hb hb-quiet', onclick: async () => { const m = await heraeCatalogPick({ withUser: other, withName: otherName, title: `Pick something to watch with ${otherName}` }); if (m) { t.value = m.title; setPick(m); } } }, ic('film', 16), ' Browse the catalogue');
         const tl = el('div', { class: 'h-row', style: 'justify-content:flex-start' }, browse);
         const u = el('input', { class: 'hi', id: 'sgUrl', inputmode: 'url', placeholder: 'Link (optional) — or pick Netflix, Prime… when you start' });
         const nowR = el('input', { type: 'radio', name: 'sgWhen', value: 'now', checked: true });
@@ -882,7 +909,7 @@
         const dt = el('input', { type: 'datetime-local', class: 'hi', value: local(new Date(Date.now() + 864e5)), min: local(new Date(Date.now() + 6e5)), 'aria-label': 'When' });
         dt.hidden = true; nowR.onchange = laterR.onchange = () => { dt.hidden = !laterR.checked; if (laterR.checked) dt.focus(); };
         let fixed = null;
-        if (pre && pre.title) { t.value = pre.title; t.hidden = true; tl.hidden = true; setPick(pre); fixed = el('div', { class: 'sg-film' }, `🎬 ${pre.title}${pre.releaseYear ? ` (${pre.releaseYear})` : ''}`); }
+        if (pre && pre.title) { t.value = pre.title; t.hidden = true; tl.hidden = true; setPick(pre); fixed = el('div', { class: 'sg-film' }, ic('film', 16), ` ${pre.title}${pre.releaseYear ? ` (${pre.releaseYear})` : ''}`); }
         const ok = await dialog(`Suggest a watch to ${otherName}`, [el('div', { class: 'h-stack' },
           el('label', { class: 'h-label', for: 'sgTitle' }, 'What'), t, fixed, tl, where, (linkBox.append(el('label', { class: 'h-label', for: 'sgUrl' }, 'Link (optional)'), u), linkBox),
           el('fieldset', { style: 'border:0;padding:0' }, el('legend', { class: 'h-label' }, 'When'),
@@ -1008,7 +1035,7 @@
       : p.status === 'scheduled' ? el('span', { class: 'ps ps-soon' }, `Starts ${localTime(p.startsAt)}`)
         : el('span', { class: 'ps' }, 'Nobody watching right now'));
     const partyRow = (p) => el('li', { class: 'tap-row', onclick: rowGo(`parties/${p.id}`) }, el('div', { class: 'row-main' }, el('strong', {}, p.title), el('div', {}, partyState(p)),
-        el('div', { class: 'sub' }, [p.filmTitle ? `🎬 ${p.filmTitle}` : '', `${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
+        el('div', { class: 'sub' }, [p.filmTitle ? p.filmTitle : '', `${p.members}/${p.capacity} people`, p.visibility === 'public' ? (p.admission === 'open' ? 'Public · open' : 'Public · ask to join') : 'Private',
           p.role === 'owner' ? 'You host' : ''].filter(Boolean).join(' · '))),
       el('a', { class: 'hb hb-secondary', href: `#parties/${p.id}` }, 'Open'));
     // The empty deck's parties (founder 10-30): small, under the notifications button and never competing with it. At most
@@ -1111,7 +1138,7 @@
       v.append(el('div', { class: 'h-row', style: 'justify-content:space-between' }, back,
         p.role === 'owner' || team ? null : moreMenu([['Report this party', () => reportPerson(p.owner, 'party', String(p.id))], ['Block the host', async () => { if (await blockPerson(p.owner)) location.hash = 'parties'; }, true]])));
       v.append(el('h1', {}, p.title), el('p', { class: 'muted' }, [`Hosted by ${team ? 'the Herae team' : p.owner}`, `${p.members}/${p.capacity} people`, p.visibility === 'public' ? 'Public' : 'Private'].filter(Boolean).join(' · ')), el('p', { style: 'margin:0 0 8px' }, partyState(p)));
-      if (p.filmTitle || p.filmUrl) v.append(el('p', { class: 'p-film' }, '🎬 ', p.filmTitle || 'The film', p.filmUrl ? el('a', { href: p.filmUrl, target: '_blank', rel: 'noopener noreferrer', style: 'margin-left:8px' }, 'Open it ↗') : null));
+      if (p.filmTitle || p.filmUrl) v.append(el('p', { class: 'p-film' }, ic('film', 16), ' ', p.filmTitle || 'The film', p.filmUrl ? el('a', { href: p.filmUrl, target: '_blank', rel: 'noopener noreferrer', style: 'margin-left:8px' }, 'Open it ↗') : null));
       if (p.description) v.append(el('p', {}, p.description));
       const actions = el('div', { class: 'h-row', style: 'flex-wrap:wrap;margin:var(--h-4) 0' }); v.append(actions);
       if (!inside) {

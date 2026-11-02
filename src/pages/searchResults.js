@@ -194,7 +194,7 @@ async function init() {
   // to go on at all.
   if (!q && !movieFilters.isActive()) {
     emptyEl.hidden = false;
-    emptyEl.innerHTML = renderEmptyState('🔍', 'Type something to search for — or use the movie filters below.');
+    emptyEl.innerHTML = renderEmptyState('search', 'Type something to search for — or use the movie filters below.');
     groups.movies.el.hidden = false;
     sentinelEl.classList.add('hidden');
     loadMovies();
@@ -362,7 +362,7 @@ async function loadMoreFeed() {
   } finally {
     state.loading = false;
     if (state.ownDone && state.feedDone) {
-      sentinelEl.textContent = state.total ? "That's everything 💜" : '';
+      sentinelEl.textContent = state.total ? "That's everything" : '';
       settleEmptyState();
     } else {
       sentinelEl.textContent = 'Searching…';
@@ -377,8 +377,8 @@ function settleEmptyState() {
     // filters are what excluded everything sends people to retype a title that
     // was never the problem.
     emptyEl.innerHTML = q
-      ? renderEmptyState('🔍', `Nothing matched “${escapeHtml(q)}”.`)
-      : renderEmptyState('🎬', 'No films match these filters. Try relaxing one.');
+      ? renderEmptyState('search', `Nothing matched “${escapeHtml(q)}”.`)
+      : renderEmptyState('film', 'No films match these filters. Try relaxing one.');
   } else if (state.total > 0) {
     emptyEl.hidden = true;
   }

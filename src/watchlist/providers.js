@@ -15,6 +15,7 @@
 // the UI never promises something the data can't back.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
@@ -78,8 +79,8 @@ export function openWatchPicker(movie, { onPick }) {
   overlay.innerHTML = `
     <div class="modal-card wp-card" role="dialog" aria-modal="true" aria-label="Where to watch">
       <div class="ms-sel-head">
-        <h2>▶ Find it on</h2>
-        <button class="share-close" data-wp="close" aria-label="Close">✕</button>
+        <h2>Find it on</h2>
+        <button class="share-close" data-wp="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
       <div class="wp-movie">${escapeHtml(movie.title)}</div>
       <div class="wp-grid">

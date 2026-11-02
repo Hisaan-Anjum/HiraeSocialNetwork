@@ -6,6 +6,7 @@
 // per-element listeners would mean constant rebind/leak bookkeeping.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { renderAvatarLink } from './avatar.js';
 import { renderUserLink } from './userLink.js';
@@ -35,8 +36,8 @@ export function renderCommentLine(c) {
       </div>
       ${c.canEdit ? `
         <div class="comment-actions">
-          <button class="comment-edit-btn icon-btn" title="Edit comment" aria-label="Edit comment">✏️</button>
-          <button class="comment-delete-btn icon-btn" title="Delete comment" aria-label="Delete comment">🗑️</button>
+          <button class="comment-edit-btn icon-btn" title="Edit comment" aria-label="Edit comment">${icon('edit', 15)}</button>
+          <button class="comment-delete-btn icon-btn" title="Delete comment" aria-label="Delete comment">${icon('trash', 15)}</button>
         </div>` : ''}
     </div>
   `;
@@ -52,10 +53,10 @@ export function renderReactionRow(postType, postId, likes, comments) {
   return `
     <div class="reaction-row">
       <button class="like-btn${likes.likedByMe ? ' like-btn-active' : ''}" data-post-type="${postType}" data-post-id="${postId}">
-        <span class="like-icon">${likes.likedByMe ? '\u{1F49C}' : '\u{1F90D}'}</span> <span class="like-count">${likes.count}</span>
+        <span class="like-icon">${icon('heart', 20)}</span> <span class="like-count">${likes.count}</span>
       </button>
       <button class="comment-toggle-btn" data-target="comments-${key}">
-        \u{1F4AC} <span class="comment-count">${comments.length}</span>
+        ${icon('chat', 20)} <span class="comment-count">${comments.length}</span>
       </button>
     </div>
     <div class="comments-block" id="comments-${key}" style="display:none">
@@ -83,7 +84,6 @@ export function attachReactionHandlers(container) {
         const current = parseInt(countEl.textContent, 10) || 0;
         countEl.textContent = String(current + (liked ? 1 : -1));
         likeBtn.classList.toggle('like-btn-active', liked);
-        likeBtn.querySelector('.like-icon').textContent = liked ? '\u{1F49C}' : '\u{1F90D}';
       } catch (err) {
         alert(err.message);
       } finally {

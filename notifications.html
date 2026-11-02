@@ -28,6 +28,13 @@
   .nt-time { display: block; margin-top: 3px; font-size: 12.5px; color: var(--h-text-3); }
   .nt-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #EC4899; }
   @media (max-width: 640px) { main.h-page { padding-bottom: 96px; } }
+  /* One list like the mock-up's rows: hairlines between, an unread dot instead of a gradient wash, line icons in soft circles. */
+  .nt-list { gap: 0; background: var(--surface-post); border: 1px solid var(--card-line); border-radius: 20px; overflow: hidden; }
+  .nt-item + .nt-item a { border-top: 1px solid var(--card-line) !important; }
+  .nt-item a { border: 0 !important; border-radius: 0 !important; background: none !important; padding: 12px 16px; }
+  .nt-item.unread a { background: rgba(99, 102, 241, .08) !important; }
+  .nt-ico { width: 40px; height: 40px; color: var(--c-indigo-soft); background: rgba(99, 102, 241, .12) !important; }
+  .nt-item.unread .nt-ico { color: #fff; background: var(--grad-cta) !important; }
 </style>
   <link rel="manifest" href="/manifest.webmanifest"><!-- iPhone push needs Home Screen + this (11-01) -->
 </head>
@@ -45,7 +52,7 @@
   <script>
   requireAuth();
   (async () => {
-    const ICON = { match: '💞', yes: '👀', message: '💬', friend: '🤝', proposal: '🎬', party_request: '🙋', party_in: '🎉', like: '❤️', comment: '💭' };
+    const ICON = { match: 'heart', yes: 'eye', message: 'chat', friend: 'userPlus', proposal: 'film', party_request: 'users', party_in: 'users', like: 'heart', comment: 'chat' };   // line icons (app-nav.js hIcon)
     const ago = (t) => { const s = Math.max(0, (Date.now() - Date.parse(String(t).replace(' ', 'T') + 'Z')) / 1000);
       return s < 60 ? 'just now' : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : `${Math.floor(s / 86400)} d ago`; };
     const body = document.getElementById('ntBody');
@@ -60,7 +67,7 @@
       for (const it of r.items) {
         const li = document.createElement('li'); li.className = 'nt-item' + (it.unread ? ' unread' : '');
         const a = document.createElement('a'); a.href = it.href;
-        const ico = document.createElement('span'); ico.className = 'nt-ico'; ico.setAttribute('aria-hidden', 'true'); ico.textContent = ICON[it.kind] || '🔔';
+        const ico = document.createElement('span'); ico.className = 'nt-ico'; ico.setAttribute('aria-hidden', 'true'); ico.innerHTML = window.hIcon ? window.hIcon(ICON[it.kind] || 'bell', 20) : '';
         const b = document.createElement('span'); b.className = 'nt-body';
         const t = document.createElement('span'); t.className = 'nt-text'; t.textContent = it.text;   // text only: names and messages are user content
         const tm = document.createElement('span'); tm.className = 'nt-time'; tm.textContent = ago(it.at);

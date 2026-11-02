@@ -4,6 +4,7 @@
 // exist and work whether or not any moments were captured.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { renderEmptyState, renderErrorState } from '../components/skeleton.js';
 import { renderReactionRow, attachReactionHandlers } from '../components/reactions.js';
@@ -116,7 +117,7 @@ let detail = null;
 async function loadSession() {
   const sessionId = getSessionIdFromUrl();
   if (!sessionId) {
-    contentEl.innerHTML = renderEmptyState('🤔', 'No session to review — this page is meant to be opened from the extension.');
+    contentEl.innerHTML = renderEmptyState('info', 'No session to review — this page is meant to be opened from the extension.');
     return;
   }
 
@@ -154,7 +155,7 @@ async function loadSession() {
     // Nothing saved yet is the usual case (AI Moments is off unless turned on; its finds wait in the extension panel
     // above until kept). "No moments were captured" contradicted that panel and ended a good night on a shrug, so the
     // night itself is the memory here (2026-10-15).
-    : `<div class="review-no-moments">🍿 ${detail.durationMs >= 60000 ? `${Math.round(detail.durationMs / 60000)} minutes together` : `Your night with ${escapeHtml(partnerName)}`}${title ? ` · ${escapeHtml(title)}` : ''}<br><span class="review-no-moments-tip">Next time, tap 📸 during the call for a photo strip of you two.</span></div>`;
+    : `<div class="review-no-moments">${detail.durationMs >= 60000 ? `${Math.round(detail.durationMs / 60000)} minutes together` : `Your night with ${escapeHtml(partnerName)}`}${title ? ` · ${escapeHtml(title)}` : ''}<br><span class="review-no-moments-tip">Next time, tap the camera button during the call for a photo strip of you two.</span></div>`;
 
   // The end of a night is when it feels best, so that is where sharing is
   // offered (MOMENTS_LOOP.md): one moment, one tap. A video beats a photo.
@@ -162,7 +163,7 @@ async function loadSession() {
   const shareNight = best ? `
     <div class="review-share-night">
       <div>
-        <div class="review-share-night-title">❤️ Share your night</div>
+        <div class="review-share-night-title">Share your night</div>
         <div class="review-share-night-sub">Post your favourite moment to your Story or TikTok and tag ${others.length ? escapeHtml(others[0]) : 'your person'}. On a computer, "Send to my phone" puts it on your phone in a tap.</div>
       </div>
       <button class="btn btn-primary" id="shareNightBtn">Share a moment</button>
@@ -170,8 +171,8 @@ async function loadSession() {
 
   contentEl.innerHTML = `
     ${detail.sessionTitle ? `<div class="review-session-title-banner">${escapeHtml(detail.sessionTitle)}</div>` : ''}
-    ${title ? `<div class="review-content-banner">📺 ${escapeHtml(title)}</div>` : ''}
-    ${title && title.length <= 80 ? `<a class="review-meet" href="watch-profile.html?love=${encodeURIComponent(title.slice(0, 60))}">💞 Loved <b>${escapeHtml(title)}</b>? Add it to your watch profile and meet people who love it too →</a>` : ''}
+    ${title ? `<div class="review-content-banner">${icon('tv', 16)} ${escapeHtml(title)}</div>` : ''}
+    ${title && title.length <= 80 ? `<a class="review-meet" href="watch-profile.html?love=${encodeURIComponent(title.slice(0, 60))}">Loved <b>${escapeHtml(title)}</b>? Add it to your watch profile and meet people who love it too →</a>` : ''}
     ${momentsStrip}
     ${shareNight}
     <div class="review-panel">
@@ -196,7 +197,7 @@ async function loadSession() {
 
       <div class="review-section-title review-own-title" style="margin-top:22px">
         <span>Your review <span style="font-weight:400;color:var(--ink-faint)">(totally optional)</span></span>
-        ${myReview ? `<button class="btn-inline btn-inline-danger" id="deleteMyReviewBtn">🗑️ Delete</button>` : ''}
+        ${myReview ? `<button class="btn-inline btn-inline-danger" id="deleteMyReviewBtn">${icon('trash', 15)} Delete</button>` : ''}
       </div>
       <div class="field">
         <label>Your rating of the film</label>
@@ -208,10 +209,10 @@ async function loadSession() {
       <div class="field">
         <label for="sessionTitleInput">Name this session <span style="font-weight:400;color:var(--ink-faint);text-transform:none;letter-spacing:0">(optional — you both see it)</span></label>
         <input type="text" id="sessionTitleInput" maxlength="120" autocomplete="off"
-               placeholder="e.g. Finale night 💜" value="${escapeHtml(detail.sessionTitle || '')}">
+               placeholder="e.g. Finale night" value="${escapeHtml(detail.sessionTitle || '')}">
         <div id="sessionLinkMount"></div>
       </div>
-      <button class="btn btn-gold" id="saveReviewBtn" style="width:100%">${myReview ? '✏️ Update Review' : '💾 Save Review'}</button>
+      <button class="btn btn-gold" id="saveReviewBtn" style="width:100%">${myReview ? 'Update review' : 'Save review'}</button>
       <div class="save-confirm" id="saveConfirm"></div>
       ${myReview ? `<div style="margin-top:14px">${renderReactionRow('review', myReview.id, myReview.likes, myReview.comments)}</div>` : ''}
     </div>
@@ -236,7 +237,7 @@ async function loadSession() {
       const line = document.createElement('div');
       line.className = 'review-plan-line';
       line.innerHTML = s.unlimited
-        ? (s.compUntil ? `💛 Herae Together is on for you until ${escapeHtml(new Date(s.compUntil).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }))}: every night unlimited.` : '')
+        ? (s.compUntil ? `Herae Together is on for you until ${escapeHtml(new Date(s.compUntil).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }))}: every night unlimited.` : '')
         : 'Every night unlimited for both of you: Herae Together (see the price in your currency). <a href="upgrade.html">See your price</a>';
       if (line.innerHTML) at.insertAdjacentElement('afterend', line);
     }).catch(() => {});
@@ -252,7 +253,7 @@ async function loadSession() {
     if (!seen && at) {
       const track = (action) => { try { window.trackEvent && window.trackEvent('referral_prompt', { action }); } catch (e) { /* best-effort */ } };
       const line = document.createElement('div'); line.className = 'review-plan-line review-refer-line';
-      line.innerHTML = 'Know another couple who live apart? Send them your invite. <a href="refer.html?utm_source=review&utm_medium=referral_prompt">Invite a couple</a> <button type="button" class="ms-link-btn" aria-label="Hide">✕</button>';
+      line.innerHTML = 'Know another couple who live apart? Send them your invite. <a href="refer.html?utm_source=review&utm_medium=referral_prompt">Invite a couple</a> <button type="button" class="ms-link-btn" aria-label="Hide">' + icon('x', 16) + '</button>';
       line.querySelector('a').onclick = () => { track('open'); try { localStorage.setItem('herae_referral_prompt', 'open'); } catch (e) { /* ignore */ } };
       line.querySelector('button').onclick = () => { track('dismiss'); try { localStorage.setItem('herae_referral_prompt', 'dismiss'); } catch (e) { /* ignore */ } line.remove(); };
       try { localStorage.setItem('herae_referral_prompt', 'shown'); } catch (e) { /* ignore */ }
@@ -334,8 +335,8 @@ async function loadSession() {
       if (!text) await window.setSessionTitle(sessionId, sessionTitle);
       else await postReview(sessionId, text, { rating, sessionTitle, content: detail.content || undefined });
       confirmEl.style.color = '#6ee7b7';
-      confirmEl.textContent = '✓ Saved';
-      if (text) btn.textContent = '✏️ Update Review';
+      confirmEl.textContent = 'Saved';
+      if (text) btn.textContent = 'Update review';
       // A FIRST review swaps the form into its "written" state, which is a
       // genuine structural change and worth a rebuild. A rename is not — it
       // is the same one line applySessionLink already knows how to patch.

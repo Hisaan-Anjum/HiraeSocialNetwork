@@ -549,7 +549,7 @@
       const body = `Open this on your computer (in Chrome):\n\n${link}`;
       el('phoneEmail').href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       el('phoneCopy').addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(link); el('phoneCopy').textContent = 'Copied ✓'; }
+        try { await navigator.clipboard.writeText(link); el('phoneCopy').textContent = 'Copied'; }
         catch (e) { window.prompt('Copy this link:', link); }
       });
       if (navigator.share) {

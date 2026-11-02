@@ -10,6 +10,7 @@
 // action.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, debounce } from '../lib/util.js';
 import { openMovieModal } from '../components/movieDetail.js';
 import { lockScroll } from '../lib/scrollLock.js';
@@ -27,8 +28,8 @@ export function openAddMovie({ onAdd, isOnList = () => false, withUser = '' }) {
   overlay.innerHTML = `
     <div class="modal-card wl-add" role="dialog" aria-modal="true" aria-label="Add a movie to your watchlist">
       <div class="ms-sel-head">
-        <h2>🍿 Add a Movie</h2>
-        <button class="share-close" data-wa="close" aria-label="Close">✕</button>
+        <h2>Add a movie</h2>
+        <button class="share-close" data-wa="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
       <input type="search" class="wl-add-search" id="wlAddSearch" placeholder="Search movies…" autocomplete="off">
       <div id="wlAddFilters"></div>
@@ -92,8 +93,8 @@ export function openAddMovie({ onAdd, isOnList = () => false, withUser = '' }) {
     return list.map((m) => `
       <button class="wl-add-card" data-wa-movie="${m.id}" title="${escapeHtml(m.title)}">
         <span class="wl-add-art" style="${m.posterUrl ? `background-image:url('${m.posterUrl}')` : ''}">
-          ${!m.posterUrl ? '<span class="recommendation-card-placeholder">🎬</span>' : ''}
-          ${isOnList(m.id) ? '<span class="wl-add-on">✓ On list</span>' : ''}
+          ${!m.posterUrl ? `<span class="recommendation-card-placeholder">${icon('film', 28)}</span>` : ''}
+          ${isOnList(m.id) ? `<span class="wl-add-on">${icon('check', 13)} On list</span>` : ''}
         </span>
         <span class="wl-add-name">${escapeHtml(m.title)}</span>
         ${m.releaseYear ? `<span class="wl-add-year">${m.releaseYear}</span>` : ''}

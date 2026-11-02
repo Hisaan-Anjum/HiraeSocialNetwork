@@ -12,6 +12,7 @@
 // overlay without ever destroying it.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatDate, sessionDisplayTitle } from '../lib/util.js';
 import { renderReactionRow, attachReactionHandlers } from './reactions.js';
 import { attachPostActionHandlers, renderPostMenu, renderReviewBody } from './postActions.js';
@@ -58,7 +59,7 @@ function buildPanel(m, session) {
   host().innerHTML = `
     <div class="mvp-session-line">
       <a href="session.html?session=${encodeURIComponent(session.clientSessionId)}">
-        ${escapeHtml(sessionDisplayTitle(session, 'View this session'))} ↗
+        ${escapeHtml(sessionDisplayTitle(session, 'View this session'))} ${icon('external', 15)}
       </a>
     </div>
     <div class="mvp-head">
@@ -68,7 +69,7 @@ function buildPanel(m, session) {
     <div class="mvp-meta">
       <span class="theme-badge">${escapeHtml(m.theme)}</span>
       <span class="privacy-badge">${escapeHtml(m.privacy)}</span>
-      ${seconds ? `<span class="mvp-duration">🎥 ${seconds}s</span>` : ''}
+      ${seconds ? `<span class="mvp-duration">${icon('video', 14)} ${seconds}s</span>` : ''}
       <span class="moment-date">${formatDate(m.createdAt)}</span>
     </div>
     <div class="moment-description-slot" data-description="${escapeHtml(m.description || '')}">

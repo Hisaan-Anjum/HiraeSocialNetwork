@@ -12,6 +12,7 @@
 // GET /api/recommendations?q=, which searches the whole catalogue.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, debounce, sessionDisplayTitle } from '../lib/util.js';
 import { renderContactRow } from './contactRow.js';
 
@@ -101,7 +102,7 @@ export function initSearch(source = {}) {
     <div class="search-panel">
       <div class="search-input-row">
         <input type="text" class="search-input" placeholder="Search contacts, sessions, movies…" autocomplete="off">
-        <button class="btn btn-ghost search-close-btn" aria-label="Close search">✕</button>
+        <button class="btn btn-ghost search-close-btn" aria-label="Close search">${icon('x', 18)}</button>
       </div>
       <div class="search-results">
         <div class="search-hint">Search contacts, watch sessions, and recommendations.</div>

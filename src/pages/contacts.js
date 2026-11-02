@@ -10,6 +10,7 @@
 // viewport exist).
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, debounce } from '../lib/util.js';
 import { renderEmptyState, renderErrorState } from '../components/skeleton.js';
 import { confirmDialog, listPhrase } from '../components/confirmDialog.js';
@@ -71,7 +72,7 @@ async function sendRequest() {
   try {
     await requestContact(username);
     msg.className = 'add-contact-msg is-ok';
-    msg.textContent = `✓ Request sent to ${username}.`;
+    msg.textContent = `Request sent to ${username}.`;
     input.value = '';
     await load(currentQuery);
   } catch (err) {
@@ -172,7 +173,7 @@ async function onActionClick(e) {
 }
 
 const actionBtn = (action, c, label, cls = 'btn-ghost') =>
-  `<button class="btn ${cls} btn-sm" data-contact-action="${action}" data-contact-id="${c.id}" data-contact-name="${escapeHtml(c.username)}">${label}</button>`;
+  `<button class="btn ${cls} btn-sm" data-contact-action="${action}" data-contact-id="${c.id}" data-contact-name="${escapeHtml(c.username)}"${action === 'remove' ? ` aria-label="Remove ${escapeHtml(c.username)}" title="Remove"` : ''}>${label}</button>`;
 
 function renderRequests({ incoming, outgoing }) {
   const sections = [];
@@ -184,7 +185,7 @@ function renderRequests({ incoming, outgoing }) {
           ${incoming.map((c) => renderContactRow(c, {
             statusText: 'Sent you a request',
             actions: `<div class="contact-actions">
-              ${actionBtn('accept', c, '✓ Accept', 'btn-primary')}
+              ${actionBtn('accept', c, 'Accept', 'btn-primary')}
               ${actionBtn('decline', c, 'Decline')}
             </div>`,
           })).join('')}
@@ -213,7 +214,7 @@ function revealMore() {
   if (!listEl) return;
   const next = allContacts.slice(shown, shown + CHUNK);
   listEl.insertAdjacentHTML('beforeend', next.map((c) => renderContactRow(c, {
-    actions: `<div class="contact-actions">${actionBtn('message', c, 'Message', 'btn-primary btn-message')}${actionBtn('remove', c, '✕')}</div>`,
+    actions: `<div class="contact-actions">${actionBtn('message', c, 'Message', 'btn-primary btn-message')}${actionBtn('remove', c, icon('x', 16))}</div>`,
   })).join(''));
   shown += next.length;
   if (shown >= allContacts.length) {
@@ -234,8 +235,8 @@ function renderList() {
 
   if (!allContacts.length) {
     contentEl.innerHTML = currentQuery.trim()
-      ? renderEmptyState('🔍', `No contacts match “${escapeHtml(currentQuery.trim())}”.`)
-      : renderEmptyState('👥', 'No contacts yet — add someone by username above, or from the Herae extension.');
+      ? renderEmptyState('search', `No contacts match “${escapeHtml(currentQuery.trim())}”.`)
+      : renderEmptyState('users', 'No contacts yet — add someone by username above, or from the Herae extension.');
     return;
   }
 
@@ -292,7 +293,7 @@ async function initInviteCard() {
 
   copyEl.addEventListener('click', async () => {
     const ok = await copyText(invite.url);
-    copyEl.textContent = ok ? '✓ Copied' : 'Press ⌘C';
+    copyEl.textContent = ok ? 'Copied' : 'Press ⌘C';
     copyEl.classList.toggle('is-done', ok);
     setTimeout(() => { copyEl.textContent = 'Copy'; copyEl.classList.remove('is-done'); }, 1800);
   });

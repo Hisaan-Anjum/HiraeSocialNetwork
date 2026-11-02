@@ -12,6 +12,7 @@
 // public link to point at.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
@@ -62,15 +63,15 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
   const onPhone = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
   const caption = moment.description
     ? `${moment.description} — on Herae.app`
-    : 'A moment from Herae.app 💜';
+    : 'A moment from Herae.app';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay share-overlay';
   overlay.innerHTML = `
     <div class="modal-card share-card" role="dialog" aria-modal="true" aria-label="Share">
       <div class="share-head">
-        <h2>❤️ Share ${linkOnly ? 'this night' : 'your Moment'}</h2>
-        <button class="share-close" data-share="close" aria-label="Close">✕</button>
+        <h2>Share ${linkOnly ? 'this night' : 'your Moment'}</h2>
+        <button class="share-close" data-share="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
       ${isPublic ? '' : `<div class="share-note" id="shareNote">This moment is <strong>${escapeHtml(moment.privacy || 'private')}</strong>, so its link only opens for people allowed to see it. Posting the photo or video itself works either way.
         ${canOpenUp ? '<button class="btn btn-ghost share-open-up" data-share="open-up">Let anyone with the link see it</button>' : ''}</div>`}
@@ -82,16 +83,16 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
       </div>` : `
       <div class="share-grid">
         ${linkOnly ? '' : `
-        <button class="share-opt" data-share="instagram"><span class="share-ico">📸</span><span>Instagram</span></button>
-        <button class="share-opt" data-share="tiktok"><span class="share-ico">🎵</span><span>TikTok</span></button>
-        <button class="share-opt" data-share="facebook"><span class="share-ico">📘</span><span>Facebook</span></button>`}
-        <button class="share-opt" data-share="whatsapp"><span class="share-ico">💬</span><span>WhatsApp</span></button>
-        <button class="share-opt" data-share="telegram"><span class="share-ico">✈️</span><span>Telegram</span></button>
-        <button class="share-opt" data-share="copy"><span class="share-ico">📋</span><span>Copy Link</span></button>
-        ${linkOnly ? '' : '<button class="share-opt" data-share="download"><span class="share-ico">⬇</span><span>Download</span></button>'}
+        <button class="share-opt" data-share="instagram"><span class="share-ico">${icon('camera', 20)}</span><span>Instagram</span></button>
+        <button class="share-opt" data-share="tiktok"><span class="share-ico">${icon('music', 20)}</span><span>TikTok</span></button>
+        <button class="share-opt" data-share="facebook"><span class="share-ico">${icon('users', 20)}</span><span>Facebook</span></button>`}
+        <button class="share-opt" data-share="whatsapp"><span class="share-ico">${icon('chat', 20)}</span><span>WhatsApp</span></button>
+        <button class="share-opt" data-share="telegram"><span class="share-ico">${icon('send', 20)}</span><span>Telegram</span></button>
+        <button class="share-opt" data-share="copy"><span class="share-ico">${icon('link', 20)}</span><span>Copy Link</span></button>
+        ${linkOnly ? '' : `<button class="share-opt" data-share="download"><span class="share-ico">${icon('download', 20)}</span><span>Download</span></button>`}
       </div>`}
       ${stored && !onPhone && phoneShareLink ? `
-      <button class="btn btn-primary share-phone-btn" data-share="phone">📱 Send to my phone — post it to your Story or TikTok</button>
+      <button class="btn btn-primary share-phone-btn" data-share="phone">${icon('phone', 18)} Send to my phone — post it to your Story or TikTok</button>
       <div class="share-phone" id="sharePhone" hidden>
         <div class="share-phone-qr" id="sharePhoneQr" aria-label="QR code for your phone"></div>
         <div class="share-phone-text">
@@ -251,7 +252,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(link);
-      setStatus('Link copied to your clipboard ✓', 'ok');
+      setStatus('Link copied to your clipboard', 'ok');
     } catch (e) {
       window.prompt('Copy this link:', link);
     }
@@ -273,13 +274,13 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
     const track = (method) => trackEvent && trackEvent('moment_shared', { platform: name.toLowerCase(), method });
 
     const r = await shareFileToApp(caption);
-    if (r === 'shared') { track('web-share'); setStatus(`Shared — open ${name}, then edit and post your draft ✓`, 'ok'); return; }
+    if (r === 'shared') { track('web-share'); setStatus(`Shared — open ${name}, then edit and post your draft`, 'ok'); return; }
     if (r === 'aborted') { setStatus(''); return; }
 
     if (pasteable && !isVideo && await copyImageToClipboard()) {
       track('clipboard');
       window.open(home, '_blank', 'noopener');
-      setStatus(`Image copied ✓ — in the ${name} tab, start a new post and paste it with Ctrl/⌘+V, then post.`, 'ok');
+      setStatus(`Image copied — in the ${name} tab, start a new post and paste it with Ctrl/⌘+V, then post.`, 'ok');
       return;
     }
 
@@ -295,7 +296,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
     await downloadMedia();
     window.open(home, '_blank', 'noopener');
     setStatus(
-      `Saved your ${isVideo ? 'video' : 'photo'} ✓ — in the ${name} tab, start a new post/story and attach it.`
+      `Saved your ${isVideo ? 'video' : 'photo'} — in the ${name} tab, start a new post/story and attach it.`
       + (reason ? ` (Direct sharing unavailable: ${reason}.)` : ''),
       'ok'
     );
@@ -311,7 +312,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
     // Phones: the system share sheet does every app at once. The file when it can travel, else the link; called straight
     // from the tap (readyFile is ready before the button is enabled) so the tap's activation is intact.
     if (action === 'native') {
-      const done = (r) => { if (r === 'shared') { setStatus('Shared ✓', 'ok'); trackEvent && trackEvent('moment_shared', { platform: 'native', method: 'share_sheet' }); } };
+      const done = (r) => { if (r === 'shared') { setStatus('Shared', 'ok'); trackEvent && trackEvent('moment_shared', { platform: 'native', method: 'share_sheet' }); } };
       if (!linkOnly) {
         shareFileToApp(`${caption} ${link}`).then((r) => {
           if (r !== 'unsupported') return done(r);
@@ -333,7 +334,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
         document.querySelectorAll(`[data-moment-id="${moment.id}"]`).forEach((c) => { c.dataset.privacy = 'public'; const sel = c.querySelector('.privacy-select'); if (sel) sel.value = 'public'; });
         const note = overlay.querySelector('#shareNote');
         if (note) note.innerHTML = 'Anyone with the link can now see this moment. You can make it private again from its ⋯ menu.';
-        setStatus('Done — the link now opens for anyone you send it to ✓', 'ok');
+        setStatus('Done — the link now opens for anyone you send it to', 'ok');
       } catch (err) {
         btn.disabled = false;
         setStatus('Could not change who can see it. Try again.', 'bad');
@@ -367,7 +368,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
       btn.disabled = true;
       try {
         await phoneShareEmail(moment.id);
-        setStatus('Sent — open the email on your phone ✓', 'ok');
+        setStatus('Sent — open the email on your phone', 'ok');
         trackEvent && trackEvent('moment_shared', { platform: 'phone', method: 'email' });
       } catch (err) {
         btn.disabled = false;
@@ -378,7 +379,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
 
     if (action === 'download') {
       const ok = await downloadMedia();
-      setStatus(ok ? 'Saved to your downloads ✓' : 'Opened your moment in a new tab — right-click to save.', 'ok');
+      setStatus(ok ? 'Saved to your downloads' : 'Opened your moment in a new tab — right-click to save.', 'ok');
       return;
     }
 

@@ -4,6 +4,7 @@
 // the single featured pick pinned at the top.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml, formatDuration } from '../lib/util.js';
 
 function genreLine(rec) {
@@ -20,14 +21,14 @@ export function renderRecommendationCard(rec) {
     <article class="feed-card recommendation-card">
       <a href="movie.html?id=${rec.id}" class="recommendation-card-link">
         <div class="recommendation-card-art" style="${bg ? `background-image:url('${bg}')` : ''}">
-          ${!bg ? '<span class="recommendation-card-placeholder">🎬</span>' : ''}
+          ${!bg ? `<span class="recommendation-card-placeholder">${icon('film', 32)}</span>` : ''}
           <span class="recommendation-card-flag">Recommended together</span>
         </div>
         <div class="recommendation-card-body">
           <div class="recommendation-card-title">${escapeHtml(rec.title)}</div>
           <div class="recommendation-card-meta">${escapeHtml(genreLine(rec))}</div>
           ${rec.description ? `<div class="recommendation-card-desc">${escapeHtml(rec.description)}</div>` : ''}
-          ${rec.rating ? `<div class="recommendation-card-rating">★ ${rec.rating.toFixed(1)}</div>` : ''}
+          ${rec.rating ? `<div class="recommendation-card-rating">${icon('star', 13)} ${rec.rating.toFixed(1)}</div>` : ''}
           ${rec.availableHere === false ? '<div class="region-off">Not available in your region</div>' : ''}
         </div>
       </a>
@@ -40,10 +41,10 @@ export function renderFeaturedHero(rec, personalised = false) {
   const bg = rec.backdropUrl || rec.posterUrl;
   return `
     <a href="movie.html?id=${rec.id}" class="hero-card" style="${bg ? `background-image: linear-gradient(180deg, rgba(15, 23, 42,0.05) 0%, rgba(15, 23, 42,0.55) 55%, var(--bg-0) 100%), url('${bg}')` : ''}">
-      <div class="hero-card-badge">${personalised ? '✨ Picked for you' : '✨ Tonight\'s pick'}</div>
+      <div class="hero-card-badge">${icon('sparkle', 14)} ${personalised ? 'Picked for you' : 'Tonight\'s pick'}</div>
       <div class="hero-card-title">${escapeHtml(rec.title)}</div>
       ${rec.availableHere === false ? '<div class="region-off">Not available in your region</div>' : ''}
-      <div class="hero-card-meta">${escapeHtml(genreLine(rec))}${rec.rating ? ` · ★ ${rec.rating.toFixed(1)}` : ''}</div>
+      <div class="hero-card-meta">${escapeHtml(genreLine(rec))}${rec.rating ? ` · ${icon('star', 13)} ${rec.rating.toFixed(1)}` : ''}</div>
       ${rec.description ? `<div class="hero-card-desc">${escapeHtml(rec.description)}</div>` : ''}
       <span class="btn btn-gold hero-card-cta">See details →</span>
     </a>

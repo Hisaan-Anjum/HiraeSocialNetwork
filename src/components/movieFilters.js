@@ -26,6 +26,7 @@
 //   absolutely positioned panel would be clipped by the overflow.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 
 const { apiRequest } = window;
@@ -42,10 +43,10 @@ function loadFacets() {
 
 const RATING_STEPS = [
   { value: '', label: 'Any rating' },
-  { value: '6', label: '★ 6+' },
-  { value: '7', label: '★ 7+' },
-  { value: '8', label: '★ 8+' },
-  { value: '9', label: '★ 9+  ·  the best of them' },
+  { value: '6', label: 'Rated 6+' },
+  { value: '7', label: 'Rated 7+' },
+  { value: '8', label: 'Rated 8+' },
+  { value: '9', label: 'Rated 9+  ·  the best of them' },
 ];
 
 // Whole decades covering the catalogue's actual span, newest first. The most
@@ -134,7 +135,7 @@ export function createMovieFilters({ onChange } = {}) {
   function optionRow(checked, label, count, value, kind) {
     return `
       <button type="button" class="mf-opt${checked ? ' is-on' : ''}" data-kind="${kind}" data-value="${escapeHtml(value)}">
-        <span class="mf-opt-tick" aria-hidden="true">${checked ? '✓' : ''}</span>
+        <span class="mf-opt-tick" aria-hidden="true">${checked ? icon('check', 14) : ''}</span>
         <span class="mf-opt-label">${escapeHtml(label)}</span>
         ${count != null ? `<span class="mf-opt-count">${count}</span>` : ''}
       </button>`;
@@ -154,7 +155,7 @@ export function createMovieFilters({ onChange } = {}) {
           // Kept open for multi-select: choosing two services is one thought,
           // and reopening the panel between them would be tedious.
           b.classList.toggle('is-on');
-          b.querySelector('.mf-opt-tick').textContent = set.has(v) ? '✓' : '';
+          b.querySelector('.mf-opt-tick').innerHTML = set.has(v) ? icon('check', 14) : '';
           changed();
         } else {
           set(v);
@@ -182,7 +183,7 @@ export function createMovieFilters({ onChange } = {}) {
     };
     const buckets = yearBuckets(facets.yearRange);
     const yearLabel = () => buckets.find((b) => b.value === state.year)?.label || 'Year';
-    const ratingLabel = () => (state.ratingMin ? `★ ${state.ratingMin}+` : 'Rating');
+    const ratingLabel = () => (state.ratingMin ? `Rated ${state.ratingMin}+` : 'Rating');
 
     const defs = [
       { key: 'providers', label: providerLabel(), on: state.providers.size > 0, hide: !facets.providers.length },

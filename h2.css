@@ -150,3 +150,13 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 .profile-header .profile-header-inner, .wp-me, .watch-link { backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, .10) !important; border-radius: 28px !important; padding: 26px 24px 22px !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 48px -20px rgba(0, 0, 0, .7) !important; }
+/* Profile header stats (mock-up): a line icon over each number, labels in sentence case. */
+.wp-me-stats span { display: flex; flex-direction: column; align-items: center; gap: 2px; text-transform: capitalize; font-size: 13px; }
+.wp-me-stats span::before { content: ''; width: 20px; height: 20px; margin-bottom: 4px; background: var(--c-indigo-soft); -webkit-mask: var(--stat-ico) center / contain no-repeat; mask: var(--stat-ico) center / contain no-repeat; }
+.wp-me-stats span:nth-child(1) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M7 4l13 8-13 8z'/%3E%3C/svg%3E"); }
+.wp-me-stats span:nth-child(2) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M6 3h12v18l-6-4-6 4z'/%3E%3C/svg%3E"); }
+.wp-me-stats span:nth-child(3) { --stat-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z'/%3E%3C/svg%3E"); }
+.wp-me-stats b { font-size: 26px !important; font-weight: 700 !important; }
+.wp-me-name { font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.wp-me .wp-me-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; } .wp-me .wp-me-meta b { margin-right: 0; font-weight: 500; }
+.wp-me .wp-me-name { font-size: 30px; }

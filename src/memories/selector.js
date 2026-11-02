@@ -7,6 +7,7 @@
 // generates + plays that story.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
@@ -25,8 +26,8 @@ export function openStorySelector({ summary, onPick }) {
   overlay.innerHTML = `
     <div class="modal-card ms-selector" role="dialog" aria-modal="true" aria-label="Browse your Memory Stories">
       <div class="ms-sel-head">
-        <h2>❤️ Memory Stories</h2>
-        <button class="share-close" data-sel="close" aria-label="Close">✕</button>
+        <h2>Memory stories</h2>
+        <button class="share-close" data-sel="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
 
       <div class="ms-sel-body">
@@ -34,7 +35,7 @@ export function openStorySelector({ summary, onPick }) {
         <div class="ms-sel-types">
           ${summary.storyTypes.map((t) => `
             <button class="ms-type-btn" data-sel="type" data-type="${escapeHtml(t.type)}" data-key="${escapeHtml(t.key)}" data-title="${escapeHtml(t.title)}" data-emoji="${escapeHtml(t.emoji)}">
-              <span class="ms-type-emoji">${escapeHtml(t.emoji)}</span>
+              <span class="ms-type-emoji">${icon('film', 20)}</span>
               <span class="ms-type-title">${escapeHtml(t.title)}</span>
             </button>`).join('')}
         </div>` : ''}
@@ -42,14 +43,14 @@ export function openStorySelector({ summary, onPick }) {
       ${years.length ? `
         <div class="ms-sel-monthly">
           <div class="ms-sel-yearbar">
-            <button class="ms-year-nav" data-sel="year-prev" aria-label="Previous year">←</button>
+            <button class="ms-year-nav" data-sel="year-prev" aria-label="Previous year">${icon('chevronLeft', 18)}</button>
             <span class="ms-year-label" id="msYearLabel">${activeYear}</span>
-            <button class="ms-year-nav" data-sel="year-next" aria-label="Next year">→</button>
+            <button class="ms-year-nav" data-sel="year-next" aria-label="Next year">${icon('chevronRight', 18)}</button>
           </div>
           <div class="ms-month-grid" id="msMonthGrid"></div>
           <div class="ms-sel-hint">Only months you filled with memories appear here.</div>
         </div>` : `
-        <div class="ms-sel-empty">Monthly stories will appear here once you've shared a few movie nights in the same month. 💜</div>`}
+        <div class="ms-sel-empty">Monthly stories will appear here once you've shared a few movie nights in the same month.</div>`}
       </div>
     </div>`;
 

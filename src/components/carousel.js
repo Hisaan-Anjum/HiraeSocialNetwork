@@ -1,3 +1,4 @@
+import { icon } from '../lib/icons.js';
 // carousel.js — two carousels behind one API.
 //
 // `mode: '3d'` (a session's captured moments) is a coverflow: one large
@@ -24,8 +25,8 @@ export function renderCarousel(itemsHtml, { id, className = '', mode } = {}) {
       <div class="carousel ${className}" id="${id || ''}">
         <div class="carousel-track">${itemsHtml.join('')}</div>
         ${itemsHtml.length > 1 ? `
-          <button class="carousel-arrow carousel-arrow-prev" aria-label="Scroll left">‹</button>
-          <button class="carousel-arrow carousel-arrow-next" aria-label="Scroll right">›</button>
+          <button class="carousel-arrow carousel-arrow-prev" aria-label="Scroll left">${icon('chevronLeft', 20)}</button>
+          <button class="carousel-arrow carousel-arrow-next" aria-label="Scroll right">${icon('chevronRight', 20)}</button>
         ` : ''}
       </div>
     `;
@@ -39,8 +40,8 @@ export function renderCarousel(itemsHtml, { id, className = '', mode } = {}) {
         <div class="carousel-track">${itemsHtml.join('')}</div>
       </div>
       ${single ? '' : `
-        <button class="carousel-arrow carousel-arrow-prev" aria-label="Previous moment">‹</button>
-        <button class="carousel-arrow carousel-arrow-next" aria-label="Next moment">›</button>
+        <button class="carousel-arrow carousel-arrow-prev" aria-label="Previous moment">${icon('chevronLeft', 20)}</button>
+        <button class="carousel-arrow carousel-arrow-next" aria-label="Next moment">${icon('chevronRight', 20)}</button>
         <div class="carousel-dots">
           ${itemsHtml.map((_, i) => `<button class="carousel-dot" data-index="${i}" aria-label="Go to moment ${i + 1}"></button>`).join('')}
         </div>

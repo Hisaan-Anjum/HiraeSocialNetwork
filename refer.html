@@ -58,9 +58,9 @@
     <div class="rf-card" id="aff" hidden>
       <div class="rf-count">Your creator share</div>
       <ul class="rf-list">
-        <li><span class="tick">💛</span><span>Earned so far: <b id="affEarned">$0.00</b> (<span id="affRate">30</span>% of what couples you invited paid)</span></li>
-        <li><span class="tick">⏳</span><span>Set aside for you, on its way: <b id="affHeld">$0.00</b><span id="affNext"></span></span></li>
-        <li><span class="tick">✅</span><span>Paid to you: <b id="affPaid">$0.00</b></span></li>
+        <li><span class="tick">•</span><span>Earned so far: <b id="affEarned">$0.00</b> (<span id="affRate">30</span>% of what couples you invited paid)</span></li>
+        <li><span class="tick">•</span><span>Set aside for you, on its way: <b id="affHeld">$0.00</b><span id="affNext"></span></span></li>
+        <li><span class="tick">•</span><span>Paid to you: <b id="affPaid">$0.00</b></span></li>
       </ul>
       <p class="rf-rules" style="margin-top:10px">Your share is credited the moment a couple pays. It's paid within 7 days of our payment provider paying us for it. <a href="/program-terms.html#part-b">Creator terms</a>.</p>
     </div>
@@ -87,11 +87,11 @@
     el('goal1').textContent = el('goal2').textContent = d.goal;
     el('count').textContent = `${d.couples} of ${d.goal} couples`;
     el('dots').innerHTML = Array.from({ length: d.goal }, (_, i) => `<div class="rf-dot${i < d.couples ? ' on' : ''}"></div>`).join('');
-    el('t1').textContent = d.firstNightEarned ? '✅' : '○';
-    el('t3').textContent = d.freeMonthEarned ? '✅' : '○';
+    el('t1').textContent = d.firstNightEarned ? '✓' : '○';
+    el('t3').textContent = d.freeMonthEarned ? '✓' : '○';
     const waiting = Math.max(0, d.joined - d.couples);
     el('joined').textContent = d.freeMonthEarned && d.compUntil && Date.parse(d.compUntil) > Date.now()
-      ? `Herae Together is on for you two until ${fmt(d.compUntil)}. 💛`
+      ? `Herae Together is on for you two until ${fmt(d.compUntil)}.`
       : waiting > 0 ? `${waiting} ${waiting === 1 ? 'person has' : 'people have'} signed up from your link and ${waiting === 1 ? 'hasn’t' : 'haven’t'} watched a full night yet.`
         : d.joined === 0 ? 'Nobody has used your link yet.' : '';
     if (d.affiliate) {

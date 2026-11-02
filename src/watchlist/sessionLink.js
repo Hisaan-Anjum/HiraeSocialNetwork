@@ -16,6 +16,7 @@
 // sessionRating) instead of asking them to re-rate by hand.
 'use strict';
 
+import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 
 const { getWatchlist, attachSessionToWatchlistItem, detachSessionFromWatchlist } = window;
@@ -94,11 +95,11 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
     input.readOnly = true;
     input.classList.add('is-locked');
     const rating = it.sessionRating != null
-      ? ` · ★ ${it.sessionRating} from ${it.sessionCount} night${it.sessionCount === 1 ? '' : 's'}`
+      ? ` · ${icon('star', 13)} ${it.sessionRating} from ${it.sessionCount} night${it.sessionCount === 1 ? '' : 's'}`
       : '';
     mount.innerHTML = `
       <div class="sl-linked">
-        <span class="sl-linked-text">🔒 Filed under <strong>${escapeHtml(it.movie.title)}</strong>${escapeHtml(rating)}</span>
+        <span class="sl-linked-text">${icon('lock', 14)} Filed under <strong>${escapeHtml(it.movie.title)}</strong>${escapeHtml(rating)}</span>
         <button type="button" class="sl-unlink" data-sl="unlink">Change</button>
       </div>`;
   }
@@ -119,7 +120,7 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
           <button type="button" class="sl-yes" data-sl="link" data-id="${guess.item.id}">Yes, file it</button>
         </div>
         <button type="button" class="sl-hint" data-sl="browse">
-          🍿 No — pick a different one from your watchlist (${items.length})
+          No — pick a different one from your watchlist (${items.length})
         </button>`;
       return;
     }
@@ -127,7 +128,7 @@ export async function mountSessionLink({ mount, input, detail, me, onLinked }) {
     // field the user has to discover by clicking into it.
     mount.innerHTML = `
       <button type="button" class="sl-hint" data-sl="browse">
-        🍿 Pick it from your shared watchlist (${items.length})
+        Pick it from your shared watchlist (${items.length})
       </button>`;
   }
 
