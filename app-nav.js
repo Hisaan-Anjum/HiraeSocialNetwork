@@ -72,6 +72,9 @@
   .an-connect.an-push.is-on { background: #15803D; } .an-ios-tip { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; max-width: 300px;
     padding: 14px 18px; border-radius: 16px; background: #fff; color: #111827; font: 700 15px/1.35 var(--font-sans, system-ui); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
   .an-ios-tip::after { content: ''; position: absolute; left: 50%; bottom: -9px; margin-left: -9px; border: 9px solid transparent; border-bottom: 0; border-top-color: #fff; }
+  .an-connect.an-push.an-push-sheet { position: fixed; z-index: 95; left: 16px; right: 16px; top: 30%; padding: 22px; border-radius: 20px; flex-direction: column;
+    text-align: center; font-size: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  .an-connect.an-push.an-push-sheet button.an-connect-cta { padding: 12px 22px; font-size: 16px; }
   .an-connect-x.an-push-later { width: auto; padding: 0 12px; border-radius: 999px; font-weight: 600; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
@@ -160,12 +163,20 @@
   let lastSt = null;
   // Android Chrome only offers install for a site whose service worker is running (sw.js: push only, no caching).
   if (isPhone && !inApp && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+  // Installed app (founder 11-02): it asks for notifications the moment it opens; with the app installed, the phone's
+  // browser never asks (the app notifies). Android's app shares the browser's storage; getInstalledRelatedApps also knows.
+  if (inApp) { try { localStorage.setItem('herae_app_installed', '1'); } catch (e) { /* storage blocked */ } }
+  const appInstalled = async () => {
+    try { if (localStorage.getItem('herae_app_installed') === '1') return true; } catch (e) { /* storage blocked */ }
+    try { return !!(navigator.getInstalledRelatedApps && (await navigator.getInstalledRelatedApps()).length); } catch (e) { return false; }
+  };
   const installSaidNo = () => { try { return Date.now() - Number(localStorage.getItem('herae_install_no') || 0) < 7 * 864e5; } catch (e) { return false; } };
   const unblockLine = () => (/Android/.test(navigator.userAgent) ? 'Your browser said no. Tap ⋮ → Settings → Site settings → Notifications → Herae → Allow.'
     : 'Your browser said no. Click the icon left of the address and set Notifications to Allow.');
   async function pushBanner(st, text) {
     if (!st || !(st.matching || isPhone) || typeof webPushState !== 'function') return;
     lastSt = st;
+    if (isPhone && !inApp && await appInstalled()) return;   // the app asks there, not this browser
     const ext = await new Promise((resolve) => {
       const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(e.data); } };
       window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
@@ -177,8 +188,9 @@
     if (extOff && typeof trackEvent === 'function') trackEvent('web_push', { action: 'ext_off_shown' });
     const old = document.getElementById('pushBar'); if (old) old.remove();   // whatever comes next replaces it, or nothing does
     let state = ext && !extOff ? 'ext' : await webPushState().catch(() => 'unsupported');
-    // Android asks only when Chrome can open its own install box (no event = installed already, or not offered here).
-    if (isPhone && !inApp && !installSaidNo() && (isIos || installEvt)) state = 'install';
+    // Phone browser (founder 11-02): the install ask first; the notifications bar only once the install was turned down.
+    // Android asks only when Chrome can open its own install box; until it offers one, nothing shows.
+    if (isPhone && !inApp && !installSaidNo()) { if (isIos || installEvt) state = 'install'; else return; }
     else if (state === 'unsupported' && isIos && !inApp) return;   // said no to installing: an iPhone browser can't notify, email does
     if (state === 'ext' || state === 'on' || state === 'unsupported') return;
     if (document.getElementById('pushBar')) return;   // a second call raced this one
@@ -234,6 +246,8 @@
       x.onclick = () => bar.remove(); bar.append(x);
     }
     document.body.prepend(bar);   // the very top, above the sticky header (founder 11-01: a red bar at the top)
+    // Opening the installed app: the ask comes up front and centre, once per open (the box itself needs this one tap).
+    if (inApp && state === 'off') bar.classList.add('an-push-sheet');
     const browse = document.querySelector('.an-connect[data-step="browse"]'); if (browse) browse.remove();   // see connectBanner: one bar, not two
     if (typeof trackEvent === 'function') trackEvent('web_push', { action: { off: 'shown', blocked: 'blocked_shown', install: 'install_shown' }[state] });
   }
