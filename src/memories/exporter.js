@@ -224,49 +224,107 @@ function drawPill(ctx, cx, cy, text) {
   ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, cx, cy + 1); ctx.textBaseline = 'alphabetic';
 }
-export async function buildRelationshipCard(summary) {
+// A round face with the brand ring; the initial when there's no picture (or it won't load).
+function drawFace(ctx, img, name, cx, cy, r) {
+  const ring = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+  ring.addColorStop(0, '#8B5CF6'); ring.addColorStop(1, '#EC4899');
+  ctx.fillStyle = ring; ctx.beginPath(); ctx.arc(cx, cy, r + 8, 0, Math.PI * 2); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = '#1E1B4B'; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  if (img) {
+    const iw = img.naturalWidth, ih = img.naturalHeight, k = Math.max((r * 2) / iw, (r * 2) / ih);
+    ctx.drawImage(img, cx - (iw * k) / 2, cy - (ih * k) / 2, iw * k, ih * k);
+  } else {
+    ctx.fillStyle = '#fff'; ctx.font = `700 ${Math.round(r * 0.9)}px "DM Sans", system-ui, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(name || '?')[0].toUpperCase(), cx, cy + 4); ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
+}
+// The couple's share card (founder 11-02: their faces, favourite films and best moments, not just numbers).
+// Top to bottom: faces → names → together-for + badge → best moments → stats → favourite films. Anything missing
+// (no picture, no moments, no rated films) is left out and the rest closes up, so the card never shows a gap.
+export async function buildRelationshipCard(summary, { themAvatarUrl } = {}) {
   await brandFont();
-  const SIZE = 1080;
+  const SIZE = 1080, PAD = 64;
   const line = ACCENT_LINE.purple;
-  const logo = await loadImage('logo.png');
+  const [logo, meImg, themImg, ...shots] = await Promise.all([
+    loadImage('logo.png'),
+    summary.meAvatarUrl ? loadImage(summary.meAvatarUrl) : null,
+    themAvatarUrl ? loadImage(themAvatarUrl) : null,
+    ...(summary.bestMoments || []).slice(0, 3).map(loadImage),
+  ]);
+  const moments = shots.filter(Boolean);
+  const films = (summary.topFilms || []).slice(0, 3);
   const canvas = document.createElement('canvas');
   canvas.width = SIZE; canvas.height = SIZE;
   const ctx = canvas.getContext('2d');
   bgGradient(ctx, SIZE, SIZE, 'purple');
+  // Whatever is missing closes up, and what's left sits centred instead of leaving a hole at the bottom.
+  const hasPill = !!summary.label?.text;
+  ctx.save(); ctx.translate(0, ((hasPill ? 0 : 70) + (moments.length ? 0 : 204) + (films.length ? 0 : 90)) / 2);
+  // a soft glow behind the faces
+  const glow = ctx.createRadialGradient(SIZE / 2, 190, 20, SIZE / 2, 190, 420);
+  glow.addColorStop(0, 'rgba(167,139,250,0.28)'); glow.addColorStop(1, 'rgba(167,139,250,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, -200, SIZE, SIZE + 400);
+  // faces, overlapping like the couple page
+  const R = 92;
+  drawFace(ctx, themImg, summary.them, SIZE / 2 - 70, 180, R);
+  drawFace(ctx, meImg, summary.me, SIZE / 2 + 70, 180, R);
 
-  const emoji = summary.label?.emoji || '❤️';
-  ctx.textAlign = 'center';
-  ctx.font = '120px serif'; ctx.fillStyle = '#fff'; ctx.fillText(emoji, SIZE / 2, 250);
-
-  const g = ctx.createLinearGradient(SIZE * 0.2, 0, SIZE * 0.8, 0);
+  // names, shrunk to fit one line
+  const names = `${summary.them} & ${summary.me}`;
+  let fs = 68; ctx.font = `700 ${fs}px "DM Sans", system-ui, sans-serif`;
+  while (ctx.measureText(names).width > SIZE - PAD * 2 && fs > 36) { fs -= 2; ctx.font = `700 ${fs}px "DM Sans", system-ui, sans-serif`; }
+  const g = ctx.createLinearGradient(PAD, 0, SIZE - PAD, 0);
   g.addColorStop(0, line[0]); g.addColorStop(1, line[1]);
-  ctx.fillStyle = g; ctx.font = '700 74px "DM Sans", system-ui, sans-serif';
-  ctx.fillText(`${summary.me} & ${summary.them}`, SIZE / 2, 372);
+  ctx.fillStyle = g; ctx.textAlign = 'center'; ctx.fillText(names, SIZE / 2, 368);
 
   const mt = summary.monthsTogether || 0;
   const yy = Math.floor(mt / 12), mo = mt % 12;
-  const monthsTxt = yy >= 1 ? `${yy} year${yy === 1 ? '' : 's'}${mo ? ` ${mo} mo` : ''}` : `${mt} month${mt === 1 ? '' : 's'}`;
-  ctx.fillStyle = 'rgba(233,213,255,0.82)'; ctx.font = '500 34px -apple-system, sans-serif';
-  ctx.fillText(`Together for ${monthsTxt}`, SIZE / 2, 432);
+  const monthsTxt = yy >= 1 ? `${yy} year${yy === 1 ? '' : 's'}${mo ? ` ${mo} mo` : ''}` : `${Math.max(1, mt)} month${mt === 1 || mt === 0 ? '' : 's'}`;
+  ctx.fillStyle = 'rgba(233,213,255,0.85)'; ctx.font = '500 32px "DM Sans", system-ui, sans-serif';
+  ctx.fillText(`Together for ${monthsTxt}`, SIZE / 2, 422);
+  const emoji = summary.label?.emoji || '❤️';
+  if (hasPill) drawPill(ctx, SIZE / 2, 492, `${emoji} ${summary.label.text}`);
 
-  if (summary.label?.text) drawPill(ctx, SIZE / 2, 512, `${emoji} ${summary.label.text}`);
+  // best moments: up to three tiles, centred
+  let y = hasPill ? 556 : 486;
+  if (moments.length) {
+    const gap = 20, tw = Math.min(300, (SIZE - PAD * 2 - gap * (moments.length - 1)) / moments.length), th = 210;
+    const x0 = (SIZE - (tw * moments.length + gap * (moments.length - 1))) / 2;
+    moments.forEach((img, i) => drawTile(ctx, img, x0 + i * (tw + gap), y, tw, th, 22));
+    y += th + 34;
+  } else y += 40;
 
+  // stats
   const st = summary.stats || {};
-  const cells = [[st.movieNights || 0, 'Movie Nights'], [st.estimatedHours || 0, 'Hours Together'], [st.momentsSaved || 0, 'Memories']];
-  const y = 770, colW = SIZE / 3;
+  const cells = [[st.movieNights || 0, 'Movie nights'], [st.estimatedHours || 0, 'Hours together'], [st.momentsSaved || 0, 'Memories']];
+  const colW = (SIZE - PAD * 2) / 3;
   cells.forEach(([num, label], i) => {
-    const cx = colW * i + colW / 2;
-    ctx.fillStyle = line[0]; ctx.font = '700 78px "DM Sans", system-ui, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(String(num), cx, y);
-    ctx.fillStyle = 'rgba(233,213,255,0.8)'; ctx.font = '600 26px -apple-system, sans-serif';
-    ctx.fillText(label, cx, y + 46);
+    const cx = PAD + colW * i + colW / 2;
+    ctx.fillStyle = '#fff'; ctx.font = '700 64px "DM Sans", system-ui, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(String(num), cx, y + 56);
+    ctx.fillStyle = 'rgba(233,213,255,0.75)'; ctx.font = '600 24px "DM Sans", system-ui, sans-serif';
+    ctx.fillText(label, cx, y + 92);
   });
+  y += 140;
+
+  // favourite films, kept clear of the watermark in the corner
+  if (films.length) {
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(233,213,255,0.7)'; ctx.font = '600 22px "DM Sans", system-ui, sans-serif';
+    ctx.fillText('OUR FAVOURITES', PAD, y);
+    ctx.fillStyle = '#fff'; ctx.font = '600 30px "DM Sans", system-ui, sans-serif';
+    let txt = `🎬 ${films.join(' · ')}`; const maxW = SIZE - PAD * 2 - 290;
+    while (ctx.measureText(txt).width > maxW && txt.length > 4) txt = txt.slice(0, -2).trimEnd() + '…';
+    ctx.fillText(txt, PAD, y + 42);
+  }
+  ctx.restore();
 
   drawWatermark(ctx, SIZE, SIZE, logo);
   let url; try { url = canvas.toDataURL('image/jpeg', 0.9); } catch (e) { return null; }
   return {
     id: 'relationship-card', mediaType: 'photo', url,
-    description: `${summary.me} & ${summary.them} — ${summary.label?.text || 'our story on Herae.app'}`,
+    description: `${summary.them} & ${summary.me} — ${summary.label?.text || 'our story on Herae.app'}`,
     privacy: 'private', shareUrl: location.href, isStory: true,
   };
 }

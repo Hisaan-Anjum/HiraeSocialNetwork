@@ -80,7 +80,7 @@ function buildScenes(m) {
       duration: sc.videoUrl ? 5200 : 3400,
       build() {
         const el = document.createElement('div');
-        el.className = 'ms-scene ms-moment';
+        el.className = `ms-scene ms-moment${captionHtml(sc) ? ' has-cap' : ''}`;   // has-cap: the words get their own space under the picture
         // The moment is shown WHOLE (object-fit: contain) — a photo or clip
         // that isn't the screen's aspect ratio must never lose its edges, and
         // people frame their moments deliberately. The gap that leaves is
