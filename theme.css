@@ -155,3 +155,6 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 /* Type scale from the references: page and section headings calm and compact. */
 .ms-block-head h2, main h1, main > h2, .h-page h1, .page-title, .section-title, .chats-title { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -.01em; line-height: 1.25; }
 .ms-chooser-sub, .wp-intro { font-size: 14px !important; }
+.ms-chooser-track { position: relative; height: 3px; margin: 10px auto 0; width: 64px; border-radius: 3px; background: rgba(255, 255, 255, .10); overflow: hidden; }
+:root[data-theme="light"] .ms-chooser-track { background: rgba(17, 12, 34, .10); }
+.ms-chooser-track span { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); transition: left .12s linear; }

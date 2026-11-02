@@ -67,8 +67,16 @@ async function mountOwnChooser(container, profile) {
           ${renderAvatar({ username: c.username, avatarUrl: c.avatarUrl }, { size: 'sm' })}
           <span class="ms-chooser-name">${escapeHtml(c.username)}</span>
         </a>`).join('')}
-    </div>`;
+    </div>
+    <div class="ms-chooser-track" aria-hidden="true"><span></span></div>`;
   container.appendChild(wrap);
+  // More friends than fit: a slim position line under the grid, and one gentle nudge so people see it scrolls sideways.
+  const grid = wrap.querySelector('.ms-chooser-grid'); const track = wrap.querySelector('.ms-chooser-track'); const bar = track.firstElementChild;
+  const paint = () => { const max = grid.scrollWidth - grid.clientWidth; track.hidden = max < 4; if (max < 4) return;
+    const w = Math.max(18, (grid.clientWidth / grid.scrollWidth) * 100); bar.style.width = `${w}%`; bar.style.left = `${(grid.scrollLeft / max) * (100 - w)}%`; };
+  grid.addEventListener('scroll', paint, { passive: true }); window.addEventListener('resize', paint); requestAnimationFrame(paint);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setTimeout(() => { if (grid.scrollWidth - grid.clientWidth > 4 && grid.scrollLeft === 0) {
+    grid.scrollTo({ left: 48, behavior: 'smooth' }); setTimeout(() => grid.scrollTo({ left: 0, behavior: 'smooth' }), 650); } }, 900);
 }
 
 // ── a real relationship ───────────────────────────────────────────────
