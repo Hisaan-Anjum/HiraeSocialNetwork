@@ -75,6 +75,8 @@
   .an-connect.an-push.an-push-sheet { position: fixed; z-index: 95; left: 16px; right: 16px; top: 30%; padding: 22px; border-radius: 20px; flex-direction: column;
     text-align: center; font-size: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
   .an-connect.an-push.an-push-sheet button.an-connect-cta { padding: 12px 22px; font-size: 16px; }
+  .an-ios-tip.an-tip-top { top: 12px; bottom: auto; left: auto; right: 10px; transform: none; }
+  .an-ios-tip.an-tip-top::after { bottom: auto; top: -9px; left: auto; right: 14px; border: 9px solid transparent; border-top: 0; border-bottom-color: #fff; }
   .an-connect-x.an-push-later { width: auto; padding: 0 12px; border-radius: 999px; font-weight: 600; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
@@ -158,8 +160,14 @@
   const inApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let installEvt = null;   // Chrome on Android hands this over when the app can be installed; prompt() opens its own box
   // It can arrive late (Chrome waits for some use of the page): then the bar is redrawn with the Install button.
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; if (lastSt && !installSaidNo()) pushBanner(lastSt); });
-  window.addEventListener('appinstalled', () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ } });
+  // Chrome only offers install when the app isn't installed, so the offer also clears a stale "installed" mark (deleted app).
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); installEvt = e;
+    try { localStorage.removeItem('herae_app_installed'); } catch (x) { /* storage blocked */ }
+    if (lastSt) pushBanner(lastSt);
+  });
+  const markInstalled = () => { try { localStorage.setItem('herae_app_installed', '1'); } catch (e) { /* storage blocked */ } };
+  window.addEventListener('appinstalled', markInstalled);
   let lastSt = null;
   // Android Chrome only offers install for a site whose service worker is running (sw.js: push only, no caching).
   if (isPhone && !inApp && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
@@ -170,6 +178,17 @@
     try { if (localStorage.getItem('herae_app_installed') === '1') return true; } catch (e) { /* storage blocked */ }
     try { return !!(navigator.getInstalledRelatedApps && (await navigator.getInstalledRelatedApps()).length); } catch (e) { return false; }
   };
+  // The one Install app action for every phone bar (founder 11-02: buttons, never steps): Chrome's own box when it has
+  // offered one (a tap can bring the offer, so it waits up to 3 s, inside the tap's activation); otherwise a bubble that
+  // points at the browser's own install button. Resolves true (installed), false (turned down) or null (bubble shown).
+  async function runInstall() {
+    for (let i = 0; !isIos && !installEvt && i < 15; i++) await new Promise((r) => setTimeout(r, 200));
+    if (installEvt) { const e = installEvt; installEvt = null; e.prompt(); return (await e.userChoice).outcome === 'accepted'; }
+    const tip = document.createElement('div'); tip.className = isIos ? 'an-ios-tip' : 'an-ios-tip an-tip-top'; tip.setAttribute('role', 'dialog');
+    tip.textContent = isIos ? 'Tap Share ⬆ below, then “Add to Home Screen”.' : 'Tap ⋮ above, then “Install app”.';
+    tip.onclick = () => tip.remove(); document.body.append(tip); setTimeout(() => tip.remove(), 12000);
+    return null;
+  }
   const installSaidNo = () => { try { return Date.now() - Number(localStorage.getItem('herae_install_no') || 0) < 7 * 864e5; } catch (e) { return false; } };
   const unblockLine = () => (/Android/.test(navigator.userAgent) ? 'Your browser said no. Tap ⋮ → Settings → Site settings → Notifications → Herae → Allow.'
     : 'Your browser said no. Click the icon left of the address and set Notifications to Allow.');
@@ -188,9 +207,9 @@
     if (extOff && typeof trackEvent === 'function') trackEvent('web_push', { action: 'ext_off_shown' });
     const old = document.getElementById('pushBar'); if (old) old.remove();   // whatever comes next replaces it, or nothing does
     let state = ext && !extOff ? 'ext' : await webPushState().catch(() => 'unsupported');
-    // Phone browser (founder 11-02): the install ask first; the notifications bar only once the install was turned down.
-    // Android asks only when Chrome can open its own install box; until it offers one, nothing shows.
-    if (isPhone && !inApp && !installSaidNo()) { if (isIos || installEvt) state = 'install'; else return; }
+    // Phone browser (founder 11-02): the install ask first; the notifications bar only once the install was turned down,
+    // and then with both buttons (Install app, Turn on notifications).
+    if (isPhone && !inApp && !installSaidNo()) state = 'install';
     else if (state === 'unsupported' && isIos && !inApp) return;   // said no to installing: an iPhone browser can't notify, email does
     if (state === 'ext' || state === 'on' || state === 'unsupported') return;
     if (document.getElementById('pushBar')) return;   // a second call raced this one
@@ -200,6 +219,8 @@
     const why = text || (waiting ? `${waiting === 1 ? 'Someone likes' : `${waiting} people like`} you on Herae. Turn on notifications so you don’t miss them.`
       : 'Turn on notifications so you know the moment someone likes you or says hi.');
     const button = (label, onclick) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'an-connect-cta'; b.textContent = label; b.onclick = onclick; bar.append(b); return b; };
+    const installedNote = () => { markInstalled(); trackEvent('web_push', { action: 'install_yes' }); bar.classList.add('is-on'); bar.textContent = '';
+      const s = document.createElement('span'); s.textContent = '✓ Herae is on your home screen. Open it from there; it asks once for notifications.'; bar.append(s); };
     const done = () => { bar.classList.add('is-on'); bar.textContent = ''; const s = document.createElement('span'); s.textContent = '✓ Notifications are on. You’ll hear about likes and messages on this device.'; bar.append(s); setTimeout(() => bar.remove(), 4000); };
     if (state === 'off') {
       msg.textContent = why;
@@ -225,21 +246,12 @@
     } else {   // install: the phone's real app box on Android Chrome; on iPhone (and browsers without one) how to add it
       const no = () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ }
         trackEvent('web_push', { action: 'install_no' }); pushBanner(st, text); };
-      const installed = () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ }   // asked: next visits go to notifications
-        trackEvent('web_push', { action: 'install_yes' }); bar.classList.add('is-on'); bar.textContent = '';
-        const s = document.createElement('span'); s.textContent = '✓ Herae is on your home screen. Open it from there; it asks once for notifications.'; bar.append(s); };
       msg.textContent = 'Get the Herae app so you never miss a like or a message.';
-      if (installEvt) {
-        const go = button('Install app', async () => { go.disabled = true; installEvt.prompt(); const { outcome } = await installEvt.userChoice; installEvt = null; if (outcome === 'accepted') installed(); else no(); });
-      } else {   // iPhone: Apple gives websites no install API, so the button points at Safari's own Share button
-        button('Install app', () => {
-          trackEvent('web_push', { action: 'install_yes' });
-          const tip = document.createElement('div'); tip.className = 'an-ios-tip'; tip.setAttribute('role', 'dialog');
-          tip.textContent = 'Tap Share ⬆ below, then “Add to Home Screen”.'; tip.onclick = () => tip.remove();
-          document.body.append(tip); setTimeout(() => tip.remove(), 12000);
-        });
-      }
+      const go = button('Install app', async () => { go.disabled = true; const r = await runInstall(); go.disabled = false; if (r === true) installedNote(); else if (r === false) no(); });
       const later = document.createElement('button'); later.type = 'button'; later.className = 'an-connect-x an-push-later'; later.textContent = 'Not now'; later.onclick = no; bar.append(later);
+    }
+    if ((state === 'off' || state === 'blocked') && isPhone && !inApp && !isIos) {
+      const again = button('Install app', async () => { again.disabled = true; const r = await runInstall(); again.disabled = false; if (r === true) installedNote(); });
     }
     if (state !== 'install') {
       const x = document.createElement('button'); x.type = 'button'; x.className = 'an-connect-x'; x.setAttribute('aria-label', 'Hide for now'); x.textContent = '✕';
