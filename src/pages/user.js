@@ -32,7 +32,7 @@ import { lockScroll } from '../lib/scrollLock.js';
 const {
   requireAuth, logout, getPostsByUser, getUserProfile,
   requestContact, acceptContactRequest, removeContact,
-  deleteAccount, clearAuth, downloadMyData, signOutEverywhere,
+  deleteAccount, clearAuth, signOutEverywhere,
 } = window;
 
 const auth = requireAuth();
@@ -217,8 +217,6 @@ function renderHeader(profile) {
     btn.addEventListener('click', () => runContactAction(btn.dataset.action, btn));
   });
 
-  // Your own profile shows your personal watchlist ("Add to… → My watchlist", founder 10-23) and the danger zone.
-  if (profile.isMe) renderDangerZone(profile);
 }
 
 // ── Delete account ─────────────────────────────────────────────────────
@@ -229,13 +227,6 @@ function renderDangerZone(profile) {
   const zone = document.createElement('div');
   zone.className = 'danger-zone';
   zone.innerHTML = `
-    <div class="danger-zone-inner" style="margin-bottom:14px">
-      <div>
-        <h3>Your data</h3>
-        <p id="dataNote">Download a copy of everything Herae holds about you, as a file.</p>
-      </div>
-      <button class="btn" id="downloadDataBtn">Download my data</button>
-    </div>
     <div class="danger-zone-inner" style="margin-bottom:14px">
       <div>
         <h3>Sign out everywhere</h3>
@@ -254,13 +245,6 @@ function renderDangerZone(profile) {
     </div>`;
   headerEl.appendChild(zone);
   zone.querySelector('#deleteAccountBtn').addEventListener('click', () => openDeleteModal(profile));
-  zone.querySelector('#downloadDataBtn').addEventListener('click', async (e) => {
-    const b = e.currentTarget; const note = zone.querySelector('#dataNote');
-    b.disabled = true;
-    try { await downloadMyData(); note.textContent = 'Downloaded. Links to your Moments in the file work for 7 days.'; }
-    catch (err) { note.textContent = err.message || 'That didn\'t work. Try again in a minute.'; }
-    b.disabled = false;
-  });
   zone.querySelector('#signOutAllBtn').addEventListener('click', async (e) => {
     const b = e.currentTarget;
     if (!window.confirm('Sign out on every device, including this one?')) return;
@@ -367,6 +351,16 @@ async function loadProfile() {
 
 // ── Their content (the shared feed pipeline) ─────────────────────────
 async function init() {
+  // Account settings live on their own page (founder 11-02), not on your Herae page: ?settings=1, always your own account.
+  if (new URLSearchParams(window.location.search).get('settings') === '1') {
+    document.title = 'Account settings — Herae';
+    document.getElementById('brandSub').textContent = 'Account settings';
+    contentEl.innerHTML = ''; sentinelEl.classList.add('hidden');
+    headerEl.innerHTML = '<h1 class="profile-name">Account settings</h1>';
+    try { renderDangerZone(await getUserProfile(auth.username)); }
+    catch (err) { headerEl.insertAdjacentHTML('beforeend', renderErrorState(escapeHtml(err.message))); }
+    return;
+  }
   if (!target) {
     headerEl.innerHTML = '';
     contentEl.innerHTML = renderEmptyState('🤔', 'No profile specified.');

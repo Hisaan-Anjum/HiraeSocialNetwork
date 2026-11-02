@@ -69,7 +69,10 @@
   .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; }
   .an-connect.an-push { background: #B91C1C; flex-wrap: wrap; } .an-connect.an-push button.an-connect-cta { color: #991B1B; }
-  .an-connect.an-push.is-on { background: #15803D; } .an-connect-x.an-push-later { width: auto; padding: 0 12px; border-radius: 999px; font-weight: 600; }
+  .an-connect.an-push.is-on { background: #15803D; } .an-ios-tip { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; max-width: 300px;
+    padding: 14px 18px; border-radius: 16px; background: #fff; color: #111827; font: 700 15px/1.35 var(--font-sans, system-ui); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  .an-ios-tip::after { content: ''; position: absolute; left: 50%; bottom: -9px; margin-left: -9px; border: 9px solid transparent; border-bottom: 0; border-top-color: #fff; }
+  .an-connect-x.an-push-later { width: auto; padding: 0 12px; border-radius: 999px; font-weight: 600; }
   .an-bottom { display: none; }
   /* Desktop (founder 10-23): the same five destinations as the phone, as a floating dock — one way around the app on
      every screen, Chats and Me included (the top tabs only had Home / Watch buddies / Friends). */
@@ -123,6 +126,7 @@
         <li role="none"><a role="menuitem" href="user.html?u=${encodeURIComponent(me)}">Your page</a></li>
         <li role="none"><a role="menuitem" href="watch-profile.html">Watch profile &amp; privacy</a></li>
         <li role="none"><a role="menuitem" href="billing.html">Plan &amp; billing</a></li>
+        <li role="none"><a role="menuitem" href="user.html?u=${encodeURIComponent(me)}&amp;settings=1">Account settings</a></li>
         <li role="none"><a role="menuitem" href="refer.html">Invite friends</a></li>
         <li role="none"><a role="menuitem" href="help.html">Help</a></li>
         <li role="none"><button role="menuitem" type="button" data-logout>Log out</button></li>`;
@@ -150,7 +154,10 @@
   const isPhone = isIos || /Android/.test(navigator.userAgent);
   const inApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let installEvt = null;   // Chrome on Android hands this over when the app can be installed; prompt() opens its own box
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; });
+  // It can arrive late (Chrome waits for some use of the page): then the bar is redrawn with the Install button.
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; if (lastSt && !installSaidNo()) pushBanner(lastSt); });
+  window.addEventListener('appinstalled', () => { try { localStorage.setItem('herae_install_no', String(Date.now())); } catch (e) { /* storage blocked */ } });
+  let lastSt = null;
   // Android Chrome only offers install for a site whose service worker is running (sw.js: push only, no caching).
   if (isPhone && !inApp && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
   const installSaidNo = () => { try { return Date.now() - Number(localStorage.getItem('herae_install_no') || 0) < 7 * 864e5; } catch (e) { return false; } };
@@ -158,6 +165,7 @@
     : 'Your browser said no. Click the icon left of the address and set Notifications to Allow.');
   async function pushBanner(st, text) {
     if (!st || !(st.matching || isPhone) || typeof webPushState !== 'function') return;
+    lastSt = st;
     const ext = await new Promise((resolve) => {
       const on = (e) => { if (e.source === window && e.data && e.data.__heraeExtension === true) { window.removeEventListener('message', on); resolve(e.data); } };
       window.addEventListener('message', on); window.postMessage({ __heraePing: true }, location.origin); setTimeout(() => resolve(false), 1500);
@@ -169,7 +177,8 @@
     if (extOff && typeof trackEvent === 'function') trackEvent('web_push', { action: 'ext_off_shown' });
     const old = document.getElementById('pushBar'); if (old) old.remove();   // whatever comes next replaces it, or nothing does
     let state = ext && !extOff ? 'ext' : await webPushState().catch(() => 'unsupported');
-    if (isPhone && !inApp && !installSaidNo()) state = 'install';
+    // Android asks only when Chrome can open its own install box (no event = installed already, or not offered here).
+    if (isPhone && !inApp && !installSaidNo() && (isIos || installEvt)) state = 'install';
     else if (state === 'unsupported' && isIos && !inApp) return;   // said no to installing: an iPhone browser can't notify, email does
     if (state === 'ext' || state === 'on' || state === 'unsupported') return;
     if (document.getElementById('pushBar')) return;   // a second call raced this one
@@ -210,10 +219,13 @@
       msg.textContent = 'Get the Herae app so you never miss a like or a message.';
       if (installEvt) {
         const go = button('Install app', async () => { go.disabled = true; installEvt.prompt(); const { outcome } = await installEvt.userChoice; installEvt = null; if (outcome === 'accepted') installed(); else no(); });
-      } else {
-        msg.textContent = isIos ? 'Get the Herae app so you never miss a like or a message: tap Share ⬆, then “Add to Home Screen”.'
-          : 'Get the Herae app so you never miss a like or a message: tap ⋮, then “Install app” or “Add to Home screen”.';
-        button('Done', installed);
+      } else {   // iPhone: Apple gives websites no install API, so the button points at Safari's own Share button
+        button('Install app', () => {
+          trackEvent('web_push', { action: 'install_yes' });
+          const tip = document.createElement('div'); tip.className = 'an-ios-tip'; tip.setAttribute('role', 'dialog');
+          tip.textContent = 'Tap Share ⬆ below, then “Add to Home Screen”.'; tip.onclick = () => tip.remove();
+          document.body.append(tip); setTimeout(() => tip.remove(), 12000);
+        });
       }
       const later = document.createElement('button'); later.type = 'button'; later.className = 'an-connect-x an-push-later'; later.textContent = 'Not now'; later.onclick = no; bar.append(later);
     }
