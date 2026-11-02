@@ -130,7 +130,7 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 .h2 .hb-secondary:hover { background: rgba(var(--fg-rgb), .09); }
 .h2 .hi { border-radius: 14px; }
 /* Profile card: the header card from the mock-up (wave corner, three stats with dividers, one wide pill). */
-.wp-me { background: var(--wave) right top / clamp(200px, 64%, 380px) auto no-repeat, var(--hero-bg) !important; border: 1px solid var(--hero-line) !important;
+.wp-me { background: var(--hero-glass) !important; border: 1px solid var(--hero-line) !important;
   border-radius: 24px !important; box-shadow: var(--card-shadow); }
 .wp-me { display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "av name" "av meta" "stats stats" "act act"; column-gap: 20px; }
 .wp-me-txt { display: contents; } .wp-me-av { grid-area: av; background: var(--grad-ring) !important; } .wp-me-name { grid-area: name; align-self: end; color: var(--h-text); }
@@ -146,3 +146,7 @@ body.h2 { background: var(--page-glow), var(--page-bg); background-attachment: f
 :root[data-theme="light"] .dz-tease { color: var(--h-text); }
 :root[data-theme="light"] .wp-fork-go { color: #4F46E5; }
 :root[data-theme="light"] .wp-vq-next { color: #BE185D; }
+/* Glass + spacing for the header cards (mock-up ratios): frosted, fine light edge, generous padding, rounder corners. */
+.profile-header .profile-header-inner, .wp-me, .watch-link { backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, .10) !important; border-radius: 28px !important; padding: 26px 24px 22px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 48px -20px rgba(0, 0, 0, .7) !important; }
