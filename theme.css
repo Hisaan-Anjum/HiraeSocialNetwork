@@ -176,3 +176,4 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 /* Founder 11-02: the friends grid sits centred when it fits (it still scrolls when it doesn't); the request note on one centred line. */
 .ms-chooser-grid { justify-content: safe center !important; }
 .profile-header .profile-contact-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center !important; justify-self: center; }
+.an-connect .an-connect-cta { display: inline-flex !important; align-items: center; justify-content: center; line-height: 1.2; }
