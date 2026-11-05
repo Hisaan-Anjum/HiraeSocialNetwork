@@ -119,6 +119,7 @@
       <p>In Russia? Pay in rubles through your bank app (SBP).</p>
       <button class="btn btn-primary" data-cycle="month">1 month</button>
       <button class="btn btn-secondary" data-cycle="year">1 year</button>
+      <a id="payRussiaStop" hidden href="#" onclick="return false" style="display:block;margin-top:10px;font-size:13px">Stop renewing</a>
       <small style="display:block;margin-top:8px"></small>
     </div>
   </div>
@@ -161,13 +162,20 @@
       const inRussia = /^(Europe\/(Moscow|Samara|Volgograd|Kaliningrad|Kirov|Saratov|Ulyanovsk|Astrakhan)|Asia\/(Yekaterinburg|Omsk|Novosibirsk|Krasnoyarsk|Irkutsk|Vladivostok|Yakutsk|Magadan|Kamchatka|Barnaul|Tomsk|Novokuznetsk|Chita|Sakhalin))$/.test(Intl.DateTimeFormat().resolvedOptions().timeZone)
         || ((await apiRequest('/api/fx').catch(() => ({}))).country === 'RU');
       const sbp = document.getElementById('payRussia');
-      if (sbp && cfg && cfg.rubitpay && inRussia) {
+      if (sbp && cfg && (cfg.lava || cfg.rubitpay) && inRussia) {
         sbp.hidden = false;
-        sbp.querySelectorAll('button').forEach((b) => b.addEventListener('click', async () => {
+        const stop = document.getElementById('payRussiaStop');
+        if (cfg.lava && getAuth()) stop.hidden = false;
+        stop.addEventListener('click', async () => {
+          if (!confirm('Stop renewing? You keep the time you have paid for.')) return;
+          try { await apiRequest('/api/subscription/lava/cancel', { method: 'POST' }); sbp.querySelector('small').textContent = 'Renewal stopped. You keep the time you have paid for.'; }
+          catch (e) { sbp.querySelector('small').textContent = 'No renewal to stop, or please try again.'; }
+        });
+        sbp.querySelectorAll('button[data-cycle]').forEach((b) => b.addEventListener('click', async () => {
           if (!getAuth()) { window.location.href = 'login.html?next=pricing.html'; return; }
           b.disabled = true;
-          try { window.location.href = (await apiRequest('/api/subscription/rubitpay/checkout', { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle }) })).url; }
-          catch (e) { b.disabled = false; sbp.querySelector('small').textContent = 'Payment is unavailable right now. Please try again.'; }
+          try { window.location.href = (await apiRequest(`/api/subscription/${cfg.lava ? 'lava' : 'rubitpay'}/checkout`, { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle }) })).url; }
+          catch (e) { b.disabled = false; sbp.querySelector('small').textContent = e.message || 'Payment is unavailable right now. Please try again.'; }
         }));
       }
       if (cfg && cfg.configured && window.Paddle) {
