@@ -115,6 +115,12 @@
     </div>
 
     <div class="price-fine">Secure checkout by Paddle · cancel anytime · you keep what you paid for until the period ends.</div>
+    <div id="payRussia" hidden style="text-align:center;margin:28px auto 0;max-width:460px">
+      <p>In Russia? Pay in rubles through your bank app (SBP).</p>
+      <button class="btn btn-primary" data-cycle="month">1 month</button>
+      <button class="btn btn-secondary" data-cycle="year">1 year</button>
+      <small style="display:block;margin-top:8px"></small>
+    </div>
   </div>
 
   <footer class="landing-footer">
@@ -151,6 +157,18 @@
     // if anything's unavailable — the checkout always shows the exact price).
     try {
       const cfg = await apiRequest('/api/subscription/config');
+      // Paddle refuses Russia, so people there pay by SBP. Time zone as well as country: a VPN hides the country.
+      const inRussia = /^(Europe\/(Moscow|Samara|Volgograd|Kaliningrad|Kirov|Saratov|Ulyanovsk|Astrakhan)|Asia\/(Yekaterinburg|Omsk|Novosibirsk|Krasnoyarsk|Irkutsk|Vladivostok|Yakutsk|Magadan|Kamchatka|Barnaul|Tomsk|Novokuznetsk|Chita|Sakhalin))$/.test(Intl.DateTimeFormat().resolvedOptions().timeZone)
+        || ((await apiRequest('/api/fx').catch(() => ({}))).country === 'RU');
+      const sbp = document.getElementById('payRussia');
+      if (sbp && cfg && cfg.onepayment && inRussia) {
+        sbp.hidden = false;
+        sbp.querySelectorAll('button').forEach((b) => b.addEventListener('click', async () => {
+          b.disabled = true;
+          try { window.location.href = (await apiRequest('/api/subscription/onepayment/checkout', { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle }) })).url; }
+          catch (e) { b.disabled = false; sbp.querySelector('small').textContent = 'Log in first, then try again.'; }
+        }));
+      }
       if (cfg && cfg.configured && window.Paddle) {
         Paddle.Environment.set(cfg.environment);
         Paddle.Initialize({ token: cfg.clientToken });
