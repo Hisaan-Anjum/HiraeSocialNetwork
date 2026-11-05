@@ -142,6 +142,15 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="ru-pay.js"></script>
+  <script>
+    // Paddle refuses Russia: send people to the ruble checkout before they meet a checkout that can't take them.
+    window.heraeInRussia().then(async (ru) => {
+      if (!ru) return;
+      const cfg = await fetch('/api/subscription/config').then((r) => r.json()).catch(() => ({}));
+      if (cfg.lava) location.replace('pricing.html');
+    });
+  </script>
   <script src="local-price.js"></script>
   <script src="api.js"></script>
 <script src="app-nav.js"></script>

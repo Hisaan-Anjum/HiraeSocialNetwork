@@ -65,6 +65,15 @@
   </div>
 
   <div class="pricing-wrap">
+    <div id="payRussia" hidden lang="ru" style="text-align:center;margin:0 auto 32px;max-width:460px">
+      <h2 style="margin:0 0 8px">Оплата в рублях</h2>
+      <p style="margin:0 0 16px">Herae Together: безлимитные совместные вечера для двоих.</p>
+      <button class="btn btn-primary" data-cycle="month">На месяц: 590 ₽</button>
+      <button class="btn btn-secondary" data-cycle="year">На год: 3 990 ₽</button>
+      <p style="margin:12px 0 0;font-size:13px;opacity:.75">Оплата банковской картой. Отменить можно в любой момент.</p>
+      <a id="payRussiaStop" hidden href="#" onclick="return false" style="display:block;margin-top:10px;font-size:13px">Отменить продление</a>
+      <small style="display:block;margin-top:8px"></small>
+    </div>
     <div class="pricing-head">
       <h1>Simple pricing, made for two</h1>
       <p>Your first two movie nights are free, however long they run. After that, 4 hours of synced watching every month stays free — voice, video and chat included. Go unlimited whenever you're ready.</p>
@@ -115,13 +124,6 @@
     </div>
 
     <div class="price-fine">Secure checkout by Paddle · cancel anytime · you keep what you paid for until the period ends.</div>
-    <div id="payRussia" hidden style="text-align:center;margin:28px auto 0;max-width:460px">
-      <p>In Russia? Pay in rubles by bank card.</p>
-      <button class="btn btn-primary" data-cycle="month">1 month</button>
-      <button class="btn btn-secondary" data-cycle="year">1 year</button>
-      <a id="payRussiaStop" hidden href="#" onclick="return false" style="display:block;margin-top:10px;font-size:13px">Stop renewing</a>
-      <small style="display:block;margin-top:8px"></small>
-    </div>
   </div>
 
   <footer class="landing-footer">
@@ -141,6 +143,7 @@
   </footer>
 
   <script src="config.js"></script>
+  <script src="ru-pay.js"></script>
   <script src="local-price.js"></script>
   <script src="api.js"></script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
@@ -158,24 +161,25 @@
     // if anything's unavailable — the checkout always shows the exact price).
     try {
       const cfg = await apiRequest('/api/subscription/config');
-      // Paddle refuses Russia, so people there pay by SBP. Time zone as well as country: a VPN hides the country.
-      const inRussia = /^(Europe\/(Moscow|Samara|Volgograd|Kaliningrad|Kirov|Saratov|Ulyanovsk|Astrakhan)|Asia\/(Yekaterinburg|Omsk|Novosibirsk|Krasnoyarsk|Irkutsk|Vladivostok|Yakutsk|Magadan|Kamchatka|Barnaul|Tomsk|Novokuznetsk|Chita|Sakhalin))$/.test(Intl.DateTimeFormat().resolvedOptions().timeZone)
-        || ((await apiRequest('/api/fx').catch(() => ({}))).country === 'RU');
+      // Paddle refuses Russia: people there get the ruble checkout, in Russian, instead of Paddle's buttons.
+      const inRussia = await window.heraeInRussia();
       const sbp = document.getElementById('payRussia');
       if (sbp && cfg && (cfg.lava || cfg.rubitpay) && inRussia) {
         sbp.hidden = false;
+        document.querySelectorAll('[data-cta-paid]').forEach((c) => { c.closest('.price-card').hidden = true; });
+        const fine = document.querySelector('.price-fine'); if (fine) fine.hidden = true;
         const stop = document.getElementById('payRussiaStop');
         if (cfg.lava && getAuth()) stop.hidden = false;
         stop.addEventListener('click', async () => {
-          if (!confirm('Stop renewing? You keep the time you have paid for.')) return;
-          try { await apiRequest('/api/subscription/lava/cancel', { method: 'POST' }); sbp.querySelector('small').textContent = 'Renewal stopped. You keep the time you have paid for.'; }
-          catch (e) { sbp.querySelector('small').textContent = 'No renewal to stop, or please try again.'; }
+          if (!confirm('Отменить продление? Оплаченное время останется.')) return;
+          try { await apiRequest('/api/subscription/lava/cancel', { method: 'POST' }); sbp.querySelector('small').textContent = 'Продление отменено. Оплаченное время осталось.'; }
+          catch (e) { sbp.querySelector('small').textContent = 'Нет активной подписки, или попробуйте ещё раз.'; }
         });
         sbp.querySelectorAll('button[data-cycle]').forEach((b) => b.addEventListener('click', async () => {
           if (!getAuth()) { window.location.href = 'login.html?next=pricing.html'; return; }
           b.disabled = true;
           try { window.location.href = (await apiRequest(`/api/subscription/${cfg.lava ? 'lava' : 'rubitpay'}/checkout`, { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle }) })).url; }
-          catch (e) { b.disabled = false; sbp.querySelector('small').textContent = e.message || 'Payment is unavailable right now. Please try again.'; }
+          catch (e) { b.disabled = false; sbp.querySelector('small').textContent = /email/i.test(e.message || '') ? 'Сначала добавьте email в аккаунт.' : 'Оплата сейчас недоступна. Попробуйте ещё раз.'; }
         }));
       }
       if (cfg && cfg.configured && window.Paddle) {
