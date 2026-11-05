@@ -55,7 +55,7 @@ function renderDataCredit(rec) {
       <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
       Artwork from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a> and
       <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a>.
-      This product uses the TMDB API but is not endorsed or certified by TMDB.
+      This product uses the TMDB API but is not endorsed or certified by TMDB. TV show images and data from <a href="https://www.tvmaze.com" target="_blank" rel="noopener">TVmaze</a> (CC BY-SA).
     </div>`;
 }
 
