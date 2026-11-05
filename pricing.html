@@ -176,7 +176,7 @@
           catch (e) { sbp.querySelector('small').textContent = 'Нет активной подписки, или попробуйте ещё раз.'; }
         });
         sbp.querySelectorAll('button[data-cycle]').forEach((b) => b.addEventListener('click', async () => {
-          if (!getAuth()) { window.location.href = 'login.html?next=pricing.html'; return; }
+          if (!getAuth()) { sessionStorage.setItem('moments_return_to', 'pricing.html'); window.location.href = 'login.html'; return; }
           b.disabled = true;
           try { window.location.href = (await apiRequest(`/api/subscription/${cfg.lava ? 'lava' : 'rubitpay'}/checkout`, { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle }) })).url; }
           catch (e) { b.disabled = false; sbp.querySelector('small').textContent = /email/i.test(e.message || '') ? 'Сначала добавьте email в аккаунт.' : 'Оплата сейчас недоступна. Попробуйте ещё раз.'; }
