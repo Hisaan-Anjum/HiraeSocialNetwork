@@ -118,6 +118,8 @@ const FILES = [
   // Search guides: plain static articles, one per question couples actually ask.
   'watch-movies-together-long-distance.html',
   'teleparty-alternative.html',
+  'twoseven-alternative.html',
+  'rave-alternative.html',
   // What Herae is + press kit (entity page; facts mirror seo/facts.json).
   'about.html',
   // How Herae syncs any website (first-hand engineering explainer).

@@ -26,6 +26,8 @@ const PUBLIC = [
   ['find-someone-to-watch-movies-with.html', 'Guides'],
   ['film-night.html', 'Guides'],
   ['teleparty-alternative.html', 'Guides'],
+  ['twoseven-alternative.html', 'Guides'],
+  ['rave-alternative.html', 'Guides'],
   ['best-apps-for-long-distance-couples.html', 'Guides'],
   ['discord-netflix-black-screen.html', 'Guides'],
   ['watch-prime-video-together.html', 'Guides'],
