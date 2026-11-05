@@ -399,6 +399,7 @@
       // A failure here is not fatal on its own: they may already be contacts,
       // in which case the session below works regardless.
 
+      if (await sendBlockedToPlans()) return;
       const ack = await askExtension(
         { __heraeStartSession: true, target: host.host, title: '' },
         '__heraeStartSessionAck', 8000

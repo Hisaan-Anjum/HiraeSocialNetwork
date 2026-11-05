@@ -353,7 +353,7 @@
     const when = (s) => { const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('Z') ? '' : 'Z')); return isNaN(d) ? '' : d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' }); };
 
     // The extension hand-off (content.js __heraeStartSession). Resolves { handled:false } when no extension answers.
-    const handOff = (payload) => new Promise((resolve) => {
+    const handOff = async (payload) => (payload.mode !== 'add' && await sendBlockedToPlans()) ? { handled: true } : new Promise((resolve) => {
       let done = false; const finish = (v) => { if (!done) { done = true; window.removeEventListener('message', on); resolve(v); } };
       function on(e) { if (e.source === window && e.data && e.data.__heraeStartSessionAck === true) finish({ handled: true, error: e.data.error, busy: e.data.busy }); }
       window.addEventListener('message', on);

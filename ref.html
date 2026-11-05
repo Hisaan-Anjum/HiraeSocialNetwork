@@ -162,7 +162,8 @@
     }
   });
 
-  function startNight(who) {
+  async function startNight(who) {
+    if (await sendBlockedToPlans()) return;
     msg(`Opening your night with ${who}…`, 'ok');
     const done = (text, kind) => { window.removeEventListener('message', onAck); clearTimeout(timer); el('pairRow').hidden = true; msg(text, kind); };
     const onAck = (e) => {

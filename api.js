@@ -301,6 +301,14 @@ async function apiImage(path) {
   catch (e) { return null; }
 }
 
+// At the free limit a start can't go anywhere, so they go to the plans (upgrade.html sends Russia on to the ruble page).
+async function sendBlockedToPlans() {
+  const s = await apiRequest('/api/subscription/status').catch(() => null);
+  if (!s || s.canStartSession !== false || s.inNight) return false;
+  location.href = '/upgrade.html';
+  return true;
+}
+
 async function apiRequest(path, options = {}) {
   const auth = getAuth();
   const base = (auth?.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
