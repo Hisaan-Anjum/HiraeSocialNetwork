@@ -69,6 +69,8 @@
   .guide table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14.5px; }
   .guide th, .guide td { border-bottom: 1px solid var(--border); padding: 9px 10px; text-align: left; vertical-align: top; }
   .guide th { color: var(--ink-dim); font-weight: 700; font-size: 13px; }
+  /* Phones: the Herae column must show without a sideways swipe nobody knows to make. */
+  @media (max-width: 600px) { .guide table { min-width: 0; font-size: 13px; } .guide th, .guide td { padding: 8px 5px; overflow-wrap: break-word; } }
   .cta-box { border: 1px solid rgba(99, 102, 241,.45); background: rgba(99, 102, 241,.08); border-radius: 16px; padding: 20px; margin: 34px 0 10px; }
   .cta-box .btn { margin-top: 10px; }
   .guide .fine { color: var(--ink-faint); font-size: 13.5px; }
