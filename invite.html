@@ -464,6 +464,23 @@
       }
     }
 
+    async function renewJoin() {
+      if (joinInFlight) return;
+      joinInFlight = true;
+      const button = el('joinBtn');
+      button.disabled = true;
+      button.textContent = 'Getting you in…';
+      const ack = await askExtension({ __heraeGuestRenew: true, code }, '__heraeGuestJoinAck', 10000);
+      if (ack && ack.ok) { clearPendingInvite(); finish(!!ack.hostOnline); return; }
+      // Not renewable (another host, a cleared browser): the ordinary guest join, which always works.
+      joinInFlight = false;
+      button.disabled = false;
+      el('guestName').closest('.field').hidden = false;
+      el('inviteSub').textContent = '';
+      joinAction = () => { if (host) guestJoin(); };
+      guestJoin();
+    }
+
     function finish(connecting, note) {
       el('doneMessage').textContent = connecting
         ? `You're in. Herae is opening a shared window with ${host.host}…`
@@ -525,6 +542,19 @@
       }
 
       if (detected.signedInAs || getAuth()) { fastPath(); return; }
+
+      // Their guest pass from THIS host ran out: same person, same account, a fresh pass (11-09: returning partners
+      // came back as a new friendN, and every reminder followed the old one).
+      const back = detected.returningGuest;
+      if (back && back.name && String(back.host || '').toLowerCase() === String(preview.host || '').toLowerCase()) {
+        el('inviteSub').textContent = `Welcome back, ${back.name}. Your nights with ${preview.host} are still here.`;
+        el('joinBtn').textContent = `Continue as ${back.name}`;
+        el('guestName').closest('.field').hidden = true;
+        joinAction = renewJoin;
+        show('join');
+        el('joinBtn').focus();
+        return;
+      }
 
       show('join');
       // Deliberately NOT focusing the name field any more — it is optional,
