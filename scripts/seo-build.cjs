@@ -34,6 +34,7 @@ const PUBLIC = [
   ['watch-netflix-together.html', 'Guides'],
   ['watch-youtube-together.html', 'Guides'],
   ['watch-disney-plus-together.html', 'Guides'],
+  ['watch-anime-together.html', 'Guides'],
   ['long-distance-movie-night-ideas.html', 'Guides'],
   ['movies-to-watch-long-distance.html', 'Guides'],
   ['things-to-do-on-facetime-long-distance.html', 'Guides'],
