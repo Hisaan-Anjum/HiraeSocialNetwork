@@ -22,7 +22,8 @@
     const key = `herae_visit_${page}`; const day = new Date().toISOString().slice(0, 10);
     if (localStorage.getItem(key) !== day && typeof trackEvent === 'function') {
       localStorage.setItem(key, day);
-      trackEvent('site_visit', { page, from: new URLSearchParams(location.search).get('from') || '' });
+      const q = new URLSearchParams(location.search); // emails tag links with utm_ (11-09: 72 sends read as 0 clicks)
+      trackEvent('site_visit', { page, from: q.get('from') || q.get('utm_source') || '', mail: q.get('utm_medium') || '' });
     }
   } catch (e) { /* storage blocked: unmeasured, never broken */ }
   const I = {   // 24×24 stroke icons

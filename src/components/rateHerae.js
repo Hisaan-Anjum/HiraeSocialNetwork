@@ -27,6 +27,8 @@ export function mountRateHerae(anchor, { durationMs } = {}) {
       <button type="button" class="rate-herae-later">Not now</button>
     </div>`;
   anchor.after(card);
+  // Once per browser even when ignored: marking only on a click showed it after every night (11-09: 14× in 12 days).
+  done('shown');
   track('shown');
   card.querySelector('.rate-herae-go').addEventListener('click', () => { track('rate'); done('rate'); card.querySelector('.rate-herae-sub').textContent = 'Thank you, it really helps.'; });
   card.querySelector('.rate-herae-issue').addEventListener('click', () => { track('issue'); done('issue'); });
