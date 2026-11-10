@@ -1082,17 +1082,17 @@
       let r; try { r = await apiRequest('/api/parties/film-nights'); } catch (e) { return null; }
       if (!r.nights.length) return null;
       const box = el('section', { class: 'fn-box', 'aria-label': 'Film Night' }, el('h2', {}, 'Film Night'),
-        el('p', { class: 'muted' }, 'Every Friday: one free film, with anyone who loves films. No subscription needed.'));
+        el('p', { class: 'muted' }, 'Every Friday: one free film, with anyone who loves films. No subscription needed.'),
+        r.canJoin ? null : el('p', { class: 'muted', style: 'font-size:13px;margin:0' }, 'By joining, you confirm you’re 18 or older.'));
       r.nights.forEach((n) => {
         const city = n.title.split('·').pop().trim();
-        // Not 18+-confirmed yet: the same one tap as "Start meeting people" (the line under it is the confirmation), then
+        // Not 18+-confirmed yet: the same one tap as "Start meeting people" (the line under the intro is the confirmation), then
         // join — no detour through the profile (matching plan A4). Confirming 18+ makes no profile and shows nobody anything.
         const join = async (e, adult) => { e.target.disabled = true;
           try { if (adult) await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ confirm_adult: true }) });
             await apiRequest(`/api/parties/${n.id}/join`, { method: 'POST', body: '{}' }); location.hash = `parties/${n.id}`; }
           catch (err) { e.target.disabled = false; toast(err.message || 'Could not join.'); } };
-        const go = !r.canJoin ? el('div', { class: 'h-stack', style: 'gap:4px;align-items:flex-end' }, el('button', { type: 'button', class: 'hb hb-primary', onclick: (e) => join(e, true) }, 'Join'),
-            el('small', { class: 'muted' }, 'By joining, you confirm you’re 18 or older.'))
+        const go = !r.canJoin ? el('button', { type: 'button', class: 'hb hb-primary', onclick: (e) => join(e, true) }, 'Join')
           : n.status === 'live' ? el('a', { class: 'hb hb-primary', href: `#parties/${n.id}` }, n.joined ? 'Go in now' : 'Join now')
           : n.joined ? el('a', { class: 'hb hb-secondary', href: `#parties/${n.id}` }, 'You’re in')
           : el('button', { type: 'button', class: 'hb hb-secondary', onclick: (e) => join(e, false) }, 'Join');
