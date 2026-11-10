@@ -157,6 +157,7 @@
 
       <section class="h-section wp-step" data-step="2" aria-labelledby="s-taste">
         <h2 id="s-taste">Your taste</h2>
+        <p class="h-help" id="draftNote" hidden>We filled this from what you’ve watched on Herae. Fix anything, then Finish.</p>
         <fieldset><legend>Genres <span class="faint">(tap a few)</span></legend><div class="h-chips" id="genres"></div></fieldset>
         <fieldset><legend>Films and series you love</legend>
           <div class="h-chips" id="titles"></div>
@@ -408,10 +409,24 @@
     let choseOff = false;   // they switched Discover off this visit
     const neverOn = () => !state.discoverable && !state.discoverable_at;
     try {
-      const r = await apiRequest('/api/profile/watch'); state = r.profile; state.watchlist = state.watchlist || []; options = r.options; firstTime = !state.exists;
+      const r = await apiRequest('/api/profile/watch'); state = r.profile; state.watchlist = state.watchlist || []; options = r.options;
+      // A row made only by Film Night's 18+ tap is not a profile yet: still the guided first time.
+      firstTime = !state.exists || !(state.gender || state.genres.length || state.favorite_titles.length || state.watchlist.length || (state.music || []).length);
     } catch (e) { $('loading').hidden = true; say(e.message || 'Could not load your profile.'); return; }
+    // A3 (matching plan 11-10): the first time, fill the taste from what they already watched and saved on Herae (their own
+    // data only). Nothing is saved or shown to anyone until they press Finish, and going public still asks 18+.
+    let drafted = false;
+    if (firstTime) {
+      const d = await apiRequest('/api/profile/watch/draft').then((x) => x.draft).catch(() => null);
+      if (d && (d.favorite_titles.length || d.genres.length)) {
+        const add = (k, v) => { state[k] = [...new Set([...(state[k] || []), ...v])]; };
+        add('favorite_titles', d.favorite_titles.slice(0, 10)); add('genres', d.genres); add('watchlist', d.watchlist.slice(0, 20)); add('availability', d.availability);
+        drafted = true; dirty = true;
+      }
+    }
     $('loading').hidden = true; $('form').hidden = false; $('blocksSec').hidden = false; render();
     setWizard(firstTime); loadPhotos(); meter();
+    $('draftNote').hidden = !drafted;
     // From a night's review page: "Loved <film>? …" arrives as ?love=<title> and is added (kept on Save / Finish).
     const love = (new URLSearchParams(location.search).get('love') || '').trim().replace(/\s+/g, ' ').slice(0, 60);
     if (love && !state.favorite_titles.includes(love) && state.favorite_titles.length < 10) {

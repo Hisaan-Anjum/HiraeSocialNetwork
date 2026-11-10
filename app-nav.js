@@ -426,12 +426,14 @@
         if (cfg.founding && cfg.founding.open && !['own', 'partner', 'special'].includes(ent.source)) step = 'founding';
       } catch (e) { /* no offer bar if either call fails */ }
     }
+    const here = st.waiting >= 3 ? `${st.waiting} people who love films are meeting people on Herae${st.online > 0 ? `, ${st.online} online now` : ''}.` : '';
     const MSG = {
       // The fastest route for people who signed up before the setup existed (founder 10-23: "old users, fast and quick"):
       // no profile → the 3-step setup that ends in Discover; profile but Discover off → the one-tap switch in Discover.
       invite_first: ['Your first night is two steps away: add Herae to Chrome, then send your person your link.', 'Show me', 'memories.html'],
-      no_profile: ['Find someone to watch with tonight — set up your profile in a minute.', 'Set up', 'watch-profile.html?start=public&meet=1'],
-      discovery_off: ['Your profile is ready. Start meeting people who love the same films.', 'Start', 'social.html#discover'],
+      // A2 (matching plan 11-10): proof that people are here leads, but only from 3 up — real counts, never a padded one.
+      no_profile: [`${here ? here + ' ' : ''}Find someone to watch with tonight — set up your profile in a minute.`, 'Set up', 'watch-profile.html?start=public&meet=1'],
+      discovery_off: [`${here ? here + ' ' : ''}Your profile is ready. Start meeting people who love the same films.`, 'Start', 'social.html#discover'],
       browse: st.waiting > 0 ? [`${st.waiting} ${st.waiting === 1 ? 'person who is' : 'people who are'} also looking ${st.waiting === 1 ? 'is' : 'are'} on Herae now.`, 'See who', 'social.html#discover']
         : ['You’re meeting people. We’ll notify you the moment someone who shares your taste joins.', 'Invite your person', 'contacts.html'],
       liked: [`${st.likedBy === 1 ? 'Someone wants' : `${st.likedBy} people want`} to watch with you. Say yes back and you’re matched.`, 'See who', 'social.html#discover'],

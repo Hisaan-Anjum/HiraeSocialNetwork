@@ -102,6 +102,8 @@
   .d-name { display: flex; align-items: flex-end; gap: 12px; }
   /* Premium members (founder 10-24): a gold ring around the card and a gold pill beside the name, with a slow shine. */
   .d-card.premium { box-shadow: 0 0 0 2px rgba(251, 191, 36, .85), 0 0 28px rgba(251, 191, 36, .35), 0 18px 48px rgba(2, 6, 23, .55); }
+  .d-online { align-self: center; flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #fff; }
+  .d-online::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
   .d-premium { align-self: center; flex: none; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .04em;
     color: #3B2300; background: linear-gradient(110deg, #F59E0B 0%, #FDE68A 45%, #FFF7D6 50%, #FDE68A 55%, #F59E0B 100%); background-size: 250% 100%;
     box-shadow: 0 2px 10px rgba(245, 158, 11, .45); animation: d-shine 3.2s ease-in-out infinite; }
@@ -453,8 +455,13 @@
       if (!coached && deck.length && !first) deck.unshift({ tutorial: true, username: '__tutorial', name: 'How it works' });   // an emailed card comes first
       if (r.reason === 'not_discoverable') {
         // One tap to go live, right here (founder 10-23: a finished profile must never be sent back to "set up").
-        const prof = await apiRequest('/api/profile/watch').then((x) => x.profile).catch(() => null);
+        const [prof, cs] = await Promise.all([apiRequest('/api/profile/watch').then((x) => x.profile).catch(() => null), apiRequest('/api/profile/watch/connect-state').catch(() => null)]);
         const ready = prof && prof.exists && prof.gender && ((prof.genres || []).length || (prof.favorite_titles || []).length || (prof.watchlist || []).length);
+        // A3: no profile yet, but their own nights/watchlist already say what they love → a card is drafted for them.
+        const d = ready ? null : await apiRequest('/api/profile/watch/draft').then((x) => x.draft).catch(() => null);
+        const drafted = d && (d.favorite_titles.length || d.genres.length || d.watchlist.length);
+        // A2: proof that people are here, from 3 up (real counts, never names).
+        const here = cs && cs.waiting >= 3 ? el('p', { class: 'muted', style: 'margin:0' }, `${cs.waiting} people who love films are meeting people on Herae${cs.online > 0 ? `, ${cs.online} online now` : ''}.`) : null;
         const go = el('button', { type: 'button', class: 'hb hb-primary' }, 'Start meeting people');
         const age = el('p', { class: 'muted', style: 'font-size:13px;margin:0' }, 'By turning it on, you confirm you’re 18 or older.');
         go.onclick = async () => {
@@ -462,11 +469,12 @@
           try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ discoverable: true, ...(prof && prof.adult_confirmed_at ? {} : { confirm_adult: true }) }) }); toast('You’re in. People with your taste can see you now.'); renderDiscover(); }
           catch (e) { go.removeAttribute('aria-busy'); toast(e.message || 'Could not turn it on.'); }
         };
-        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, 'Find people who like what you like'),
+        v.append(el('div', { class: 'h-empty h-stack' }, el('h2', {}, drafted ? 'Your card is ready' : 'Find people who like what you like'), here,
           el('p', {}, ready ? 'Your profile is ready. Start meeting people to see who shares your taste, and to be seen by them. Nobody can message you until you both say yes.'
+            : drafted ? 'We filled it in from the films you’ve watched on Herae. Check it, fix anything, then choose whether to start meeting people. Nobody can message you until you both say yes.'
             : 'Tell Herae what you love to watch (it takes about a minute), then you’ll see people with similar taste. Nobody can message you until you both say yes.'),
           ready ? (prof.adult_confirmed_at ? null : age) : null,
-          ready ? go : el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile')));
+          ready ? go : el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, drafted ? 'See my card' : 'Set up my profile')));
         return;
       }
       if (r.reason === 'groups_only') {
@@ -553,7 +561,7 @@
         behind ? null : el('div', { class: 'd-more' }, moreMenu([['Report', async () => { if (await reportPerson(c.username, 'profile')) next(); }, true], ['Block', async () => { if (await blockPerson(c.username)) next(); }, true]])),
         el('div', { class: 'd-info' },
           badges.length ? el('div', { class: 'd-badges' }, ...badges) : null,
-          el('div', { class: 'd-name' }, el('h2', {}, c.name), c.premium ? el('span', { class: 'd-premium', title: 'Herae Premium member' }, ic('sparkle', 13), ' Premium') : null,
+          el('div', { class: 'd-name' }, el('h2', {}, c.name), c.online ? el('span', { class: 'd-online' }, 'Online now') : null, c.premium ? el('span', { class: 'd-premium', title: 'Herae Premium member' }, ic('sparkle', 13), ' Premium') : null,
             behind ? null : el('button', { type: 'button', class: 'd-infob', 'aria-label': `More about ${c.name}`, onclick: () => details(c) }, svgEl(ICON.up))),
           hidden > 0 ? el('div', { class: 'd-sub' }, svgEl(ICON.lock), `${hidden} more photo${hidden === 1 ? '' : 's'} after you match`) : null,
           c.bio ? el('p', { class: 'd-bio' }, c.bio) : null,
@@ -1077,10 +1085,17 @@
         el('p', { class: 'muted' }, 'Every Friday: one free film, with anyone who loves films. No subscription needed.'));
       r.nights.forEach((n) => {
         const city = n.title.split('·').pop().trim();
-        const go = !r.canJoin ? el('a', { class: 'hb hb-primary', href: 'watch-profile.html?start=public&meet=1' }, 'Set up my profile')
+        // Not 18+-confirmed yet: the same one tap as "Start meeting people" (the line under it is the confirmation), then
+        // join — no detour through the profile (matching plan A4). Confirming 18+ makes no profile and shows nobody anything.
+        const join = async (e, adult) => { e.target.disabled = true;
+          try { if (adult) await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ confirm_adult: true }) });
+            await apiRequest(`/api/parties/${n.id}/join`, { method: 'POST', body: '{}' }); location.hash = `parties/${n.id}`; }
+          catch (err) { e.target.disabled = false; toast(err.message || 'Could not join.'); } };
+        const go = !r.canJoin ? el('div', { class: 'h-stack', style: 'gap:4px;align-items:flex-end' }, el('button', { type: 'button', class: 'hb hb-primary', onclick: (e) => join(e, true) }, 'Join'),
+            el('small', { class: 'muted' }, 'By joining, you confirm you’re 18 or older.'))
           : n.status === 'live' ? el('a', { class: 'hb hb-primary', href: `#parties/${n.id}` }, n.joined ? 'Go in now' : 'Join now')
           : n.joined ? el('a', { class: 'hb hb-secondary', href: `#parties/${n.id}` }, 'You’re in')
-          : el('button', { type: 'button', class: 'hb hb-secondary', onclick: async (e) => { e.target.disabled = true; try { await apiRequest(`/api/parties/${n.id}/join`, { method: 'POST', body: '{}' }); location.hash = `parties/${n.id}`; } catch (err) { e.target.disabled = false; toast(err.message || 'Could not join.'); } } }, 'Join');
+          : el('button', { type: 'button', class: 'hb hb-secondary', onclick: (e) => join(e, false) }, 'Join');
         box.append(el('div', { class: 'fn-row' }, el('div', { class: 'row-main' }, el('strong', {}, n.filmTitle),
           el('div', {}, partyState(n)), el('div', { class: 'sub' }, `8 pm in ${city}${n.members ? ` · ${n.members} in` : ''}`)), go));
       });
