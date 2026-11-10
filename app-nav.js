@@ -403,7 +403,8 @@
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
     // ?push=1: the extension's popup sent them here because Chrome blocks its notifications (alerts plan A2). The same bar
     // and button, matching or not; the browser's box still opens only from the tap.
-    if (/[?&]push=1\b/.test(location.search)) pushBanner({ ...st, matching: true }, 'Herae can’t notify you from the extension. Turn on notifications here instead.');
+    const pushAsk = /[?&]push=1\b/.test(location.search);
+    if (pushAsk) pushBanner({ ...st, matching: true }, 'Herae can’t notify you from the extension. Turn on notifications here instead.');
     else pushBanner(st);
     // Nobody in between (founder 10-23): no partner and no profile → the choice, from every app page.
     // "Someone I already know" (the fork) holds off the choice for an hour — the server holds 3 days once an invite went out.
@@ -415,7 +416,7 @@
     const onDiscover = page === 'social.html';
     // Your own profile holds Download my data, Sign out everywhere and Delete account: those are never behind a question.
     const ownProfile = page === 'user.html' && new URLSearchParams(location.search).get('u') === (getAuth() || {}).username;
-    if (st.setupFirst && !skipped && !partyLink && !ownProfile && page !== 'watch-profile.html' && !(st.chosen === 'meet' && st.step === 'discovery_off' && onDiscover)) {
+    if (st.setupFirst && !skipped && !partyLink && !ownProfile && !pushAsk && page !== 'watch-profile.html' && !(st.chosen === 'meet' && st.step === 'discovery_off' && onDiscover)) {
       location.replace(st.chosen === 'meet' ? (st.step === 'discovery_off' ? 'social.html#discover' : 'watch-profile.html?start=public&meet=1') : 'watch-profile.html?start=public&gate=1');
       return;
     }
