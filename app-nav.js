@@ -401,7 +401,10 @@
   // step for where they are. Dismissing hides it for an hour; it is always there for everyone (founder 10-22: persistent).
   async function connectBanner() {
     let st; try { st = await apiRequest('/api/profile/watch/connect-state'); } catch (e) { return; }
-    pushBanner(st);
+    // ?push=1: the extension's popup sent them here because Chrome blocks its notifications (alerts plan A2). The same bar
+    // and button, matching or not; the browser's box still opens only from the tap.
+    if (/[?&]push=1\b/.test(location.search)) pushBanner({ ...st, matching: true }, 'Herae can’t notify you from the extension. Turn on notifications here instead.');
+    else pushBanner(st);
     // Nobody in between (founder 10-23): no partner and no profile → the choice, from every app page.
     // "Someone I already know" (the fork) holds off the choice for an hour — the server holds 3 days once an invite went out.
     let skipped = false; try { skipped = Date.now() - Number(localStorage.getItem('herae_setup_skipped') || 0) < 36e5; } catch (e) { /* storage blocked */ }

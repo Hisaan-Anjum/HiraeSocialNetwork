@@ -444,8 +444,13 @@
     let deck = []; let likedYou = 0; let widen = 0;   // how many in this deck already said yes to me (a count, never who)
     // #discover/<username>: a "new people" email about this person — their card comes first (if they're still in my deck).
     let emailOpenSent = false;
+    // kind: which email brought them — like / match (sent the moment it happened) or the daily digest (alerts plan A4).
+    function emailOpen(named) {
+      if (emailOpenSent || !/[?&](utm_medium|from)=buddies\b/.test(location.search)) return;
+      emailOpenSent = true; trackEvent('buddies_email_open', { named, kind: (location.search.match(/[?&]kind=(like|match)\b/) || [])[1] || 'digest' });
+    }
     async function renderDiscover(first) {
-      if (!emailOpenSent && /[?&](utm_medium|from)=buddies\b/.test(location.search)) { emailOpenSent = true; trackEvent('buddies_email_open', { named: !!first }); }
+      emailOpen(!!first);
       const v = $('v-discover'); v.innerHTML = ''; v.append(el('div', { class: 'h-skeleton', style: 'height:360px', 'aria-hidden': 'true' }));
       let r; try { r = await apiRequest('/api/discover/deck' + (first ? `?first=${encodeURIComponent(first)}` : '')); } catch (e) { v.innerHTML = ''; v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       deck = r.cards; likedYou = r.likedYou || 0; widen = r.widen || 0; v.innerHTML = '';
@@ -687,6 +692,7 @@
 
     // ── Matches ──
     async function renderMatches() {
+      emailOpen(false);
       const v = $('v-matches'); v.innerHTML = ''; v.append(el('h1', {}, 'Matches'));
       let r; try { r = await apiRequest('/api/discover/matches'); } catch (e) { v.append(el('p', { class: 'h-empty' }, e.message || 'Could not load.')); return; }
       if (!r.matches.length) {
