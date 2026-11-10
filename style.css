@@ -2972,6 +2972,12 @@ body.cd-open { overflow: hidden; }
 /* ── Plan your next movie night (src/components/planNext.js) ── */
 .plan-next { margin: 14px 16px 18px; padding: 16px; border-radius: 16px; border: 1px solid rgba(236,72,153,0.35); background: rgba(236,72,153,0.07); }
 .plan-next-title { font-weight: 800; font-size: 16px; margin-bottom: 4px; }
+.plan-next-count { font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: #DB2777; margin-bottom: 6px; }
+.plan-next-film { margin: 4px 0 12px; font-size: 14px; }
+.plan-next-film-edit { background: none; border: 0; padding: 0 0 0 6px; color: #DB2777; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.plan-next-film-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.plan-next-film-form label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; flex: 1 1 200px; }
+.plan-next-film-input { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line, #e2e8f0); font: inherit; }
 .plan-next-sub { color: var(--ink-dim); font-size: 13.5px; line-height: 1.5; margin-bottom: 12px; max-width: 520px; }
 .plan-next-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .gs-steps .plan-next { margin: 12px 0 0; }

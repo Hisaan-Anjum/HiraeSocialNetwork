@@ -131,8 +131,10 @@ async function loadMyPanel() {
     if (new URLSearchParams(location.search).get('plan') === '1' && window.getSessionsMine) {
       window.getSessionsMine().then((r) => {
         const last = r && r.sessions && r.sessions[0];
-        const partner = last && (last.participants || []).find((u) => u !== p.username);
-        if (partner) mountPlanNext(el.querySelector('header') || el.firstElementChild, { partner, startedAt: last.startedAt || null, via: 'email' })
+        // &with= (the bell's and the emails' "are you in?" link) names the person; otherwise whoever they last watched with.
+        const want = new URLSearchParams(location.search).get('with');
+        const partner = (want && want !== p.username && want.slice(0, 64)) || (last && (last.participants || []).find((u) => u !== p.username));
+        if (partner) mountPlanNext(el.querySelector('header') || el.firstElementChild, { partner, startedAt: (last && last.startedAt) || null, via: 'email' })
           .then((card) => card && card.scrollIntoView({ block: 'center', behavior: 'smooth' }));
       }).catch(() => {});
     }

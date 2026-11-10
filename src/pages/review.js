@@ -224,7 +224,7 @@ async function loadSession() {
   // leak). Below the share card, above the review.
   if (others.length) {
     const anchor = contentEl.querySelector('.review-share-night') || contentEl.querySelector('.review-moment-strip, .review-no-moments');
-    mountPlanNext(anchor, { partner: others[0], startedAt: detail.startedAt || null, via: 'review' }).catch(() => {});
+    mountPlanNext(anchor, { partner: others[0], startedAt: detail.startedAt || null, via: 'review', session: sessionId }).catch(() => {});
   }
 
   // After a proper night (30+ min), the one place a couple who loved it sees what keeps it going (PRICING_2026-10.md
