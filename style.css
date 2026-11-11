@@ -9,15 +9,15 @@
 :root {
   --bg-0: #0B0B0F;
   --bg-1: #111117;
-  --bg-2: #1A1A2E;
-  --card: #15152A;
+  --bg-2: #1F1B24;
+  --card: #17141B;
   --ink: #f8fafc;
   --ink-dim: #A6ADC8;
   --ink-faint: #7E86A6;
   --purple: var(--x6366f1, #6366F1);
-  --purple-deep: #4338ca;
-  --gold: #F472B6;        /* "memories" accent: was gold, now the brand pink (lightened for AA on navy) */
-  --gold-deep: #DB2777;
+  --purple-deep: #B8185A;
+  --gold: #FB7185;        /* "memories" accent: was gold, now the brand pink (lightened for AA on navy) */
+  --gold-deep: #D61F69;
   --rating: #FBBF24;      /* star ratings stay amber: a convention, not brand */
   --border: rgba(255, 255, 255, 0.08);
 }
@@ -399,7 +399,7 @@ a:hover { text-decoration: underline; }
 .share-row { display: flex; align-items: center; gap: 14px; width: 100%; height: 56px; padding: 0 18px; border-radius: 16px; cursor: pointer;
   background: rgba(var(--fg-rgb), 0.06); border: 1px solid rgba(var(--fg-rgb), 0.08); color: var(--ink); font-size: 16px; font-weight: 600; font-family: inherit; text-align: left; }
 .share-row svg { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.share-row.is-primary { background: linear-gradient(135deg, var(--x6366f1, #6366F1), var(--x8b5cf6, #8B5CF6)); border-color: transparent; color: #fff; box-shadow: 0 10px 24px rgba(var(--accent-rgb),0.35); }
+.share-row.is-primary { background: linear-gradient(135deg, var(--x6366f1, #6366F1), var(--x8b5cf6, #E0447F)); border-color: transparent; color: #fff; box-shadow: 0 10px 24px rgba(var(--accent-rgb),0.35); }
 .share-row:active { transform: scale(0.98); }
 .share-row:disabled { opacity: 0.55; }
 @media (pointer: coarse) and (max-width: 640px) {
@@ -2506,7 +2506,7 @@ html { scroll-behavior: smooth; }
 }
 .aim-progress-fill {
   height: 100%; width: 0;
-  background: linear-gradient(90deg, var(--gold), var(--xa78bfa, #A78BFA));
+  background: linear-gradient(90deg, var(--gold), var(--xa78bfa, #F472B6));
   transition: width .45s cubic-bezier(.3,.7,.3,1);
 }
 @media (prefers-reduced-motion: reduce) { .aim-progress-fill { transition: none; } }
@@ -2913,7 +2913,7 @@ body.cd-open { overflow: hidden; }
    so it is a button for the keyboard and a link to the eye. */
 .link-btn {
   background: none; border: 0; padding: 0 2px; margin: 0;
-  font: inherit; color: var(--purple, var(--xa78bfa, #A78BFA)); cursor: pointer;
+  font: inherit; color: var(--purple, var(--xa78bfa, #F472B6)); cursor: pointer;
   text-decoration: underline; text-underline-offset: 2px;
 }
 .link-btn:hover, .link-btn:focus-visible { color: var(--ink, #fff); }

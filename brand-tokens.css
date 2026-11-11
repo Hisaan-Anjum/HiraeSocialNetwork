@@ -1,4 +1,4 @@
-/* herae-tokens.css — THE source of brand truth (Connected H identity, 2026-10-22).
+/* herae-tokens.css — THE source of brand truth (Connected H identity 2026-10-22; magenta palette 2026-11-11).
  *
  * Copied verbatim into every surface by brand/scripts/sync-tokens.sh (site: moments-site/brand-tokens.css,
  * extension: brand-tokens.css); tests/brand-tokens.test.js fails if a copy drifts. Change values HERE only.
@@ -17,28 +17,28 @@
 
 :root {
   /* ── Palette (canonical) ─────────────────────────────────────────── */
-  --brand-primary: #6366F1;          /* indigo: actions, active states */
-  --brand-primary-hover: #4F46E5;
-  --brand-primary-press: #4338CA;
-  --brand-primary-soft: #A5B4FC;     /* indigo text/links on dark surfaces (AA on navy) */
-  --brand-secondary: #A78BFA;        /* violet: supporting accent */
-  --brand-accent: #EC4899;           /* pink: restrained social warmth */
-  --brand-accent-soft: #F9A8D4;
-  --brand-navy: #0F172A;
+  --brand-primary: #D61F69;          /* magenta: actions and the logo (4.9:1 with white; red stays for end-call/delete) */
+  --brand-primary-hover: #B8185A;
+  --brand-primary-press: #9C134C;
+  --brand-primary-soft: #F9A8D4;     /* magenta text on dark surfaces (AA on ink) */
+  --brand-secondary: #2563EB;        /* trust blue: links, focus, sign-up and payment info */
+  --brand-accent: #FF7A59;           /* coral: hearts, moments, love details (fills/icons, never body text) */
+  --brand-accent-soft: #FFB59E;
+  --brand-navy: #15121A;              /* ink: the dark surface beside a film */
   --brand-cloud: #F8FAFC;
   --brand-white: #FFFFFF;
-  --brand-gradient: linear-gradient(135deg, #6366F1 0%, #A78BFA 50%, #EC4899 100%);
+  --brand-gradient: linear-gradient(135deg, #D61F69 0%, #FF7A59 100%);
   /* Buttons/badges with TEXT on them: the same three hues, darkened so white text is ≥ 4.5:1 at every stop
-     (the signature gradient's violet midpoint is only 2.7:1 with white). Logo, decoration, big headlines: --brand-gradient. */
-  --brand-gradient-cta: linear-gradient(135deg, #4F46E5 0%, #7C3AED 55%, #DB2777 100%);
-  --brand-gradient-soft: linear-gradient(135deg, rgba(99, 102, 241, .18) 0%, rgba(167, 139, 250, .12) 50%, rgba(236, 72, 153, .14) 100%);
+     (the coral end of the signature gradient is only 2.6:1 with white). Logo, decoration, big headlines: --brand-gradient. */
+  --brand-gradient-cta: linear-gradient(#D61F69, #D61F69);   /* one colour: buttons never carry a gradient */
+  --brand-gradient-soft: linear-gradient(135deg, rgba(214, 31, 105, .16) 0%, rgba(255, 122, 89, .10) 100%);
 
   /* light neutrals */
-  --light-bg: #F8FAFC; --light-surface: #FFFFFF; --light-muted: #F1F5F9; --light-border: #E2E8F0;
-  --light-text: #0F172A; --light-text-2: #64748B; --light-text-3: #94A3B8;
+  --light-bg: #FAFAFA; --light-surface: #FFFFFF; --light-muted: #F4F4F5; --light-border: #E4E4E7;
+  --light-text: #16121A; --light-text-2: #5F5A66; --light-text-3: #8A8590;
   /* dark neutrals */
-  --dark-bg: #0B0B0F; --dark-surface: #14141B; --dark-surface-2: #1C1C25; --dark-border: #2A2A34;
-  --dark-text: #F8FAFC; --dark-text-2: #94A3B8; --dark-text-3: #64748B;
+  --dark-bg: #0C0A0E; --dark-surface: #16131A; --dark-surface-2: #1F1B24; --dark-border: #2E2933;
+  --dark-text: #FAF8FA; --dark-text-2: #A8A2AE; --dark-text-3: #7C7682;
 
   /* ── Product aliases (dark by default) ───────────────────────────── */
   --hz-bg: var(--dark-bg);
@@ -52,7 +52,7 @@
   --hz-on-primary: #FFFFFF;
 
   /* semantic (never colour alone: always with an icon or words) */
-  --hz-success: #34D399; --hz-warning: #FBBF24; --hz-danger: #F87171; --hz-info: #818CF8;
+  --hz-success: #34D399; --hz-warning: #FBBF24; --hz-danger: #F87171; --hz-info: #93C5FD;
 
   /* ── Type ────────────────────────────────────────────────────────── */
   --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -66,8 +66,8 @@
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, .24);
   --shadow-md: 0 8px 24px rgba(15, 23, 42, .32);
   --shadow-lg: 0 24px 64px rgba(15, 23, 42, .45);
-  --shadow-brand: 0 10px 30px rgba(99, 102, 241, .35);
-  --focus-ring: 0 0 0 3px rgba(129, 140, 248, .55);
+  --shadow-brand: 0 8px 20px -8px rgba(214, 31, 105, .45);
+  --focus-ring: 0 0 0 3px rgba(147, 197, 253, .6);
   --ease: cubic-bezier(.2, .8, .2, 1);
   --dur-fast: 120ms; --dur: 200ms;
   --tap: 44px;
@@ -81,9 +81,9 @@
   --hz-text: var(--light-text);
   --hz-text-2: var(--light-text-2);
   --hz-text-3: var(--light-text-3);
-  --hz-link: var(--brand-primary-hover);
-  --hz-success: #059669; --hz-warning: #B45309; --hz-danger: #DC2626; --hz-info: #4F46E5;
-  --focus-ring: 0 0 0 3px rgba(99, 102, 241, .45);
+  --hz-link: #2563EB;
+  --hz-success: #059669; --hz-warning: #B45309; --hz-danger: #DC2626; --hz-info: #2563EB;
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, .4);
 }
 
 @media (prefers-reduced-motion: reduce) {

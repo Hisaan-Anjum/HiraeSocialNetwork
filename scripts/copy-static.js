@@ -158,7 +158,7 @@ const FILES = [
   'watch-profile.html',
   'social.html',
   'notifications.html',
-  'fonts/fraunces-latin.woff2',
+  'fonts/fraunces-latin.woff2', 'fonts/bricolage-grotesque-latin.woff2',   // Bricolage Grotesque (OFL): the heading face since 11-11
   // Connected H brand (brand/): canonical tokens + DM Sans (OFL), the favicon family and logo SVGs. Referenced by
   // plain links/imgs from pages Vite doesn't process, so copied verbatim (brand/scripts/sync-tokens.sh, export-icons.js).
   'brand-tokens.css', 'fonts/dm-sans-latin.woff2', 'fonts/DM-Sans-OFL.txt',
