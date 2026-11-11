@@ -186,6 +186,7 @@
         if (getAuth()) (async () => {
           if (paid) small.textContent = 'Проверяем оплату…';
           for (let i = 0; i < (paid ? 40 : 1); i++) {
+            if (paid && cfg.lava && i % 4 === 0) await apiRequest('/api/subscription/lava/check', { method: 'POST' }).catch(() => null);   // ask lava too, not only its webhook
             const s = await apiRequest('/api/subscription/status').catch(() => null);
             if (s && s.unlimited) return showActive(s.compUntil || s.currentPeriodEnd || Date.now() + 30 * 864e5);
             if (paid) await new Promise((r) => setTimeout(r, 3000));
