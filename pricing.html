@@ -124,6 +124,7 @@
     </div>
 
     <div class="price-fine">Secure checkout by Paddle · cancel anytime · you keep what you paid for until the period ends.</div>
+    <p class="price-fine" id="ruFallback" hidden lang="ru" style="margin-top:10px"><a href="pricing.html?ru=1">В России? Оплата российской картой в рублях →</a></p>
   </div>
 
   <footer class="landing-footer">
@@ -164,12 +165,33 @@
       // Paddle refuses Russia: people there get the ruble checkout, in Russian, instead of Paddle's buttons.
       const inRussia = await window.heraeInRussia();
       const sbp = document.getElementById('payRussia');
+      // A Russian behind a VPN with a foreign clock sees Paddle, which refuses their card: this link is their way out.
+      if (cfg && cfg.lava && !inRussia) document.getElementById('ruFallback').hidden = false;
       if (sbp && cfg && (cfg.lava || cfg.rubitpay) && inRussia) {
         sbp.hidden = false;
         document.querySelectorAll('[data-cta-paid]').forEach((c) => { c.closest('.price-card').hidden = true; });
         const fine = document.querySelector('.price-fine'); if (fine) fine.hidden = true;
         const stop = document.getElementById('payRussiaStop');
-        if (cfg.lava && getAuth()) stop.hidden = false;
+        // Back from lava with ?paid=1: its webhook can land a few seconds after the person does, so keep asking until
+        // the subscription shows, then say so plainly instead of offering the same buttons again.
+        const paid = new URLSearchParams(location.search).get('paid') === '1';
+        const small = sbp.querySelector('small');
+        const showActive = (until) => {
+          sbp.querySelectorAll('button[data-cycle], p').forEach((n) => { n.hidden = true; });
+          sbp.querySelector('h2').textContent = paid ? 'Оплата прошла ✓' : 'Подписка активна';
+          const p = sbp.querySelector('p'); p.hidden = false;
+          p.textContent = `Herae Together до ${new Date(until).toLocaleDateString('ru-RU')}. Откройте Herae и начните вечер.`;
+          small.textContent = ''; if (cfg.lava) stop.hidden = false;
+        };
+        if (getAuth()) (async () => {
+          if (paid) small.textContent = 'Проверяем оплату…';
+          for (let i = 0; i < (paid ? 40 : 1); i++) {
+            const s = await apiRequest('/api/subscription/status').catch(() => null);
+            if (s && s.unlimited) return showActive(s.compUntil || s.currentPeriodEnd || Date.now() + 30 * 864e5);
+            if (paid) await new Promise((r) => setTimeout(r, 3000));
+          }
+          if (paid) small.innerHTML = 'Оплата пока не подтверждена. Если деньги списались, напишите нам: <a href="mailto:billing@herae.app">billing@herae.app</a>';
+        })();
         stop.addEventListener('click', async () => {
           if (!confirm('Отменить продление? Оплаченное время останется.')) return;
           try { await apiRequest('/api/subscription/lava/cancel', { method: 'POST' }); sbp.querySelector('small').textContent = 'Продление отменено. Оплаченное время осталось.'; }
