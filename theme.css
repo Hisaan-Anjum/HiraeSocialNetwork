@@ -294,3 +294,6 @@ html:root { --h-font-display: var(--font-display); }
 .guide h1 { font-size: clamp(32px, 4.4vw, 46px) !important; line-height: 1.08 !important; }
 :root:not([data-theme="dark"]) .avatar, :root:not([data-theme="dark"]) .contact-avatar, :root:not([data-theme="dark"]) .feed-card-avatar { color: var(--plum) !important; }
 .review-session-title-banner { font-family: var(--font-display) !important; font-weight: 600 !important; }
+/* The match moment sits on its own dark overlay in both themes: light text, a solid headline. */
+.mt { --h-text: #FBF3EE; --h-text-2: #E6D6DF; --h-text-3: #CDB8C6; }
+.mt h2 { background: none !important; color: #FFEDE6 !important; -webkit-text-fill-color: #FFEDE6; }
