@@ -57,9 +57,18 @@ export const PATHS = {
   frown: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 16a4.5 4.5 0 0 1 7 0M9 9.5v.5M15 9.5v.5"/>',
   logout: '<path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14M10 8l-4 4 4 4M6 12h10"/>',
   zap: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5M12 14v3.5M8 20.5h8M9.5 17.5h5v3h-5z"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
 };
 
 /** icon('heart') → an inline SVG string in the current text colour. `cls` adds classes (e.g. 'is-on' to fill). */
 export function icon(name, size = 20, cls = '') {
   return `<svg class="ico${cls ? ' ' + cls : ''}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name] || ''}</svg>`;
 }
+
+// Server data still carries an emoji per milestone (relationships.js); the UI draws the matching line icon instead.
+const EMOJI_ICON = { '❤️': 'heart', '🎬': 'film', '🎥': 'video', '🍿': 'play', '📸': 'camera', '⏱️': 'clock', '⭐': 'star', '🏆': 'trophy',
+  '🎉': 'sparkle', '✨': 'sparkle', '🌙': 'moon', '📅': 'calendar', '🎂': 'gift', '🎁': 'gift', '✈️': 'globe', '💍': 'heart', '🎄': 'sparkle' };
+const bare = (e) => String(e || '').replace(/\uFE0F/g, '').trim();   // ❤️ and ❤ are the same milestone
+const EMOJI_BARE = Object.fromEntries(Object.entries(EMOJI_ICON).map(([k, v]) => [bare(k), v]));
+export const emojiIconName = (e) => EMOJI_BARE[bare(e)] || 'sparkle';

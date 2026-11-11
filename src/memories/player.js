@@ -7,7 +7,7 @@
 // controls: tap right/left to move, hold to pause, Esc to close.
 'use strict';
 
-import { icon } from '../lib/icons.js';
+import { icon, emojiIconName } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
 
@@ -64,7 +64,7 @@ function buildScenes(m) {
           <div class="ms-tl-list">
             ${m.timeline.map((t, i) => `
               <div class="ms-tl-item" style="animation-delay:${0.25 + i * 0.28}s">
-                <span class="ms-tl-emoji">${escapeHtml(t.emoji)}</span>
+                <span class="ms-tl-emoji">${icon(emojiIconName(t.emoji), 20)}</span>
                 <span class="ms-tl-title">${escapeHtml(t.title)}</span>
                 ${t.dateLabel ? `<span class="ms-tl-date">${escapeHtml(t.dateLabel)}</span>` : ''}
               </div>`).join('')}

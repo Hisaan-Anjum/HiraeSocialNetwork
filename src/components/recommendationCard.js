@@ -40,7 +40,7 @@ export function renderFeaturedHero(rec, personalised = false) {
   if (!rec) return '';
   const bg = rec.backdropUrl || rec.posterUrl;
   return `
-    <a href="movie.html?id=${rec.id}" class="hero-card" style="${bg ? `background-image: linear-gradient(180deg, rgba(15, 23, 42,0.05) 0%, rgba(15, 23, 42,0.55) 55%, var(--bg-0) 100%), url('${bg}')` : ''}">
+    <a href="movie.html?id=${rec.id}" class="hero-card" style="${bg ? `background-image: linear-gradient(180deg, rgba(22, 18, 26,0.05) 0%, rgba(22, 18, 26,0.55) 55%, var(--bg-0) 100%), url('${bg}')` : ''}">
       <div class="hero-card-badge">${icon('sparkle', 14)} ${personalised ? 'Picked for you' : 'Tonight\'s pick'}</div>
       <div class="hero-card-title">${escapeHtml(rec.title)}</div>
       ${rec.availableHere === false ? '<div class="region-off">Not available in your region</div>' : ''}

@@ -22,17 +22,17 @@
   --surface-raised: #1F1B24;          /* menus, sheets, popovers */
   --hero-bg: linear-gradient(160deg, #221D27 0%, #1A161E 46%, #141117 100%);
   --hero-line: rgba(244, 114, 182, .2);
-  --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%234F46E5' stop-opacity='0'/%3E%3Cstop offset='.6' stop-color='%236366F1' stop-opacity='.55'/%3E%3Cstop offset='1' stop-color='%23EC4899' stop-opacity='.8'/%3E%3C/linearGradient%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='1.4'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E%3Cpath d='M30 0C90 72 160 152 300 204V0Z' fill='url(%23a)' opacity='0.38'/%3E%3Cpath d='M126 0C168 56 214 106 300 130V0Z' fill='url(%23a)' opacity='0.5'/%3E%3Cpath d='M206 0C230 32 258 54 300 62V0Z' fill='%23EC4899' opacity='0.3'/%3E%3C/g%3E%3Cpath d='M126 0C168 56 214 106 300 130M30 0C90 72 160 152 300 204' fill='none' stroke='%23fff' stroke-opacity='0.08'/%3E%3C/svg%3E");
+  --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23D61F69' stop-opacity='0'/%3E%3Cstop offset='.6' stop-color='%23D61F69' stop-opacity='.55'/%3E%3Cstop offset='1' stop-color='%23D61F69' stop-opacity='.8'/%3E%3C/linearGradient%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='1.4'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E%3Cpath d='M30 0C90 72 160 152 300 204V0Z' fill='url(%23a)' opacity='0.38'/%3E%3Cpath d='M126 0C168 56 214 106 300 130V0Z' fill='url(%23a)' opacity='0.5'/%3E%3Cpath d='M206 0C230 32 258 54 300 62V0Z' fill='%23D61F69' opacity='0.3'/%3E%3C/g%3E%3Cpath d='M126 0C168 56 214 106 300 130M30 0C90 72 160 152 300 204' fill='none' stroke='%23fff' stroke-opacity='0.08'/%3E%3C/svg%3E");
   /* Header cards (founder 11-02 mock-up): a soft blurred glow swept in from the top-right corner (pink at the corner,
      indigo after it, two faint arcs), on frosted glass. */
-  --hero-glass: radial-gradient(60% 50% at 102% -4%, rgba(236, 72, 153, .55), transparent 62%),
+  --hero-glass: radial-gradient(60% 50% at 102% -4%, rgba(var(--accent-rgb), .55), transparent 62%),
     radial-gradient(85% 75% at 90% 0%, rgba(255, 122, 89, .38), transparent 66%),
-    radial-gradient(140% 120% at 120% -20%, transparent 56%, rgba(236, 72, 153, .07) 60%, transparent 66%),
+    radial-gradient(140% 120% at 120% -20%, transparent 56%, rgba(var(--accent-rgb), .07) 60%, transparent 66%),
     linear-gradient(160deg, #1B1728 0%, #15121F 55%, #100E17 100%);
   --card-line: rgba(255, 255, 255, .07);
   --card-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px -16px rgba(0, 0, 0, .7);
-  --grad-cta: linear-gradient(100deg, #4F46E5 0%, #6440E0 55%, #BE2A7E 100%);   /* white text ≥ 4.5:1 at every stop */
-  --grad-ring: linear-gradient(135deg, #6366F1, #F472B6 50%, #EC4899);
+  --grad-cta: linear-gradient(100deg, #B8185A 0%, #D61F69 55%, #B8185A 100%);   /* white text ≥ 4.5:1 at every stop */
+  --grad-ring: linear-gradient(135deg, #D61F69, #F472B6 50%, #D61F69);
   --glass: rgba(14, 14, 24, .58);
   --glass-hover: rgba(30, 28, 60, .78);
   --glass-line: rgba(255, 255, 255, .16);
@@ -131,7 +131,7 @@ input, textarea { caret-color: var(--brand-primary); }
    laid over photos all sit on film or photo, not on the page. */
 .ms-player, .hero-card, .movie-hero {
   color-scheme: dark; --fg-rgb: 255, 255, 255;
-  --bg-0: #0B0B0F; --bg-1: #111117; --bg-2: #1A1A2E; --card: #17141B; --surface-post: #17141B; --surface-raised: #1F1B24;
+  --bg-0: #0B0B0F; --bg-1: #111117; --bg-2: #1F1B24; --card: #17141B; --surface-post: #17141B; --surface-raised: #1F1B24;
   --ink: #F8FAFC; --ink-dim: #A6ADC8; --ink-faint: #7E86A6; --border: rgba(255, 255, 255, .08); --card-line: rgba(255, 255, 255, .07);
   --gold: #F472B6; --brand-primary-soft: #F9A8D4; --field-bg: rgba(255, 255, 255, .04);
   --c-indigo-ink: #FBCFE8; --c-indigo-soft: #F9A8D4; --c-lilac-ink: #FBCFE8; --c-red-ink: #FCA5A5; --c-green-ink: #6EE7B7;
@@ -143,9 +143,9 @@ input, textarea { caret-color: var(--brand-primary); }
 /* ── Founder 11-02, round 2: exactly the mock-up. ── */
 /* The corner: a blurred magenta band swept in from the top edge down the right side, two arcs, on dark frosted glass. */
 .profile-header .profile-header-inner, .wp-me {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.75' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.45' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.35' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.16' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(30, 27, 66, .78) 0%, rgba(17, 16, 34, .80) 55%, rgba(11, 11, 18, .82) 100%) !important; position: relative; }
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23B8185A'/%3E%3Cstop offset='.55' stop-color='%23D61F69'/%3E%3Cstop offset='1' stop-color='%23D61F69'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.75' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23D61F69' stroke-width='26' fill='none' opacity='.45' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.35' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%23D61F69' stroke-width='60' fill='none' opacity='.16' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(31, 27, 36, .78) 0%, rgba(22, 18, 26, .80) 55%, rgba(11, 11, 18, .82) 100%) !important; position: relative; }
 :root:not([data-theme="dark"]) .profile-header .profile-header-inner, :root:not([data-theme="dark"]) .wp-me {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.24' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.2' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.18' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.1' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(255, 255, 255, .92), rgba(243, 242, 255, .9)) !important; }
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23B8185A'/%3E%3Cstop offset='.55' stop-color='%23D61F69'/%3E%3Cstop offset='1' stop-color='%23D61F69'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.24' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23D61F69' stroke-width='26' fill='none' opacity='.2' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.18' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%23D61F69' stroke-width='60' fill='none' opacity='.1' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(255, 255, 255, .92), rgba(255, 247, 250, .9)) !important; }
 .profile-edit-pill { position: absolute; top: 20px; right: 20px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, .22); background: rgba(10, 10, 18, .35); backdrop-filter: blur(10px); color: inherit; font-weight: 600; font-size: 14px; text-decoration: none; }
 .profile-header .profile-name { padding-right: 132px; }
@@ -164,7 +164,7 @@ input, textarea { caret-color: var(--brand-primary); }
 /* The line icon set (src/lib/icons.js, window.hIcon): sits on the text baseline, never squashed. */
 .ico { display: inline-block; flex: none; vertical-align: -0.2em; }
 .ico-w { display: inline-grid; place-items: center; vertical-align: -0.2em; }
-:root:not([data-theme="dark"]) .profile-header .profile-header-inner, :root:not([data-theme="dark"]) .wp-me { box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 28px -18px rgba(49, 46, 129, .22) !important; border-color: rgba(15, 23, 42, .08) !important; }
+:root:not([data-theme="dark"]) .profile-header .profile-header-inner, :root:not([data-theme="dark"]) .wp-me { box-shadow: 0 1px 2px rgba(22, 18, 26, .04), 0 10px 28px -18px rgba(22, 18, 26, .22) !important; border-color: rgba(22, 18, 26, .08) !important; }
 /* The film banner sits on the film's own picture: dark in both themes, rounded off where the light page begins. */
 :root:not([data-theme="dark"]) .movie-hero { border-radius: 0 0 24px 24px; overflow: hidden; }
 /* Two names older components use (AI Moments panel, confirm dialog) that were never defined: map them to the theme. */
@@ -196,7 +196,7 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(184, 
 .ms-chooser-sub, .wp-intro { font-size: 14px !important; }
 .ms-chooser-track { position: relative; height: 3px; margin: 10px auto 0; width: 64px; border-radius: 3px; background: rgba(255, 255, 255, .10); overflow: hidden; }
 :root:not([data-theme="dark"]) .ms-chooser-track { background: rgba(17, 12, 34, .10); }
-.ms-chooser-track span { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); transition: left .12s linear; }
+.ms-chooser-track span { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #D61F69, #D61F69); transition: left .12s linear; }
 
 /* Founder 11-02: film page on phones fits the screen; text on the always-dark film hero stays light in light mode. */
 .movie-hero-info { min-width: 0; flex: 1 1 auto; }
@@ -318,8 +318,13 @@ html:root { --h-font-display: var(--font-display); }
   body .an-push-txt { flex: 1 1 auto !important; } body .an-push-txt span { display: none; }
   body .an-push-txt b { font-size: 14px; }
   body .an-push-acts { flex: none !important; gap: 4px; }
-  body .an-push-btn.is-primary, body .an-push-btn.is-ghost { flex: none !important; height: 34px !important; font-size: 13.5px !important; padding: 0 12px !important; }
+  body .an-push-btn.is-primary, body .an-push-btn.is-ghost { flex: none !important; height: 34px !important; font-size: 13.5px !important; padding: 0 14px !important; }
+  body .an-push-btn.is-quiet { height: 34px; font-size: 13.5px; padding: 0 6px; }
 }
+/* One line on phones: icon, short title, a quiet "Install app" link and the button. The title wraps rather than clips. */
+body .an-push-txt b { overflow-wrap: anywhere; }
+body .an-push-btn.is-quiet { order: -1; }
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-quiet { color: var(--brand-secondary); }
 body .an-lock-ico, body .an-lock-btn { background: var(--brand) !important; }
 /* People card: a dark photo card with a plain near-black base and shade, no colour wash. */
 body .d-art { background: linear-gradient(180deg, #2A2530 0%, #121015 100%) !important; }

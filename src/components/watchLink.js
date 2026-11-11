@@ -1,7 +1,7 @@
 import { icon, PATHS } from '../lib/icons.js';
 
 // The card's mark: the line clapperboard drawn in the brand gradient (founder 11-02 mock-up), never a cartoon.
-const ILL = `<div class="watch-link-ill" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="url(#wlg)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="wlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818CF8"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>${PATHS.film}</svg></div>`;
+const ILL = `<div class="watch-link-ill" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="url(#wlg)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="wlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D61F69"/><stop offset="1" stop-color="#D61F69"/></linearGradient></defs>${PATHS.film}</svg></div>`;
 // watchLink.js — "Watch something together now": paste a movie / video link, pick your person, press Watch together.
 //
 // From a real customer (CUSTOMER_TALKS.md 2026-10-08, Jana): "I wanted to copy the link of the movie from Chrome,

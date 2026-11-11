@@ -57,7 +57,7 @@ async function init() {
     if (err.message === 'Admin access required.') {
       gateEl.innerHTML = `
         <div class="empty-state">
-          <div class="icon">🔒</div>
+          <div class="icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
           <div class="msg">
             You're logged in as <strong>${escapeHtml(auth.username)}</strong>, but that account
             doesn't have admin access.<br>
@@ -65,7 +65,7 @@ async function init() {
           </div>
         </div>`;
     } else {
-      gateEl.innerHTML = `<div class="empty-state"><div class="icon">😕</div><div class="msg">${escapeHtml(err.message)}</div></div>`;
+      gateEl.innerHTML = `<div class="empty-state"><div class="icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div><div class="msg">${escapeHtml(err.message)}</div></div>`;
     }
   }
 }
@@ -173,8 +173,8 @@ function canReorder() {
 function renderTable() {
   if (!recommendations.length) {
     tableWrap.innerHTML = query
-      ? `<div class="empty-state"><div class="icon">🔍</div><div class="msg">Nothing matches “${escapeHtml(query)}”.<br>Try a different title.</div></div>`
-      : `<div class="empty-state"><div class="icon">🎬</div><div class="msg">No recommendations yet.<br>Click "+ New recommendation" to add the first one.</div></div>`;
+      ? `<div class="empty-state"><div class="icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div><div class="msg">Nothing matches “${escapeHtml(query)}”.<br>Try a different title.</div></div>`
+      : `<div class="empty-state"><div class="icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></div><div class="msg">No recommendations yet.<br>Click "+ New recommendation" to add the first one.</div></div>`;
     return;
   }
   const drag = canReorder();
@@ -210,7 +210,7 @@ function rowHtml(rec) {
       ${drag ? '<td><span class="drag-handle" title="Drag to reorder">⠿</span></td>' : ''}
       <td>${rec.posterUrl
         ? `<img class="rec-thumb" src="${momentImageUrl(rec.posterUrl)}" alt="">`
-        : `<div class="rec-thumb-empty">🎬</div>`}</td>
+        : `<div class="rec-thumb-empty"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></div>`}</td>
       <td class="rec-title-cell">
         <div class="rec-title">${escapeHtml(rec.title)}</div>
         ${genres ? `<div class="rec-genres">${escapeHtml(genres)}</div>` : ''}
@@ -222,8 +222,8 @@ function rowHtml(rec) {
       <td>${rec.featured ? '<span class="featured-pill">Featured</span>' : ''}</td>
       <td>
         <div class="rec-actions">
-          <button class="icon-btn" data-action="edit" data-id="${rec.id}" title="Edit">✏️</button>
-          <button class="icon-btn icon-btn-danger" data-action="delete" data-id="${rec.id}" title="Delete">🗑️</button>
+          <button class="icon-btn" data-action="edit" data-id="${rec.id}" title="Edit" aria-label="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></button>
+          <button class="icon-btn icon-btn-danger" data-action="delete" data-id="${rec.id}" title="Delete" aria-label="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </div>
       </td>
     </tr>`;

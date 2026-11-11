@@ -31,7 +31,7 @@ const BRAND = {
   paramount_plus: { name: 'Paramount+', color: '#0064ff', fg: '#fff' },
   peacock: { name: 'Peacock', color: '#000', fg: '#fff' },
 };
-const fallback = (link) => ({ name: link.name || 'Watch', color: '#6366f1', fg: '#fff' });
+const fallback = (link) => ({ name: link.name || 'Watch', color: '#D61F69', fg: '#fff' });
 // How a service offers it here (from the availability data); subscription is the default and says nothing.
 const KIND_LABEL = { free: 'Free', addon: 'Add-on', rent: 'Rent', buy: 'Buy' };
 

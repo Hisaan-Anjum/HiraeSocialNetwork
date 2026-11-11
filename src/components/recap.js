@@ -78,7 +78,7 @@ function drawWatermark(ctx, W, H, logo) {
   const fontSize = 34, pad = 20, marginX = 34, marginY = Math.round(H * 0.06);
   const markSize = 52, gap = 16, text = 'herae.app';
   ctx.save();
-  ctx.font = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
   ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
   const textW = ctx.measureText(text).width;
   const pillH = markSize + pad * 0.9;
@@ -97,7 +97,7 @@ function drawWatermark(ctx, W, H, logo) {
   } else {
     const hcx = markX + markSize / 2, hcy = markY + markSize / 2;
     const g = ctx.createLinearGradient(hcx - markSize / 2, hcy - markSize / 2, hcx + markSize / 2, hcy + markSize / 2);
-    g.addColorStop(0, '#6366F1'); g.addColorStop(0.5, '#A78BFA'); g.addColorStop(1, '#EC4899');
+    g.addColorStop(0, '#D61F69'); g.addColorStop(1, '#D61F69');
     drawHeart(ctx, hcx, hcy + markSize * 0.06, markSize * 0.95, g);
   }
   ctx.fillStyle = 'rgba(255,255,255,0.97)';
@@ -129,7 +129,7 @@ function gridFor(count) {
 // the media viewer + Share flow accept, or null when there isn't enough (or
 // the canvas couldn't be produced, e.g. tainted in a cross-origin dev setup).
 // Canvas only draws a web font once it has loaded; without this the card silently falls back to the system face.
-const brandFont = () => (document.fonts ? document.fonts.load('700 54px "DM Sans"').catch(() => {}) : Promise.resolve());
+const brandFont = () => (document.fonts ? document.fonts.load('700 54px "Bricolage Grotesque"').catch(() => {}) : Promise.resolve());
 
 export async function buildRecap({ username, moments, profileUrl }) {
   await brandFont();
@@ -153,22 +153,20 @@ export async function buildRecap({ username, moments, profileUrl }) {
 
   // Background — warm Herae gradient.
   const bg = ctx.createLinearGradient(0, 0, SIZE, SIZE);
-  bg.addColorStop(0, '#1b1327');
-  bg.addColorStop(0.55, '#1e293b');
-  bg.addColorStop(1, '#0f172a');
+  bg.addColorStop(0, '#1F1B24');   // the deliberate near-black of the 11-11 palette
+  bg.addColorStop(0.55, '#16131A');
+  bg.addColorStop(1, '#0C0A0E');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, SIZE, SIZE);
 
   // Header.
   const headerH = 150;
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  const gTitle = ctx.createLinearGradient(64, 0, 520, 0);
-  gTitle.addColorStop(0, '#A5B4FC'); gTitle.addColorStop(0.5, '#C4B5FD'); gTitle.addColorStop(1, '#F9A8D4');
-  ctx.fillStyle = gTitle;
-  ctx.font = `700 54px "DM Sans", system-ui, sans-serif`;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `700 54px "Bricolage Grotesque", system-ui, sans-serif`;
   ctx.fillText('Herae Recap', 64, 92);
-  ctx.fillStyle = 'rgba(233,213,255,0.85)';
-  ctx.font = `500 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.fillStyle = 'rgba(250,248,250,0.85)';
+  ctx.font = `500 26px Inter, system-ui, sans-serif`;
   ctx.fillText(`${username} · ${usable.length} moments worth reliving`, 64, 130);
 
   // Grid.
@@ -185,7 +183,7 @@ export async function buildRecap({ username, moments, profileUrl }) {
     drawCover(ctx, img, x, y, cellW, cellH, 20);
     ctx.save();
     roundRect(ctx, x, y, cellW, cellH, 20);
-    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(167,139,250,0.35)'; ctx.stroke();
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(214,31,105,0.45)'; ctx.stroke();
     ctx.restore();
   });
 

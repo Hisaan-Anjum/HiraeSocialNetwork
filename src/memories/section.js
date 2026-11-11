@@ -10,7 +10,7 @@
 'use strict';
 
 import { escapeHtml } from '../lib/util.js';
-import { icon } from '../lib/icons.js';
+import { icon, emojiIconName } from '../lib/icons.js';
 import { renderAvatar } from '../components/avatar.js';
 import { buildStoryManifest, refreshManifestMedia, MANIFEST_VERSION } from './engine.js';
 import { playStory } from './player.js';
@@ -204,7 +204,7 @@ async function mountRelationship(container, profile, opts = {}) {
           <div class="ms-timeline">
             ${s.timeline.slice().reverse().map((t) => `
               <div class="ms-tl-card">
-                <div class="ms-tl-card-emoji">${escapeHtml(t.emoji)}</div>
+                <div class="ms-tl-card-emoji">${icon(emojiIconName(t.emoji), 20)}</div>
                 <div class="ms-tl-card-title">${escapeHtml(t.title)}</div>
                 ${t.subtitle ? `<div class="ms-tl-card-sub">${escapeHtml(t.subtitle).replace(/(\d)★/g, (_, n) => `${n} ${icon('star', 12, 'is-on')}`)}</div>` : ''}
                 <div class="ms-tl-card-date">${escapeHtml(t.date)}</div>

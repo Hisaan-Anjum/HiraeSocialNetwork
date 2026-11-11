@@ -111,11 +111,11 @@ function ensureSubStyles() {
   st.textContent =
     '.plan-pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;' +
     'padding:5px 12px;border-radius:999px;text-decoration:none;white-space:nowrap;' +
-    'color:var(--ink-dim);background:rgba(255,255,255,.05);border:1px solid var(--border);' +
+    'color:var(--nav-ink-on,var(--ink));background:var(--nav-hover,transparent);border:1px solid var(--pill-line,var(--border));' +
     'transition:border-color .15s ease,color .15s ease,filter .15s ease;}' +
     '.plan-pill:hover{color:var(--ink);border-color:var(--purple);}' +
-    '.plan-pill-paid{color:#fff;border:none;background:linear-gradient(135deg,var(--purple),var(--purple-deep));' +
-    'box-shadow:0 2px 10px rgba(139,92,246,.35);}' +
+    '.plan-pill-paid{color:#fff;border:none;background:var(--brand-primary,#D61F69);' +
+    'box-shadow:0 2px 10px rgba(var(--accent-rgb),.35);}' +
     '.plan-pill-paid:hover{color:#fff;filter:brightness(1.08);}';
   document.head.appendChild(st);
 }
