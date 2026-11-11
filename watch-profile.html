@@ -26,7 +26,7 @@
   .wp-steps li { flex: 1; counter-increment: s; font-size: var(--h-size-sm); font-weight: 600; color: var(--h-text-3); padding-top: 8px; border-top: 3px solid var(--h-line-strong); }
   .wp-steps li::before { content: counter(s) " · "; }
   .wp-steps li.on { color: var(--h-text); border-top-color: var(--h-accent); }
-  .wp-steps li.done { color: var(--h-text-2); border-top-color: #818CF8; }
+  .wp-steps li.done { color: var(--h-text-2); border-top-color: var(--x818cf8, #818CF8); }
   .wp-meter { display: flex; align-items: center; gap: var(--h-3); margin: 0 0 var(--h-5); font-size: var(--h-size-sm); color: var(--h-text-2); }
   .wp-meter-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--h-surface-2); overflow: hidden; }
   .wp-meter-bar i { display: block; height: 100%; width: 0; background: var(--brand-gradient); transition: width var(--h-med) var(--h-ease); }
@@ -35,7 +35,7 @@
   .wp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; user-select: none; pointer-events: none; }
   .wp-ph.filled { border-style: solid; border-color: transparent; cursor: grab; touch-action: none; transition: box-shadow .15s ease; }
   .wp-ph.dragging { z-index: 5; cursor: grabbing; box-shadow: 0 16px 40px rgba(2,6,23,.6); transition: none; }
-  .wp-ph.drop { box-shadow: 0 0 0 3px #A78BFA; }
+  .wp-ph.drop { box-shadow: 0 0 0 3px var(--xa78bfa, #A78BFA); }
   .wp-ph .add { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: none; color: var(--h-text-2); font-size: 30px; cursor: pointer; }
   .wp-ph .rm { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(15,23,42,.8); color: #fff; font-size: 15px; cursor: pointer; }
   .wp-ph .pv { position: absolute; right: 6px; bottom: 6px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; border: 0; background: rgba(15,23,42,.85); color: #fff; cursor: pointer; }
@@ -43,7 +43,7 @@
   .wp-ph .mk { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; border: 0; background: rgba(15,23,42,.8); color: #fff; cursor: pointer; }
   .wp-more { margin: var(--h-4) 0; border-top: 1px solid var(--h-line); padding-top: var(--h-3); }
   .wp-vibe { margin-top: var(--h-5); padding: var(--h-4); border-radius: 20px; border: 1px solid var(--h-line);
-    background: radial-gradient(120% 90% at 100% 0%, rgba(236, 72, 153, .14), transparent 60%), radial-gradient(120% 90% at 0% 100%, rgba(99, 102, 241, .16), transparent 60%); }
+    background: radial-gradient(120% 90% at 100% 0%, rgba(236, 72, 153, .14), transparent 60%), radial-gradient(120% 90% at 0% 100%, rgba(var(--accent-rgb), .16), transparent 60%); }
   .wp-vibe legend { float: left; width: 100%; padding: 0; margin: 0 0 4px; font-weight: 700; }
   .wp-vibe-h { margin: var(--h-2) 0; font-size: 14px; font-weight: 700; }
   /* Its own little wizard, never mistaken for the page's (founder 10-24): a header strip with "Question n of 3", its own
@@ -65,7 +65,7 @@
   .h2 .wp-vibe .h-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; font-size: 14px; font-weight: 600;
     transition: transform .12s ease, box-shadow .12s ease; }
   .h2 .wp-vibe .h-chip .e { font-size: 17px; line-height: 1; }
-  .h2 .wp-vibe .h-chip[aria-pressed="true"] { background: linear-gradient(135deg, #6366F1, #EC4899); color: #fff; border-color: transparent;
+  .h2 .wp-vibe .h-chip[aria-pressed="true"] { background: linear-gradient(135deg, var(--x6366f1, #6366F1), var(--xec4899, #EC4899)); color: #fff; border-color: transparent;
     box-shadow: 0 6px 18px rgba(236, 72, 153, .28); transform: translateY(-1px); }
   @media (prefers-reduced-motion: reduce) { .h2 .wp-vibe .h-chip { transition: none; } .h2 .wp-vibe .h-chip[aria-pressed="true"] { transform: none; } }
   .wp-more summary { cursor: pointer; font-weight: 600; padding: var(--h-2) 0; min-height: 32px; }
@@ -77,12 +77,12 @@
   .wp-invite { display: flex; gap: 8px; align-items: center; margin-top: 8px; } .wp-invite code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 12px; border-radius: 10px; background: var(--h-surface-2); color: var(--h-text); font-size: 13px; }
   /* Go live: the one switch that matters most on this page, big and unmissable */
   /* .h2 .h-switch's "padding: … 0" used to win here, so the text sat on the card's border (founder 10-23 phone shot). */
-  .h2 .wp-golive { padding: 18px 20px; gap: 16px; align-items: center; border-radius: 18px; border: 1.5px solid rgba(167,139,250,.45); background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(236,72,153,.10)); }
+  .h2 .wp-golive { padding: 18px 20px; gap: 16px; align-items: center; border-radius: 18px; border: 1.5px solid rgba(167,139,250,.45); background: linear-gradient(135deg, rgba(var(--accent-rgb),.14), rgba(236,72,153,.10)); }
   .h2 .wp-golive strong { display: block; font-size: 18px; line-height: 1.3; margin-bottom: 6px; }
   .h2 .wp-golive .muted { display: block; font-size: 15px; line-height: 1.5; }
   .h2 .wp-golive input { width: 58px; height: 34px; } .h2 .wp-golive input::after { width: 26px; height: 26px; }
   .h2 .wp-golive input:not(:checked) { background: #334155; border-color: #64748B; } .h2 .wp-golive input:not(:checked)::after { background: #E2E8F0; }
-  .h2 .wp-golive input:checked { background: linear-gradient(135deg, #6366F1, #EC4899); border-color: transparent; } .h2 .wp-golive input:checked::after { transform: translateX(24px); background: #fff; }
+  .h2 .wp-golive input:checked { background: linear-gradient(135deg, var(--x6366f1, #6366F1), var(--xec4899, #EC4899)); border-color: transparent; } .h2 .wp-golive input:checked::after { transform: translateX(24px); background: #fff; }
   .wp-fork { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0 8px; }
   @media (max-width: 640px) { .wp-fork { grid-template-columns: 1fr; } }
   .wp-fork-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 190px; padding: 22px; border-radius: 20px; text-align: left; cursor: pointer;
@@ -92,14 +92,14 @@
   .wp-fork-tile b { font-size: 19px; line-height: 1.25; color: var(--h-text); } .wp-fork-tile small { font-size: 15px; line-height: 1.45; color: var(--h-text-3); }
   .wp-fork-ico { font-size: 30px; line-height: 1; }
   .wp-fork-go { margin-top: auto; font-weight: 700; font-size: 15px; color: #C4B5FD; }
-  .wp-fork-tile.meet { border: 0; background: linear-gradient(135deg, rgba(99, 102, 241, .32), rgba(236, 72, 153, .26)); box-shadow: inset 0 0 0 1.5px rgba(167, 139, 250, .65), 0 18px 40px -18px rgba(236, 72, 153, .55); }
-  .wp-fork-tile.meet .wp-fork-go { display: inline-flex; padding: 10px 18px; border-radius: 999px; color: #fff; background: linear-gradient(135deg, #6366F1, #A78BFA 52%, #EC4899); }
+  .wp-fork-tile.meet { border: 0; background: linear-gradient(135deg, rgba(var(--accent-rgb), .32), rgba(236, 72, 153, .26)); box-shadow: inset 0 0 0 1.5px rgba(167, 139, 250, .65), 0 18px 40px -18px rgba(236, 72, 153, .55); }
+  .wp-fork-tile.meet .wp-fork-go { display: inline-flex; padding: 10px 18px; border-radius: 999px; color: #fff; background: linear-gradient(135deg, var(--x6366f1, #6366F1), var(--xa78bfa, #A78BFA) 52%, var(--xec4899, #EC4899)); }
   .wp-skip { display: inline-block; margin: 6px 0 4px; font-size: 14px; color: var(--h-text-3); text-decoration: underline; }
   .wp-adult { margin: 10px 2px 22px; font-size: 13px; color: var(--h-text-2); }
   /* Your header (founder 11-02): the Home card, here too, with the way to your Herae page; account settings at the end. */
   .wp-me { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; padding: 22px; margin: 0 0 22px; border-radius: 22px;
-    border: 1px solid rgba(129, 140, 248, .28); background: linear-gradient(160deg, rgba(49, 46, 129, .55), rgba(15, 23, 42, .6)); }
-  .wp-me-av { width: 84px; height: 84px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #8B5CF6, #EC4899); flex: none; }
+    border: 1px solid rgba(var(--accent2-rgb), .28); background: linear-gradient(160deg, rgba(49, 46, 129, .55), rgba(15, 23, 42, .6)); }
+  .wp-me-av { width: 84px; height: 84px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, var(--x8b5cf6, #8B5CF6), var(--xec4899, #EC4899)); flex: none; }
   .wp-me-av img, .wp-me-av span { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: grid; place-items: center;
     background: var(--brand-gradient-cta); color: #fff; font: 600 30px var(--font-sans, system-ui); }
   .wp-me-txt { flex: 1; min-width: 180px; }

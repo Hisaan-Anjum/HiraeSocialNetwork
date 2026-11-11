@@ -4,11 +4,11 @@
 // Pages keep their old header in the DOM (their scripts still bind to its buttons) but it is hidden.
 // Classic global script, loaded after api.js; does nothing for signed-out visitors.
 (function () {
-  // Theme (founder 11-02): Light / Dark / Auto from Account settings (localStorage 'herae_theme'; Auto follows the
+  // Theme (founder 11-02): Light / Dark / Auto from Account settings (localStorage 'herae_theme', default Light since the 11-11 warm redesign; Auto follows the
   // device). Runs first, before the auth check, so the page paints in the right theme; theme.css reads data-theme.
   const applyTheme = () => {
-    let pref = 'auto';
-    try { pref = localStorage.getItem('herae_theme') || 'auto'; } catch (e) { /* storage blocked: Auto */ }
+    let pref = 'light';
+    try { pref = localStorage.getItem('herae_theme') || 'light'; } catch (e) { /* storage blocked: Light */ }
     const light = pref === 'light' || (pref !== 'dark' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
     document.documentElement.dataset.theme = light ? 'light' : 'dark';
   };
@@ -89,12 +89,12 @@
     background: var(--nav-bg, rgba(11, 11, 15, .86)); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--nav-line, rgba(255, 255, 255, .07));
     font-family: var(--font-sans, system-ui, sans-serif); }
   .an-brand { display: flex; align-items: center; margin-right: 16px; } .an-brand img { height: 26px; width: auto; display: block; }
-  :root[data-theme="light"] .an-brand img { content: url("herae-logo.svg"); }   /* the dark-ink lock-up on light */
+  :root:not([data-theme="dark"]) .an-brand img { content: url("herae-logo.svg"); }   /* the dark-ink lock-up on light */
   .an-links { display: flex; gap: 2px; flex: 1; }
   .an-links a { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px; color: var(--nav-ink, #94A3B8); font-weight: 600; font-size: 14.5px; text-decoration: none; position: relative; }
   .an-links a svg { width: 18px; height: 18px; }
   .an-links a:hover { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-hover, rgba(148, 163, 184, .1)); }
-  .an-links a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-active, rgba(99, 102, 241, .16)); }
+  .an-links a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-active, rgba(var(--accent-rgb), .16)); }
   .an-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
   .an-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--nav-ink-on, #CBD5E1); background: none; border: 0; cursor: pointer; text-decoration: none; }
   .an-bell { position: relative; }   /* the bell's count sits on its corner */
@@ -102,17 +102,17 @@
   .an-menu-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 11px; border-radius: 999px; border: 1px solid rgba(var(--fg-rgb, 255, 255, 255), .14); background: rgba(var(--fg-rgb, 255, 255, 255), .05); color: var(--nav-ink-on, #fff); font: 600 14px var(--font-sans, inherit); cursor: pointer; }
   .an-menu-btn svg { width: 20px; height: 20px; }
   .an-menu-btn:hover, .an-menu-btn[aria-expanded="true"] { background: rgba(var(--fg-rgb, 255, 255, 255), .1); }
-  .an-menu-btn:focus-visible { outline: 2px solid #A78BFA; outline-offset: 2px; }
+  .an-menu-btn:focus-visible { outline: 2px solid var(--xa78bfa, #A78BFA); outline-offset: 2px; }
   .an-menu-btn { width: 40px; padding: 0; justify-content: center; } .an-menu-btn span { display: none; }   /* icon only everywhere (founder 11-02); aria-label names it */
   .an-menu { position: absolute; right: max(16px, calc((100vw - 1120px) / 2)); top: 56px; min-width: 220px; padding: 6px; border-radius: 14px; background: var(--menu-bg, #111827); border: 1px solid var(--menu-line, #334155);
     box-shadow: 0 18px 48px rgba(2, 6, 23, .35); list-style: none; margin: 0; z-index: 60; }
   .an-menu .an-who { padding: 10px 12px 8px; color: var(--menu-ink-2, #94A3B8); font-size: 12.5px; border-bottom: 1px solid var(--menu-line, #1E293B); margin-bottom: 4px; } .an-menu .an-who b { display: block; color: var(--menu-ink, #F8FAFC); font-size: 14px; }
   .an-menu a, .an-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; color: var(--menu-ink, #E2E8F0); font: 500 14px var(--font-sans, system-ui); text-decoration: none; background: none; border: 0; cursor: pointer; }
   .an-menu a:hover, .an-menu button:hover, .an-menu a:focus-visible, .an-menu button:focus-visible { background: var(--menu-hover, #1E293B); outline: none; }
-  .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: #EC4899; color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
+  .an-badge { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px; background: var(--xec4899, #EC4899); color: #fff; font: 700 11px/17px var(--font-sans, system-ui); text-align: center; }
   .an-bell .an-badge { top: 3px; right: 1px; min-width: 16px; height: 16px; padding: 0 4px; font: 600 10px/16px var(--font-sans, system-ui); box-shadow: 0 0 0 2px var(--page-bg, #0B0B0F); }
   .an-connect { position: relative; z-index: 45;   /* not sticky (10-28): stuck at the same top as the Discover tabs, it covered them on phones */ display: flex; align-items: center; gap: 12px; padding: 10px max(16px, calc((100vw - 1120px) / 2));
-    background: linear-gradient(135deg, rgba(79, 70, 229, .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 500 14px/1.35 var(--font-sans, system-ui); }
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), .95), rgba(124, 58, 237, .95) 55%, rgba(219, 39, 119, .95)); color: #fff; font: 500 14px/1.35 var(--font-sans, system-ui); }
   .an-connect span { flex: 1; }
   .an-connect a.an-connect-cta, .an-connect button.an-connect-cta { flex: none; padding: 8px 14px; border-radius: 999px; background: #fff; color: #312E81; font-weight: 600; text-decoration: none; white-space: nowrap; }
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; }
@@ -172,7 +172,7 @@
     .an-bottom a:hover { color: var(--nav-ink-on, #F8FAFC); background: var(--nav-hover, rgba(148, 163, 184, .1)); }
     .an-bottom a svg { width: 22px; height: 22px; }
     .an-bottom a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); background: none; } .an-bottom a[aria-current="page"] svg { color: var(--nav-icon-on, #A5B4FC); }
-    .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 26%; right: 26%; bottom: 2px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); }
+    .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 26%; right: 26%; bottom: 2px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--x6366f1, #6366F1), var(--xec4899, #EC4899)); }
     .an-bottom .an-badge { top: 4px; right: calc(50% - 22px); }
     body.has-app-nav { padding-bottom: 100px; }
     body.has-app-nav.in-thread .an-bottom { display: none; } body.has-app-nav.in-thread { padding-bottom: 0; }
@@ -184,7 +184,7 @@
     .an-bottom a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--nav-ink, #94A3B8); font: 600 11px var(--font-sans, system-ui); text-decoration: none; position: relative; }
     .an-bottom a svg { width: 23px; height: 23px; }
     .an-bottom a[aria-current="page"] { color: var(--nav-ink-on, #F8FAFC); } .an-bottom a[aria-current="page"] svg { color: var(--nav-icon-on, #A5B4FC); }
-    .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 30%; right: 30%; bottom: 5px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); }
+    .an-bottom a[aria-current="page"]::after { content: ''; position: absolute; left: 30%; right: 30%; bottom: 5px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--x6366f1, #6366F1), var(--xec4899, #EC4899)); }
     .an-bottom .an-badge { top: 4px; right: calc(50% - 22px); }
     body.has-app-nav { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
     body.has-app-nav.in-thread .an-bottom { display: none; } body.has-app-nav.in-thread { padding-bottom: 0; }

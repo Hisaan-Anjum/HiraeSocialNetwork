@@ -232,8 +232,8 @@ function renderHeader(profile) {
 function renderDangerZone(profile) {
   const zone = document.createElement('div');
   zone.className = 'danger-zone';
-  let themePref = 'auto';
-  try { themePref = localStorage.getItem('herae_theme') || 'auto'; } catch (e) { /* storage blocked: Auto */ }
+  let themePref = 'light';
+  try { themePref = localStorage.getItem('herae_theme') || 'light'; } catch (e) { /* storage blocked: Light */ }
   zone.innerHTML = `
     <div class="danger-zone-inner settings-theme" style="margin-bottom:14px">
       <div>

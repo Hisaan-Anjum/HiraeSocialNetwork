@@ -45,41 +45,76 @@
   --pill-bg: rgba(255, 255, 255, .06); --pill-line: rgba(255, 255, 255, .14);
 }
 
-:root[data-theme="light"] {
+:root:not([data-theme="dark"]) {
+  /* Light = the default (11-11 warm editorial redesign): ivory paper, plum ink, raspberry for the one action that
+     matters, coral / orchid / lilac as quiet supporting colour. No gradients on text or buttons. */
   color-scheme: light;
-  --fg-rgb: 15, 23, 42;
-  --page-bg: #F4F5FB;
-  --page-glow: radial-gradient(900px 520px at 0% -12%, rgba(99, 102, 241, .09), transparent 62%);
-  --surface-post: #FFFFFF;
-  --surface-raised: #FFFFFF;
-  --hero-bg: linear-gradient(160deg, #E9EBFF 0%, #F5F5FF 50%, #FFFFFF 100%);
-  --hero-line: rgba(99, 102, 241, .16);
-  --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%234F46E5' stop-opacity='0'/%3E%3Cstop offset='.6' stop-color='%236366F1' stop-opacity='.55'/%3E%3Cstop offset='1' stop-color='%23EC4899' stop-opacity='.8'/%3E%3C/linearGradient%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='1.4'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E%3Cpath d='M30 0C90 72 160 152 300 204V0Z' fill='url(%23a)' opacity='0.22'/%3E%3Cpath d='M126 0C168 56 214 106 300 130V0Z' fill='url(%23a)' opacity='0.3'/%3E%3Cpath d='M206 0C230 32 258 54 300 62V0Z' fill='%23EC4899' opacity='0.26'/%3E%3C/g%3E%3Cpath d='M126 0C168 56 214 106 300 130M30 0C90 72 160 152 300 204' fill='none' stroke='%23fff' stroke-opacity='0.7'/%3E%3C/svg%3E");
-  --hero-glass: radial-gradient(60% 50% at 102% -4%, rgba(236, 72, 153, .20), transparent 62%),
-    radial-gradient(85% 75% at 90% 0%, rgba(124, 58, 237, .14), transparent 66%),
-    linear-gradient(160deg, #FFFFFF 0%, #F6F3FF 100%);
-  --card-line: rgba(15, 23, 42, .08);
-  --card-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 12px 32px -18px rgba(49, 46, 129, .28);
-  --glass-hover: rgba(49, 46, 129, .7);
-  --field-bg: #FFFFFF;
-  --nav-bg: rgba(255, 255, 255, .88); --nav-line: rgba(15, 23, 42, .08); --nav-ink: #64748B; --nav-ink-on: #0F172A;
-  --nav-hover: rgba(15, 23, 42, .05); --nav-active: rgba(99, 102, 241, .1); --nav-icon-on: #4F46E5;
-  --menu-bg: #FFFFFF; --menu-line: #E2E8F0; --menu-hover: #EEF0FF; --menu-ink: #1E293B; --menu-ink-2: #64748B;
-  --c-indigo-ink: #4338CA; --c-indigo-soft: #4F46E5; --c-lilac-ink: #5B21B6; --c-red-ink: #B91C1C; --c-green-ink: #047857;
-  --stat-label: #475569;
-  --pill-bg: rgba(255, 255, 255, .78); --pill-line: rgba(79, 70, 229, .18);
+  --fg-rgb: 42, 26, 46;
+  --page-bg: #FBF6EF;
+  --page-glow: none;
+  --surface-post: #FFFDF9;
+  --surface-raised: #FFFDF9;
+  --hero-bg: #F5EDE3;
+  --hero-line: rgba(42, 26, 46, .12);
+  --wave: none;
+  --hero-glass: #FFFDF9;
+  --card-line: rgba(42, 26, 46, .11);
+  --card-shadow: 0 1px 0 rgba(42, 26, 46, .04), 0 10px 24px -18px rgba(61, 29, 63, .35);
+  --grad-cta: linear-gradient(#B4235A, #B4235A);
+  --grad-ring: linear-gradient(135deg, #B4235A, #E2725B);
+  --glass: rgba(255, 253, 249, .9);
+  --glass-hover: rgba(61, 29, 63, .78);
+  --glass-line: rgba(42, 26, 46, .14);
+  --field-bg: #FFFDF9;
+  --nav-bg: rgba(251, 246, 239, .94); --nav-line: rgba(42, 26, 46, .1); --nav-ink: #6B5868; --nav-ink-on: #2A1A2E;
+  --nav-hover: rgba(42, 26, 46, .05); --nav-active: rgba(180, 35, 90, .09); --nav-icon-on: #B4235A;
+  --menu-bg: #FFFDF9; --menu-line: rgba(42, 26, 46, .12); --menu-hover: #F6ECE6; --menu-ink: #2A1A2E; --menu-ink-2: #6B5868;
+  --c-indigo-ink: #6E2C63; --c-indigo-soft: #8E3F7E; --c-lilac-ink: #5F3A78; --c-red-ink: #B42318; --c-green-ink: #2F6B4F;
+  --stat-label: #5E4B5C;
+  --pill-bg: rgba(255, 253, 249, .9); --pill-line: rgba(42, 26, 46, .16);
+  /* brand-tokens names the components read */
+  --brand-primary: #B4235A; --brand-primary-hover: #951A49; --brand-primary-press: #7E143D;
+  --brand-gradient: linear-gradient(135deg, #B4235A, #E2725B);
+  --brand-gradient-cta: linear-gradient(#B4235A, #B4235A);
+  --brand-gradient-soft: #F3E7EE;
   /* style.css names */
-  --bg-0: #F4F5FB; --bg-1: #FFFFFF; --bg-2: #EEF0F7; --card: #FFFFFF;
-  --ink: #0F172A; --ink-dim: #475569; --ink-faint: #5B6478;
-  --gold: #BE185D; --gold-deep: #9D174D; --rating: #B45309;
-  --border: rgba(15, 23, 42, .1);
-  --brand-primary-soft: #4F46E5;
+  --bg-0: #FBF6EF; --bg-1: #FFFDF9; --bg-2: #F3EAE0; --card: #FFFDF9;
+  --ink: #2A1A2E; --ink-dim: #5E4B5C; --ink-faint: #6F5C6C;
+  --purple: #8E3F7E; --purple-deep: #6E2C63;
+  --gold: #B4235A; --gold-deep: #8E1A47; --rating: #A85A06;
+  --border: rgba(42, 26, 46, .12);
+  --brand-primary-soft: #A1245A;
   /* h2.css names */
-  --h-bg: #F4F5FB; --h-surface: #FFFFFF; --h-surface-2: #F1F3F9; --h-surface-3: #E2E6F0;
-  --h-line: rgba(15, 23, 42, .1); --h-line-strong: rgba(15, 23, 42, .2);
-  --h-text: #0F172A; --h-text-2: #334155; --h-text-3: #475569;
-  --h-accent-hover: #4F46E5; --h-coral: #BE185D; --h-focus: #4F46E5;
-  --h-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 10px 28px -16px rgba(49, 46, 129, .25);
+  --h-bg: #FBF6EF; --h-surface: #FFFDF9; --h-surface-2: #F5EEE6; --h-surface-3: #EADFD3;
+  --h-line: rgba(42, 26, 46, .12); --h-line-strong: rgba(42, 26, 46, .24);
+  --h-text: #2A1A2E; --h-text-2: #4E3D4C; --h-text-3: #6B5868;
+  --h-accent: #B4235A; --h-accent-hover: #951A49; --h-coral: #C2452D; --h-focus: #B4235A;
+  --h-shadow: 0 1px 0 rgba(42, 26, 46, .04), 0 10px 24px -18px rgba(61, 29, 63, .35);
+  --hz-link: #A1245A;
+  --accent-rgb: 180, 35, 90; --accent2-rgb: 142, 63, 126;
+  --avatar-bg: linear-gradient(#EEE5F2, #EEE5F2);   /* letter avatars: lilac with plum ink, so lists aren't a wall of raspberry */
+  --x6366f1: #B4235A; --x4f46e5: #951A49; --x818cf8: #B4235A; --x8b5cf6: #8E3F7E; --xa78bfa: #8E3F7E; --xec4899: #D4553F;   /* light: raspberry and orchid tints in place of indigo */
+  --btn-quiet-bg: #FFFDF9; --btn-quiet-line: rgba(42, 26, 46, .22); --btn-quiet-hover: #F6EEE6;
+  --btn-quiet-shadow: inset 0 -2px 0 rgba(42, 26, 46, .06), 0 1px 2px rgba(42, 26, 46, .06);
+}
+
+/* ── Brand 2026-11-11 (warm editorial): one display face, one body face, one button shape. ── */
+@font-face {
+  font-family: "Fraunces";
+  src: url("fonts/fraunces-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --btn-radius: 12px;
+  --accent-rgb: 99, 102, 241; --accent2-rgb: 129, 140, 248;   /* dark theme: the indigo tints the pages were drawn with */
+  --btn-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), inset 0 -2px 0 rgba(0, 0, 0, .22), 0 1px 2px rgba(42, 18, 40, .28);
+  --btn-quiet-bg: rgba(var(--fg-rgb), .05); --btn-quiet-line: rgba(var(--fg-rgb), .13); --btn-quiet-hover: rgba(var(--fg-rgb), .09); --btn-quiet-shadow: none;
+  --raspberry: #B4235A; --raspberry-deep: #8E1A47; --coral: #E2725B; --orchid: #8E3F7E; --lilac: #EEE5F2; --plum: #3A1C3D; --ivory: #FBF6EF; --sand: #F3EAE0;
+  --grad-cta: linear-gradient(#C42A63, #C42A63);   /* dark theme keeps the same single colour: no gradient buttons anywhere */
+  --brand-gradient-cta: linear-gradient(#C42A63, #C42A63);
 }
 
 /* Browser surfaces carry the palette too. */
@@ -99,19 +134,19 @@ input, textarea { caret-color: var(--brand-primary); }
   --menu-bg: #17162E; --menu-line: rgba(255, 255, 255, .1); --menu-hover: rgba(99, 102, 241, .16); --menu-ink: #E2E8F0; --menu-ink-2: #94A3B8;
 }
 :root { --ring-gap: #1D1B47; }
-:root[data-theme="light"] { --ring-gap: #F1F2FF; }
+:root:not([data-theme="dark"]) { --ring-gap: #F1F2FF; }
 
 /* ── Founder 11-02, round 2: exactly the mock-up. ── */
 /* The corner: a blurred magenta band swept in from the top edge down the right side, two arcs, on dark frosted glass. */
 .profile-header .profile-header-inner, .wp-me {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.75' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.45' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.35' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.16' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(30, 27, 66, .78) 0%, rgba(17, 16, 34, .80) 55%, rgba(11, 11, 18, .82) 100%) !important; position: relative; }
-:root[data-theme="light"] .profile-header .profile-header-inner, :root[data-theme="light"] .wp-me {
+:root:not([data-theme="dark"]) .profile-header .profile-header-inner, :root:not([data-theme="dark"]) .wp-me {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237C3AED'/%3E%3Cstop offset='.55' stop-color='%23C026D3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3Cfilter id='b' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cfilter id='s' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M170 -10C250 30 320 90 410 105V-10Z' fill='url(%23p)' opacity='.24' filter='url(%23b)'/%3E%3Cpath d='M235 -10C285 45 345 110 410 150' stroke='%23EC4899' stroke-width='26' fill='none' opacity='.2' filter='url(%23s)'/%3E%3Cpath d='M300 -10C330 60 370 120 410 210' stroke='url(%23p)' stroke-width='34' fill='none' opacity='.18' filter='url(%23b)'/%3E%3Cpath d='M120 -10C220 80 320 190 410 300' stroke='%236366F1' stroke-width='60' fill='none' opacity='.1' filter='url(%23b)'/%3E%3C/svg%3E") right top / 100% 100% no-repeat, linear-gradient(165deg, rgba(255, 255, 255, .92), rgba(243, 242, 255, .9)) !important; }
 .profile-edit-pill { position: absolute; top: 20px; right: 20px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, .22); background: rgba(10, 10, 18, .35); backdrop-filter: blur(10px); color: inherit; font-weight: 600; font-size: 14px; text-decoration: none; }
 .profile-header .profile-name { padding-right: 132px; }
 /* One shape system: every text button is a pill, every icon-only button the same circle. */
-.btn, .hb, button.btn, a.btn, .an-connect-cta, .watch-link button, .watch-link select, .watch-link input, .back-link, .btn-back, [class*="back"] > .btn { border-radius: 999px !important; }
+.btn, .hb, button.btn, a.btn, .an-connect-cta, .watch-link button, .watch-link select, .watch-link input, .back-link, .btn-back, [class*="back"] > .btn { border-radius: var(--btn-radius) !important; }
 .mv-btn:not(.mv-btn-share), .post-menu-btn, .an-connect-x:not(.an-push-later), .carousel-item-open, .avatar-edit-btn, .an-icon-btn { border-radius: 50% !important; width: 38px !important; height: 38px !important; padding: 0 !important; display: inline-grid !important; place-items: center; }
 .mv-btn-share { border-radius: 999px !important; height: 38px; padding: 0 14px !important; }
 .mv-panel .post-menu-btn { display: none !important; }
@@ -125,15 +160,15 @@ input, textarea { caret-color: var(--brand-primary); }
 /* The line icon set (src/lib/icons.js, window.hIcon): sits on the text baseline, never squashed. */
 .ico { display: inline-block; flex: none; vertical-align: -0.2em; }
 .ico-w { display: inline-grid; place-items: center; vertical-align: -0.2em; }
-:root[data-theme="light"] .profile-header .profile-header-inner, :root[data-theme="light"] .wp-me { box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 28px -18px rgba(49, 46, 129, .22) !important; border-color: rgba(15, 23, 42, .08) !important; }
+:root:not([data-theme="dark"]) .profile-header .profile-header-inner, :root:not([data-theme="dark"]) .wp-me { box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 28px -18px rgba(49, 46, 129, .22) !important; border-color: rgba(15, 23, 42, .08) !important; }
 /* The film banner sits on the film's own picture: dark in both themes, rounded off where the light page begins. */
-:root[data-theme="light"] .movie-hero { border-radius: 0 0 24px 24px; overflow: hidden; }
+:root:not([data-theme="dark"]) .movie-hero { border-radius: 0 0 24px 24px; overflow: hidden; }
 /* Two names older components use (AI Moments panel, confirm dialog) that were never defined: map them to the theme. */
-:root, :root[data-theme="light"] { --surface: var(--surface-post); --line: var(--card-line); }
+:root, :root:not([data-theme="dark"]) { --surface: var(--surface-post); --line: var(--card-line); }
 
 /* ── Founder 11-02, round 3 ── */
 body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 40, 217, .16), transparent 62%), #0B0B0F !important; background-attachment: fixed !important; }
-:root[data-theme="light"] body, :root[data-theme="light"] body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 40, 217, .06), transparent 62%), #F7F7FB !important; }
+:root:not([data-theme="dark"]) body, :root:not([data-theme="dark"]) body.h2 { background: #FBF6EF !important; }
 /* Memories / friends: names only, 2 rows that scroll sideways (2 columns visible on phones, 4 on wider screens). */
 .ms-chooser-grid { display: grid !important; grid-template-columns: none !important; grid-template-rows: repeat(2, auto) !important; grid-auto-flow: column !important; grid-auto-columns: calc((100% - 10px) / 2) !important;
   gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
@@ -156,7 +191,7 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 .ms-block-head h2, main h1, main > h2, .h-page h1, .page-title, .section-title, .chats-title { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -.01em; line-height: 1.25; }
 .ms-chooser-sub, .wp-intro { font-size: 14px !important; }
 .ms-chooser-track { position: relative; height: 3px; margin: 10px auto 0; width: 64px; border-radius: 3px; background: rgba(255, 255, 255, .10); overflow: hidden; }
-:root[data-theme="light"] .ms-chooser-track { background: rgba(17, 12, 34, .10); }
+:root:not([data-theme="dark"]) .ms-chooser-track { background: rgba(17, 12, 34, .10); }
 .ms-chooser-track span { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #6366F1, #EC4899); transition: left .12s linear; }
 
 /* Founder 11-02: film page on phones fits the screen; text on the always-dark film hero stays light in light mode. */
@@ -177,3 +212,85 @@ body, body.h2 { background: radial-gradient(1000px 520px at 80% -10%, rgba(109, 
 .ms-chooser-grid { justify-content: safe center !important; }
 .profile-header .profile-contact-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center !important; justify-self: center; }
 .an-connect .an-connect-cta { display: inline-flex !important; align-items: center; justify-content: center; line-height: 1.2; }
+
+/* ── Brand 2026-11-11: type and the tactile button (both themes) ── */
+h1, .h2 h1, .page-title, .login-title, .section-heading, .profile-header .profile-name, .d-card h2, .mt h2 {
+  font-family: var(--font-display) !important; font-weight: 600 !important; letter-spacing: -.015em !important; font-variation-settings: "opsz" 72;
+}
+main > h2, .ms-block-head h2, .section-title, .chats-title, .h2 h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; }
+.btn-primary, .btn-gold, .h2 .hb-primary, #btnTogether {
+  background: var(--grad-cta) !important; color: #FFFFFF !important; border: 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), inset 0 -2px 0 rgba(0, 0, 0, .22), 0 1px 2px rgba(42, 18, 40, .28) !important;
+  filter: none !important; transition: transform .1s ease, box-shadow .1s ease, background-color .15s ease !important;
+}
+.btn-primary:hover, .btn-gold:hover, .h2 .hb-primary:hover, #btnTogether:hover:not(:disabled) { background: var(--raspberry-deep) !important; transform: translateY(-1px); }
+.btn-primary:active, .btn-gold:active, .h2 .hb-primary:active { transform: translateY(1px); box-shadow: inset 0 2px 3px rgba(0, 0, 0, .25) !important; }
+:root:not([data-theme="dark"]) .h2 .hb-secondary { background: var(--btn-quiet-bg); border-color: var(--btn-quiet-line); box-shadow: var(--btn-quiet-shadow); }
+/* Surfaces that sit on film or photo stay dark in both themes, so their quiet buttons do too. */
+.ms-player, .hero-card, .movie-hero { --btn-quiet-bg: rgba(255, 255, 255, .1); --btn-quiet-line: rgba(255, 255, 255, .24); --btn-quiet-hover: rgba(255, 255, 255, .16); --btn-quiet-shadow: none; }
+:root:not([data-theme="dark"]) ::selection { background: rgba(180, 35, 90, .2); }
+:root:not([data-theme="dark"]) :focus-visible { outline-color: var(--raspberry); }
+
+/* ── Brand 2026-11-11, light: the app's banners, chips and actions in the warm palette (one colour each, no sheen). ── */
+:root:not([data-theme="dark"]) .an-connect:not(.an-push) { background: var(--plum) !important; color: #FFF8F1; }
+:root:not([data-theme="dark"]) body .profile-header .profile-header-inner, :root:not([data-theme="dark"]) body .wp-me {
+  background: #FFFDF9 !important; border: 1px solid var(--card-line) !important; box-shadow: var(--card-shadow) !important; }
+:root:not([data-theme="dark"]) .profile-header .profile-header-inner::before, :root:not([data-theme="dark"]) .wp-me::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  background: linear-gradient(90deg, var(--raspberry) 0 40%, var(--coral) 40% 70%, var(--orchid) 70%); pointer-events: none; }
+:root:not([data-theme="dark"]) .profile-edit-pill { background: #FFFDF9; border-color: rgba(42, 26, 46, .18); backdrop-filter: none; }
+:root:not([data-theme="dark"]) .watch-link { background: #FFFDF9 !important; border: 1px solid var(--card-line) !important; }
+:root:not([data-theme="dark"]) .watch-link-go, :root:not([data-theme="dark"]) .share-row.is-primary { background: var(--raspberry) !important; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .2) !important; }
+:root:not([data-theme="dark"]) .wl-tabs [role=tab][aria-selected="true"], :root:not([data-theme="dark"]) .h2 .wp-vibe .h-chip[aria-pressed="true"] {
+  background: var(--plum) !important; color: #FFF8F1 !important; box-shadow: none !important; border-color: transparent !important; }
+:root:not([data-theme="dark"]) .at-av, :root:not([data-theme="dark"]) .wp-me-av { background: var(--lilac) !important; color: var(--plum) !important; }
+:root:not([data-theme="dark"]) .review-meet, :root:not([data-theme="dark"]) .ms-featured, :root:not([data-theme="dark"]) .ms-type-btn,
+:root:not([data-theme="dark"]) .fn-box, :root:not([data-theme="dark"]) .h2 .wp-golive, :root:not([data-theme="dark"]) .wp-fork-tile.meet {
+  background: var(--lilac) !important; border-color: rgba(110, 44, 99, .2) !important; color: var(--ink) !important; box-shadow: none !important; }
+:root:not([data-theme="dark"]) .fn-hosted { background: #F6E3E3 !important; }
+:root:not([data-theme="dark"]) .wp-fork-tile.meet .wp-fork-go, :root:not([data-theme="dark"]) .mt-actions .hb-primary { background: var(--raspberry) !important; }
+:root:not([data-theme="dark"]) .h2 .wp-golive input:checked { background: var(--raspberry) !important; }
+:root:not([data-theme="dark"]) .aim-progress-fill, :root:not([data-theme="dark"]) .ms-chooser-track span { background: var(--raspberry) !important; }
+:root:not([data-theme="dark"]) .c-msg.mine, :root:not([data-theme="dark"]) .c-view .c-msg.mine { background: var(--plum) !important; color: #FFF8F1 !important; }
+:root:not([data-theme="dark"]) .d-badge.hot { background: var(--raspberry) !important; box-shadow: none !important; }
+:root:not([data-theme="dark"]) .dz-btn.yes { background: var(--raspberry) !important; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2), 0 8px 16px -10px rgba(42, 18, 40, .45) !important; }
+:root:not([data-theme="dark"]) .an-bottom a[aria-current="page"]::after { background: var(--raspberry) !important; }
+/* Cards: a calmer radius, paper surfaces, hairline borders. */
+:root:not([data-theme="dark"]) .profile-header .profile-header-inner, :root:not([data-theme="dark"]) .watch-link, :root:not([data-theme="dark"]) .h2 .h-card { border-radius: 16px !important; }
+/* Pages that were dark-only until 11-11 (auth, gift, pricing, upgrade, guides): their inline styles drew on white-alpha. */
+:root:not([data-theme="dark"]) .login-card { background: #FFFDF9; border-color: var(--card-line); box-shadow: 0 1px 0 rgba(42, 26, 46, .04), 0 30px 60px -36px rgba(61, 29, 63, .45); border-radius: 18px; }
+:root:not([data-theme="dark"]) body .mode-opt { border-color: rgba(42, 26, 46, .16); background: #FFFDF9; }
+:root:not([data-theme="dark"]) body .mode-opt:has(input:checked) { border-color: var(--raspberry); background: #FBEFF3; }
+:root:not([data-theme="dark"]) body .mode-opt input { accent-color: var(--raspberry); }
+:root:not([data-theme="dark"]) body .pw-meter { background: rgba(42, 26, 46, .1); }
+:root:not([data-theme="dark"]) body .g-card, :root:not([data-theme="dark"]) body .price-card, :root:not([data-theme="dark"]) body .plan-card,
+:root:not([data-theme="dark"]) body .pick, :root:not([data-theme="dark"]) body .verdict, :root:not([data-theme="dark"]) body .handoff {
+  background: #FFFDF9; border-color: var(--card-line); }
+:root:not([data-theme="dark"]) body .g-field input, :root:not([data-theme="dark"]) body .g-field textarea, :root:not([data-theme="dark"]) body .g-done input {
+  background: #FFFFFF; border-color: rgba(42, 26, 46, .2); }
+:root:not([data-theme="dark"]) body .price-card.featured, :root:not([data-theme="dark"]) body .plan-card.featured {
+  border: 1.5px solid var(--raspberry); box-shadow: 0 24px 44px -30px rgba(42, 18, 40, .4); }
+:root:not([data-theme="dark"]) body .price-badge, :root:not([data-theme="dark"]) body .plan-badge, :root:not([data-theme="dark"]) body .founding-badge,
+:root:not([data-theme="dark"]) body .cycle-toggle button.active { background: var(--plum); color: #FFF8F1; }
+:root:not([data-theme="dark"]) body .price-badge, :root:not([data-theme="dark"]) body .plan-badge { border-radius: 6px; letter-spacing: .04em; }
+:root:not([data-theme="dark"]) body .cycle-save { color: var(--raspberry); }
+:root:not([data-theme="dark"]) body #btnPlus { background: #FFFDF9; border: 1px solid rgba(42, 26, 46, .22); color: var(--ink); box-shadow: inset 0 -2px 0 rgba(42, 26, 46, .06); }
+:root:not([data-theme="dark"]) body #btnPlus:hover:not(:disabled) { background: #F6EEE6; color: var(--ink); border-color: rgba(42, 26, 46, .34); }
+:root:not([data-theme="dark"]) body .founding { background: var(--lilac); border-color: rgba(110, 44, 99, .25); }
+:root:not([data-theme="dark"]) body .up-current { background: var(--lilac); border-color: rgba(110, 44, 99, .2); }
+:root:not([data-theme="dark"]) body .cta-box { background: var(--lilac); border: 0; border-radius: 14px; }
+:root:not([data-theme="dark"]) body .fn-night { background: #FFFDF9; border: 1px solid var(--card-line); border-left: 4px solid var(--coral); }
+.guide h2, .guide h3, .legal-doc h2, .sh-article h2, .pricing-head h1, .g-title, .up-title, .price-name, .plan-name, .founding-title { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; }
+.price-amount, .plan-price, .g-price { font-family: var(--font-display); font-weight: 600; }
+/* The lock-up in dark ink on paper: pages carry the on-dark files for the dark theme. */
+:root:not([data-theme="dark"]) img[src$="herae-logo-on-dark.svg"] { content: url("herae-logo.svg"); }
+:root:not([data-theme="dark"]) img[src$="herae-wordmark-white.svg"] { content: url("herae-wordmark.svg"); }
+/* The night's recap titles: the display face in warm ivory, not gradient-clipped text. */
+.ms-title-main, .ms-stat-num { background: none !important; color: #FFF3EA !important; -webkit-text-fill-color: currentColor; font-family: var(--font-display) !important; font-weight: 600 !important; }
+:root:not([data-theme="dark"]) body .price-feats li::before, :root:not([data-theme="dark"]) body .plan-feats li::before { color: var(--raspberry); }
+/* Herae 2.0 pages (People, Profile builder, Notifications) take the same display face for their headings. */
+html:root { --h-font-display: var(--font-display); }
+:root:not([data-theme="dark"]) body .an-connect:not(.an-push) .an-connect-cta { color: var(--plum); }
+.guide h1 { font-size: clamp(32px, 4.4vw, 46px) !important; line-height: 1.08 !important; }
+:root:not([data-theme="dark"]) .avatar, :root:not([data-theme="dark"]) .contact-avatar, :root:not([data-theme="dark"]) .feed-card-avatar { color: var(--plum) !important; }
+.review-session-title-banner { font-family: var(--font-display) !important; font-weight: 600 !important; }

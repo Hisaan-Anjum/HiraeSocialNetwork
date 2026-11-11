@@ -8,17 +8,17 @@
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; padding: 16px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--nav-bg, rgba(15, 23, 42, 0.7));
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   position: sticky; top: 0; z-index: 10;
 }
 .legal-brand { display: flex; align-items: center; gap: 12px; }
 .legal-brand img { width: 34px; height: 34px; border-radius: 9px; }
+.legal-brand img.brand-lockup { width: auto; height: 26px; border-radius: 0; }
 .legal-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
 .legal-brand-name {
   font-family: var(--font-sans); letter-spacing: -0.02em; font-weight: 700; font-size: 18px;
-  background: var(--brand-gradient);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  color: var(--ink);
 }
 .legal-brand-sub { font-size: 11px; color: var(--ink-faint); }
 
@@ -27,7 +27,7 @@
   background: linear-gradient(175deg, var(--card), var(--bg-1));
   border: 1px solid var(--border); border-radius: 22px;
   padding: 48px 44px;
-  box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+  box-shadow: 0 30px 60px -40px rgba(42, 18, 40, .35);
 }
 .legal-eyebrow {
   text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
@@ -50,7 +50,7 @@
 .legal-doc a { color: var(--brand-primary-soft); }
 
 .legal-callout {
-  background: rgba(99, 102, 241,0.09); border: 1px solid var(--border);
+  background: rgba(var(--accent-rgb),0.09); border: 1px solid var(--border);
   border-left: 3px solid var(--purple); border-radius: 12px;
   padding: 16px 18px; margin: 20px 0;
 }

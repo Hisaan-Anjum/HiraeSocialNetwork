@@ -151,6 +151,8 @@ const FILES = [
   // ones Vite doesn't process, like index.html), so it's copied through
   // verbatim rather than hashed as a build asset.
   'logo.png',
+  // Real product captures for the public pages (brand/art/shots, cropped): the night with the call, the kept moments, a People card.
+  'img/night-call.jpg', 'img/moments-pair.jpg', 'img/moments-strip.jpg', 'img/people-card.jpg',
   // Herae 2.0 design system (docs/herae-2/DESIGN-SYSTEM.md) and its self-hosted display font.
   'h2.css',
   'watch-profile.html',
