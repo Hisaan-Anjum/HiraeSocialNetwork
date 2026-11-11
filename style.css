@@ -1120,6 +1120,14 @@ a.search-result.contact-row { display: flex; padding: 8px 10px; border: none; ba
   color: #fff; text-decoration: none; background: linear-gradient(135deg, rgba(99, 102, 241, .22), rgba(236, 72, 153, .22)); border: 1px solid rgba(236, 72, 153, .4); }
 .review-meet:hover { border-color: #EC4899; }
 .review-moment-strip-item { flex-shrink: 0; }
+/* Binge-moat B3/B4: the night's reel header, film time under each moment, and the link to every night together. */
+.review-strip-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.review-strip-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.review-add-line { font-size: 14px; font-weight: 600; color: var(--brand-primary-soft); text-decoration: none; padding: 8px 0; }
+.review-add-line:hover { text-decoration: underline; }
+.review-strip-cap { font-size: 13px; color: var(--ink-dim); text-align: center; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.review-all-nights { display: block; max-width: 640px; margin: -10px auto 18px; text-align: center; font-size: 14px; font-weight: 600; color: var(--brand-primary-soft); text-decoration: none; }
+.review-all-nights:hover { text-decoration: underline; }
 
 /* ══════════════════════════════════════════════════════════════════════
    Brand lockup, profile pictures, profile pages, contact management, and
@@ -3424,3 +3432,26 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .carousel-item-caption { border-radius: 12px !important; max-width: calc(100% - 4px) !important; }
 .carousel-item-caption .moment-description { white-space: normal !important; display: -webkit-box !important; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; overflow-wrap: anywhere; }
+
+/* Binge-moat B4: "You and X" — every night together, on their profile. */
+.pair-nights { max-width: 760px; margin: 0 auto 28px; padding: 22px; border-radius: 20px; border: 1px solid var(--border);
+  background: linear-gradient(175deg, var(--card), var(--bg-1)); }
+.pn-title { margin: 0 0 4px; font-size: 20px; }
+.pn-sum { font-size: 15px; font-weight: 600; color: var(--ink); }
+.pn-genres { font-size: 14px; color: var(--ink-dim); margin-top: 2px; }
+.pn-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.pn-link { display: block; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border); color: inherit; text-decoration: none; }
+.pn-link:hover, .pn-link:focus-visible { border-color: var(--brand-primary-soft); }
+.pn-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.pn-film { font-weight: 700; font-size: 15px; }
+.pn-date, .pn-meta { font-size: 13.5px; color: var(--ink-dim); }
+.pn-meta { margin-top: 2px; }
+.pn-thumbs { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+.pn-thumbs img { height: 54px; border-radius: 8px; }
+.pn-more { font-size: 13px; color: var(--ink-dim); }
+.pn-next { margin-top: 12px; }
+.btn-you-and { white-space: nowrap; }
+@media (max-width: 520px) { .contact-actions .btn-you-and { display: none; } }
+.home-highlight { max-width: 760px; margin: 12px auto 0; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(251, 191, 36, .45);
+  background: rgba(251, 191, 36, .08); font-size: 15px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.home-highlight a { font-weight: 600; color: var(--brand-primary-soft); white-space: nowrap; }

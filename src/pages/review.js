@@ -148,9 +148,13 @@ async function loadSession() {
   const stillWaitingOn = others.filter((u) => !otherReviews.some((r) => r.username === u));
   const title = detail.content?.title;
 
+  // Binge-moat B3: tonight's reel — in the order they were kept, the film time (or caption) under each, the count in the
+  // title ("Night 4 · 3 moments" once the night number is known), and "Add a line" = the review below.
+  const nMoments = `${detail.moments.length} moment${detail.moments.length === 1 ? '' : 's'}`;
   const momentsStrip = detail.moments.length
-    ? `<div class="review-moment-strip">${detail.moments.map((m) => `
-        <div class="review-moment-strip-item">${renderMediaTile(m, { className: 'review-strip-media' })}</div>
+    ? `<div class="review-strip-head"><span class="review-strip-title">${nMoments}</span><a class="review-add-line" href="#reviewText">Add a line</a></div>
+      <div class="review-moment-strip">${detail.moments.map((m) => `
+        <div class="review-moment-strip-item">${renderMediaTile(m, { className: 'review-strip-media' })}${m.description ? `<div class="review-strip-cap">${escapeHtml(m.description)}</div>` : ''}</div>
       `).join('')}</div>`
     // Nothing saved yet is the usual case (AI Moments is off unless turned on; its finds wait in the extension panel
     // above until kept). "No moments were captured" contradicted that panel and ended a good night on a shrug, so the
@@ -219,6 +223,26 @@ async function loadSession() {
   `;
 
   document.getElementById('shareNightBtn')?.addEventListener('click', () => openShareSheet(best));
+  contentEl.querySelector('.review-add-line')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const t = document.getElementById('reviewText');
+    if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.focus({ preventScroll: true }); }
+  });
+  if (others.length === 1 && window.apiRequest) {
+    window.apiRequest(`/api/night-plans/next?partner=${encodeURIComponent(others[0])}&session=${encodeURIComponent(sessionId)}`).then((r) => {
+      const el = contentEl.querySelector('.review-strip-title');
+      if (el && r && r.night) el.textContent = `Night ${r.night} · ${nMoments}`;
+      // Binge-moat B4: the title leads to every night the two have had.
+      const banner = contentEl.querySelector('.review-content-banner');
+      if (r && r.nights >= 2 && !contentEl.querySelector('.review-all-nights')) {
+        const a = document.createElement('a');
+        a.className = 'review-all-nights';
+        a.href = `user.html?u=${encodeURIComponent(others[0])}&from=review#nights`;
+        a.textContent = `All ${r.nights} nights with ${others[0]} →`;
+        (banner || contentEl.firstElementChild)?.insertAdjacentElement(banner ? 'afterend' : 'beforebegin', a);
+      }
+    }).catch(() => {});
+  }
 
   // The next night, planned before they say goodnight (PMF.md 2026-10-03: the second night is the funnel's biggest
   // leak). Below the share card, above the review.

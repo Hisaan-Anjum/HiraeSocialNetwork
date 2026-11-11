@@ -25,6 +25,7 @@ import { initSearch } from '../components/search.js';
 import { mountAvatarControls } from '../components/avatarUpload.js';
 import { registerSessionForPanel, momentViewerOpts } from '../components/momentPanel.js';
 import { mountMemoriesSection } from '../memories/section.js';
+import { mountPairNights } from '../components/pairNights.js';
 import { mountWatchlist } from '../watchlist/panel.js';
 import { fetchPersonalWatchlist, mountPersonalWatchlist } from '../watchlist/personal.js';
 import { lockScroll } from '../lib/scrollLock.js';
@@ -67,7 +68,11 @@ function mountMemories() {
     });
   }
   mountWatchlistColumn();
+  // Binge-moat B4: every night with this person, under the Memories block (nothing on your own page or a stranger's).
+  if (!nightsEl) { nightsEl = document.createElement('div'); memoriesEl.insertAdjacentElement('afterend', nightsEl); }
+  if (state.profile && auth && state.profile.username !== auth.username) mountPairNights(nightsEl, { me: auth.username, other: state.profile.username }).catch(() => {});
 }
+let nightsEl = null;
 
 // Below the Memories section the page becomes two columns on desktop — the
 // shared Watchlist on the left, the moments feed on the right — and stacks back

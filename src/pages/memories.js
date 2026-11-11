@@ -122,6 +122,8 @@ async function loadMyPanel() {
     mountAvatarControls(document.getElementById('feedAvatarWrap'), p.avatarUrl, () => {});
     // "Paste a movie link → watch together" (watchLink.js) for anyone with a partner connected.
     mountWatchLink(el.querySelector('header') || el.firstElementChild, { inviteBox: !(p.counts.sessions === 0 && getStartedShows()) }).catch(() => {});
+    // Binge-moat B5: a milestone night ("Night 10 with Sam 💜 — …") or "A year ago tonight", once each, in the app only.
+    mountHighlights(el.querySelector('header') || el.firstElementChild);
     // A brand-new account has nothing to remember yet; tell it how to get there.
     if (p.counts.sessions === 0) mountGetStarted(document.getElementById('getStarted'));
     // New accounts: one tap on where they heard about Herae (signup can't see the link that brought them).
@@ -141,6 +143,28 @@ async function loadMyPanel() {
   } catch (e) {
     el.innerHTML = '';
   }
+}
+
+async function mountHighlights(after) {
+  if (!after || !window.apiRequest) return;
+  let r = null;
+  try { r = await window.apiRequest('/api/night-plans/highlights'); } catch (e) { return; }
+  const seen = (k) => { try { return !!localStorage.getItem(`herae_hl:${k}`); } catch (e) { return false; } };
+  const line = ((r && r.lines) || []).find((l) => l && l.key && !seen(l.key));
+  if (!line) return;
+  try { localStorage.setItem(`herae_hl:${line.key}`, '1'); } catch (e) { /* shown again next visit: harmless */ }
+  const who = escapeHtml(line.with);
+  const parts = line.kind === 'milestone'
+    ? [line.hours >= 1 ? `${line.hours} hours` : '', line.moments ? `${line.moments} moment${line.moments === 1 ? '' : 's'}` : '', line.genre ? `most-watched: ${escapeHtml(line.genre)}` : ''].filter(Boolean)
+    : [];
+  const text = line.kind === 'milestone'
+    ? `Night ${line.n} with ${who} 💜${parts.length ? ` — ${parts.join(', ')}` : ''}`
+    : `A year ago tonight: ${line.film ? `${escapeHtml(String(line.film).split(/\s[|–—-]\s/)[0])} ` : ''}with ${who}${line.moments ? ` · ${line.moments} moment${line.moments === 1 ? '' : 's'}` : ''}`;
+  const href = line.kind === 'on_this_day' ? `review.html?session=${encodeURIComponent(line.session)}` : `user.html?u=${encodeURIComponent(line.with)}#nights`;
+  const div = document.createElement('div');
+  div.className = 'home-highlight';
+  div.innerHTML = `<span>${text}</span><a href="${href}">${line.kind === 'milestone' ? 'Your nights' : 'See it'}</a>`;
+  after.insertAdjacentElement('afterend', div);
 }
 
 async function loadHero() {

@@ -214,7 +214,8 @@ function revealMore() {
   if (!listEl) return;
   const next = allContacts.slice(shown, shown + CHUNK);
   listEl.insertAdjacentHTML('beforeend', next.map((c) => renderContactRow(c, {
-    actions: `<div class="contact-actions">${actionBtn('message', c, 'Message', 'btn-primary btn-message')}${actionBtn('remove', c, icon('x', 16))}</div>`,
+    // Binge-moat B4: "You and X" — every night the two of you had (their page, #nights).
+    actions: `<div class="contact-actions"><a class="btn btn-ghost btn-you-and" href="user.html?u=${encodeURIComponent(c.username)}#nights">You and ${escapeHtml(c.username)}</a>${actionBtn('message', c, 'Message', 'btn-primary btn-message')}${actionBtn('remove', c, icon('x', 16))}</div>`,
   })).join(''));
   shown += next.length;
   if (shown >= allContacts.length) {
