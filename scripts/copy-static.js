@@ -152,13 +152,13 @@ const FILES = [
   // verbatim rather than hashed as a build asset.
   'logo.png',
   // Real product captures for the public pages (brand/art/shots, cropped): the night with the call, the kept moments, a People card.
-  'img/night-call.jpg', 'img/moments-pair.jpg', 'img/moments-strip.jpg', 'img/people-card.jpg',
+  'img/night-call.jpg', 'img/moments-pair.jpg', 'img/moments-strip.jpg', 'img/people-card.jpg', 'img/setup-poster.jpg',
   // Herae 2.0 design system (docs/herae-2/DESIGN-SYSTEM.md) and its self-hosted display font.
   'h2.css',
   'watch-profile.html',
   'social.html',
   'notifications.html',
-  'fonts/fraunces-latin.woff2', 'fonts/bricolage-grotesque-latin.woff2',   // Bricolage Grotesque (OFL): the heading face since 11-11
+  'fonts/fraunces-latin.woff2', 'fonts/bricolage-grotesque-latin.woff2', 'fonts/Bricolage-Grotesque-OFL.txt',   // Bricolage Grotesque (OFL): the heading face since 11-11
   // Connected H brand (brand/): canonical tokens + DM Sans (OFL), the favicon family and logo SVGs. Referenced by
   // plain links/imgs from pages Vite doesn't process, so copied verbatim (brand/scripts/sync-tokens.sh, export-icons.js).
   'brand-tokens.css', 'fonts/dm-sans-latin.woff2', 'fonts/DM-Sans-OFL.txt',

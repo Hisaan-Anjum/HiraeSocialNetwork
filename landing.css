@@ -113,7 +113,7 @@ html, body { overflow-x: hidden; }
 .sv-facade:hover .sv-play, .sv-facade:focus-visible .sv-play { transform: scale(1.06); }
 
 /* ── "You've already tried…" (grey band) ─────────────────────────────── */
-.problem { margin-top: var(--lp-section); }
+.problem { margin-top: 0; }
 .compare-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); margin-top: var(--sp-6); }
 .compare-col { padding: var(--sp-5); border-radius: var(--r-card); background: #FFFFFF; border: 1px solid var(--lp-line); box-shadow: var(--lp-shadow); }
 .compare-col p { font-size: 16px; line-height: 1.65; color: var(--ink-dim); margin: 0; }
@@ -157,7 +157,7 @@ html, body { overflow-x: hidden; }
 #buddies p:last-child { margin: var(--sp-2) 0 0 !important; text-align: left !important; }
 
 /* ── How it works (grey band): three numbered cards ──────────────────── */
-.how-it-works { margin-top: var(--lp-section); }
+.how-it-works { margin-top: 0; }
 .steps-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); margin-top: var(--sp-6); }
 .step-card { background: #FFFFFF; border: 1px solid var(--lp-line); border-radius: var(--r-card); padding: var(--sp-5); box-shadow: var(--lp-shadow); }
 .step-number {
@@ -192,6 +192,7 @@ html, body { overflow-x: hidden; }
 
 /* ── What it doesn't do (grey band) ──────────────────────────────────── */
 #honest { margin-top: var(--lp-section); padding-top: var(--lp-section); padding-bottom: var(--lp-section); }
+.problem + #works { margin-top: 0; }
 #honest > .together-list { max-width: none; }
 #honest .compare-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 #honest .compare-tag { text-decoration: none; font-size: 20px; }
@@ -292,7 +293,9 @@ html, body { overflow-x: hidden; }
   .hero-cta { width: 100%; }
   .compare-grid, #honest .compare-grid, .steps-grid, .features { grid-template-columns: 1fr; gap: var(--sp-3); }
   .memories > .reveal, #buddies > .reveal { grid-template-columns: 1fr; }
-  :root { --lp-section: var(--sp-7); }
+  :root { --lp-section: 56px; }
+  .hero { padding-bottom: var(--sp-5) !important; }
+  .hero-trust { margin-bottom: 0; }
   .memories .mem-visual { grid-column: 1; grid-row: auto; order: 9; margin: var(--sp-6) auto 0; max-width: 280px; }
   #buddies { padding: 0; }
   #buddies > .reveal { display: flex; flex-direction: column; border-radius: 0; padding: var(--sp-7) var(--lp-edge); }

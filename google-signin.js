@@ -49,6 +49,9 @@
     return gisPromise;
   }
 
+  // Start fetching Google's script the moment this file runs, in parallel with the page's own work.
+  loadGis().catch(function () { /* blocked: handled where the button mounts */ });
+
   // Inline SVG rather than a hosted image: Google's branding requires the
   // four-colour mark, and an <img> from their CDN is one more thing a blocker
   // can break, leaving a button with a hole in it.
@@ -169,23 +172,32 @@
     if (!mountEl || typeof options.onToken !== 'function') return false;
 
     const base = (window.getSavedServerUrl ? window.getSavedServerUrl() : '').replace(/\/+$/, '');
+    // The button shows as soon as a client id is known: from this browser's last visit (cached) or from the server.
+    // The GIS script is already downloading (started when this file loaded), so neither waits on the other.
+    // shortcut: the id is cached per browser in localStorage; a server that turns Google off removes it on the next read.
+    const CACHE = 'herae_google_client_id';
     let clientId = null;
-    try {
-      const res = await fetch(base + '/api/auth/config');
-      if (!res.ok) return false;
-      const cfg = await res.json();
-      clientId = cfg && cfg.googleClientId;
-    } catch (e) {
-      return false;   // server unreachable — password login still works
+    try { clientId = localStorage.getItem(CACHE); } catch (e) { /* storage blocked: ask the server */ }
+    const fresh = fetch(base + '/api/auth/config')
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (cfg) { return cfg ? (cfg.googleClientId || '') : null; })   // '' = Google off; null = could not ask
+      .catch(function () { return null; });
+    if (!clientId) {
+      clientId = await fresh;
+      if (!clientId) { mountEl.hidden = true; return false; }
     }
-    if (!clientId) return false;
-
-    try { await loadGis(); } catch (e) { return false; }
+    fresh.then(function (id) {
+      if (id === null) return;
+      try { if (id) localStorage.setItem(CACHE, id); else localStorage.removeItem(CACHE); } catch (e) { /* not cached: fine */ }
+      if (id === '') { mountEl.hidden = true; mountEl.textContent = ''; }
+    });
+    try { localStorage.setItem(CACHE, clientId); } catch (e) { /* not cached: fine */ }
 
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn btn-google';
     btn.innerHTML = googleMark() + '<span>' + label + '</span>';
+    mountEl.textContent = '';
     mountEl.appendChild(btn);
 
     const reset = function () {
@@ -193,23 +205,27 @@
       btn.querySelector('span').textContent = label;
     };
 
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: SCOPES,
-      callback: async function (resp) {
-        reset();
-        // No token means the consent window was closed or declined. That's a
-        // choice, not an error — say nothing and let them try again.
-        if (!resp || !resp.access_token) return;
-        await options.onToken(resp.access_token);
-      },
-      error_callback: reset,
+    const clientReady = loadGis().then(function () {
+      return window.google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: SCOPES,
+        callback: async function (resp) {
+          reset();
+          // No token means the consent window was closed or declined. That's a
+          // choice, not an error — say nothing and let them try again.
+          if (!resp || !resp.access_token) return;
+          await options.onToken(resp.access_token);
+        },
+        error_callback: reset,
+      });
     });
+    // A blocker that stops Google's script: the button goes away rather than doing nothing.
+    clientReady.catch(function () { mountEl.hidden = true; mountEl.textContent = ''; });
 
     btn.addEventListener('click', function () {
       btn.disabled = true;
       btn.querySelector('span').textContent = 'Waiting for Google…';
-      client.requestAccessToken();
+      clientReady.then(function (client) { client.requestAccessToken(); }, reset);
     });
 
     return true;

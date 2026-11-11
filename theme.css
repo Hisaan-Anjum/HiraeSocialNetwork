@@ -303,3 +303,57 @@ html:root { --h-font-display: var(--font-display); }
 :root:not([data-theme="dark"]) body .price-fine, :root:not([data-theme="dark"]) body .up-note, :root:not([data-theme="dark"]) body .g-fine { color: #1E40AF; }
 :root:not([data-theme="dark"]) body .signup-legal a, :root:not([data-theme="dark"]) body .login-hint a, :root:not([data-theme="dark"]) .login-card a { color: var(--trust); }
 :root:not([data-theme="dark"]) .field input:focus, :root:not([data-theme="dark"]) .field textarea:focus { border-color: var(--trust); box-shadow: 0 0 0 3px rgba(37, 99, 235, .18); }
+
+/* ── Round 5 (founder phone review 11-11) ── */
+/* "Get the Herae app" / notifications bar: a slim white card, not a red block. */
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) { background: #FFFFFF; color: var(--ink); border-bottom: 1px solid var(--card-line); box-shadow: 0 1px 2px rgba(22, 18, 26, .06), 0 6px 16px -10px rgba(22, 18, 26, .25); }
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-ico { background: #FDECF3; color: var(--brand); }
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-txt span { color: var(--ink-dim); }
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-primary { background: var(--brand); color: #FFFFFF; }
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-ghost, :root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-quiet { background: transparent; color: var(--ink-dim); box-shadow: none; }
+:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-x { background: rgba(22, 18, 26, .06); color: var(--ink); }
+@media (max-width: 760px) {
+  body .an-push-in { flex-wrap: nowrap !important; gap: 10px !important; padding: 8px 12px !important; }
+  body .an-push-ico { width: 30px !important; height: 30px !important; }
+  body .an-push-txt { flex: 1 1 auto !important; } body .an-push-txt span { display: none; }
+  body .an-push-txt b { font-size: 14px; }
+  body .an-push-acts { flex: none !important; gap: 4px; }
+  body .an-push-btn.is-primary, body .an-push-btn.is-ghost { flex: none !important; height: 34px !important; font-size: 13.5px !important; padding: 0 12px !important; }
+}
+body .an-lock-ico, body .an-lock-btn { background: var(--brand) !important; }
+/* People card: a dark photo card with a plain near-black base and shade, no colour wash. */
+body .d-art { background: linear-gradient(180deg, #2A2530 0%, #121015 100%) !important; }
+body .d-shade { background: linear-gradient(180deg, rgba(12, 10, 14, .4) 0%, rgba(12, 10, 14, 0) 18%, rgba(12, 10, 14, 0) 42%, rgba(12, 10, 14, .75) 70%, rgba(12, 10, 14, .96) 100%) !important; }
+body .dz-tease { background: rgba(214, 31, 105, .12) !important; border-color: rgba(214, 31, 105, .3) !important; color: var(--ink) !important; }
+/* People actions: one family. White circles with ink line icons; Like is solid magenta with a white heart. */
+:root:not([data-theme="dark"]) body .dz-btn { background: #FFFFFF !important; border: 1px solid rgba(22, 18, 26, .1) !important; color: #3F3A45 !important; box-shadow: 0 1px 2px rgba(22, 18, 26, .08), 0 6px 16px -6px rgba(22, 18, 26, .25) !important; }
+:root:not([data-theme="dark"]) body .dz-btn.yes { background: var(--brand) !important; border: 0 !important; color: #FFFFFF !important; box-shadow: 0 1px 2px rgba(22, 18, 26, .15), 0 10px 20px -8px rgba(214, 31, 105, .55) !important; }
+body .dz-btn svg { stroke-width: 1.75; }
+/* Watchlist "Together | <name>'s list": a light track with readable labels. */
+:root:not([data-theme="dark"]) .wl-tabs { background: #F4F4F5 !important; border-color: var(--card-line) !important; }
+:root:not([data-theme="dark"]) .wl-tabs [role=tab] { color: var(--ink-dim) !important; }
+:root:not([data-theme="dark"]) .wl-tabs [role=tab][aria-selected="true"] { background: #FFFFFF !important; color: var(--ink) !important; box-shadow: 0 1px 2px rgba(22, 18, 26, .1), 0 2px 8px -2px rgba(22, 18, 26, .12) !important; }
+/* Moment cards: icon buttons are white chips with ink icons; captions over a picture are white; the stored strip sits on a white card. */
+:root:not([data-theme="dark"]) .carousel-item-bar .post-menu-btn, :root:not([data-theme="dark"]) .carousel-item-open, :root:not([data-theme="dark"]) .mv-btn, :root:not([data-theme="dark"]) .post-menu-btn {
+  background: rgba(255, 255, 255, .94) !important; color: var(--ink) !important; border: 1px solid rgba(22, 18, 26, .1) !important; box-shadow: 0 1px 3px rgba(22, 18, 26, .18) !important; }
+:root:not([data-theme="dark"]) .carousel-item-caption .moment-description { color: #FFFFFF !important; }
+:root:not([data-theme="dark"]) .session-carousel-media { background: #FFFFFF; border: 1px solid var(--card-line); box-shadow: var(--card-shadow); }
+/* Contrast audit (11-11): every text pair below was under AA in the light theme. */
+:root:not([data-theme="dark"]) body .g-msg.err { color: #B91C1C; }
+:root:not([data-theme="dark"]) .sh-step-n { background: #FDECF3 !important; color: #9C134C !important; }
+:root:not([data-theme="dark"]) .sh-group, :root:not([data-theme="dark"]) .sh-h2 { color: var(--ink-faint) !important; }
+:root:not([data-theme="dark"]) .like-count { color: #C2410C; }
+:root:not([data-theme="dark"]) .wp-me-meta b, :root:not([data-theme="dark"]) .profile-online, :root:not([data-theme="dark"]) .status-online { color: #047857 !important; }
+:root:not([data-theme="dark"]) .pill-count { background: #FDECF3 !important; color: #9C134C !important; }
+:root:not([data-theme="dark"]) .mf-caret { color: var(--ink-faint) !important; }
+:root:not([data-theme="dark"]) body .cycle-save { color: #9C134C; }
+:root:not([data-theme="dark"]) .ms-action-primary .ms-action-sub, :root:not([data-theme="dark"]) .ms-action-tile.ms-action-primary * { color: #FFFFFF !important; }
+:root:not([data-theme="dark"]) .ms-featured-kicker { color: #B8185A !important; }
+:root:not([data-theme="dark"]) .star-picker-btn { color: #7C7682; }
+/* Auth pages: the legal line is small print, centred, AA grey; a little air under "Log in". */
+.login-card .legal, .login-card .login-legal, .login-card .signup-legal { font-size: 13px !important; line-height: 1.6; color: var(--ink-faint); text-align: center; margin-top: 16px; }
+.login-card .legal a, .login-card .login-legal a, .login-card .signup-legal a { color: var(--trust, #2563EB); }
+.login-card .signup-alt { margin-bottom: 4px; }
+/* The Google button's place is held while it loads, so the form never jumps. */
+#googleMount:empty { display: block !important; height: 44px; border-radius: var(--btn-radius, 12px); background: #F4F4F5; }
+#googleMount[hidden] { display: none !important; }
