@@ -267,6 +267,7 @@
           confirmEmail: emailConfirmed === email,
           mode: mode(),
           source: window.signupSourceTag ? window.signupSourceTag() : 'site',
+          devices: window.deviceId ? [window.deviceId()] : [],
         }),
       })
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })

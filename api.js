@@ -309,10 +309,26 @@ async function sendBlockedToPlans() {
   return true;
 }
 
+// ── This browser's id (the duplicate-account rule, server/src/devices.js) ──
+// Random and first-party: a .herae.app cookie (so herae.app and app.herae.app share it, and it outlives cleared site
+// storage) plus localStorage. Sent with sign-ups, sign-ins and signed-in calls; used only to stop free-plan resets.
+let deviceIdCache = '';
+function deviceId() {
+  if (deviceIdCache) return deviceIdCache;
+  const ok = (v) => /^[A-Za-z0-9_-]{8,64}$/.test(v || '');
+  let id = (document.cookie.match(/(?:^|; )herae_dv=([^;]+)/) || [])[1] || '';
+  if (!ok(id)) { try { id = localStorage.getItem('herae_device') || ''; } catch (e) { id = ''; } }
+  if (!ok(id)) { const a = new Uint8Array(12); crypto.getRandomValues(a); id = 'd' + Array.from(a, (b) => b.toString(16).padStart(2, '0')).join(''); }
+  try { localStorage.setItem('herae_device', id); } catch (e) { /* storage blocked: the cookie alone */ }
+  const site = /(^|\.)herae\.app$/.test(location.hostname) ? '; domain=.herae.app; secure' : '';
+  document.cookie = `herae_dv=${id}; path=/; max-age=${400 * 86400}; samesite=lax${site}`;
+  return (deviceIdCache = 'w:' + id);
+}
+
 async function apiRequest(path, options = {}) {
   const auth = getAuth();
   const base = (auth?.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
-  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const headers = { 'Content-Type': 'application/json', 'X-Herae-Device': deviceId(), ...(options.headers || {}) };
   if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
   let resp;
   // ── A request that never answers is not an error anybody sees ─────
@@ -372,7 +388,7 @@ async function login(serverUrl, username, password) {
     resp = await fetch(`${base}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, devices: [deviceId()] }),
     });
   } catch (e) {
     throw new Error('Could not reach the server. Check the address and that it is running.');
@@ -491,7 +507,7 @@ function getMyInvite() {
 // username is a step in the flow, not a failure.
 async function loginWithGoogle(accessToken, serverUrl, username) {
   const base = (serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
-  const body = { access_token: accessToken, source: signupSourceTag() };
+  const body = { access_token: accessToken, source: signupSourceTag(), devices: [deviceId()] };
   // The sign-up page's "who do you want to watch with?" answer — only recorded if this creates the account.
   try { const m = sessionStorage.getItem('herae_signup_mode'); if (m) body.mode = m; } catch (e) { /* storage blocked */ }
   if (username) body.username = username;
