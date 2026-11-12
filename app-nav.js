@@ -118,7 +118,7 @@
   .an-connect-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; }
   /* The push / install bar (founder 11-02): refined red, sticky above the header; phones get icon + two lines + full-width actions. */
   .an-push { position: sticky; top: 0; z-index: 60; color: #fff; font-family: var(--font-sans, system-ui);
-    background: linear-gradient(90deg, #DC2648 0%, #C21A42 100%); box-shadow: none; border-bottom: 1px solid rgba(0, 0, 0, .12); }
+    background: #DC2648; box-shadow: none; border-bottom: 1px solid rgba(0, 0, 0, .12); }   /* founder 11-12: red = urgent */
   .an-push.is-on { background: linear-gradient(90deg, #16A34A, #15803D); box-shadow: none; }
   .an-push-in { display: flex; align-items: center; gap: 14px; padding: 10px max(16px, calc((100vw - 1120px) / 2)); }
   .an-push-ico { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.16); } .an-push-ico svg { width: 19px; height: 19px; }

@@ -306,12 +306,6 @@ html:root { --h-font-display: var(--font-display); }
 
 /* ── Round 5 (founder phone review 11-11) ── */
 /* "Get the Herae app" / notifications bar: a slim white card, not a red block. */
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) { background: #FFFFFF; color: var(--ink); border-bottom: 1px solid var(--card-line); box-shadow: 0 1px 2px rgba(22, 18, 26, .06), 0 6px 16px -10px rgba(22, 18, 26, .25); }
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-ico { background: #FDECF3; color: var(--brand); }
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-txt span { color: var(--ink-dim); }
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-primary { background: var(--brand); color: #FFFFFF; }
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-ghost, :root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-quiet { background: transparent; color: var(--ink-dim); box-shadow: none; }
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-x { background: rgba(22, 18, 26, .06); color: var(--ink); }
 @media (max-width: 760px) {
   body .an-push-in { flex-wrap: nowrap !important; gap: 10px !important; padding: 8px 12px !important; }
   body .an-push-ico { width: 30px !important; height: 30px !important; }
@@ -324,7 +318,6 @@ html:root { --h-font-display: var(--font-display); }
 /* One line on phones: icon, short title, a quiet "Install app" link and the button. The title wraps rather than clips. */
 body .an-push-txt b { overflow-wrap: anywhere; }
 body .an-push-btn.is-quiet { order: -1; }
-:root:not([data-theme="dark"]) body .an-push:not(.is-on) .an-push-btn.is-quiet { color: var(--brand-secondary); }
 body .an-lock-ico, body .an-lock-btn { background: var(--brand) !important; }
 /* People card: a dark photo card with a plain near-black base and shade, no colour wash. */
 body .d-art { background: linear-gradient(180deg, #2A2530 0%, #121015 100%) !important; }
@@ -362,3 +355,7 @@ body .dz-btn svg { stroke-width: 1.75; }
 /* The Google button's place is held while it loads, so the form never jumps. */
 #googleMount:empty { display: block !important; height: 44px; border-radius: var(--btn-radius, 12px); background: #F4F4F5; }
 #googleMount[hidden] { display: none !important; }
+
+/* 11-12 founder phone: the header bell/search took the page's link blue on social.html; a status pill wrapped to two lines. */
+body .an-right a.an-icon { color: var(--ink) !important; }
+body .p-state { white-space: nowrap; flex: none; }

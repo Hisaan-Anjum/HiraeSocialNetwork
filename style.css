@@ -2264,7 +2264,7 @@ html { scroll-behavior: smooth; }
 .at-card { max-width: 440px; width: 100%; }
 .at-movie { margin: 2px 0 14px; font-weight: 700; color: var(--ink-dim); }
 .at-opt, .at-chat { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; margin-bottom: 10px; border-radius: 16px;
-  border: 1px solid var(--line, rgba(148, 163, 184, .3)); background: rgba(30, 41, 59, .55); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  border: 1px solid var(--card-line, rgba(22, 18, 26, .1)); background: var(--surface-raised, #FFFFFF); color: var(--ink, inherit); font: inherit; text-align: left; cursor: pointer; }   /* was a dark slate wash: grey rows, dark text on the light theme (11-12) */
 .at-opt:hover, .at-chat:hover { border-color: rgba(var(--accent-rgb), .6); }
 .at-opt strong { display: block; font-size: 16px; }
 .at-opt small { display: block; margin-top: 2px; font-size: 13px; color: var(--ink-dim); }
