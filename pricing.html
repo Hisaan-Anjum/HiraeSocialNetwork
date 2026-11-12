@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricing — Herae</title>
-<meta name="description" content="Herae pricing: start free (your first two movie nights are on us, then 4 hours of synced watching a month), or go unlimited with Herae Plus or Herae Together — one subscription for you and the person you watch with.">
+<meta name="description" content="Herae pricing: start free (your first two movie nights are on us, then 4 hours of synced watching a month), or go unlimited with Herae Together — one subscription for you and the person you watch with.">
 <link rel="canonical" href="https://herae.app/pricing.html">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -16,7 +16,7 @@
   .pricing-head { text-align: center; margin-bottom: 12px; }
   .pricing-head h1 { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
   .pricing-head p { color: var(--ink-dim); font-size: 15px; max-width: 560px; margin: 0 auto; }
-  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+  .price-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 34px; max-width: 640px; margin-left: auto; margin-right: auto; }
   @media (max-width: 780px) { .price-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; } }
   .price-card { position: relative; display: flex; flex-direction: column; border: 1px solid var(--border);
     border-radius: 18px; padding: 26px 22px; background: rgba(255,255,255,0.025); }
@@ -41,11 +41,11 @@
   <meta property="og:site_name" content="Herae">
   <meta property="og:url" content="https://herae.app/pricing.html">
   <meta property="og:title" content="Pricing — Herae">
-  <meta property="og:description" content="Herae is free to start: your first two movie nights are on us. Plus and Together unlock unlimited watching. Made for long-distance couples.">
+  <meta property="og:description" content="Herae is free to start: your first two movie nights are on us. Herae Together unlocks unlimited watching for both of you. Made for long-distance couples.">
   <meta property="og:image" content="https://herae.app/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Pricing — Herae">
-  <meta name="twitter:description" content="Herae is free to start: your first two movie nights are on us. Plus and Together unlock unlimited watching. Made for long-distance couples.">
+  <meta name="twitter:description" content="Herae is free to start: your first two movie nights are on us. Herae Together unlocks unlimited watching for both of you. Made for long-distance couples.">
   <meta name="twitter:image" content="https://herae.app/og-image.png">
 </head>
 <body>
@@ -98,19 +98,6 @@
         <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=pricing" target="_blank" rel="noopener">Add to Chrome — free</a>
       </div>
 
-      <div class="price-card">
-        <div class="price-name">Herae Plus</div>
-        <div class="price-for">For friends, family &amp; individuals</div>
-        <div><span class="price-amount" id="pricePlus">$4.99</span> <span class="price-cycle">/month</span></div>
-        <div class="price-annual">annual billing available</div>
-        <ul class="price-feats">
-          <li>Unlimited synced watching &amp; calls</li>
-          <li>No monthly time limit</li>
-          <li>Covers your account</li>
-        </ul>
-        <a class="btn btn-secondary" data-cta-paid href="signup.html">Get Plus</a>
-      </div>
-
       <div class="price-card featured">
         <div class="price-badge">Most loved</div>
         <div class="price-name">Herae Together</div>
@@ -118,7 +105,7 @@
         <div><span class="price-amount" id="priceTogether">$6.99</span> <span class="price-cycle">/month</span></div>
         <div class="price-annual">annual billing available</div>
         <ul class="price-feats">
-          <li>Everything in Plus, for two people</li>
+          <li>Unlimited synced watching &amp; calls for both of you</li>
           <li>Unlimited time together, forever</li>
           <li>Covers you + one person you choose</li>
         </ul>
@@ -211,8 +198,9 @@
       if (cfg && cfg.configured && window.Paddle) {
         Paddle.Environment.set(cfg.environment);
         Paddle.Initialize({ token: cfg.clientToken });
-        const plusId = cfg.prices.plus.month, togId = cfg.prices.together.month;
-        const items = [plusId, togId].filter(Boolean).map((priceId) => ({ priceId, quantity: 1 }));
+        // OFFER-2027: one paid card. Plus is hidden; its price id stays alive for the people who already have it.
+        const togId = cfg.prices.together.month;
+        const items = [togId].filter(Boolean).map((priceId) => ({ priceId, quantity: 1 }));
         if (items.length) {
           const preview = await Paddle.PricePreview({ items });
           // In the visitor's own currency (PKR for Pakistan, …) — converted with "billed as US$…" where Paddle bills USD.
@@ -221,7 +209,7 @@
           const put = (elId, pid) => { const e = document.getElementById(elId); if (!e || !by[pid]) return; e.textContent = by[pid];
             const billed = (loc[pid] || {}).billed; if (!billed) return;
             let n = e.parentElement.querySelector('.price-billed'); if (!n) { n = document.createElement('small'); n.className = 'price-billed'; e.parentElement.append(n); } n.textContent = billed; };
-          put('pricePlus', plusId); put('priceTogether', togId);
+          put('priceTogether', togId);
         }
       }
     } catch (e) { /* keep the fallback prices */ }

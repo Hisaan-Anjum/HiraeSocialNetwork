@@ -159,7 +159,7 @@ async function loadSession() {
     // Nothing saved yet is the usual case (AI Moments is off unless turned on; its finds wait in the extension panel
     // above until kept). "No moments were captured" contradicted that panel and ended a good night on a shrug, so the
     // night itself is the memory here (2026-10-15).
-    : `<div class="review-no-moments">${detail.durationMs >= 60000 ? `${Math.round(detail.durationMs / 60000)} minutes together` : `Your night with ${escapeHtml(partnerName)}`}${title ? ` · ${escapeHtml(title)}` : ''}<br><span class="review-no-moments-tip">Next time, tap the camera button during the call for a photo strip of you two.</span></div>`;
+    : `<div class="review-no-moments">${detail.durationMs >= 60000 ? `${Math.round(detail.durationMs / 60000)} minutes together` : `Your night with ${escapeHtml(partnerName)}`}${title ? ` · ${escapeHtml(title)}` : ''}<br><span class="review-no-moments-tip">${/^ru/i.test(navigator.language || '') ? 'В следующий раз нажмите 📸 во время звонка: четыре быстрых фото вас двоих, сохранятся полоской.' : 'Next time, press 📸 on the call: four quick photos of you two, saved as a strip.'}</span></div>`;
 
   // The end of a night is when it feels best, so that is where sharing is
   // offered (MOMENTS_LOOP.md): one moment, one tap. A video beats a photo.
@@ -222,6 +222,8 @@ async function loadSession() {
     </div>
   `;
 
+  // OFFER-2027 #7: the booth invitation outside the call was shown (the read pairs it with night_summary.booth next night).
+  if (!detail.moments.length) { try { window.trackEvent && window.trackEvent('booth_invite', { surface: 'review', action: 'shown' }); } catch (e) { /* best-effort */ } }
   document.getElementById('shareNightBtn')?.addEventListener('click', () => openShareSheet(best));
   contentEl.querySelector('.review-add-line')?.addEventListener('click', (e) => {
     e.preventDefault();

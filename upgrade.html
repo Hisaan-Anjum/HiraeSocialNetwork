@@ -63,7 +63,8 @@
   /* Founding Couple: shown only while the server says the offer is open. */
   .founding { margin-top: 22px; border: 1px solid rgba(var(--accent-rgb),.55); border-radius: 16px; padding: 20px 22px;
     background: linear-gradient(135deg, rgba(var(--accent-rgb),.10), rgba(var(--accent2-rgb),.10)); }
-  .founding[hidden] { display: none; }
+  .founding[hidden], .plan-card[hidden] { display: none; }
+  .plan-grid:not(:has(#cardPlus:not([hidden]))) { grid-template-columns: 1fr; max-width: 380px; margin-left: auto; margin-right: auto; }
   .founding-badge { display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
     color: #fff; background: var(--brand-gradient-cta); padding: 3px 9px; border-radius: 999px; }
   .founding-title { font-size: 20px; font-weight: 800; margin: 10px 0 4px; }
@@ -111,7 +112,8 @@
     </div>
 
     <div class="plan-grid">
-      <div class="plan-card">
+      <!-- OFFER-2027: one paid plan. The Plus card shows only to someone who already has Plus (renderPlans). -->
+      <div class="plan-card" id="cardPlus" hidden>
         <div class="plan-name">Herae Plus</div>
         <div class="plan-for">For friends, family &amp; individuals</div>
         <div><span class="plan-price" id="pricePlus">—</span> <span class="plan-cycle" id="cyclePlus">/month</span></div>
@@ -129,7 +131,7 @@
         <div class="plan-for">One subscription for you + one person you choose</div>
         <div><span class="plan-price" id="priceTogether">—</span> <span class="plan-cycle" id="cycleTogether">/month</span></div>
         <ul class="plan-feats">
-          <li>Everything in Plus, for both of you</li>
+          <li>Unlimited synced watching &amp; calls for both of you</li>
           <li>Unlimited time together, forever</li>
           <li>Choose (or invite) your person anytime</li>
         </ul>
@@ -246,7 +248,7 @@
       box.style.display = 'block';
       box.innerHTML = "You're already enjoying <strong>Herae Together</strong>. <a href='billing.html'>Manage plan &amp; who's covered →</a>";
     } else if (own === 'plus') {
-      cPlus.classList.add('current');
+      cPlus.hidden = false; cPlus.classList.add('current');
       bPlus.disabled = true; bPlus.textContent = 'Current plan';
       bTog.textContent = 'Upgrade to Herae Together';
       box.style.display = 'block';
@@ -260,7 +262,7 @@
       bPlus.disabled = true; bTog.disabled = true;
       bPlus.textContent = 'Complimentary access'; bTog.textContent = 'Complimentary access';
       box.style.display = 'block';
-      box.innerHTML = "You have complimentary <strong>Herae Plus</strong> — unlimited, on us. Nothing to buy.";
+      box.innerHTML = "You have complimentary <strong>unlimited access</strong>, on us. Nothing to buy.";
     }
   }
 
