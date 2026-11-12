@@ -4,6 +4,16 @@
 // Pages keep their old header in the DOM (their scripts still bind to its buttons) but it is hidden.
 // Classic global script, loaded after api.js; does nothing for signed-out visitors.
 (function () {
+  // 11-12: pages open like app screens. Chrome prefetches a same-site page the moment a finger/mouse goes down on its link
+  // (speculation rules, "moderate" = on pointerdown/hover), so the tap lands on a page that's already loaded. Same-origin
+  // .html pages only; never sign-out, API or external links.
+  try {
+    if (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules') && !document.querySelector('script[type=speculationrules]')) {
+      const sr = document.createElement('script'); sr.type = 'speculationrules';
+      sr.textContent = JSON.stringify({ prefetch: [{ where: { and: [{ href_matches: '/*.html*' }, { not: { href_matches: '/*logout*' } }, { not: { selector_matches: '[target=_blank], [download]' } }] }, eagerness: 'moderate' }] });
+      document.head.append(sr);
+    }
+  } catch (e) { /* older browsers: plain navigation */ }
   // Theme (founder 11-02): Light / Dark / Auto from Account settings (localStorage 'herae_theme', default Light since the 11-11 warm redesign; Auto follows the
   // device). Runs first, before the auth check, so the page paints in the right theme; theme.css reads data-theme.
   const applyTheme = () => {
