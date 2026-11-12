@@ -439,7 +439,7 @@
         const resp = await fetch(`${getSavedServerUrl().replace(/\/+$/, '')}/api/guest`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, name: el('guestName').value.trim(), devices: [deviceId()] }),
+          body: JSON.stringify({ code, name: el('guestName').value.trim(), devices: deviceIds() }),
         });
         const data = await resp.json().catch(function () { return {}; });
         if (!resp.ok) throw new Error(data.error || 'Could not get you in just now.');

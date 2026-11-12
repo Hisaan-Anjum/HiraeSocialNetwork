@@ -325,10 +325,26 @@ function deviceId() {
   return (deviceIdCache = 'w:' + id);
 }
 
+// The computer, not the browser (server devices.js 'h:'): the same in every Chrome profile, incognito window and Chromium
+// browser on one machine. Hardware traits only. Kept identical in offscreen.js and moments-site/api.js.
+async function hardwareId() {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl');
+    const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info');
+    const parts = [dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '', `${screen.width}x${screen.height}x${devicePixelRatio}`,
+      navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform, Intl.DateTimeFormat().resolvedOptions().timeZone];
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(parts.join('|')));
+    return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) { return ''; }
+}
+let hwHash = '';
+hardwareId().then((h) => { hwHash = h; });
+const deviceIds = () => [deviceId(), hwHash && 'h:' + hwHash].filter(Boolean);
+
 async function apiRequest(path, options = {}) {
   const auth = getAuth();
   const base = (auth?.serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
-  const headers = { 'Content-Type': 'application/json', 'X-Herae-Device': deviceId(), ...(options.headers || {}) };
+  const headers = { 'Content-Type': 'application/json', 'X-Herae-Device': deviceIds().join(','), ...(options.headers || {}) };
   if (auth?.token) headers.Authorization = `Bearer ${auth.token}`;
   let resp;
   // ── A request that never answers is not an error anybody sees ─────
@@ -388,7 +404,7 @@ async function login(serverUrl, username, password) {
     resp = await fetch(`${base}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, devices: [deviceId()] }),
+      body: JSON.stringify({ username, password, devices: deviceIds() }),
     });
   } catch (e) {
     throw new Error('Could not reach the server. Check the address and that it is running.');
@@ -507,7 +523,7 @@ function getMyInvite() {
 // username is a step in the flow, not a failure.
 async function loginWithGoogle(accessToken, serverUrl, username) {
   const base = (serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
-  const body = { access_token: accessToken, source: signupSourceTag(), devices: [deviceId()] };
+  const body = { access_token: accessToken, source: signupSourceTag(), devices: deviceIds() };
   // The sign-up page's "who do you want to watch with?" answer — only recorded if this creates the account.
   try { const m = sessionStorage.getItem('herae_signup_mode'); if (m) body.mode = m; } catch (e) { /* storage blocked */ }
   if (username) body.username = username;
