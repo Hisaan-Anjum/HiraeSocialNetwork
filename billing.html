@@ -98,6 +98,7 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+  <script src="ru-pay.js"></script>
 <script src="app-nav.js"></script>
   <script>
   'use strict';
@@ -129,6 +130,12 @@
       planStatus.textContent = left > 0
         ? `${left} free welcome night${left === 1 ? '' : 's'} left — they don't count toward your hours.`
         : `${s.hoursUsed || 0} of ${s.hoursLimit || 4} free hours used this month.`;
+      // A new account on the same two browsers continues the older account's free plan (server carryAllowance).
+      if (s.carried) {
+        planStatus.textContent = "You two have already used your free nights and this month's free hours on this browser. A new account doesn't restart them. One Herae Together plan covers both of you, and your free hours come back on the 1st.";
+        // shortcut: the Russian line names no price (the ruble price lives in lava's offer, not on this page).
+        window.heraeInRussia().then((ru) => { if (ru) planStatus.textContent = 'Вы вдвоём уже использовали бесплатные вечера и бесплатные часы этого месяца в этом браузере. Новый аккаунт их не обнуляет. Одна подписка Herae Together действует на обоих. Бесплатные часы вернутся 1-го числа.'; }).catch(() => {});
+      }
       actions.appendChild(linkButton('See plans', 'upgrade.html', true));
       actions.appendChild(linkButton('Invite another couple', 'refer.html', false));
       return;
