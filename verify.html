@@ -37,20 +37,35 @@
     </div>
   </div>
 
+  <script src="api.js"></script>
   <script>
     // Verifies as soon as the page loads, using the token from the email link.
-    // Verification is soft — nothing is gated on it — so even a failure here
-    // (expired/used link) is not a dead end: the user can just keep using
-    // Herae and re-send from their account if they want.
+    // From 11-13 a new account's second free night waits on it (server subscriptions.unverified), so a failure
+    // here (expired/used link) offers a resend right on this page.
     const token = new URLSearchParams(location.search).get('token') || '';
     const title = document.getElementById('title');
     const message = document.getElementById('message');
     const cta = document.getElementById('cta');
+    // No token (the extension's "Verify your email to keep your free nights", 11-12), or a dead link: offer a resend.
+    const T = /^ru/i.test(navigator.language || '')
+      ? { t: 'Подтвердите почту', m: 'Подтвердите почту, чтобы сохранить бесплатные вечера. Ссылка в письме от Herae.', b: 'Отправить письмо ещё раз', sent: 'Отправили. Проверьте почту и папку «Спам».' }
+      : { t: 'Verify your email', m: 'Verify your email to keep your free nights. The link is in the email from Herae.', b: 'Resend the email', sent: 'Sent. Check your inbox and spam folder.' };
+    function offerResend(note) {
+      title.textContent = T.t;
+      message.textContent = (note ? note + ' ' : '') + T.m;
+      if (!getAuth()) return;   // signed out: the "Continue to Herae" link signs them in first
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-primary'; btn.textContent = T.b;
+      btn.onclick = async () => {
+        btn.disabled = true;
+        try { await apiRequest('/api/verify-email/resend', { method: 'POST' }); message.textContent = T.sent; } catch (e) { message.textContent = e.message; btn.disabled = false; }
+      };
+      cta.replaceChildren(btn);
+    }
 
     (async () => {
       if (!token) {
-        title.textContent = 'Link incomplete';
-        message.textContent = 'This confirmation link is missing its token.';
+        offerResend();
         cta.style.display = 'block';
         return;
       }
@@ -65,8 +80,7 @@
         title.textContent = 'Email confirmed';
         message.textContent = 'Thanks — your email is verified.';
       } catch (err) {
-        title.textContent = 'Couldn\'t confirm your email';
-        message.textContent = err.message + ' You can still use Herae and try again from your account.';
+        offerResend(err.message);
       } finally {
         cta.style.display = 'block';
       }
