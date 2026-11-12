@@ -15,6 +15,7 @@
 //                                    itself. Resolves to { blob, mime, poster }.
 'use strict';
 import { PATHS, emojiIconName } from '../lib/icons.js';
+import { loadMusic, startMusic, duckAt, fadeOutAt, FADE_OUT } from './music.js';
 
 // ── shared drawing helpers (parametric in width/height) ─────────────────
 // 11-11 palette: one deliberate near-black (the ink surfaces) and solid magenta, whatever the story's variant.
@@ -111,19 +112,34 @@ function drawTile(ctx, img, x, y, w, h, r) {
 
 // A muted, looping <video> ready to be drawn onto the canvas. Resolves to null
 // if it can't load, so the montage falls back to the moment's poster image.
-function loadVideoEl(src) {
-  return new Promise((resolve) => {
-    const v = document.createElement('video');
-    v.crossOrigin = 'anonymous';
-    v.muted = true; v.playsInline = true; v.loop = true; v.preload = 'auto';
+// A clip for the export: { v, audio, dur } or null. One download feeds both the
+// <video> (muted, drawn frame by frame) and its decoded sound track (null when the
+// clip has none), which is scheduled sample-accurately in the export's audio mix.
+async function loadClip(src, actx) {
+  let url = src, audio = null, blobUrl = null;
+  try {
+    const r = await fetch(src, { mode: 'cors', credentials: 'omit' });
+    if (r.ok) {
+      const blob = await r.blob();
+      url = blobUrl = URL.createObjectURL(blob);
+      if (actx) audio = await actx.decodeAudioData(await blob.arrayBuffer()).catch(() => null);
+    }
+  } catch (e) { /* fall back to streaming the clip, silent */ }
+  const v = await new Promise((resolve) => {
+    const el = document.createElement('video');
+    el.crossOrigin = 'anonymous';
+    el.muted = true; el.playsInline = true; el.preload = 'auto';
     let done = false;
-    const ok = () => { if (!done) { done = true; resolve(v); } };
-    v.onloadeddata = ok;
-    v.oncanplay = ok;
-    v.onerror = () => { if (!done) { done = true; resolve(null); } };
-    setTimeout(() => { if (!done) { done = true; resolve(v.readyState >= 2 ? v : null); } }, 8000);
-    v.src = src;
+    const ok = () => { if (!done) { done = true; resolve(el); } };
+    el.onloadeddata = ok; el.oncanplay = ok;
+    el.onerror = () => { if (!done) { done = true; resolve(null); } };
+    setTimeout(() => { if (!done) { done = true; resolve(el.readyState >= 2 ? el : null); } }, 8000);
+    el.src = url;
   });
+  if (!v) { if (blobUrl) URL.revokeObjectURL(blobUrl); return null; }
+  // MediaRecorder-made webm clips report Infinity until read to the end; the decoded sound knows the real length.
+  const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : (audio ? audio.duration : 0);
+  return { v, audio, dur, blobUrl };
 }
 function bgGradient(ctx, W, H, accent) {
   const c = ACCENTS[accent] || ACCENTS.purple;
@@ -348,7 +364,8 @@ export async function buildRelationshipCard(summary, { themAvatarUrl } = {}) {
 
 // ── the full recap as a vertical 9:16 video (player's Share button) ─────
 function pickMime() {
-  const candidates = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  // Video + sound in one file: AAC in MP4 where the browser records it, Opus in WebM otherwise.
+  const candidates = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.42E01E,opus', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
   for (const m of candidates) { if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m; }
   return null;
 }
@@ -363,14 +380,16 @@ function videoScenes(manifest, images, videos, ratio) {
   if (manifest.stats?.length) scenes.push({ kind: 'stats', dur: 2600 });
   if (manifest.timeline?.length) scenes.push({ kind: 'timeline', dur: 2600 });
   manifest.scenes.filter((s) => s.url).forEach((s, i) => {
+    const clip = videos[i] || null;
     // A video moment is kept even if only the clip loaded, and gets a little
     // longer on screen so the motion actually reads. The backdrop is built from
     // the poster image (cheap, and a video's own frames would change anyway).
     const img = images[i] || null;
-    const vid = videos[i] || null;
+    const vid = clip?.v || null;
     if (img || vid) {
       scenes.push({
-        kind: 'moment', dur: vid ? 3200 : 2400, m: s, img, vid,
+        // A clip runs its FULL length (it used to be cut at 3.2 s), never shorter than a photo's beat.
+        kind: 'moment', dur: vid ? Math.max(3200, Math.ceil(clip.dur * 1000) + 250) : 2400, m: s, img, vid, audio: clip?.audio || null,
         bg: img ? makeBackdrop(img, ratio) : null,
       });
     }
@@ -534,7 +553,9 @@ function drawProgress(ctx, W, scenes, idx, elapsedInScene) {
   }
 }
 
-const FPS = 30;
+// 24 fps: the cinema rate, and 20% less encoding than 30. Real-time H.264 at 720×1280 is barely real-time on a
+// modest machine; under load the encoder fell seconds behind and the ending was lost (QA 11-12).
+const FPS = 24;
 // Encoded at 720×1280 — the size Stories/Reels/TikTok actually deliver — while
 // every scene is still DRAWN in a 1080×1920 design space (see SCALE below), so
 // none of the layout maths changes.
@@ -551,20 +572,41 @@ const DES_W = 1080, DES_H = 1920;     // design space all drawing code uses
 const SCALE = OUT_W / DES_W;
 const VIDEO_BITRATE = 6_000_000;
 
-// Renders the whole recap to a vertical MP4/WebM. Resolves to
-// { blob, mime, poster(dataURL) }.
+// Total length of the exported story in ms (sum of its scenes). Exported for the QA check.
+export const storyDurationMs = (scenes) => scenes.reduce((a, sc) => a + sc.dur, 0);
+
+// A timer that keeps firing when the tab is in the background (page timers drop to
+// ~1/s there, which stalled the render whenever someone switched tabs mid-export).
+function makeTicker() {
+  try {
+    const w = new Worker(new URL('./tick-worker.js', import.meta.url));
+    let cb = null; w.onmessage = () => { const f = cb; cb = null; f?.(); };
+    return { after(ms, f) { cb = f; w.postMessage(ms); }, stop() { w.terminate(); } };
+  } catch (e) { return { after: (ms, f) => setTimeout(f, ms), stop() {} }; }
+}
+
+// Renders the whole recap to a vertical MP4/WebM with its soundtrack. Resolves to
+// { blob, mime, poster(dataURL), durationMs }.
 //
-// Frames are DETERMINISTIC and pushed MANUALLY: scene selection is a pure
-// function of the frame index (never the wall clock), and each rendered frame is
-// handed to the encoder exactly once via track.requestFrame(). That's what keeps
-// the montage in order with no duplicated or dropped frames — the previous
-// rAF + wall-clock loop re-sampled whatever happened to be on the canvas, so any
-// jank (image decode, GC, a background tab) repeated or skipped frames.
-//
-// The loop is still PACED to real time, because MediaRecorder timestamps frames
-// by arrival, so a ~30s story takes ~30s to record. onProgress(0..1) drives the
-// loading state meanwhile.
+// MediaRecorder records in real time, so the story is PLAYED into it: the story's
+// music (faded in and out, ducked to ~18% under every clip with sound) and each
+// clip's own sound are scheduled up front on one AudioContext, and that audio clock
+// is the timeline. Each tick draws the frame for "now" on that clock, so a slow or
+// throttled tick can only drop a frame, never shorten or stretch the story or slip
+// the picture against the sound. Recording stops once the clock has passed the
+// last scene's end, so the file runs the story's full length.
 export async function renderStoryVideo(manifest, { onProgress } = {}) {
+  // Created first, synchronously inside the Share tap, so the browser lets it run.
+  let actx = null;
+  try { actx = new (window.AudioContext || window.webkitAudioContext)(); actx.resume().catch(() => {}); } catch (e) { actx = null; }
+  try {
+    return await recordStory(manifest, actx, onProgress);
+  } finally {
+    actx?.close().catch(() => {});
+  }
+}
+
+async function recordStory(manifest, actx, onProgress) {
   await brandFont();
   const mime = pickMime();
   if (!mime) throw new Error('This browser can’t record video — try the Share Card instead.');
@@ -572,22 +614,19 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
   const W = DES_W, H = DES_H; // all scene drawing happens in design units
   const momentScenes = (manifest.scenes || []).filter((s) => s.url);
   const topSessions = manifest.topSessions || [];
-  const [logo, imgs, vids, topArt] = await Promise.all([
+  const [logo, imgs, clips, topArt, music] = await Promise.all([
     loadImage('logo.png'),
     Promise.all(momentScenes.map((s) => loadImage(s.url))),
-    // Video moments play for real in the export; a photo moment resolves null.
-    Promise.all(momentScenes.map((s) => (s.videoUrl ? loadVideoEl(s.videoUrl) : Promise.resolve(null)))),
-    // Cover art for "your best nights". Preloaded with everything else: a
-    // drawImage of a half-loaded poster renders nothing, and the recorder is
-    // real-time so there is no second chance at that frame.
+    // Video moments play for real (full length, with their sound); a photo moment resolves null.
+    Promise.all(momentScenes.map((s) => (s.videoUrl ? loadClip(s.videoUrl, actx) : Promise.resolve(null)))),
+    // Cover art for "your best nights", preloaded: a half-loaded poster draws nothing.
     Promise.all(topSessions.map((t) => (t.posterUrl ? loadImage(t.posterUrl) : Promise.resolve(null)))),
+    actx ? loadMusic(actx, manifest.type) : null,
   ]);
-  const scenes = videoScenes(manifest, imgs, vids, DES_H / DES_W);
-  const total = scenes.reduce((a, s) => a + s.dur, 0);
-  const totalFrames = Math.max(1, Math.round((total / 1000) * FPS));
+  const scenes = videoScenes(manifest, imgs, clips, DES_H / DES_W);
+  const total = storyDurationMs(scenes);
 
-  // Scene + progress-within-scene for a given moment in the timeline. Pure, so
-  // frame N always renders exactly the same picture.
+  // Scene + progress-within-scene for a moment on the timeline. Pure.
   function sceneAt(tMs) {
     let acc = 0;
     for (let i = 0; i < scenes.length; i++) {
@@ -597,23 +636,23 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
     const last = scenes.length - 1;
     return { idx: last, seg: scenes[last], p: 1 };
   }
-  let playing = null; // the video element currently on screen
-  function renderFrame(i) {
-    const { idx, seg, p } = sceneAt((i / FPS) * 1000);
-    // Start a video moment's clip the first time its scene is drawn, and stop
-    // the previous one — so each clip plays from its beginning, exactly once.
+  let playing = null; // the clip currently on screen
+  function renderFrame(tMs) {
+    const { idx, seg, p } = sceneAt(tMs);
+    // Each clip starts from its beginning the first time its scene is drawn, once.
     if (seg.vid !== playing) {
       if (playing) { try { playing.pause(); } catch (e) { /* ignore */ } }
       playing = seg.vid || null;
       if (playing) { try { playing.currentTime = 0; playing.play().catch(() => {}); } catch (e) { /* ignore */ } }
     }
-    // Absolute transform each frame: draw in 1080×1920 design units, land on the
-    // 720×1280 canvas. (drawTile's save/restore only nests inside this.)
+    // Draw in 1080×1920 design units, land on the 720×1280 canvas.
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
     drawScene(ctx, W, H, manifest, seg, p, logo, topArt);
     drawProgress(ctx, W, scenes, idx, p);
   }
-  const stopVideos = () => { for (const v of vids) { if (v) { try { v.pause(); } catch (e) { /* ignore */ } } } };
+  const cleanup = () => {
+    for (const c of clips) { if (c) { try { c.v.pause(); } catch (e) { /* ignore */ } if (c.blobUrl) URL.revokeObjectURL(c.blobUrl); } }
+  };
 
   const canvas = document.createElement('canvas');
   canvas.width = OUT_W; canvas.height = OUT_H;
@@ -623,82 +662,94 @@ export async function renderStoryVideo(manifest, { onProgress } = {}) {
   renderFrame(0);
   let poster = null; try { poster = canvas.toDataURL('image/jpeg', 0.85); } catch (e) { poster = null; }
 
-  // captureStream(0) = "I will supply every frame myself". Fall back to
-  // automatic capture where requestFrame isn't implemented.
+  // captureStream(0) = "I will supply every frame myself"; automatic capture where requestFrame isn't implemented.
   let stream = canvas.captureStream(0);
   let track = stream.getVideoTracks()[0];
   const manual = track && typeof track.requestFrame === 'function';
   if (!manual) { stream = canvas.captureStream(FPS); track = stream.getVideoTracks()[0]; }
 
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE });
+  // The sound: if the browser won't run audio (no user gesture), the file is still made, silent, on the page clock.
+  if (actx && actx.state !== 'running') await Promise.race([actx.resume().catch(() => {}), new Promise((r) => setTimeout(r, 600))]);
+  const audioOn = !!actx && actx.state === 'running';
+  let dest = null;
+  if (audioOn) {
+    dest = actx.createMediaStreamDestination();
+    stream = new MediaStream([track, ...dest.stream.getAudioTracks()]);
+  }
+  let t0 = 0;
+  // Schedules the whole soundtrack from the moment recording starts, so sound and picture share one zero.
+  function scheduleAudio() {
+    t0 = actx.currentTime + 0.03;
+    let musicNode = null;
+    if (music) {
+      musicNode = startMusic(actx, music, dest, manifest.type, t0);
+      fadeOutAt(musicNode.fade, t0 + Math.max(0, total / 1000 - FADE_OUT), FADE_OUT);
+      musicNode.stop(t0 + total / 1000 + 0.1);
+    }
+    let at = 0;
+    for (const sc of scenes) {
+      if (sc.audio) {
+        const src = actx.createBufferSource(); src.buffer = sc.audio;
+        src.connect(dest); src.start(t0 + at / 1000);
+        if (musicNode) duckAt(musicNode.duck, t0 + at / 1000, t0 + (at + sc.audio.duration * 1000) / 1000);
+      }
+      at += sc.dur;
+    }
+  }
+  const s0 = performance.now();
+  const clock = () => (audioOn ? (actx.currentTime - t0) * 1000 : performance.now() - s0);
+
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE, audioBitsPerSecond: 128000 });
   const chunks = [];
   rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  const ticker = makeTicker();
 
   return new Promise((resolve, reject) => {
     let settled = false;
-    const fail = (msg) => { if (!settled) { settled = true; reject(new Error(msg)); } };
+    const fail = (msg) => { if (!settled) { settled = true; ticker.stop(); cleanup(); reject(new Error(msg)); } };
 
     rec.onstop = () => {
       if (settled) return;
-      settled = true;
-      stopVideos();
+      settled = true; ticker.stop(); cleanup();
       try { track?.stop(); } catch (e) { /* already stopped */ }
       const blob = new Blob(chunks, { type: mime.split(';')[0] });
       if (!blob.size) return reject(new Error('The video came out empty — try again.'));
-      resolve({ blob, mime: mime.split(';')[0], poster });
+      resolve({ blob, mime: mime.split(';')[0], poster, durationMs: total });
     };
-    rec.onerror = () => { stopVideos(); fail('Recording failed.'); };
+    rec.onerror = () => fail('Recording failed.');
 
-    // NO timeslice — deliberately. With one, Chrome hands back FRAGMENTED MP4
-    // chunks, and concatenating those yields a file most players only read the
-    // first fragment of: the video looks truncated (the closing scenes — "your
-    // best nights", the comments, the ending — silently vanish). Recording to a
-    // single blob and flushing once at the end produces one complete, valid file.
+    // NO timeslice: with one, Chrome hands back fragmented MP4 chunks that most players read only the first of.
     rec.start();
+    if (audioOn) scheduleAudio();
 
-    const startedAt = performance.now();
-    let i = 0;
-
+    let stopping = false;
     function step() {
-      if (settled) return;
-      renderFrame(i);
-      if (manual) { try { track.requestFrame(); } catch (e) { /* keep going */ } }
-      i++;
-      onProgress?.(Math.min(0.99, i / totalFrames));
-
-      if (i >= totalFrames) return finish();
-      // Pace this frame to its real-time slot so encoder timestamps stay honest.
-      const delay = Math.max(0, startedAt + (i / FPS) * 1000 - performance.now());
-      setTimeout(step, delay);
+      if (settled || stopping) return;
+      const t = clock();
+      if (t >= 0) {
+        renderFrame(Math.min(t, total - 1));
+        if (manual) { try { track.requestFrame(); } catch (e) { /* keep going */ } }
+        onProgress?.(Math.min(0.99, t / total));
+      }
+      if (t >= total) {
+        // The clock is past the last scene. stop() DISCARDS frames the encoder hasn't finished, and on a busy
+        // machine that backlog is seconds long: that was the lost ending (QA 11-12: 3.4 s short under load). So
+        // first end the input — the soundtrack stops and no more frames are fed, which adds nothing to the file —
+        // then give the encoder time to finish what's queued, then stop.
+        stopping = true;
+        for (const at of stream.getAudioTracks()) { try { at.stop(); } catch (e) { /* ignore */ } }
+        const drain = Math.min(30000, 3000 + total * 0.2);   // covers an encoder running ~20% slower than real time
+        setTimeout(() => {
+          if (settled) return;
+          try { rec.stop(); } catch (e) { return fail('Could not finalise the video.'); }
+          setTimeout(() => fail('The video took too long to finalise — try again.'), 30000);
+        }, drain);
+        return;
+      }
+      // Aim at the next frame slot on the clock.
+      const next = (Math.floor(Math.max(0, t) / (1000 / FPS)) + 1) * (1000 / FPS);
+      ticker.after(Math.max(1, Math.min(1000 / FPS, next - t)), step);
     }
-
-    // Hold the final frame briefly and let the last timeslice land before
-    // stopping — without this the encoder truncates the ending.
-    // Hold the closing frame while the encoder drains. stop() throws away
-    // anything still queued, so this wait is what guarantees the final scenes
-    // ("your best nights", the comments, the ending) actually make the file.
-    // Scaled to the story's length, since a longer story leaves a longer tail.
-    function finish() {
-      onProgress?.(0.99);
-      // Adaptive, not a fixed guess: if the render loop itself ran behind its
-      // nominal duration, the encoder is behind by at least as much, so the
-      // observed lag is added to the drain. Scales with story length and with
-      // how slow this particular machine turned out to be.
-      const lag = Math.max(0, (performance.now() - startedAt) - total);
-      const holdFor = Math.min(15000, 1200 + total * 0.05 + lag);
-      const heldAt = performance.now();
-      (function holdLastFrame() {
-        if (settled) return;
-        renderFrame(totalFrames - 1);
-        if (manual) { try { track.requestFrame(); } catch (e) { /* ignore */ } }
-        if (performance.now() - heldAt < holdFor) { setTimeout(holdLastFrame, 1000 / FPS); return; }
-        stopVideos();
-        try { rec.stop(); } catch (e) { return fail('Could not finalise the video.'); }
-        // Safety net: if onstop never arrives, don't hang the loading overlay.
-        setTimeout(() => fail('The video took too long to finalise — try again.'), 15000);
-      }());
-    }
-
-    setTimeout(step, 0);
+    ticker.after(0, step);
   });
 }

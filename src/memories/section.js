@@ -14,6 +14,7 @@ import { icon, emojiIconName } from '../lib/icons.js';
 import { renderAvatar } from '../components/avatar.js';
 import { buildStoryManifest, refreshManifestMedia, MANIFEST_VERSION } from './engine.js';
 import { playStory } from './player.js';
+import { unlockStoryAudio } from './music.js';
 import { openStorySelector } from './selector.js';
 import { openImportantDates } from './dates.js';
 import { buildStoryShareCard, renderStoryVideo, buildRelationshipCard } from './exporter.js';
@@ -245,6 +246,7 @@ async function mountRelationship(container, profile, opts = {}) {
   // stale or missing one is regenerated and saved. See the architecture note.
   // `action`: 'play' opens the cinematic player; 'card' shares the square image.
   async function openStory(descriptor, action) {
+    if (action === 'play') unlockStoryAudio();   // inside the tap, before any await: the only moment Safari lets sound start
     const loading = showLoading('Creating your memories…');
     try {
       let manifest = null;

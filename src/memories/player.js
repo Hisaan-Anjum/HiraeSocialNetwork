@@ -10,6 +10,7 @@
 import { icon, emojiIconName } from '../lib/icons.js';
 import { escapeHtml } from '../lib/util.js';
 import { lockScroll } from '../lib/scrollLock.js';
+import { unlockStoryAudio, loadMusic, startMusic, unduck, fadeOutAt, MUSIC_LEVEL, DUCK_RAMP, DUCK_LEVEL } from './music.js';
 
 // Build the ordered scene list from a manifest. Each scene: { html or build(),
 // duration(ms), kind }. Durations vary a little by variant for pacing variety.
@@ -78,7 +79,8 @@ function buildScenes(m) {
     const kb = m.variant?.transition === 'kenburns' || (m.variant?.transition === 'crossfade' && i % 2 === 0);
     scenes.push({
       kind: 'moment',
-      duration: sc.videoUrl ? 5200 : 3400,
+      duration: sc.videoUrl ? 5200 : 3400,   // a clip's scene grows to the clip's full length once its metadata loads
+      video: !!sc.videoUrl,
       build() {
         const el = document.createElement('div');
         el.className = `ms-scene ms-moment${captionHtml(sc) ? ' has-cap' : ''}`;   // has-cap: the words get their own space under the picture
@@ -92,7 +94,7 @@ function buildScenes(m) {
         if (sc.videoUrl) {
           el.innerHTML = `
             ${backdrop}
-            <video class="ms-media" src="${escapeHtml(sc.videoUrl)}" poster="${escapeHtml(sc.url || '')}" muted playsinline loop></video>
+            <video class="ms-media" src="${escapeHtml(sc.videoUrl)}" poster="${escapeHtml(sc.url || '')}" playsinline></video>
             <div class="ms-vignette"></div>
             ${captionHtml(sc)}`;
         } else {
@@ -189,6 +191,7 @@ export function playStory(manifest, opts = {}) {
     <div class="ms-topbar">
       <div class="ms-topbar-title">${escapeHtml(manifest.title)}</div>
       <div class="ms-topbar-actions">
+        <button class="ms-btn ms-btn-icon" data-ms="mute" aria-label="Mute sound" aria-pressed="false">${icon('music', 18)}</button>
         ${opts.onShare ? '<button class="ms-btn" data-ms="share" aria-label="Share this story">Share</button>' : ''}
         <button class="ms-btn ms-btn-icon" data-ms="close" aria-label="Close">${icon('x', 18)}</button>
       </div>
@@ -201,7 +204,31 @@ export function playStory(manifest, opts = {}) {
 
   const stage = overlay.querySelector('.ms-stage');
   const segs = [...overlay.querySelectorAll('.ms-seg i')];
-  let idx = 0, paused = false, raf = 0, startedAt = 0, elapsedBefore = 0, currentEl = null;
+  let idx = 0, paused = false, raf = 0, startedAt = 0, elapsedBefore = 0, currentEl = null, muted = false, closed = false, heldAudio = false;
+
+  // ── sound: the story's own track, faded in, ducked under clips that have sound, faded out on the ending ──
+  // The context was created inside the user's play tap (section.js); if the browser still holds it
+  // suspended, the mute button shows "off" and a tap on it starts the sound. Reduced motion never mutes audio.
+  const muteBtn = overlay.querySelector('[data-ms="mute"]');
+  const ctx = unlockStoryAudio();
+  let master = null, music = null;
+  if (ctx) {
+    master = ctx.createGain(); master.connect(ctx.destination);
+    loadMusic(ctx, manifest.type).then((buf) => {
+      if (!buf || closed) return;
+      music = startMusic(ctx, buf, master, manifest.type);
+      if (scenes[idx]?.kind === 'ending') fadeOutAt(music.fade, ctx.currentTime, scenes[idx].duration / 1000);
+    });
+  }
+  function setMuted(m) {
+    muted = m;
+    if (master) master.gain.setTargetAtTime(m ? 0 : 1, ctx.currentTime, 0.05);
+    const v = currentEl?.querySelector('video'); if (v) v.muted = m;
+    muteBtn.classList.toggle('is-off', m); muteBtn.setAttribute('aria-pressed', String(m));
+    muteBtn.setAttribute('aria-label', m ? 'Turn sound on' : 'Mute sound');
+  }
+  const soundBlocked = () => !ctx || ctx.state !== 'running';
+  if (soundBlocked()) muteBtn.classList.add('is-off');
 
   function renderScene(i) {
     stage.innerHTML = '';
@@ -209,11 +236,29 @@ export function playStory(manifest, opts = {}) {
     currentEl = s.build ? s.build() : (() => { const d = document.createElement('div'); d.innerHTML = s.html; return d.firstElementChild; })();
     stage.appendChild(currentEl);
     const vid = currentEl.querySelector('video');
-    if (vid) { vid.play().catch(() => {}); }
+    if (music && s.kind === 'ending') fadeOutAt(music.fade, ctx.currentTime, s.duration / 1000);
+    else if (music) { const g = music.fade.gain; g.cancelScheduledValues(ctx.currentTime); g.setTargetAtTime(MUSIC_LEVEL, ctx.currentTime, 0.2); }   // back from the ending
+    if (music) unduck(ctx, music.duck);
+    if (vid) {
+      // Play the clip whole, with its own sound; if the browser refuses sound here, play it muted rather than not at all.
+      vid.muted = muted;
+      vid.addEventListener('loadedmetadata', () => { if (Number.isFinite(vid.duration)) s.duration = Math.max(s.duration, vid.duration * 1000 + 300); }, { once: true });
+      if (vid.readyState >= 1) vid.dispatchEvent(new Event('loadedmetadata'));
+      vid.addEventListener('playing', () => { if (!vid.muted && music) duckClip(vid); }, { once: true });
+      vid.addEventListener('ended', () => { if (music) unduck(ctx, music.duck); }, { once: true });
+      vid.play().catch(() => { vid.muted = true; vid.play().catch(() => {}); });
+    }
     // mark past/current/future progress segments
     segs.forEach((el, k) => { el.style.transition = 'none'; el.style.width = k < i ? '100%' : '0%'; });
     // force reflow so the current segment animates from 0
     void stage.offsetWidth;
+  }
+
+  // Music dips to ~18% over 300 ms while a clip plays; back up if it turns out to have no sound track.
+  function duckClip(vid) {
+    const g = music.duck.gain, now = ctx.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(DUCK_LEVEL, now + DUCK_RAMP);
+    setTimeout(() => { if (vid.webkitAudioDecodedByteCount === 0 || vid.mozHasAudio === false) unduck(ctx, music.duck); }, 700);
   }
 
   function tick(now) {
@@ -244,11 +289,17 @@ export function playStory(manifest, opts = {}) {
     if (p) { elapsedBefore += performance.now() - (startedAt || performance.now()); startedAt = 0; }
     else { startedAt = 0; }
     const v = currentEl?.querySelector('video'); if (v) { p ? v.pause() : v.play().catch(() => {}); }
+    if (p && ctx?.state === 'running') { heldAudio = true; ctx.suspend().catch(() => {}); }
+    else if (!p && heldAudio) { heldAudio = false; ctx.resume().catch(() => {}); }
     overlay.classList.toggle('ms-paused', p);
   }
 
   function close() {
+    closed = true;
     cancelAnimationFrame(raf);
+    if (music) { music.stop(); music = null; }
+    if (heldAudio) ctx.resume().catch(() => {});
+    master?.disconnect();
     document.removeEventListener('keydown', onKey);
     releaseScroll();
     overlay.remove();
@@ -266,6 +317,11 @@ export function playStory(manifest, opts = {}) {
   overlay.addEventListener('click', (e) => {
     const act = e.target.closest('[data-ms]')?.dataset.ms;
     if (act === 'close') return close();
+    if (act === 'mute') {
+      // The first tap where the browser blocked sound turns it ON (the tap is the gesture it was waiting for).
+      if (soundBlocked() && ctx) { ctx.resume().then(() => setMuted(false)).catch(() => {}); return; }
+      return setMuted(!muted);
+    }
     if (act === 'next') return next();
     if (act === 'prev') return prev();
     if (act === 'share') { setPaused(true); opts.onShare?.(manifest); return; }

@@ -3458,3 +3458,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .home-highlight a { font-weight: 600; color: var(--brand-primary-soft); white-space: nowrap; }
 /* Story slides: the marks sit in the same magenta-tinted circle as the timeline icons (near-black + magenta, no emoji). */
 .ms-player .ms-title-emoji, .ms-player .ms-stat-emoji, .ms-player .ms-end-mark { width: 72px; height: 72px; border-radius: 50%; background: rgba(214, 31, 105, .22); color: #F9A8D4; }
+/* Story sound toggle: struck through while muted (or while the browser still holds sound back). */
+.ms-btn-icon[data-ms="mute"] { position: relative; }
+.ms-btn-icon[data-ms="mute"].is-off { opacity: .6; }
+.ms-btn-icon[data-ms="mute"].is-off::after { content: ''; position: absolute; left: 9px; right: 9px; top: 50%; height: 2px; background: currentColor; transform: rotate(-45deg); border-radius: 1px; }

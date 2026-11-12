@@ -164,6 +164,8 @@ const FILES = [
   'brand-tokens.css', 'fonts/dm-sans-latin.woff2', 'fonts/DM-Sans-OFL.txt',
   // Theme 2026-11 (light + dark tokens, Inter, OFL): imported by style.css and the verbatim h2.css.
   'theme.css', 'fonts/inter-latin.woff2', 'fonts/Inter-OFL.txt',
+  // Story soundtracks (src/memories/music.js) — fetched at runtime, so Vite never sees them.
+  'music/little-evenings.mp3', 'music/golden-years.mp3', 'music/marathon.mp3', 'music/snowlight.mp3', 'music/keepsake.mp3', 'music/our-story.mp3',
   // The one signed-in navigation (app-nav.js): a classic global after api.js on every app page.
   'app-nav.js',
   'local-price.js',
