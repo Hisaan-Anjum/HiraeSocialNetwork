@@ -112,13 +112,16 @@ export function initSearch(source = {}) {
   document.body.appendChild(overlayEl);
 
   const input = overlayEl.querySelector('.search-input');
+  let backDone = null;
   const open = () => {
+    if (!overlayEl.classList.contains('hidden')) return;
     overlayEl.classList.remove('hidden');
+    backDone = window.heraeBackClose ? window.heraeBackClose(() => close()) : null;
     input.value = '';
     input.focus();
     runSearch('');
   };
-  const close = () => overlayEl.classList.add('hidden');
+  const close = () => { overlayEl.classList.add('hidden'); if (backDone) backDone(); };
 
   trigger.addEventListener('click', open);
   overlayEl.querySelector('.search-close-btn').addEventListener('click', close);

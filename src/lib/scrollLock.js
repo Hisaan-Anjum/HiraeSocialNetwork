@@ -21,7 +21,12 @@ let savedOverflow = '';
 // (rather than exporting an `unlock()`) means a caller cannot release someone
 // else's lock, and the returned function is idempotent — calling it twice (a
 // double close, an Escape plus a click) can't corrupt the count.
-export function lockScroll() {
+//
+// Pass the overlay's close (onBack) and the phone/browser Back button closes it
+// instead of leaving the page — app-nav.js's heraeBackClose gives the overlay a
+// history entry; releasing pops it again.
+export function lockScroll(onBack) {
+  const backDone = onBack && window.heraeBackClose ? window.heraeBackClose(onBack) : null;
   if (depth === 0) {
     savedOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -34,5 +39,6 @@ export function lockScroll() {
     released = true;
     depth = Math.max(0, depth - 1);
     if (depth === 0) document.body.style.overflow = savedOverflow;
+    if (backDone) backDone();
   };
 }

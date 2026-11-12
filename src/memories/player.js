@@ -197,7 +197,7 @@ export function playStory(manifest, opts = {}) {
     <button class="ms-nav ms-nav-prev" data-ms="prev" aria-label="Previous"></button>
     <button class="ms-nav ms-nav-next" data-ms="next" aria-label="Next"></button>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const stage = overlay.querySelector('.ms-stage');
   const segs = [...overlay.querySelectorAll('.ms-seg i')];

@@ -65,7 +65,7 @@ export function openImportantDates({ username, dates = [], onChange }) {
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
   const body = overlay.querySelector('#msDatesBody');
 
   function close() { releaseScroll(); overlay.remove(); }

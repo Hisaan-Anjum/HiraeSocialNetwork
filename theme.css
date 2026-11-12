@@ -363,6 +363,8 @@ body .p-state { white-space: nowrap; flex: none; }
 /* 11-12 founder: "clicking around doesn't feel like an app". Same-site page changes cross-fade (Chrome 126+) instead of a
    white flash; the header and bottom bar stay put because they are named, so only the content moves. */
 @view-transition { navigation: auto; }
+/* No double-tap-to-zoom wait on a tap (pinch zoom still works). */
+html { touch-action: manipulation; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; animation-timing-function: ease-out; }
 .an-top { view-transition-name: herae-top; }
 .an-bottom, .an-tabbar { view-transition-name: herae-tabs; }

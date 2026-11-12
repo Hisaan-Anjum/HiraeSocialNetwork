@@ -261,7 +261,9 @@ export function mountWatchlist(container, { profile }) {
           // rather than hijacking it, and nothing else should happen either.
           if (r.handled && r.error) return toast(r.error);
 
-          if (!r.handled) window.open(link.url, '_blank', 'noopener');
+          // A phone can't run Herae: opening the film alone isn't watching together. Email this page to their computer.
+          if (!r.handled && window.heraeSendToLaptop) window.heraeSendToLaptop({ path: location.pathname + location.search });
+          else if (!r.handled) window.open(link.url, '_blank', 'noopener');
           try {
             const ids = [id, ...items.filter((x) => x.id !== id).map((x) => x.id)];
             const { items: updated } = await reorderWatchlist(username, ids);
@@ -269,6 +271,7 @@ export function mountWatchlist(container, { profile }) {
           } catch (err) { /* pinning is a nicety, not the point */ }
 
           if (r.handled && r.offline) return toast(offlineNote(username, r));
+          if (!r.handled && window.heraeSendToLaptop) return;   // its sheet says what happens next
           toast(
             r.switched ? `Switched you both to “${it.movie.title}” on ${link.name}`
               : r.handled ? `Opening “${it.movie.title}” on ${link.name} — inviting ${username}`

@@ -306,7 +306,7 @@ function openDeleteModal(profile) {
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const input = overlay.querySelector('#deleteConfirmInput');
   const errEl = overlay.querySelector('#deleteError');

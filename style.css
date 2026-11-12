@@ -425,7 +425,7 @@ a:hover { text-decoration: underline; }
 .site-legal-footer .slf-note { color: var(--ink-faint); font-size: 12px; }
 
 /* ── Memories grid ── */
-.page-wrap { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
+.page-wrap { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; min-height: 100dvh; }   /* 11-12: the footer starts below the fold, so content arriving never shoves it (and the page) around */
 .page-title { font-size: 26px; margin-bottom: 6px; }
 .page-sub { color: var(--ink-faint); font-size: 14px; margin-bottom: 32px; }
 
@@ -3122,6 +3122,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .theme-seg button { min-width: 64px; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--ink-dim); font: 600 14px var(--font-sans); cursor: pointer; transition: background var(--dur) var(--ease), color var(--dur) var(--ease); }
 .theme-seg button:hover { color: var(--ink); }
 .theme-seg button[aria-checked="true"] { background: var(--grad-cta); color: #fff; box-shadow: 0 6px 16px -8px rgba(var(--accent-rgb), .8); }
+#profileHeader:empty { min-height: 300px; }   /* 11-12: hold the header's place while it loads, so the page doesn't jump */
 #profileHeader > h1.profile-name:first-child { max-width: 1080px; margin: 24px auto 16px; padding: 0 24px; font-size: 28px; letter-spacing: -0.025em; }
 :root:not([data-theme="dark"]) .hero-card { box-shadow: 0 18px 40px -16px rgba(22, 18, 26, .45); }
 /* Glass + spacing for the header cards (mock-up ratios): frosted, fine light edge, generous padding, rounder corners. */

@@ -94,7 +94,7 @@ export function openWatchPicker(movie, { onPick }) {
         ? ' Streaming availability information is provided by <a href="https://www.movieofthenight.com/about/api" target="_blank" rel="noopener">Streaming Availability API by Movie of the Night</a>.' : ''}</div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const close = () => {
     document.removeEventListener('keydown', onKey);

@@ -106,7 +106,7 @@ export function openMediaViewer(item, opts = {}) {
   }
   document.body.appendChild(overlay);
   // The page behind must not scroll while the overlay owns the screen.
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const stage = overlay.querySelector('.mv-stage');
   const media = overlay.querySelector(isVideo ? '.mv-video' : '.mv-image');

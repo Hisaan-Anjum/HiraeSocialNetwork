@@ -61,9 +61,11 @@
     </div>
 
     <div id="phone" hidden>
-      <p class="ref-sub" style="margin-bottom:14px">Herae runs in Chrome on a computer. Send this link to yourself and open it there.</p>
+      <p class="ref-sub" style="margin-bottom:14px">Herae runs in Chrome on a computer. Make your account here now, and send yourself the link to add Herae there.</p>
       <div class="ref-actions">
-        <button class="btn btn-primary" id="share" type="button">Send this link to myself</button>
+        <a class="btn btn-primary" id="signupHere" href="/signup.html">Create my free account</a>
+        <button class="btn btn-ghost" id="laptop" type="button">Send me the link for my computer</button>
+        <button class="btn btn-ghost" id="share" type="button">Share it to myself</button>
       </div>
     </div>
 
@@ -179,6 +181,9 @@
     window.postMessage({ __heraeStartSession: true, target: who, url: '', title: '' }, location.origin);
   }
 
+  // Back here after signing up, so the claim and "Watch with them" happen on the phone too.
+  el('signupHere').addEventListener('click', () => { try { sessionStorage.setItem('moments_return_to', location.pathname); } catch (e) { /* lands on home; api.js still claims */ } });
+  el('laptop').addEventListener('click', () => { if (window.heraeSendToLaptop) window.heraeSendToLaptop(); else el('share').click(); });
   el('share').addEventListener('click', async () => {
     const url = location.origin + '/r/' + CODE;
     try {

@@ -14,6 +14,43 @@
       document.head.append(sr);
     }
   } catch (e) { /* older browsers: plain navigation */ }
+  // 11-12 (founder: "make sure the back buttons on android work like an app"): Back closes the top sheet/menu/dialog
+  // instead of leaving the page. heraeBackClose(close) registers an overlay's close and returns done(), which the overlay
+  // calls however it closes; lockScroll() in src/lib/scrollLock.js does both for every scroll-locking overlay.
+  // Each open overlay owns one history entry; a close by any other means pops it, so history stays clean.
+  // Defined before the sign-in check: shared post pages have overlays too.
+  if (!window.heraeBackClose) {
+    // Every entry is pushed as the overlay opens (inside the tap, so Chrome never marks it skippable) and none from popstate.
+    const open = []; let entries = 0, skip = 0;
+    const reconcile = () => { const extra = entries - open.length; if (extra > 0) { entries -= extra; skip += 1; history.go(-extra); } };
+    addEventListener('popstate', () => {
+      if (skip) { skip -= 1; return; }   // our own go() from a close by other means
+      if (!entries) return;              // not ours (e.g. social.html's #hash routes)
+      entries -= 1;
+      const close = open.pop(); if (close) close();
+    });
+    window.heraeBackClose = (close) => {
+      open.push(close);
+      if (entries < open.length) { history.pushState({ heraeOverlay: 1 }, ''); entries += 1; }   // else reuse the entry of a sheet that closed this same tick
+      return function done() {
+        const i = open.indexOf(close); if (i < 0) return;   // Back closed it already, or a double close
+        open.splice(i, 1);
+        queueMicrotask(reconcile);   // after this tick, so "close this, open that" hands the entry over
+      };
+    };
+    // A navigation while one of our entries is current (a link out of an open sheet, or a page change right after a close)
+    // REPLACES that entry instead of stacking after it: Back from the next page lands here, never on a dead entry.
+    try {
+      navigation.addEventListener('navigate', (e) => {
+        if (!entries || e.navigationType !== 'push' || !e.cancelable || e.formData || e.downloadRequest) return;
+        if (e.destination.sameDocument && entries <= open.length) return;   // a #hash change inside an open sheet
+        e.preventDefault(); entries -= 1;
+        const left = open.splice(entries);   // sheets left open lose their entry; close them once we're gone (bfcache)
+        if (left.length) addEventListener('pagehide', () => left.reverse().forEach((c) => c()), { once: true });
+        location.replace(e.destination.url);
+      });
+    } catch (e) { /* no Navigation API: a link out of an open sheet leaves one extra Back step */ }
+  }
   // Theme (founder 11-02): Light / Dark / Auto from Account settings (localStorage 'herae_theme', default Light since the 11-11 warm redesign; Auto follows the
   // device). Runs first, before the auth check, so the page paints in the right theme; theme.css reads data-theme.
   const applyTheme = () => {
@@ -216,8 +253,8 @@
     // search: pages with their own search overlay keep it
     top.querySelector('[data-search]').onclick = (e) => { const own = document.getElementById('searchTrigger'); if (own) { e.preventDefault(); own.click(); } };
     // account menu
-    const btn = top.querySelector('.an-menu-btn'); let menu = null;
-    const close = () => { if (menu) { menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false'); } };
+    const btn = top.querySelector('.an-menu-btn'); let menu = null, menuDone = null;
+    const close = () => { if (menu) { menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false'); menuDone(); } };
     btn.onclick = () => {
       if (menu) return close();
       menu = document.createElement('ul'); menu.className = 'an-menu'; menu.setAttribute('role', 'menu');
@@ -231,7 +268,7 @@
         <li role="none"><button role="menuitem" type="button" data-logout>Log out</button></li>`;
       menu.querySelector('.an-who b').textContent = me;   // text, never markup
       menu.querySelector('[data-logout]').onclick = () => (typeof logout === 'function' ? logout() : (localStorage.removeItem('moments_auth'), location.href = 'index.html'));
-      top.append(menu); btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a').focus();
+      top.append(menu); btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a').focus(); menuDone = window.heraeBackClose(close);
     };
     // btn.contains: a tap on the ☰ icon inside the button is still the button
     document.addEventListener('click', (e) => { if (menu && !menu.contains(e.target) && !btn.contains(e.target)) close(); });
@@ -488,5 +525,7 @@
     } catch (e) { /* badges are a convenience */ }
   }
   window.heraeNavBadges = () => badges();
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
+  // 11-12 (founder: "feels glitchy"): build as soon as this script runs, not at DOMContentLoaded. Every page loads it at
+  // the end of <body>, so the page's old header could paint first and then jump when this replaced it.
+  if (document.body) build(); else document.addEventListener('DOMContentLoaded', build);
 })();

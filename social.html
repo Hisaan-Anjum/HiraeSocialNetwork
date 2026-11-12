@@ -371,9 +371,12 @@
       for (let i = 0; i < 3; i++) if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0); return true; };
     async function needExtension(why) {
       // A phone can't add the extension: no "Add to Chrome" that goes nowhere, and a way to carry on from the computer.
+      // 11-12: copying a link on the phone was still a dead end; one tap emails this page to their computer (src-tag.js).
       if (/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent)) {
-        const copy = await dialog('Watching runs on a computer', el('p', { class: 'muted' }, 'Herae plays the film in Chrome on a laptop or desktop. Open this page there, signed in with this account.'), [['Not now', 'hb-quiet', false], ['Copy this page’s link', 'hb-primary', true]]);
-        if (copy) { try { await navigator.clipboard.writeText(location.href); toast('Link copied. Open it on your computer.'); } catch (e) { prompt('Copy this link:', location.href); } }
+        const send = await dialog('Watching runs on a computer', el('p', { class: 'muted' }, 'Herae plays the film in Chrome on a laptop or desktop. We’ll email you this page so it’s waiting there. You can keep chatting here meanwhile.'), [['Not now', 'hb-quiet', false], ['Send me the link for my computer', 'hb-primary', true]]);
+        if (!send) return;
+        if (window.heraeSendToLaptop) window.heraeSendToLaptop({ path: location.pathname + location.hash });
+        else { try { await navigator.clipboard.writeText(location.href); toast('Link copied. Open it on your computer.'); } catch (e) { prompt('Copy this link:', location.href); } }
         return;
       }
       const go = await dialog('Herae needs to be in Chrome on this computer', el('p', { class: 'muted' }, why), [['Not now', 'hb-quiet', false], ['Add Herae to Chrome', 'hb-primary', true]]);
@@ -659,7 +662,8 @@
       const COLORS = ['var(--x6366f1, #D61F69)', 'var(--xa78bfa, #D61F69)', 'var(--xec4899, #D61F69)', '#F9A8D4', '#C7D2FE', '#FBBF24'];
       for (let k = 0; k < 44; k++) { const bit = el('i'); bit.style.cssText = `left:${Math.random() * 100}%;background:${COLORS[k % COLORS.length]};--dx:${(Math.random() - .5) * 160}px;animation-duration:${1.8 + Math.random() * 1.6}s;animation-delay:${Math.random() * .5}s`; fx.append(bit); }
       const returnTo = document.activeElement;
-      const close = () => { o.remove(); document.removeEventListener('keydown', onKey); if (returnTo && returnTo.focus) returnTo.focus(); };
+      const close = () => { o.remove(); backDone(); document.removeEventListener('keydown', onKey); if (returnTo && returnTo.focus) returnTo.focus(); };
+      const backDone = window.heraeBackClose ? window.heraeBackClose(close) : () => {};   // phone Back closes it (app-nav.js)
       const onKey = (e) => { if (e.key === 'Escape') close(); };
       const hi = el('button', { type: 'button', class: 'hb hb-primary', onclick: () => { close(); location.hash = `chats/${conversationId}`; } }, 'Say hi');
       const o = el('div', { class: 'mt', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'mtTitle' }, fx,
@@ -1303,5 +1307,6 @@
     route(); refreshBadges();
   })();
   </script>
+<script src="/src-tag.js" defer></script>
 </body>
 </html>

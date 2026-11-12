@@ -37,7 +37,7 @@ export function openPickContact({ movie, onAdded }) {
       <div class="pc-body" id="pcBody"><div class="spinner-text">Loading your contacts…</div></div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const body = overlay.querySelector('#pcBody');
   const searchEl = overlay.querySelector('#pcSearch');

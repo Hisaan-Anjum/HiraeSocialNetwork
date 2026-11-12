@@ -184,6 +184,8 @@ async function mountRelationship(container, profile, opts = {}) {
     if (r.handled && r.error) return toast(r.error);
     if (r.handled && r.offline) return toast(offlineNote(username, r));
     if (r.handled) return toast(`Starting a session — inviting ${username}`);
+    // A phone can't run Herae: the one way forward is this page, emailed to their computer (src-tag.js).
+    if (window.heraeSendToLaptop) return window.heraeSendToLaptop({ path: location.pathname + location.search });
     toast('Install or sign in to the Herae extension to start a session');
   }
 

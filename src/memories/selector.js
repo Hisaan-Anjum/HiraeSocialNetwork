@@ -55,7 +55,7 @@ export function openStorySelector({ summary, onPick }) {
     </div>`;
 
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const grid = overlay.querySelector('#msMonthGrid');
   const yearLabel = overlay.querySelector('#msYearLabel');

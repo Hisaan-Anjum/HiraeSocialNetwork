@@ -38,7 +38,7 @@ export function openAddMovie({ onAdd, isOnList = () => false, withUser = '' }) {
       <div id="wlAddSentinel" class="scroll-sentinel hidden"></div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const grid = overlay.querySelector('#wlAddGrid');
   const kicker = overlay.querySelector('#wlAddKicker');

@@ -105,7 +105,7 @@ export function openMovieModal(recommendationId, { onAdd = null, alreadyAdded = 
       </div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const close = () => {
     document.removeEventListener('keydown', onKey);

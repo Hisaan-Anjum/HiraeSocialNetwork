@@ -30,7 +30,7 @@ export function openAddTo({ movie, sharedWith = null, onShared = null, onDone = 
       <div class="at-body" id="atBody"></div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
   const body = overlay.querySelector('#atBody');
   const close = () => { document.removeEventListener('keydown', onKey); releaseScroll(); overlay.remove(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };

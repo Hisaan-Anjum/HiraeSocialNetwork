@@ -89,8 +89,14 @@
   })();
 
   el('redeem').addEventListener('click', doRedeem);
+  // A phone can't add Herae, but it can make the account and open the gift (11-12 phone leaks); the store button's
+  // "send it to my laptop" email (src-tag.js) carries this gift page.
+  const onPhone = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  document.querySelector('#signedOut a').dataset.handoffPath = location.pathname;
+  if (onPhone) el('haveAccount').textContent = '2. Or open it here: sign up or log in';
   el('haveAccount').addEventListener('click', () => {
     if (getAuth()) { showActions(); return doRedeem(); }
+    if (onPhone) { try { sessionStorage.setItem('moments_return_to', location.pathname); } catch (e) { /* lands on home */ } location.href = '/signup.html'; return; }
     msg('Checking…');
     whenExtensionMaybeSignsIn(() => { showActions(); doRedeem(); }, () => msg('Herae isn’t signed in on this browser yet. Create your account in Herae, then press this again.', 'err'));
   });

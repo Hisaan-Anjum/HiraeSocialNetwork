@@ -213,8 +213,11 @@
              The install step was a dead end there ("Waiting for Herae…" forever).
              This hands the link to their computer instead. -->
         <div class="invite-panel" id="panelPhone">
-          <p class="invite-sub" id="phoneLead" style="margin-bottom:18px">Herae runs in Chrome on a computer, so this part happens on a laptop or desktop.</p>
-          <a class="btn btn-gold invite-cta" id="phoneEmail" href="#">Email me this link →</a>
+          <!-- 11-12: a phone can still ACCEPT (account + contact + chat now); only the watching waits for the computer. -->
+          <p class="invite-sub" id="phoneLead" style="margin-bottom:18px">Accept on your phone now and you two are connected. The watching itself runs in Chrome on a computer.</p>
+          <a class="btn btn-primary invite-cta" id="phoneAccept" href="#">Accept: create my free account</a>
+          <button class="invite-secondary" id="phoneLogin" type="button">I already have a Herae account</button>
+          <a class="btn btn-gold invite-cta" id="phoneEmail" href="#">Send me the link for my computer</a>
           <div class="invite-phone-row">
             <button class="invite-secondary" id="phoneCopy" type="button">Copy link</button>
             <button class="invite-secondary" id="phoneShare" type="button" hidden>Share…</button>
@@ -579,6 +582,26 @@
       const subject = `Watch with ${who} on Herae`;
       const body = `Open this on your computer (in Chrome):\n\n${link}`;
       el('phoneEmail').href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      // One tap through Herae's own handoff email (src-tag.js → /api/handoff, which sends THIS invite); mailto if it's absent.
+      el('phoneEmail').addEventListener('click', (e) => { if (window.heraeSendToLaptop) { e.preventDefault(); window.heraeSendToLaptop(); } });
+      // Accepting needs no computer: sign up or log in here, the pending invite is redeemed (api.js), and they land on
+      // the inviter's page. Signed in already: redeem now.
+      const after = '/user.html?u=' + encodeURIComponent(who);
+      const go = (page) => { try { sessionStorage.setItem('moments_return_to', after); } catch (e) { /* lands on home */ } location.href = page + inviteQuery; };
+      let accepted = false;
+      el('phoneAccept').addEventListener('click', (e) => { if (accepted) return; e.preventDefault(); go('/signup.html'); });
+      el('phoneLogin').addEventListener('click', () => go('/login.html'));
+      const auth = getAuth();
+      if (auth) {
+        el('phoneLogin').hidden = true;
+        el('phoneAccept').textContent = 'Accepting…';
+        redeemPendingInvite().then((r) => {
+          if (!r || !r.ok || r.self) { el('phoneAccept').textContent = 'Accept: open my account'; return; }
+          el('phoneLead').textContent = `You’re connected to ${who}. Say hi and pick a film now; the watching runs in Chrome on a computer.`;
+          el('phoneAccept').textContent = `Open ${who}’s page`;
+          el('phoneAccept').href = after; accepted = true;
+        });
+      }
       el('phoneCopy').addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(link); el('phoneCopy').textContent = 'Copied'; }
         catch (e) { window.prompt('Copy this link:', link); }

@@ -59,6 +59,9 @@
   var inviteMatch = location.pathname.match(/^\/invite\/([0-9A-F]{7})\/?$/i);
   var invite = inviteMatch ? inviteMatch[1].toUpperCase() : null;
   if (invite) src = 'phone-invite';
+  // Same for a couple's referral page (/r/<CODE>): the email carries that page, so the referral survives the hop.
+  var refMatch = location.pathname.match(/^\/r\/([0-9A-F]{7})\/?$/i);
+  var ref = refMatch ? refMatch[1].toUpperCase() : null;
   function relabel() {
     document.querySelectorAll(SEL).forEach(function (a) {
       if (a.dataset.handoff) return;
@@ -66,9 +69,12 @@
       if (/add to chrome|get herae|install|try herae/i.test(a.textContent)) a.textContent = 'Send it to my laptop';
     });
   }
-  var sheet = null;
-  function open(known) {
-    if (sheet) { sheet.style.display = 'flex'; if (known) sheet.querySelector('input').value = known; return; }
+  var sheet = null, path = null;
+  // known: their own address (signed in), sent at once when `now`, so the way forward from a phone is one tap.
+  // where: a page on this site to open on the computer (what they were doing: a night, a party, a gift).
+  function open(known, where, now) {
+    path = where || null;
+    if (sheet) { sheet.style.display = 'flex'; var f = sheet.querySelector('form'); if (f && known) { f.querySelector('input').value = known; if (now) f.requestSubmit(); } return; }
     sheet = document.createElement('div');
     sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'Send Herae to your laptop');
     sheet.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);font-family:inherit';
@@ -92,27 +98,38 @@
       var v = input.value.trim(), btn = form.querySelector('button');
       if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v)) { note.textContent = 'That email doesn’t look right.'; input.focus(); return; }
       btn.disabled = true; btn.textContent = 'Sending…';
-      fetch('/api/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, src: src, invite: invite }) })
+      fetch('/api/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, src: src, invite: invite, ref: ref, path: path }) })
         .then(function (r) { if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.error || 'Something went wrong'); }); })
         .then(function () { form.outerHTML = '<p style="font-weight:700;font-size:16px;margin:4px 0">Sent ✓ Check your inbox on your laptop.</p>'; note.textContent = 'If it’s not there in a minute, look in Promotions or spam.'; })
         .catch(function (err) { btn.disabled = false; btn.textContent = 'Email me the link'; note.textContent = err.message; });
     });
     var sb = sheet.querySelector('[data-share]');
     if (sb) sb.addEventListener('click', function () {
-      navigator.share({ title: 'Herae', text: 'Herae: watch films together in sync, with the call beside it. Set up on my laptop:', url: invite ? location.origin + '/invite/' + invite : 'https://herae.app/?utm_source=handoff_share&utm_campaign=' + encodeURIComponent(src) })
+      navigator.share({ title: 'Herae', text: 'Herae: watch films together in sync, with the call beside it. Set up on my laptop:', url: invite ? location.origin + '/invite/' + invite : path ? location.origin + path : ref ? location.origin + '/r/' + ref : 'https://herae.app/?utm_source=handoff_share&utm_campaign=' + encodeURIComponent(src) })
         .then(function () { fetch('/api/handoff/shared', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ src: src }) }).catch(function () {}); })
         .catch(function () { /* the share sheet was closed */ });
     });
     // Signed in (the memories page's first step passes it): their own address, so the one way forward from a phone
     // is a single tap instead of typing an email Herae already has.
     if (known) input.value = known;
-    setTimeout(function () { try { input.focus(); } catch (e) { /* fine */ } }, 50);
+    if (known && now) form.requestSubmit();
+    else setTimeout(function () { try { input.focus(); } catch (e) { /* fine */ } }, 50);
   }
+  // For any page whose next step needs a computer (start a night, a party's watch, a gift…): "send me the link for my
+  // computer". Signed in, it uses their own address and sends at once; `path` is the page to land on there.
+  // Only defined on a phone, so `window.heraeSendToLaptop` doubles as the "can't run Herae here" test.
+  window.heraeSendToLaptop = function (opts) {
+    opts = opts || {};
+    var go = function (addr) { open(addr || '', opts.path, true); };
+    if (opts.email) return go(opts.email);
+    if (typeof getAuth === 'function' && getAuth() && typeof getMyInvite === 'function') return getMyInvite().then(function (r) { go(r && r.email); }, function () { go(''); });
+    go('');
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', relabel); else relabel();
   setTimeout(relabel, 1500); setTimeout(relabel, 4000);   // links some pages render later (the memories page's steps)
   document.addEventListener('click', function (ev) {
     var a = ev.target.closest && ev.target.closest(SEL);
     if (!a) return;
-    ev.preventDefault(); ev.stopPropagation(); relabel(); open(a.dataset.handoffEmail || '');
+    ev.preventDefault(); ev.stopPropagation(); relabel(); open(a.dataset.handoffEmail || '', a.dataset.handoffPath);
   }, true);
 })();

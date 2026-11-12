@@ -104,7 +104,7 @@ export function openShareSheet(moment, { linkOnly = false } = {}) {
       <div class="share-status" id="shareStatus" aria-live="polite"></div>
     </div>`;
   document.body.appendChild(overlay);
-  const releaseScroll = lockScroll();
+  const releaseScroll = lockScroll(() => close());
 
   const statusEl = overlay.querySelector('#shareStatus');
   const setStatus = (msg, kind = '') => {

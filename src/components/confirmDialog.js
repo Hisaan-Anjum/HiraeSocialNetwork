@@ -41,7 +41,10 @@ export function confirmDialog({
     noBtn.textContent = cancelLabel;
     yesBtn.textContent = confirmLabel;
 
+    // Back on a phone answers "no", like Escape (app-nav.js heraeBackClose).
+    const backDone = window.heraeBackClose ? window.heraeBackClose(() => close(false)) : () => {};
     const close = (value) => {
+      backDone();
       document.removeEventListener('keydown', onKey, true);
       backdrop.remove();
       document.body.classList.remove('cd-open');

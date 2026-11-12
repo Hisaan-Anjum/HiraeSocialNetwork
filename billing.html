@@ -283,7 +283,14 @@
     }
     renderPlan(s);
     renderCovered(s);
+    // Paid on a phone (11-12 phone leaks): the plan is on, and the watching happens on a computer. One tap to get there.
+    if (justUpgraded && s.unlimited && window.heraeSendToLaptop) {
+      say('Your plan is on. Watching runs in Herae, in Chrome on your computer. ', 'ok');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'link-btn'; b.textContent = 'Send me the link for my computer';
+      b.onclick = () => window.heraeSendToLaptop(); msgEl.append(b);
+    }
   })();
   </script>
+<script src="/src-tag.js" defer></script>
 </body>
 </html>

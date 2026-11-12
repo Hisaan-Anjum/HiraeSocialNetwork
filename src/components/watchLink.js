@@ -60,6 +60,14 @@ export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
     btn.disabled = false;
     if (!r.handled) {
       track('no_extension');
+      // A phone can't run Herae: say so, and email this page to their computer in one tap (src-tag.js).
+      if (window.heraeSendToLaptop) {
+        note.textContent = 'Watching together runs in Chrome on a computer. ';
+        const send = document.createElement('button'); send.type = 'button'; send.className = 'link-btn'; send.textContent = 'Send me the link for my computer';
+        send.onclick = () => window.heraeSendToLaptop({ path: location.pathname + location.search });
+        note.append(send);
+        return;
+      }
       note.innerHTML = 'Herae isn\'t running in this browser. Open this page in Chrome on the computer where you added Herae, or <a href="https://chromewebstore.google.com/detail/kadhimjoddiaenogicbdnejoabdiimgn?utm_source=watch-link" target="_blank" rel="noopener">add it to Chrome</a>.';
       return;
     }
