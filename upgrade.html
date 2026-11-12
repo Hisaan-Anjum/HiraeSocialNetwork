@@ -96,8 +96,8 @@
       <div class="up-title">Unlimited movie nights, together</div>
       <div class="up-sub">Free includes your first two movie nights, then 4 hours of synced watching a month — plus voice, video &amp; chat. Upgrade for unlimited time.</div>
       <div class="cycle-toggle" id="cycleToggle">
-        <button data-cycle="month" class="active">Monthly</button>
-        <button data-cycle="year">Yearly <span class="cycle-save">save ~2 months</span></button>
+        <button data-cycle="year" class="active">Yearly <span class="cycle-save">save ~2 months</span></button>
+        <button data-cycle="month">Monthly</button>
       </div>
     </div>
 
@@ -163,7 +163,9 @@
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function cap(s){ return s[0].toUpperCase() + s.slice(1); }
 
-  let cfg = null, cycle = 'month', userEmail = null, status = null;
+  // Yearly first (PAY-BY-DEC action 2); monthly is one click away. ?from= says where they came from (wall, popup, …).
+  let cfg = null, cycle = 'year', userEmail = null, status = null;
+  const from = (new URLSearchParams(location.search).get('from') || 'upgrade').replace(/[^a-z_]/g, '').slice(0, 16) || 'upgrade';
   const formatted = {};
   const errorBox = el('errorBox');
   function showError(m){ errorBox.textContent = m; errorBox.style.display = 'block'; }
@@ -178,9 +180,10 @@
   function checkout(plan){
     const priceId = priceIdFor(plan);
     if (!priceId) { showError('That plan is not available right now.'); return; }
-    openCheckout(priceId);
+    openCheckout(priceId, plan);
   }
-  function openCheckout(priceId){
+  function openCheckout(priceId, plan){
+    trackEvent('checkout_started', { plan, cycle: plan === 'founding' ? 'year' : cycle, from, provider: 'paddle' });
     Paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
       customData: { username: auth.username },
@@ -269,7 +272,7 @@
   });
   el('btnPlus').addEventListener('click', () => checkout('plus'));
   el('btnTogether').addEventListener('click', () => checkout('together'));
-  el('btnFounding').addEventListener('click', () => { if (cfg && cfg.founding && cfg.founding.open) openCheckout(cfg.founding.priceId); });
+  el('btnFounding').addEventListener('click', () => { if (cfg && cfg.founding && cfg.founding.open) openCheckout(cfg.founding.priceId, 'founding'); });
 
   (async () => {
     try { cfg = await apiRequest('/api/subscription/config'); }

@@ -68,10 +68,10 @@
     <div id="payRussia" hidden lang="ru" style="text-align:center;margin:0 auto 32px;max-width:460px">
       <h2 style="margin:0 0 8px">Herae Together: одна подписка на двоих</h2>
       <p style="margin:0 0 16px">Платит один из вас, смотрите вдвоём без ограничений. Сколько угодно вечеров, видеозвонок, чат и ваши моменты.</p>
-      <button class="btn btn-primary" data-cycle="month">На месяц: 399 ₽</button>
-      <p style="margin:6px 0 12px;font-size:13px;opacity:.75">Меньше 200 ₽ с каждого. Отмена в любой момент.</p>
-      <button class="btn btn-secondary" data-cycle="year">На год: 2 990 ₽</button>
+      <button class="btn btn-primary" data-cycle="year">На год: 2 990 ₽</button>
       <p style="margin:6px 0 12px;font-size:13px;opacity:.75">Это 249 ₽ в месяц. Экономия 1 798 ₽ за год.</p>
+      <button class="btn btn-secondary" data-cycle="month">На месяц: 399 ₽</button>
+      <p style="margin:6px 0 12px;font-size:13px;opacity:.75">Меньше 200 ₽ с каждого. Отмена в любой момент.</p>
       <p style="margin:12px 0 0;font-size:13px;opacity:.75">Оплата российской картой «Мир» в рублях. Доступ откроется сразу после оплаты, у вас обоих.</p>
       <a id="payRussiaStop" hidden href="#" onclick="return false" style="display:block;margin-top:10px;font-size:13px">Отменить продление</a>
       <small style="display:block;margin-top:8px"></small>
@@ -204,7 +204,7 @@
         sbp.querySelectorAll('button[data-cycle]').forEach((b) => b.addEventListener('click', async () => {
           if (!getAuth()) { sessionStorage.setItem('moments_return_to', 'pricing.html'); window.location.href = 'login.html'; return; }
           b.disabled = true;
-          try { window.location.href = (await apiRequest(`/api/subscription/${cfg.lava ? 'lava' : 'rubitpay'}/checkout`, { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle }) })).url; }
+          try { window.location.href = (await apiRequest(`/api/subscription/${cfg.lava ? 'lava' : 'rubitpay'}/checkout`, { method: 'POST', body: JSON.stringify({ cycle: b.dataset.cycle, from: new URLSearchParams(location.search).get('from') || 'pricing' }) })).url; }
           catch (e) { b.disabled = false; sbp.querySelector('small').textContent = /email/i.test(e.message || '') ? 'Сначала добавьте email в аккаунт.' : 'Оплата сейчас недоступна. Попробуйте ещё раз.'; }
         }));
       }
