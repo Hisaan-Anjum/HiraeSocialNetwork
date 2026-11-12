@@ -331,7 +331,7 @@ async function hardwareId() {
   try {
     const gl = document.createElement('canvas').getContext('webgl');
     const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info');
-    const parts = [dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '', `${screen.width}x${screen.height}x${devicePixelRatio}`,
+    const parts = [dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '', `${screen.width}x${screen.height}x${window.devicePixelRatio}`,
       navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform, Intl.DateTimeFormat().resolvedOptions().timeZone];
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(parts.join('|')));
     return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('');
