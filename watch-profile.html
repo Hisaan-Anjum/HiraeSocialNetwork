@@ -555,6 +555,7 @@
     }
     function showStep(n) {
       step = n; const wiz = $('form').classList.contains('wizard');
+      if (wiz && n >= 1 && n <= 3) trackEvent('profile_step', { step: n, action: 'shown' });
       document.querySelectorAll('.wp-step').forEach((sec) => sec.classList.toggle('cur', +sec.dataset.step === n));
       document.querySelectorAll('#steps li').forEach((li) => { li.classList.toggle('on', +li.dataset.s === n); li.classList.toggle('done', +li.dataset.s < n); });
       $('back').hidden = !wiz || n <= 1; $('next').hidden = !wiz || n >= 3; $('save').hidden = wiz && n < 3;
@@ -563,8 +564,8 @@
     }
     $('next').onclick = () => {
       pendingAdds.forEach((add) => add());   // a film typed but not yet added counts for "pick at least one"
-      if (step === 1 && !state.gender) { say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
-      if (step === 2 && !state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length && !(state.music || []).length) { say('Pick at least one genre, or add a film, series or music you love, so people can see your taste.'); return; }
+      if (step === 1 && !state.gender) { trackEvent('profile_step', { step, action: 'blocked' }); say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
+      if (step === 2 && !state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length && !(state.music || []).length) { trackEvent('profile_step', { step, action: 'blocked' }); say('Pick at least one genre, or add a film, series or music you love, so people can see your taste.'); return; }
       say(''); showStep(step + 1);
     };
     $('back').onclick = () => showStep(step - 1);
