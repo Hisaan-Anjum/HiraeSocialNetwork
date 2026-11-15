@@ -122,7 +122,7 @@ async function loadSession() {
   }
 
   try {
-    detail = await getSessionDetail(sessionId);
+    detail = await getSessionDetail(sessionId, new URLSearchParams(window.location.search).get('also') || '');
   } catch (err) {
     // ── The AI moments are not the server's to lose ──────────────────
     // They have never been uploaded: they live inside the extension until

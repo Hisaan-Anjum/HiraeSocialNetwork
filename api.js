@@ -735,8 +735,9 @@ function setSessionTitle(clientSessionId, sessionTitle) {
 
 // Everything about one session: participants, its moments (possibly none),
 // and all reviews — the review page runs entirely off this.
-function getSessionDetail(clientSessionId) {
-  return apiRequest(`/api/moments/session/${encodeURIComponent(clientSessionId)}`);
+// also: the same night's earlier session ids (review.html?also=), whose moments the review shows first.
+function getSessionDetail(clientSessionId, also = '') {
+  return apiRequest(`/api/moments/session/${encodeURIComponent(clientSessionId)}${also ? `?also=${encodeURIComponent(also)}` : ''}`);
 }
 
 // Sessions as first-class feed objects — see moments.js's
