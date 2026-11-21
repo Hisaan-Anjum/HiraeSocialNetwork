@@ -70,6 +70,8 @@ const FILES = [
   // (its own inline module-less script hitting /api/signup), copied verbatim
   // like the other auth pages so it works under both the Node server and Vite.
   'signup.html',
+  // The Android app's own start screen (sign up / sign in, then into the site).
+  'app.html',
   // The page behind /invite/<CODE>. Served by an express route (there is no such
   // file at that path), and self-contained like the other auth-adjacent pages so
   // it works under both the Node server and Vite.

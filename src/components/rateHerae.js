@@ -13,6 +13,7 @@ const KEY = RATE_ASKED_KEY;
 
 export function mountRateHerae(anchor, { durationMs } = {}) {
   if (!anchor || !(durationMs >= 10 * 60 * 1000)) return null;
+  if (window.HERAE_APP) return null;   // a Chrome Web Store review means nothing inside the Android app
   try { if (localStorage.getItem(KEY)) return null; } catch (e) { return null; }
   const track = (action) => { try { window.trackEvent && window.trackEvent('store_rating_ask', { action }); } catch (e) { /* best-effort */ } };
   const done = (action) => { try { localStorage.setItem(KEY, action); } catch (e) { /* ignore */ } };

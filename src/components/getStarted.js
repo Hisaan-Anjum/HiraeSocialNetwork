@@ -73,7 +73,9 @@ export async function mountGetStarted(el) {
   // (2026-10-11: 8 of 10 site sign-ups never used the extension).
   const onPhone = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     || (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth < 900);
-  const installBody = hasExtension
+  const installBody = window.HERAE_APP
+    ? `<p class="gs-text">You're in the Herae app: everything runs right here on your phone.</p>`
+    : hasExtension
     ? `<p class="gs-text">Herae is installed in this browser.</p>`
     : onPhone
       ? `<p class="gs-text">Your account is ready. Herae runs in Chrome on a computer, so send yourself the link and add it on your laptop. It takes a minute.</p>
@@ -118,7 +120,7 @@ export async function mountGetStarted(el) {
         <button type="button" class="gs-hide" title="Hide this">Hide</button>
       </div>
       <ol class="gs-steps">
-        ${step(1, hasExtension, 'Add Herae to Chrome', installBody)}
+        ${step(1, hasExtension || window.HERAE_APP, window.HERAE_APP ? 'Get Herae' : 'Add Herae to Chrome', installBody)}
         ${step(2, invited, 'Send your partner your link', inviteBody)}
         ${step(3, false, 'Press play together', watchBody)}
       </ol>

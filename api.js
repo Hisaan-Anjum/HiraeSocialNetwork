@@ -3,6 +3,11 @@
 // there's no separate signup/auth system here at all.
 'use strict';
 
+// Inside the Herae Android app (its WebView adds HeraeAndroid/<version> to the user agent): every page can adapt —
+// window.HERAE_APP in scripts, html.in-herae-app in CSS. The app runs Herae itself, so it is never "a phone that can't".
+const HERAE_APP = typeof navigator !== 'undefined' && /HeraeAndroid\//.test(navigator.userAgent);
+if (typeof window !== 'undefined') { window.HERAE_APP = HERAE_APP; if (HERAE_APP) document.documentElement.classList.add('in-herae-app'); }
+
 const AUTH_KEY = 'moments_auth'; // { token, username, serverUrl }
 const SERVER_URL_KEY = 'moments_server_url';
 

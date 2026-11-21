@@ -6,6 +6,8 @@
 if (getAuth()) {
   window.location.href = 'memories.html';
 }
+// The Android app has its own start screen; signing out lands here, so send the app back to it.
+else if (/HeraeAndroid\//.test(navigator.userAgent)) location.replace('app.html');
 
 // Tasteful on-scroll reveal for the .reveal-marked sections below the
 // hero (steps, the "built for the distance" copy, the memories features).

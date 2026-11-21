@@ -170,6 +170,8 @@
     const options = opts || {};
     const label = options.label || 'Continue with Google';
     if (!mountEl || typeof options.onToken !== 'function') return false;
+    // Google refuses sign-in inside an app's embedded browser (disallowed_useragent): the Android app uses a password until it has a Custom Tab flow.
+    if (/HeraeAndroid\//.test(navigator.userAgent)) { mountEl.hidden = true; return false; }
 
     const base = (window.getSavedServerUrl ? window.getSavedServerUrl() : '').replace(/\/+$/, '');
     // The button shows as soon as a client id is known: from this browser's last visit (cached) or from the server.

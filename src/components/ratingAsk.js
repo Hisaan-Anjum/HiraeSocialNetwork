@@ -17,6 +17,7 @@ const MIN_NIGHT_MS = 30 * 60 * 1000;
 
 export function mountRatingAsk(container, detail) {
   if (!container || !detail || !detail.isParticipant) return;
+  if (window.HERAE_APP) return;   // asks for a Chrome Web Store review: not inside the Android app
   if (!(detail.durationMs >= MIN_NIGHT_MS)) return;
   try { if (localStorage.getItem(KEY)) return; } catch (e) { return; }
 
