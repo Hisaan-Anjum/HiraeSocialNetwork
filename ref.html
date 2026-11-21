@@ -90,7 +90,7 @@
   // Same device test as invite.html: phones and tablets can't run the extension.
   const phone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (phone) { el('desktop').hidden = true; el('phone').hidden = false; }
+  if (phone && !/HeraeAndroid\//.test(navigator.userAgent)) { el('desktop').hidden = true; el('phone').hidden = false; }   // the Android app runs the extension
 
   function remember() {
     try {

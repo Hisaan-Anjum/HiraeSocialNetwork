@@ -289,7 +289,7 @@
   const isIos = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   // Phones (founder 11-01): push in a phone browser is unreliable, so every phone is first asked to install the app; a
   // "Not now" (7 days) turns the bar into the notifications ask; inside the installed app it asks once for notifications.
-  const isPhone = isIos || /Android/.test(navigator.userAgent);
+  const isPhone = (isIos || /Android/.test(navigator.userAgent)) && !/HeraeAndroid\//.test(navigator.userAgent);   // the Herae Android app is an app already
   const inApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let installEvt = null;   // Chrome on Android hands this over when the app can be installed; prompt() opens its own box
   // It can arrive late (Chrome waits for some use of the page): then the bar is redrawn with the Install button.

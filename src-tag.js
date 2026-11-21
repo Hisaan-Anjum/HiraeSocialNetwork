@@ -50,7 +50,7 @@
 (function () {
   var phone = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth < 900);
-  if (!phone) return;
+  if (!phone || /HeraeAndroid\//.test(navigator.userAgent)) return;   // the Herae Android app runs the extension itself
   var SEL = 'a[href*="chromewebstore.google.com/detail/"]';
   var page = (location.pathname.split('/').pop() || 'home').replace(/\.html$/, '').replace(/[^a-z0-9_-]/gi, '').slice(0, 30) || 'home';
   var src = 'phone-' + page;

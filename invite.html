@@ -570,6 +570,7 @@
     // can, so it is not in this list.
     function cannotRunExtensions() {
       const ua = navigator.userAgent || '';
+      if (/HeraeAndroid\//.test(ua)) return false;   // the Herae Android app runs the extension itself (founder 11-21)
       if (navigator.userAgentData && navigator.userAgentData.mobile) return true;
       if (/Android|iPhone|iPad|iPod|Windows Phone/i.test(ua)) return true;
       return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;

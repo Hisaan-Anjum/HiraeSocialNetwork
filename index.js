@@ -70,7 +70,8 @@ document.querySelectorAll('[data-copy]').forEach((btn) => {
 (function () {
   const phone = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth < 900);
-  if (!phone) return;
+  // The Herae Android app runs the extension itself: no laptop handoff there (founder 11-21).
+  if (!phone || /HeraeAndroid\//.test(navigator.userAgent)) return;
   const params = new URLSearchParams(location.search);
   const ua = navigator.userAgent;
   const app = /Instagram/i.test(ua) ? 'instagram' : /BytedanceWebview|musical_ly|TikTok/i.test(ua) ? 'tiktok' : /FBAN|FBAV/i.test(ua) ? 'facebook' : null;
