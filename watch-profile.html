@@ -144,12 +144,13 @@
     <form id="form" hidden novalidate>
       <section class="h-section wp-step" data-step="1" aria-labelledby="s-you">
         <h2 id="s-you">You</h2>
-        <!-- Name and "I am" first, photos after and plainly optional (founder 10-25 emergency: oros_deorde chose "meet
-             someone new" and left 19 s after this screen opened on six empty photo boxes; a photo was never required). -->
+        <!-- Name first, photos after and plainly optional (founder 10-25 emergency: oros_deorde chose "meet someone
+             new" and left 19 s after this screen opened on six empty photo boxes; a photo was never required).
+             "I am" moved to step 3 next to "show me" on 11-22: it was the one thing this screen demanded, and 7 of
+             15 people in 30 days never reached step 2 — 3 of them after being told "Choose 'I am'" and nothing else.
+             canGoLive() already asks for it at the moment it is needed, so the gate here only ever cost us people. -->
         <label class="h-label" for="dname">Name on your card</label>
         <input class="hi" id="dname" maxlength="40" autocomplete="given-name" placeholder="Your first name or a nickname">
-        <fieldset style="margin-top:var(--h-5)"><legend>I am <span class="faint">(needed for “show me”; not shown on your card)</span></legend>
-          <div class="h-chips" id="genderChips" role="radiogroup" aria-label="Your gender"></div></fieldset>
         <label class="h-label" style="margin-top:var(--h-5)">Photos <span class="faint">(optional)</span></label>
         <div class="wp-photos" id="photos" aria-label="Your photos"></div>
         <p class="h-help" id="photoHelp">Optional — add one now or later. Up to 6; the first is your main one — drag to reorder, tap one to replace it. Choose who sees them in step 3.</p>
@@ -216,6 +217,8 @@
           <input type="checkbox" id="discoverable" role="switch">
         </div>
         <p class="wp-adult" id="adultNote">By turning this on and saving, you confirm you’re 18 or older.</p>
+        <fieldset id="iAmSet" style="margin-top:var(--h-5)"><legend>I am <span class="faint">(not shown on your card)</span></legend>
+          <div class="h-chips" id="genderChips" role="radiogroup" aria-label="Your gender"></div></fieldset>
         <fieldset class="wp-radios" id="showMeSet"><legend>Show me</legend>
           <p class="faint" style="margin:0 0 8px;font-size:13px">Everyone is what people here choose: it’s about the films, and it means more people to watch with.</p>
           <label><input type="radio" name="scope" value="everyone"> <span>Everyone</span></label>
@@ -469,7 +472,7 @@
     // been in it; someone who turned it off themselves stays off. No 18+ pop-up: the line under the switch says that
     // saving with it on confirms they're 18 or older, and the save sends that confirmation.
     const canGoLive = (quiet) => {
-      if (!state.gender) { if (!quiet) say('Choose “I am” in step 1 first — it’s how “show me” works for everyone.'); return false; }
+      if (!state.gender) { if (!quiet) { say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button')?.focus(); } return false; }
       if (!state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length && !(state.music || []).length) { if (!quiet) say('First pick at least one genre, or add a film, series or music you love, so people can see your taste.'); return false; }
       return true;
     };
@@ -564,7 +567,6 @@
     }
     $('next').onclick = () => {
       pendingAdds.forEach((add) => add());   // a film typed but not yet added counts for "pick at least one"
-      if (step === 1 && !state.gender) { trackEvent('profile_step', { step, action: 'blocked' }); say('Choose “I am” — it’s how “show me” works for everyone.'); $('genderChips').querySelector('button').focus(); return; }
       if (step === 2 && !state.genres.length && !state.favorite_titles.length && !(state.watchlist || []).length && !(state.music || []).length) { trackEvent('profile_step', { step, action: 'blocked' }); say('Pick at least one genre, or add a film, series or music you love, so people can see your taste.'); return; }
       say(''); showStep(step + 1);
     };
