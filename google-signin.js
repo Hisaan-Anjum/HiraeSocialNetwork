@@ -170,8 +170,17 @@
     const options = opts || {};
     const label = options.label || 'Continue with Google';
     if (!mountEl || typeof options.onToken !== 'function') return false;
-    // Google refuses sign-in inside an app's embedded browser (disallowed_useragent): the Android app uses a password until it has a Custom Tab flow.
-    if (/HeraeAndroid\//.test(navigator.userAgent)) { mountEl.hidden = true; return false; }
+    // Google refuses sign-in inside an app's embedded browser (disallowed_useragent): in the Android app the same button
+    // opens Chrome through the app (HeraeApp.google → app-google.html → a one-time, PKCE-bound code; server/src/app-handoff.js).
+    if (/HeraeAndroid\//.test(navigator.userAgent)) {
+      if (!window.HeraeApp || !window.HeraeApp.google) { mountEl.hidden = true; return false; }
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-google';
+      b.innerHTML = googleMark() + '<span>' + label + '</span>';
+      b.addEventListener('click', () => window.HeraeApp.google());
+      mountEl.textContent = ''; mountEl.appendChild(b); mountEl.hidden = false;
+      return true;
+    }
 
     const base = (window.getSavedServerUrl ? window.getSavedServerUrl() : '').replace(/\/+$/, '');
     // The button shows as soon as a client id is known: from this browser's last visit (cached) or from the server.

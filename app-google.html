@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="herae-memories-site" content="1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in to the Herae app</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .ag { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+  .ag img { width: 56px; }
+  .ag h1 { font-size: 22px; margin: 0; }
+  .ag p { margin: 0; opacity: .8; max-width: 30ch; }
+</style>
+</head>
+<body>
+<!-- Google sign-in for the Android app (server/src/app-handoff.js has the whole flow). Opened by the app in Chrome (a Custom
+     Tab), where Google allows sign-in. It never hands back a session: only a 60-second, single-use code that is useless
+     without the secret the app kept (PKCE). Always a fresh Google tap — a session left in this browser is never reused. -->
+<div class="ag">
+  <img src="herae-symbol.svg" alt="Herae">
+  <h1>Sign in to the Herae app</h1>
+  <p id="msg">Continue with Google, and you'll be taken back to the app.</p>
+  <div id="googleMount"></div>
+</div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="google-signin.js"></script>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  const state = q.get('state') || '', challenge = q.get('challenge') || '';
+  const msg = document.getElementById('msg');
+  if (!/^[A-Za-z0-9_-]{16,64}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(challenge)) { msg.textContent = 'Open this from the Herae app.'; return; }
+  mountGoogleButton(document.getElementById('googleMount'), {
+    label: 'Continue with Google',
+    onToken: async (accessToken) => {
+      msg.textContent = 'Signing you in…';
+      try {
+        const result = await completeGoogleSignIn(accessToken, (token, username) => loginWithGoogle(token, getSavedServerUrl(), username));
+        if (!result) { msg.textContent = 'Continue with Google, and you\'ll be taken back to the app.'; return; }
+        const r = await apiRequest('/api/app-handoff', { method: 'POST', body: JSON.stringify({ challenge }) });
+        if (!r || !r.code) throw new Error('Could not finish signing in.');
+        msg.textContent = 'Done — back to the app…';
+        location.replace('app.herae.android://auth?code=' + encodeURIComponent(r.code) + '&state=' + encodeURIComponent(state));
+      } catch (e) { msg.textContent = e.message || 'Could not finish signing in. Try again.'; }
+    },
+  });
+})();
+</script>
+</body>
+</html>

@@ -72,6 +72,8 @@ const FILES = [
   'signup.html',
   // The Android app's own start screen (sign up / sign in, then into the site).
   'app.html',
+  // Google sign-in for the Android app, opened in Chrome (server/src/app-handoff.js).
+  'app-google.html',
   // The page behind /invite/<CODE>. Served by an express route (there is no such
   // file at that path), and self-contained like the other auth-adjacent pages so
   // it works under both the Node server and Vite.
