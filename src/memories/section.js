@@ -348,6 +348,15 @@ async function mountRelationship(container, profile, opts = {}) {
   }
 
   // ── delegated clicks ──
+  // The Android app's native relationship page opens these here: #story=<type>:<key>, #stories, #sharecard.
+  const ask = location.hash.slice(1);
+  if (ask === 'stories') setTimeout(() => openStorySelector({ summary, onPick: (d) => openStory(d, 'play') }), 0);
+  else if (ask === 'sharecard') setTimeout(() => shareRelationshipCard(), 0);
+  else if (ask.startsWith('story=')) {
+    const [type, key] = decodeURIComponent(ask.slice(6)).split(':');
+    const d = (summary.storyTypes || []).find((x) => x.type === type && x.key === key) || summary.featured;
+    if (d) setTimeout(() => openStory(d, 'play'), 0);
+  }
   section.addEventListener('click', (e) => {
     const t = e.target.closest('[data-ms]');
     if (!t) return;
