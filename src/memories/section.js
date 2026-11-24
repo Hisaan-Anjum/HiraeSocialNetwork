@@ -281,6 +281,7 @@ async function mountRelationship(container, profile, opts = {}) {
 
       loading.close();
       if (action === 'card') return shareStoryCard(manifest);
+      if (action === 'video') return shareStoryVideo(manifest);
       // The player's own Share button renders the full recap as a video.
       playStory(manifest, { onShare: shareStoryVideo });
     } catch (e) {
@@ -355,6 +356,12 @@ async function mountRelationship(container, profile, opts = {}) {
   const ask = location.hash.slice(1);
   if (ask === 'stories') setTimeout(() => openStorySelector({ summary, onPick: (d) => openStory(d, 'play') }), 0);
   else if (ask === 'sharecard') setTimeout(() => shareRelationshipCard(), 0);
+  // The app's own story player: its Share makes the video here (#storyshare=<type>:<key>), then hands back to the app.
+  else if (ask.startsWith('storyshare=')) {
+    const [type, key] = decodeURIComponent(ask.slice(11)).split(':');
+    const d = (summary.storyTypes || []).find((x) => x.type === type && x.key === key) || (type === 'monthly' ? { type, key, title: null } : summary.featured);
+    if (d) setTimeout(() => openStory(d, 'video'), 0);
+  }
   else if (ask.startsWith('story=')) {
     const [type, key] = decodeURIComponent(ask.slice(6)).split(':');
     const d = (summary.storyTypes || []).find((x) => x.type === type && x.key === key) || summary.featured;
