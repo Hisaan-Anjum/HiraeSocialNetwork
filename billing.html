@@ -164,7 +164,7 @@
     if (s.plan === 'plus') actions.appendChild(linkButton('Upgrade to Herae Together', 'upgrade.html', true));
 
     apiRequest('/api/subscription/manage')
-      .then(({ urls }) => { if (urls && urls.update_payment_method) actions.appendChild(linkButton('Update payment method', urls.update_payment_method, false)); })
+      .then(({ urls }) => { if (urls && urls.update_payment_method) actions.insertBefore(linkButton('Update payment method', urls.update_payment_method, false), actions.querySelector('.btn-ghost')); })   // before Cancel (it loads a moment later)
       .catch(() => {});
     if (!s.scheduledCancel) {
       const cancel = document.createElement('button');
@@ -274,7 +274,15 @@
     if (justUpgraded && !s.unlimited) {
       planName.textContent = 'Finalizing your upgrade…';
       planStatus.textContent = 'This takes a few seconds — hang tight.';
-      for (let i = 0; i < 6 && !s.unlimited; i++) { await sleep(2000); try { s = await apiRequest('/api/subscription/status'); } catch (e) {} }
+      for (let i = 0; i < 30 && !s.unlimited; i++) { await sleep(2000); try { s = await apiRequest('/api/subscription/status'); } catch (e) {} }
+      // Paid, but Paddle's confirmation is slow: never show "Free plan" to someone who just paid (it read as a failed
+      // payment, 11-24). Say it plainly and switch the page over by itself the moment the plan is on.
+      if (!s.unlimited) {
+        planName.textContent = 'Payment received';
+        planStatus.textContent = 'Your plan turns on in a minute or two — this page updates by itself, and we’ll email you a receipt.';
+        for (let i = 0; i < 60 && !s.unlimited; i++) { await sleep(5000); try { s = await apiRequest('/api/subscription/status'); } catch (e) {} }
+        if (!s.unlimited) { planStatus.textContent = 'Still confirming your payment with Paddle. If your plan isn’t on within an hour, email support@herae.app and we’ll sort it.'; return; }
+      }
     }
 
     window.__status = s;
@@ -284,7 +292,8 @@
     renderPlan(s);
     renderCovered(s);
     // Paid on a phone (11-12 phone leaks): the plan is on, and the watching happens on a computer. One tap to get there.
-    if (justUpgraded && s.unlimited && window.heraeSendToLaptop) {
+    if (justUpgraded && s.unlimited && window.HeraeApp) say('Your plan is on — start a night from Home whenever you’re ready.', 'ok');   // the Android app watches on the phone
+    else if (justUpgraded && s.unlimited && window.heraeSendToLaptop) {
       say('Your plan is on. Watching runs in Herae, in Chrome on your computer. ', 'ok');
       const b = document.createElement('button'); b.type = 'button'; b.className = 'link-btn'; b.textContent = 'Send me the link for my computer';
       b.onclick = () => window.heraeSendToLaptop(); msgEl.append(b);
