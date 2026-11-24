@@ -36,15 +36,25 @@
   function show(t, html) { title.textContent = t; sub.innerHTML = html; }
 
   (async () => {
+    // ?price=<id>: the Android app's own plans screen opens Paddle's checkout here (it can't run Paddle.js itself), signed in.
+    // Only a price this server sells, and only for the signed-in account; afterwards the app's own billing / plans screen.
+    const qs = new URLSearchParams(location.search);
+    const appPrice = qs.get('price');
+    let auth = null; try { auth = JSON.parse(localStorage.getItem('moments_auth') || 'null'); } catch (e) { auth = null; }
+    const toApp = (path) => { if (window.HeraeApp && window.HeraeApp.go) window.HeraeApp.go(path); else location.replace(path); };
     // No transaction to open: someone arrived here by hand. The plans page is
     // what they were looking for.
-    if (!new URLSearchParams(location.search).get('_ptxn')) { location.replace('pricing.html'); return; }
+    if (!qs.get('_ptxn') && !(appPrice && auth && auth.token)) { location.replace('pricing.html'); return; }
     let cfg;
     try { cfg = await (await fetch('/api/subscription/config')).json(); } catch (e) { cfg = null; }
     if (!cfg || !cfg.configured || typeof Paddle === 'undefined') {
       show('Checkout could not load', 'Please try again in a minute, or write to <a href="contact.html">Herae support</a>.');
       return;
     }
+    const sold = [];
+    for (const plan of Object.values(cfg.prices || {})) for (const id of Object.values(plan || {})) sold.push(id);
+    if (cfg.founding && cfg.founding.open) sold.push(cfg.founding.priceId);
+    if (appPrice && !sold.includes(appPrice)) { show('That plan is not available right now', '<a href="pricing.html">Back to plans</a>'); return; }
     let done = false;
     Paddle.Environment.set(cfg.environment);
     Paddle.Initialize({
@@ -53,14 +63,23 @@
         if (!ev) return;
         if (ev.name === 'checkout.completed') {
           done = true;
+          if (appPrice) { setTimeout(() => toApp('billing.html?upgraded=1'), 1500); return; }
           show('Payment received', 'Your plan switches on within a minute. <a href="billing.html?upgraded=1">See your plan</a>');
         } else if (ev.name === 'checkout.closed' && !done) {
+          if (appPrice) { if (window.HeraeApp) history.back(); else location.replace('upgrade.html'); return; }   // back to the plans they were on
           show('Checkout closed', 'Nothing was charged. <a href="pricing.html">Back to plans</a>');
         } else if (ev.name === 'checkout.error') {
           show('Checkout could not load', 'Nothing was charged. Please try again, or write to <a href="contact.html">Herae support</a>.');
         }
       },
     });
+    if (appPrice) {
+      let email = null;
+      try { email = (await (await fetch('/api/subscription/status', { headers: { Authorization: 'Bearer ' + auth.token } })).json()).email || null; } catch (e) { email = null; }
+      show('Opening secure checkout…', 'Payments are handled by Paddle, our reseller.');
+      Paddle.Checkout.open({ items: [{ priceId: appPrice, quantity: 1 }], customData: { username: auth.username },
+        customer: email ? { email } : undefined, settings: { displayMode: 'overlay', theme: 'light' } });
+    }
   })();
   </script>
 </body>
