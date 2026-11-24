@@ -567,10 +567,36 @@ const FPS = 24;
 // scenes. 720×1280 is 2.25× fewer pixels, so the encoder keeps up and the file
 // runs to the end. At 6 Mbps, 720p is visibly cleaner than a 1080p encode that
 // is dropping frames.
-const OUT_W = 720, OUT_H = 1280;      // encoded frame size
+// A phone's encoder is slower still: 720×1280 fell ~10 s behind on an Android phone and the last 10 s of a 36 s story had no
+// picture (11-24). Phones encode 540×960 (44% fewer pixels) and wait longer for the encoder before stopping.
+const PHONE = typeof navigator !== 'undefined' && /Android|iPhone|iPad/i.test(navigator.userAgent || '');
+const OUT_W = PHONE ? 540 : 720, OUT_H = PHONE ? 960 : 1280;      // encoded frame size
 const DES_W = 1080, DES_H = 1920;     // design space all drawing code uses
 const SCALE = OUT_W / DES_W;
-const VIDEO_BITRATE = 6_000_000;
+const VIDEO_BITRATE = PHONE ? 3_500_000 : 6_000_000;
+
+// Chrome's MP4 recorder (fragmented) writes each track's mdhd duration in MILLISECONDS against the track's own timescale
+// (48 kHz sound, 30 kHz picture): a phone's gallery, WhatsApp and Instagram trusted it and read a 36 s story as 0.7 s
+// (11-24). Each mdhd duration is rewritten from its tkhd, which is in the movie timescale and correct. Returns the bytes.
+export function fixMp4Durations(u8) {
+  const v = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  const type = (o) => String.fromCharCode(u8[o + 4], u8[o + 5], u8[o + 6], u8[o + 7]);
+  const kids = (start, end) => { const out = []; for (let o = start; o + 8 <= end;) { const sz = v.getUint32(o); if (sz < 8 || o + sz > end) break; out.push([o, sz, type(o)]); o += sz; } return out; };
+  const moov = kids(0, u8.length).find((b) => b[2] === 'moov'); if (!moov) return u8;
+  const inner = kids(moov[0] + 8, moov[0] + moov[1]);
+  const mvhd = inner.find((b) => b[2] === 'mvhd'); if (!mvhd) return u8;
+  const mv = mvhd[0] + 8; const movieScale = v.getUint32(mv + (u8[mv] === 1 ? 20 : 12)); if (!movieScale) return u8;
+  for (const [to, tsz, tt] of inner) {
+    if (tt !== 'trak') continue;
+    const tk = kids(to + 8, to + tsz); const tkhd = tk.find((b) => b[2] === 'tkhd'); const mdia = tk.find((b) => b[2] === 'mdia');
+    if (!tkhd || !mdia) continue;
+    const th = tkhd[0] + 8; const dur = u8[th] === 1 ? Number(v.getBigUint64(th + 28)) : v.getUint32(th + 20);
+    const mdhd = kids(mdia[0] + 8, mdia[0] + mdia[1]).find((b) => b[2] === 'mdhd'); if (!mdhd) continue;
+    const mh = mdhd[0] + 8; const scale = v.getUint32(mh + (u8[mh] === 1 ? 20 : 12)); const fixed = Math.round(dur * scale / movieScale);
+    if (u8[mh] === 1) v.setBigUint64(mh + 24, BigInt(fixed)); else v.setUint32(mh + 16, Math.min(fixed, 0xFFFFFFFF));
+  }
+  return u8;
+}
 
 // Total length of the exported story in ms (sum of its scenes). Exported for the QA check.
 export const storyDurationMs = (scenes) => scenes.reduce((a, sc) => a + sc.dur, 0);
@@ -714,7 +740,9 @@ async function recordStory(manifest, actx, onProgress) {
       try { track?.stop(); } catch (e) { /* already stopped */ }
       const blob = new Blob(chunks, { type: mime.split(';')[0] });
       if (!blob.size) return reject(new Error('The video came out empty — try again.'));
-      resolve({ blob, mime: mime.split(';')[0], poster, durationMs: total });
+      const done = (b) => resolve({ blob: b, mime: mime.split(';')[0], poster, durationMs: total });
+      if (!mime.startsWith('video/mp4')) return done(blob);
+      blob.arrayBuffer().then((ab) => done(new Blob([fixMp4Durations(new Uint8Array(ab))], { type: 'video/mp4' }))).catch(() => done(blob));
     };
     rec.onerror = () => fail('Recording failed.');
 
@@ -738,7 +766,7 @@ async function recordStory(manifest, actx, onProgress) {
         // then give the encoder time to finish what's queued, then stop.
         stopping = true;
         for (const at of stream.getAudioTracks()) { try { at.stop(); } catch (e) { /* ignore */ } }
-        const drain = Math.min(30000, 3000 + total * 0.2);   // covers an encoder running ~20% slower than real time
+        const drain = PHONE ? Math.min(60000, 4000 + total * 0.6) : Math.min(30000, 3000 + total * 0.2);   // an encoder ~20% (phone: ~60%) slower than real time
         setTimeout(() => {
           if (settled) return;
           try { rec.stop(); } catch (e) { return fail('Could not finalise the video.'); }

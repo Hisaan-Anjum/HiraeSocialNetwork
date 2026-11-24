@@ -60,8 +60,9 @@ export function mountPersonalWatchlist(container, { username, isMe, name, data }
           const { recommendation: rec } = await window.getRecommendationById(id);
           if (has(rec.title)) return;
           if (items.length >= 20) throw new Error('Your watchlist is full (20). Remove one first.');
-          const next = [...items, { title: rec.title, film: rec, watched: false, rating: 0, note: null }];
-          await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: next.map((x) => x.title) }) });
+          // Shown newest first, stored oldest first (the server reverses it on the way out): the new film leads, saved reversed.
+          const next = [{ title: rec.title, film: rec, watched: false, rating: 0, note: null }, ...items];
+          await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: next.map((x) => x.title).reverse() }) });
           items = next; render();
         },
       });
@@ -84,7 +85,7 @@ export function mountPersonalWatchlist(container, { username, isMe, name, data }
     if (rm && isMe) {
       const next = items.filter((_, i) => i !== Number(rm.dataset.i));
       rm.disabled = true;
-      try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: next.map((x) => x.title) }) }); items = next; render(); }
+      try { await apiRequest('/api/profile/watch', { method: 'PUT', body: JSON.stringify({ watchlist: next.map((x) => x.title).reverse() }) }); items = next; render(); }
       catch (err) { rm.disabled = false; rm.textContent = 'Try again'; }
     }
   });

@@ -360,6 +360,14 @@ async function mountRelationship(container, profile, opts = {}) {
     const d = (summary.storyTypes || []).find((x) => x.type === type && x.key === key) || summary.featured;
     if (d) setTimeout(() => openStory(d, 'play'), 0);
   }
+  // The Android app opened this page only for that story, card or picker: once it is closed, step back to the app's own
+  // screen it came from (founder 11-24: closing a story or a share left the website's version of the page).
+  if (ask && window.HeraeApp) {
+    const busy = () => document.querySelector('.ms-player, .share-overlay, .ms-selector-overlay, .ms-loading');
+    let seen = false;
+    const watch = setInterval(() => { if (busy()) seen = true; else if (seen) { clearInterval(watch); history.back(); } }, 400);
+    setTimeout(() => { if (!seen) clearInterval(watch); }, 20000);
+  }
   section.addEventListener('click', (e) => {
     const t = e.target.closest('[data-ms]');
     if (!t) return;
