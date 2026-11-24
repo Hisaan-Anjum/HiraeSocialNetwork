@@ -325,7 +325,10 @@ async function mountRelationship(container, profile, opts = {}) {
       // Keep the blob alive long enough for the share sheet to use it.
       setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60 * 1000);
       trackEvent?.('story_shared', { platform: 'video' });
-      uploadRenderedVideo(manifest, blob); // best-effort, non-blocking
+      // Later, when the phone is idle: turning the whole video into one string froze the page while the share sheet
+      // opened (founder 11-24). It only saves re-rendering next time; the share never waits on it.
+      const later = window.requestIdleCallback || ((f) => setTimeout(f, 1));
+      setTimeout(() => later(() => uploadRenderedVideo(manifest, blob), { timeout: 30000 }), 20000);
     } catch (e) {
       loading.close();
       toast(e.message || 'Could not create the video — try the Share Card instead.');
