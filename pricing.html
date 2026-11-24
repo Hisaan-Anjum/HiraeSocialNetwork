@@ -147,6 +147,11 @@
     // (they can subscribe right after). No login is required to VIEW this page.
     const loggedIn = typeof getAuth === 'function' && !!getAuth();
     document.querySelectorAll('[data-cta-paid]').forEach((a) => { a.href = loggedIn ? 'upgrade.html' : 'signup.html'; });
+    // Inside the Android app, signed in (the ruble link from upgrade.html lands here): no "Log in", no Chrome Web Store.
+    if (window.HeraeApp && loggedIn) {
+      document.querySelectorAll('a[href*="chromewebstore"]').forEach((x) => x.remove());
+      document.querySelectorAll('a[href="login.html"]').forEach((x) => { x.textContent = '← Back to Herae'; x.href = 'memories.html'; });
+    }
 
     // Real, localized prices from Paddle (falls back to the amounts in the HTML
     // if anything's unavailable — the checkout always shows the exact price).
