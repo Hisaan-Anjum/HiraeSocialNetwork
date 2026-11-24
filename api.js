@@ -526,9 +526,10 @@ function getMyInvite() {
 // { needsUsername: true } and the caller asks before calling again with the same
 // token. Returns that response untouched rather than throwing, since needing a
 // username is a step in the flow, not a failure.
-async function loginWithGoogle(accessToken, serverUrl, username) {
+// idToken: true when the token is the Android app's (its own Google sheet hands back an ID token, not an access token).
+async function loginWithGoogle(accessToken, serverUrl, username, idToken) {
   const base = (serverUrl || getSavedServerUrl()).replace(/\/+$/, '');
-  const body = { access_token: accessToken, source: signupSourceTag(), devices: deviceIds() };
+  const body = { [idToken ? 'id_token' : 'access_token']: accessToken, source: signupSourceTag(), devices: deviceIds() };
   // The sign-up page's "who do you want to watch with?" answer — only recorded if this creates the account.
   try { const m = sessionStorage.getItem('herae_signup_mode'); if (m) body.mode = m; } catch (e) { /* storage blocked */ }
   if (username) body.username = username;
