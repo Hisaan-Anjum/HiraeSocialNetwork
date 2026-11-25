@@ -33,6 +33,9 @@ export async function mountWatchLink(anchor, { inviteBox = true } = {}) {
     return b;
   }
   const track = (result) => { try { window.trackEvent && window.trackEvent('watch_link_start', { result }); } catch (e) { /* best-effort */ } };
+  // The person you're in a night with right now comes first, so "watch this" goes to them: the first contact by date was
+  // picked instead and the night answered "busy" twice (11-25, a first night on Prime that never played).
+  contacts = [...contacts].sort((a, b) => (b.watchingWithMe ? 1 : 0) - (a.watchingWithMe ? 1 : 0));
   const box = document.createElement('section');
   box.className = 'watch-link';
   const pick = contacts.length > 1
